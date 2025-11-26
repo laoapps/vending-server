@@ -1565,7 +1565,7 @@ export class Tab1Page implements OnDestroy {
               this.sendStatus(JSON.stringify(result?.data), new Date().getTime(), EMACHINE_COMMAND.ADH814_STATUS);
               console.log('ADH814 Processed response:', result);
               if (result?.status == 1) {
-                this.setLastSerial();
+                this.apiService.setLastSerialAction();
               }
             }
 
@@ -1577,14 +1577,6 @@ export class Tab1Page implements OnDestroy {
       });
     }
     this.vlog.log = this.serial.log;
-  }
-  setLastSerial() {
-    try {
-      localStorage.setItem('lastSerial', Date.now().toString());
-      // console.log('บันทึกเวลาคลิกแล้ว:', now);
-    } catch (error) {
-      // console.error('Error setting last click:', error);
-    }
   }
   private handleFatalError() {
     console.error('CRITICAL COMMUNICATION ERROR - EXITING APPLICATION');
@@ -3389,24 +3381,6 @@ export class Tab1Page implements OnDestroy {
     });
   }
 
-  private getSerialLast(): string | null {
-    try {
-      const stored = localStorage.getItem('lastSerial');
-      if (!stored) return null;
-
-      try {
-        return JSON.parse(stored);
-      } catch {
-        if (stored.startsWith('"') && stored.endsWith('"')) {
-          return stored.slice(1, -1);
-        }
-        return stored;
-      }
-    } catch (error) {
-      console.error('Error reading from localStorage:', error);
-      return null;
-    }
-  }
 
   showBills() {
     console.log(`here`);
@@ -3421,26 +3395,9 @@ export class Tab1Page implements OnDestroy {
             if (!this.apiService.isRemainingBillsModalOpen) {
               if (this.serial) {
                 if (localStorage.getItem('device') != 'ZDM8') {
-                  const lastClick = this.getSerialLast();
+                  const lastClick = this.apiService.checkLastSerialAction();
                   if (!lastClick) {
-                    // this.apiService.exitApp();
-                    return;
-                  }
-
-                  const targetTime = new Date(lastClick).getTime();
-
-                  if (isNaN(targetTime)) {
-                    // this.apiService.exitApp();
-                    return;
-                  }
-
-                  const currentTime = new Date().getTime();
-                  const timeDifferenceSeconds = (currentTime - targetTime) / 1000;
-
-                  const has30SecondsPassed = timeDifferenceSeconds >= 30;
-
-                  if (!has30SecondsPassed) {
-                    // this.apiService.exitApp();
+                    this.apiService.exitApp();
                     return;
                   }
                 }
