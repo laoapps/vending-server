@@ -3701,11 +3701,21 @@ export class InventoryZDM8 implements IBaseClass {
                         // const serverEndDate = moment.tz(endDate, serverTimezone).endOf('day').toDate();
                         const ownerUuid = res.locals["ownerUuid"];
                         const machineId = data.machineId;
-                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
-                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        // const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        // const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
                         // console.log(' GET REPORT SALE ', machineId, fromDate.toString(), toDate.toString(), ownerUuid)
 
-                        const run = await this.getReportSale(machineId, fromDate.toString(), toDate.toString(), ownerUuid);
+                        const fromDate = momenttz
+                            .tz(data.fromDate, SERVER_TIME_ZONE)
+                            .startOf('day')
+                            .toDate();
+
+                        const toDate = momenttz
+                            .tz(data.toDate, SERVER_TIME_ZONE)
+                            .endOf('day')
+                            .toDate();
+
+                        const run = await this.getReportSale(machineId, fromDate, toDate, ownerUuid);
                         const response = {
                             rows: run.rows,
                             count: run.count,
@@ -8732,35 +8742,68 @@ export class InventoryZDM8 implements IBaseClass {
             v.destroy();
         });
     }
-    private async getReportSale(machineId: string, fromDate: string, toDate: string, ownerUuid: string) {
-        let condition: any = {};
-        if (machineId == 'all') {
+    // private async getReportSale(machineId: string, fromDate: string, toDate: string, ownerUuid: string) {
+    //     let condition: any = {};
+    //     if (machineId == 'all') {
 
-            condition = {
-                where: {
-                    // paymentstatus: 'paid',              
-                    paymentstatus: { [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
+    //         condition = {
+    //             where: {
+    //                 // paymentstatus: 'paid',              
+    //                 paymentstatus: { [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
 
-                    createdAt: { [Op.between]: [fromDate, toDate] }
-                },
-                order: [['id', 'DESC']]
+    //                 createdAt: { [Op.between]: [fromDate, toDate] }
+    //             },
+    //             order: [['id', 'DESC']]
+    //         }
+    //     }
+    //     else {
+    //         condition = {
+    //             where: {
+    //                 paymentstatus: { [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
+    //                 machineId: machineId,
+    //                 createdAt: { [Op.between]: [fromDate, toDate] }
+    //             },
+    //             order: [['id', 'DESC']]
+    //         }
+    //     }
+    //     const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+    //     await ent.sync();
+    //     const res = await ent.findAndCountAll(condition);
+    //     return res;
+    // }
+
+    private async getReportSale(
+        machineId: string,
+        fromDate: Date,
+        toDate: Date,
+        ownerUuid: string
+    ) {
+        const where: any = {
+            paymentstatus: {
+                [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered]
+            },
+            createdAt: {
+                [Op.between]: [fromDate, toDate]
             }
+        };
+
+        if (machineId !== 'all') {
+            where.machineId = machineId;
         }
-        else {
-            condition = {
-                where: {
-                    paymentstatus: { [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered] },
-                    machineId: machineId,
-                    createdAt: { [Op.between]: [fromDate, toDate] }
-                },
-                order: [['id', 'DESC']]
-            }
-        }
-        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+
+        const ent = VendingMachineBillFactory(
+            EEntity.vendingmachinebill + '_' + ownerUuid,
+            dbConnection
+        );
+
         await ent.sync();
-        const res = await ent.findAndCountAll(condition);
-        return res;
+
+        return await ent.findAndCountAll({
+            where,
+            order: [['id', 'DESC']]
+        });
     }
+
 
 
     private async getReportDrop(machineId: string, fromDate: string, toDate: string) {
