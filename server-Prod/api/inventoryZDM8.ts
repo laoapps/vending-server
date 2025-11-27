@@ -4485,6 +4485,43 @@ export class InventoryZDM8 implements IBaseClass {
             )
 
 
+            router.post(this.path + '/checkDBTransaction',
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const transactionID = req.body.transactionID;
+
+                        const data = req.body;
+                        const ownerUuid = res.locals["ownerUuid"];
+                        const machineId = data.machineId;
+
+                        if (!transactionID) {
+                            return res.send(PrintError('checkDBTransaction', {}, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+                        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
+                        await ent.sync();
+                        ent.findOne({ where: { machineId: machineId, transactionID: transactionID } }).then(r => {
+                            if (r) {
+                                return res.send(PrintSucceeded('checkDBTransaction', r, EMessage.succeeded, returnLog(req, res, true)));
+
+                            } else {
+                                return res.send(PrintError('checkDBTransaction', {}, EMessage.error, returnLog(req, res, true)));
+                            }
+                        }).catch(err => {
+                            console.error('err checkDBTransaction is :', JSON.stringify(err));
+
+                            res.send(PrintError('checkDBTransaction', err, EMessage.error, returnLog(req, res, true)));
+
+                        })
+                    } catch (error) {
+                        console.error('Error checkDBTransaction is :', JSON.stringify(error));
+                        res.send(PrintError('checkDBTransaction', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            )
+
             router.post(this.path + '/findPhoneNumberByUUid',
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),

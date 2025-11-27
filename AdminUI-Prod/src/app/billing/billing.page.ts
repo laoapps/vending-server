@@ -79,6 +79,76 @@ export class BillingPage implements OnInit {
     }
   }
 
+
+  async onProcessBilling() {
+    try {
+      if (!this.selectedFile) {
+        alert('กรุณาเลือกไฟล์ Excel ก่อน');
+        return;
+      }
+
+      const data = {
+        machineId: this.machineId,
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        token: this.token,
+      };
+
+      const dataServer = await this.apiService
+        .loadVendingMachineSaleBillReport(data)
+        .toPromise();
+
+      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
+
+
+      const bankIds = new Set(this.dataExcel.map(b => b["ເລກທູລະກຳ"]));
+      const myIds = new Set(run.map(m => m.transactionID));
+
+      // 1. bankTrand ที่มีใน mytrand
+      const bankInMy = this.dataExcel.filter(b => myIds.has(b["ເລກທູລະກຳ"]));
+      console.log('-----> 1. bankTrand ที่มีใน mytrand :', bankInMy);
+
+
+      // 2. bankTrand ที่ไม่มีใน mytrand
+      const bankNotInMy = this.dataExcel.filter(b => !myIds.has(b["ເລກທູລະກຳ"]));
+      console.log('-----> bankTrand ที่ไม่มีใน mytrand :', bankNotInMy);
+
+
+      // 3. mytrand ที่มีใน bankTrand
+      const myInBank = run.filter(m => bankIds.has(m.transactionID));
+      console.log('-----> 3. mytrand ที่มีใน bankTrand :', myInBank);
+
+
+      // 4. mytrand ที่ไม่มีใน bankTrand
+      const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
+      let myNotInBankNotPaid = [];
+      let myNotInBankPaid = [];
+
+      console.log('-----> 4. mytrand ที่ไม่มีใน bankTrand :', myNotInBank);
+      for (let index = 0; index < myNotInBank.length; index++) {
+        const element = myNotInBank[index];
+        const responseCheck = await this.apiService
+          .checkLaoQRTransaction(element?.transactionID)
+          .toPromise();
+
+        if (responseCheck['status'] == 1) {
+          myNotInBankPaid.push(responseCheck['data']?.data);
+        } else {
+          myNotInBankNotPaid.push(element)
+        }
+      }
+      console.log('-----> 5 myNotInBankNotPaid :', myNotInBankNotPaid);
+      console.log('-----> 6 myNotInBankPaid :', myNotInBankPaid);
+
+
+
+      // 4. mytrand ที่ไม่มีใน bankTrand
+      // const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
+    } catch (error) {
+      console.error('Error onProcess:', error);
+    }
+  }
+
   // ✅ ยกเลิกไฟล์
   cancelFile() {
     this.selectedFile = null;
