@@ -591,6 +591,17 @@ export class ApiService {
         return this.http.post(this.url + '/checkQRTransaction', { transactionID: transactionID }, { headers: this.headerBase() });
     }
 
+    checkDBTransaction(data: any) {
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/checkDBTransaction', payload, { headers: this.headerBase() });
+    }
+
     loadVendingMachineDropReport(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');

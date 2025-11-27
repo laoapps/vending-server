@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import { ApiService } from '../services/api.service';
 
 @Component({
@@ -21,6 +22,156 @@ export class BillingPage implements OnInit {
 
   ngOnInit() {
     this.token = localStorage.getItem('lva_token');
+  }
+
+  exportBankExcel(bankInMyData: any) {
+    const data = bankInMyData.map((item: any) => ({
+      "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+      "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
+      "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+      "ວັນທີ": item["ວັນທີ"].toString()
+    }));
+
+    // 1) สร้าง worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // 2) สร้าง workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+    // 3) Convert → binary
+    const excelBuffer = XLSX.write(wb, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    // 4) Download
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream"
+    });
+
+    const filename = `ບິນທັງໝົດທີ່ຕົງກັນ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+    saveAs(blob, filename);
+  }
+
+
+  exportMyNotInBankNotPaid(bankInMyData: any) {
+    const data = bankInMyData.map((item: any) => ({
+      "ເລກທູລະກຳ": item["transactionID"],
+      "ຈຳນວນເງິນ": item["totalvalue"],
+      "ຊ່ອງທາງ": item["paymentref"],
+      "ວັນທີ": item["createdAt"].toString()
+    }));
+
+    // 1) สร้าง worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // 2) สร้าง workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+    // 3) Convert → binary
+    const excelBuffer = XLSX.write(wb, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    // 4) Download
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream"
+    });
+
+    const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ບໍ່ໄດ້ຈ່າຍ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+    saveAs(blob, filename);
+  }
+
+  exportMyNotInBankPaid(bankInMyData: any) {
+    const data = bankInMyData.map((item: any) => ({
+      "ເລກທູລະກຳ": item["billNumber"],
+      "ຈຳນວນເງິນ": item["txnAmount"],
+      "ຊ່ອງທາງ": item["refNo"],
+      "ວັນທີ": item["txnDateTime"].toString()
+    }));
+
+    // 1) สร้าง worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // 2) สร้าง workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+    // 3) Convert → binary
+    const excelBuffer = XLSX.write(wb, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    // 4) Download
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream"
+    });
+
+    const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ຈ່າຍແລ້ວ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+    saveAs(blob, filename);
+  }
+
+  exportMyBankNoServer(bankInMyData: any) {
+    const data = bankInMyData.map((item: any) => ({
+      "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+      "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
+      "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+      "ວັນທີ": item["ວັນທີ"].toString()
+    }));
+
+    // 1) สร้าง worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // 2) สร้าง workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+    // 3) Convert → binary
+    const excelBuffer = XLSX.write(wb, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    // 4) Download
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream"
+    });
+    const filename = `ບິນທີ່ມີໃນທະນາຄານແລະບໍ່ມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+    saveAs(blob, filename);
+  }
+
+  exportMyBankServer(bankInMyData: any) {
+    const data = bankInMyData.map((item: any) => ({
+      "ເລກທູລະກຳ": item["transactionID"],
+      "ຈຳນວນເງິນ": item["totalvalue"],
+      "ຊ່ອງທາງ": item["paymentref"],
+      "ວັນທີ": item["createdAt"].toString()
+    }));
+
+    // 1) สร้าง worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // 2) สร้าง workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+    // 3) Convert → binary
+    const excelBuffer = XLSX.write(wb, {
+      bookType: 'xlsx',
+      type: 'array'
+    });
+
+    // 4) Download
+    const blob = new Blob([excelBuffer], {
+      type: "application/octet-stream"
+    });
+
+    const filename = `ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+    saveAs(blob, filename);
   }
 
   // ✅ เมื่อเลือกไฟล์ Excel
@@ -107,11 +258,34 @@ export class BillingPage implements OnInit {
       // 1. bankTrand ที่มีใน mytrand
       const bankInMy = this.dataExcel.filter(b => myIds.has(b["ເລກທູລະກຳ"]));
       console.log('-----> 1. bankTrand ที่มีใน mytrand :', bankInMy);
+      this.exportBankExcel(bankInMy);
 
 
       // 2. bankTrand ที่ไม่มีใน mytrand
       const bankNotInMy = this.dataExcel.filter(b => !myIds.has(b["ເລກທູລະກຳ"]));
-      console.log('-----> bankTrand ที่ไม่มีใน mytrand :', bankNotInMy);
+      console.log('-----> 2. bankTrand ที่ไม่มีใน mytrand :', bankNotInMy);
+      let myBankNoServer = [];
+      let myBankServer = [];
+      for (let index = 0; index < bankNotInMy.length; index++) {
+        const transactionID = bankNotInMy[index]['ເລກທູລະກຳ'];
+        const data = {
+          machineId: this.machineId,
+          fromDate: this.fromDate,
+          toDate: this.toDate,
+          token: this.token,
+          transactionID: transactionID
+        };
+
+        const responseServer = await this.apiService
+          .checkDBTransaction(data)
+          .toPromise();
+        if (responseServer['status'] == 1) {
+          myBankServer.push(responseServer['data']?.data);
+        } else {
+          myBankNoServer.push(bankNotInMy[index])
+        }
+      }
+
 
 
       // 3. mytrand ที่มีใน bankTrand
@@ -138,7 +312,15 @@ export class BillingPage implements OnInit {
         }
       }
       console.log('-----> 5 myNotInBankNotPaid :', myNotInBankNotPaid);
+      this.exportMyNotInBankNotPaid(myNotInBankNotPaid);
       console.log('-----> 6 myNotInBankPaid :', myNotInBankPaid);
+      this.exportMyNotInBankPaid(myNotInBankPaid);
+
+      console.log('-----> 7 myBankNoServer :', myBankNoServer);
+      this.exportMyBankNoServer(myBankNoServer);
+
+      console.log('-----> 8 myBankServer :', myBankServer);
+      this.exportMyBankServer(myBankServer);
 
 
 
@@ -156,6 +338,26 @@ export class BillingPage implements OnInit {
   }
 
   // ✅ อ่านไฟล์ Excel
+  // private readExcelFile(file: File): Promise<any[]> {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.onload = (e: any) => {
+  //       try {
+  //         const data = new Uint8Array(e.target.result);
+  //         const workbook = XLSX.read(data, { type: 'array' });
+  //         const firstSheet = workbook.SheetNames[0];
+  //         const worksheet = workbook.Sheets[firstSheet];
+  //         const json = XLSX.utils.sheet_to_json(worksheet);
+  //         resolve(json);
+  //       } catch (err) {
+  //         reject(err);
+  //       }
+  //     };
+  //     reader.onerror = reject;
+  //     reader.readAsArrayBuffer(file);
+  //   });
+  // }
+
   private readExcelFile(file: File): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -165,16 +367,23 @@ export class BillingPage implements OnInit {
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheet = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheet];
-          const json = XLSX.utils.sheet_to_json(worksheet);
+
+          // 🚨 แก้ปัญหาวันที่ถูกแปลงเป็นตัวเลข
+          const json = XLSX.utils.sheet_to_json(worksheet, {
+            raw: false     // สำคัญมาก
+          });
+
           resolve(json);
         } catch (err) {
           reject(err);
         }
       };
+
       reader.onerror = reject;
       reader.readAsArrayBuffer(file);
     });
   }
+
 
   async checkBillNotPaid() {
     const body = {
