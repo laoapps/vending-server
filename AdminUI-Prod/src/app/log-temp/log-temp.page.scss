@@ -17,3 +17,68 @@
   padding: 40px 0;
   color: var(--ion-color-medium);
 }
+.container {
+  --ion-padding: 16px;
+}
+
+.filter-card {
+  margin: 16px 0;
+}
+
+.header-item {
+  --background: var(--ion-color-primary);
+  --color: white;
+  
+  ion-col {
+    font-weight: bold;
+    text-align: center;
+    padding: 12px 4px;
+  }
+}
+
+.raw-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+  
+  p {
+    margin: 4px 0;
+  }
+  
+  .text-xs {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+}
+
+.empty-state {
+  margin-top: 40px;
+  
+  ion-icon {
+    display: block;
+    margin: 0 auto 16px;
+  }
+  
+  h3 {
+    margin: 8px 0;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+.health-badge {
+  &.ok { --background: var(--ion-color-success); }
+  &.failed { --background: var(--ion-color-danger); }
+  &.warning { --background: var(--ion-color-warning); }
+}
+
+.motor-running {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}

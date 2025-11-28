@@ -129,3 +129,27 @@ ion-card-title {
 ion-card-title ion-button {
   margin-left: auto;
 }
+
+.flash-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(76, 175, 80, 0.3);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
+.flash .flash-overlay {
+  opacity: 1;
+}
+
+.flash {
+  animation: flashPulse 0.6s ease-out;
+}
+
+@keyframes flashPulse {
+  0%   { background-color: rgba(232, 255, 236, 0.7); }
+  50%  { background-color: rgba(200, 255, 210, 0.9); }
+  100% { background-color: transparent; }
+}
