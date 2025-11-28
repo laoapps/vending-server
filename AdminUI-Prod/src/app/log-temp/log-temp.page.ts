@@ -18,22 +18,22 @@ interface MotorRunLog {
 }
 
 interface ParsedMotorData {
-  createdAt: string;           // Fixed: from original log
-  timeDisplay: string;         // Human readable time
-  status: number;              // 0=Idle, 1=Running, 2=Finished
+  createdAt: string;
+  timeDisplay: string;
+  status: number;
   statusText: string;
-  motorNumber: number;
-  maxCurrent: number;
-  avgCurrent: number;
-  runTime: number;             // seconds with 1 decimal
+  motorNumber?: number;
+  maxCurrent?: number;
+  avgCurrent?: number;
+  runTime?: number;
   temperature: number;
-  dropSuccess: boolean;
-  faultCode: number;
+  dropSuccess?: boolean;
+  faultCode?: number;
   rawData: string;
-  isHealthy: boolean;
-  healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN';
-  isA5?: boolean;
-  isA6?: boolean;
+  isHealthy?: boolean;
+  healthStatus?: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN';
+  deviceType: 'ADH814' | 'VMC' | 'OTHER';
+  vmcStatus?: string;  // For VMC simple status
 }
 
 @Component({
@@ -80,35 +80,144 @@ export class LogTempPage implements OnInit {
     toast.present();
   }
 
-  // CORRECTED: Parse ADH814 data properly
- parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
-  if (!log.mstatus?.data) return null;
+  private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
+    if (!log.mstatus?.data) return null;
 
-  try {
-    const jsonStr = log.mstatus.data;
-    const match = jsonStr.match(/\{.*\}/);
-    if (!match) return null;
-    const parsed = JSON.parse(match[0]);
+    try {
+      const jsonStr = log.mstatus.data;
+      const match = jsonStr.match(/\{.*\}/);
+      if (!match) return null;
+      const parsed = JSON.parse(match[0]);
 
-    // Correct time: Laos = UTC+7
-    const date = new Date(log.createdAt);
-    date.setHours(date.getHours());
-    const createdAt= date.toLocaleString();
-    const timeDisplay = date.toLocaleTimeString('en-GB', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      const timeDisplay = date.toLocaleTimeString('en-GB', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
 
-    // A5 - Start Motor
-    if (parsed.executionStatus !== undefined) {
+      // A5 / A6
+      if (parsed.executionStatus !== undefined || parsed.acknowledged !== undefined) {
+        return {
+          createdAt: log.createdAt,
+          timeDisplay,
+          status: parsed.executionStatus !== undefined ? 3 : 4,
+          statusText: parsed.executionStatus !== undefined ? 'Start Motor' : 'ACK',
+          motorNumber: parsed.motorNumber || 0,
+          maxCurrent: 0,
+          avgCurrent: 0,
+          runTime: 0,
+          temperature: log.mstatus?.temperature || 0,
+          dropSuccess: true,
+          faultCode: 0,
+          rawData: parsed.rawData?.toUpperCase() || '',
+          isHealthy: true,
+          healthStatus: 'OK',
+          deviceType: 'ADH814'
+        };
+      }
+
+      // A3 - FULL MOTOR DIAGNOSTICS
+      if (parsed.rawData && parsed.rawData.toLowerCase().startsWith('00a3')) {
+        const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
+        if (hex.length < 26) return null;
+
+        const payloadHex = hex.slice(4, -4);
+        const payloadBytes = payloadHex.match(/.{2}/g)?.map(b => parseInt(b, 16)) || [];
+        if (payloadBytes.length < 9) return null;
+
+        const status = payloadBytes[0];
+        const motorNumber = payloadBytes[1];
+        const dropByte = payloadBytes[2];
+
+        const maxCurrent = (payloadBytes[3] << 8) | payloadBytes[4];
+        const avgCurrent = (payloadBytes[5] << 8) | payloadBytes[6];
+        const runTime = (payloadBytes[7] / 10).toFixed(1);
+        const temperature = payloadBytes[8] > 127 ? payloadBytes[8] - 256 : payloadBytes[8];
+
+        const statusText = status === 0 ? 'Idle' : status === 1 ? 'Running' : 'Finished';
+        const dropSuccess = (dropByte & 0x04) === 0;
+        const faultCode = dropByte & 0x03;
+
+        let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
+        let isHealthy = true;
+
+        if (status === 2) {
+          if (maxCurrent < 1000) {
+            healthStatus = 'NO_SPIKE';
+            isHealthy = false;
+          } else if (maxCurrent > 8000) {
+            healthStatus = 'OVERCURRENT';
+            isHealthy = false;
+          } else {
+            healthStatus = 'OK';
+          }
+        }
+
+        return {
+          createdAt: log.createdAt,
+          timeDisplay,
+          status,
+          statusText,
+          motorNumber,
+          maxCurrent,
+          avgCurrent,
+          runTime: parseFloat(runTime),
+          temperature,
+          dropSuccess,
+          faultCode,
+          rawData: parsed.rawData.toUpperCase(),
+          isHealthy,
+          healthStatus,
+          deviceType: 'ADH814'
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Parse error:', error);
+      return null;
+    }
+  }
+
+  // VMC: Simple status only
+  private parseVMCData(log: MotorRunLog): ParsedMotorData | null {
+    if (!log.mstatus?.data) return null;
+
+    try {
+      const jsonStr = log.mstatus.data;
+      const match = jsonStr.match(/\{.*\}/);
+      if (!match) return null;
+      const parsed = JSON.parse(match[0]);
+
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      const timeDisplay = date.toLocaleTimeString('en-GB', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      let statusText = 'VMC Online';
+      if (parsed.rawData) {
+        const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '').toLowerCase();
+        if (hex.startsWith('fafb04')) {
+          const code = hex.substring(10, 12);
+          statusText = code === '01' ? 'VMC Dispensing' :
+                       code === '02' ? 'VMC Dispensed' :
+                       code === '03' ? 'VMC Failed' : 'VMC Status';
+        }
+      }
+
       return {
-        createdAt,
+        createdAt: log.createdAt,
         timeDisplay,
-        status: 3,
-        statusText: 'Start Motor',
-        motorNumber: parsed.motorNumber || 0,
+        status: 10,
+        statusText,
+        motorNumber: 0,
         maxCurrent: 0,
         avgCurrent: 0,
         runTime: 0,
@@ -116,101 +225,69 @@ export class LogTempPage implements OnInit {
         dropSuccess: true,
         faultCode: 0,
         rawData: parsed.rawData?.toUpperCase() || '',
-        isHealthy: parsed.executionStatus === 0,
-        healthStatus: parsed.executionStatus === 0 ? 'OK' : 'UNKNOWN',
-        isA5: true
+        isHealthy: true,
+        healthStatus: 'OK',
+        deviceType: 'VMC',
+        vmcStatus: statusText
       };
+    } catch {
+      return null;
     }
+  }
 
-    // A6 - ACK
-    if (parsed.acknowledged !== undefined) {
+  // Main parser — detects device type
+  private parseLog(log: MotorRunLog): ParsedMotorData | null {
+    if (!log.mstatus) {
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
       return {
-        createdAt,
-        timeDisplay,
-        status: 4,
-        statusText: 'ACK',
+        createdAt: log.createdAt,
+        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        status: 99,
+        statusText: 'Device Online',
         motorNumber: 0,
         maxCurrent: 0,
         avgCurrent: 0,
         runTime: 0,
-        temperature: 0,
+        temperature: log.mstatus?.temperature || 0,
         dropSuccess: true,
         faultCode: 0,
-        rawData: parsed.rawData?.toUpperCase() || '',
+        rawData: '',
         isHealthy: true,
         healthStatus: 'OK',
-        isA6: true
+        deviceType: 'OTHER'
       };
     }
 
-    // A3 - Poll Status (YOUR ORIGINAL & CORRECT LOGIC)
-    if (parsed.rawData && parsed.rawData.toLowerCase().startsWith('00a3')) {
-      const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
-      if (hex.length < 26) return null;
-
-      // Extract payload only: remove address (00), command (A3), and CRC (last 4 chars)
-      const payloadHex = hex.slice(4, -4);
-      const payloadBytes = payloadHex.match(/.{2}/g)?.map(b => parseInt(b, 16)) || [];
-
-      if (payloadBytes.length < 9) return null;
-
-      const status = payloadBytes[0];
-      const motorNumber = payloadBytes[1];
-      const dropByte = payloadBytes[2]; // execution + drop + fault
-
-      // YOUR ORIGINAL & 100% CORRECT FORMULA
-      const maxCurrent = (payloadBytes[3] << 8) | payloadBytes[4];
-      const avgCurrent = (payloadBytes[5] << 8) | payloadBytes[6];
-      const runTimeRaw = payloadBytes[7];
-      const runTime = (runTimeRaw / 10).toFixed(1);
-
-      const tempByte = payloadBytes[8];
-      const temperature = tempByte > 127 ? tempByte - 256 : tempByte;
-
-      const statusText = status === 0 ? 'Idle' : status === 1 ? 'Running' : 'Finished';
-      const dropSuccess = (dropByte & 0x04) === 0;
-      const faultCode = dropByte & 0x03;
-
-      // Health detection
-      let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
-      let isHealthy = true;
-
-      if (status === 2) {
-        if (maxCurrent < 1000) {
-          healthStatus = 'NO_SPIKE';
-          isHealthy = false;
-        } else if (maxCurrent > 8000) {
-          healthStatus = 'OVERCURRENT';
-          isHealthy = false;
-        } else {
-          healthStatus = 'OK';
-        }
-      }
-
-      return {
-        createdAt,
-        timeDisplay,
-        status,
-        statusText,
-        motorNumber,
-        maxCurrent,
-        avgCurrent,
-        runTime: parseFloat(runTime),
-        temperature,
-        dropSuccess,
-        faultCode,
-        rawData: parsed.rawData.toUpperCase(),
-        isHealthy,
-        healthStatus
-      };
+    if (log.mstatus.device === 'ADH814') {
+      return this.parseADH814Data(log);
     }
 
-    return null;
-  } catch (error) {
-    console.error('Parse error:', error, log.mstatus?.data);
-    return null;
+    if (log.mstatus.device?.includes('VMC') || log.mstatus.data?.includes('fafb')) {
+      return this.parseVMCData(log);
+    }
+
+    // Fallback: just show temperature
+    const date = new Date(log.createdAt);
+    date.setHours(date.getHours() + 7);
+    return {
+      createdAt: log.createdAt,
+      timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      status: 99,
+      statusText: 'Device Online',
+      motorNumber: 0,
+      maxCurrent: 0,
+      avgCurrent: 0,
+      runTime: 0,
+      temperature: log.mstatus.temperature || 0,
+      dropSuccess: true,
+      faultCode: 0,
+      rawData: log.mstatus.data || '',
+      isHealthy: true,
+      healthStatus: 'OK',
+      deviceType: 'OTHER'
+    };
   }
-}
 
   async fetchReport() {
     if (!this.fromDate || !this.toDate) {
@@ -219,7 +296,7 @@ export class LogTempPage implements OnInit {
     }
 
     const loading = await this.loadingCtrl.create({
-      message: 'Analyzing motor data...',
+      message: 'Loading device logs...',
       spinner: 'crescent'
     });
     await loading.present();
@@ -244,18 +321,11 @@ export class LogTempPage implements OnInit {
         this.rows = response.data.data.rows;
 
         this.parsedRows = this.rows
-          .map(log => this.parseADH814Data(log))
+          .map(log => this.parseLog(log))
           .filter((item): item is ParsedMotorData => item !== null)
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-        const finished = this.parsedRows.filter(r => r.status === 2);
-        const failed = finished.filter(r => !r.isHealthy);
-
-        if (failed.length > 0) {
-          this.showToast(`${failed.length}/${finished.length} motors failed!`, 'danger');
-        } else {
-          this.showToast(`All ${finished.length} motors healthy`, 'success');
-        }
+        this.showToast(`Loaded ${this.parsedRows.length} events`, 'success');
       } else {
         this.rows = [];
         this.parsedRows = [];
@@ -271,18 +341,16 @@ export class LogTempPage implements OnInit {
     }
   }
 
-  formatLocalTime(dateString: string): string {
-    const date = new Date(dateString);
-    date.setHours(date.getHours() + 7);
-    return date.toLocaleString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
-  }
+  // Keep your existing getters and methods...
+  get finishedRuns() { return this.parsedRows.filter(r => r.deviceType === 'ADH814' && r.status === 2); }
+  get totalFinishedRuns() { return this.finishedRuns.length; }
+  get healthyRuns() { return this.finishedRuns.filter(r => r.isHealthy).length; }
+  get failedRuns() { return this.totalFinishedRuns - this.healthyRuns; }
+  get successRate() { return this.totalFinishedRuns > 0 ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100) : 0; }
 
   getStatusColor(status: number): string {
+    if (status === 99) return 'medium';
+    if (status === 10) return 'tertiary';
     switch (status) {
       case 0: return 'medium';
       case 1: return 'warning';
@@ -293,7 +361,8 @@ export class LogTempPage implements OnInit {
     }
   }
 
-  getHealthColor(health: ParsedMotorData['healthStatus']): string {
+  getHealthColor(health: any): string {
+    if (!health) return 'medium';
     switch (health) {
       case 'OK': return 'success';
       case 'NO_SPIKE': return 'danger';
@@ -309,27 +378,4 @@ export class LogTempPage implements OnInit {
   toggleRawData() {
     this.showRawData = !this.showRawData;
   }
- 
-  // Add these getters to your component class
-get finishedRuns(): ParsedMotorData[] {
-  return this.parsedRows.filter(r => r.status === 2);
-}
-
-get totalFinishedRuns(): number {
-  return this.finishedRuns.length;
-}
-
-get healthyRuns(): number {
-  return this.finishedRuns.filter(r => r.isHealthy).length;
-}
-
-get failedRuns(): number {
-  return this.totalFinishedRuns - this.healthyRuns;
-}
-
-get successRate(): number {
-  return this.totalFinishedRuns > 0
-    ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100)
-    : 0;
-}
 }
