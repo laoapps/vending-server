@@ -86,6 +86,39 @@
       </ion-card-content>
     </ion-card>
 
+        <!-- Finished Runs Only - With Current Analysis -->
+    <ion-card *ngIf="finishedRuns.length > 0" class="ion-margin-top">
+      <ion-card-header color="primary">
+        <ion-card-title>
+          <ion-icon name="flag-outline"></ion-icon>
+          Finished Motor Runs ({{ finishedRuns.length }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let row of finishedRuns" 
+                    [color]="row.isHealthy ? 'success' : 'danger'">
+            <ion-label>
+              <h2>Motor #{{ row.motorNumber }} • {{ row.timeDisplay }}</h2>
+              <p>
+                <strong>Max Current:</strong> {{ row.maxCurrent }} mA
+                → <ion-badge 
+                     [color]="row.maxCurrent > 400 ? 'warning' : row.maxCurrent > 100 ? 'success' : 'danger'">
+                  {{ row.maxCurrent > 400 ? 'Heavy Item (500ml+)' : row.maxCurrent > 100 ? 'Light Item' : 'No Load / Broken' }}
+                </ion-badge>
+              </p>
+              <p>Run Time: {{ row.runTime }}s • Temp: {{ row.temperature }}°C</p>
+              <p *ngIf="!row.isHealthy" color="danger">
+                <ion-icon name="alert-circle"></ion-icon>
+                <strong>Motor Failed:</strong> 
+                {{ row.healthStatus === 'NO_SPIKE' ? 'No current spike → jammed or disconnected' : 'Overcurrent' }}
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Full Detail Table -->
     <ion-card *ngIf="parsedRows.length > 0" class="ion-margin-top">
       <ion-card-header>
@@ -161,38 +194,7 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Finished Runs Only - With Current Analysis -->
-    <ion-card *ngIf="finishedRuns.length > 0" class="ion-margin-top">
-      <ion-card-header color="primary">
-        <ion-card-title>
-          <ion-icon name="flag-outline"></ion-icon>
-          Finished Motor Runs ({{ finishedRuns.length }})
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-item *ngFor="let row of finishedRuns" 
-                    [color]="row.isHealthy ? 'success' : 'danger'">
-            <ion-label>
-              <h2>Motor #{{ row.motorNumber }} • {{ row.timeDisplay }}</h2>
-              <p>
-                <strong>Max Current:</strong> {{ row.maxCurrent }} mA
-                → <ion-badge 
-                     [color]="row.maxCurrent > 400 ? 'warning' : row.maxCurrent > 100 ? 'success' : 'danger'">
-                  {{ row.maxCurrent > 400 ? 'Heavy Item (500ml+)' : row.maxCurrent > 100 ? 'Light Item' : 'No Load / Broken' }}
-                </ion-badge>
-              </p>
-              <p>Run Time: {{ row.runTime }}s • Temp: {{ row.temperature }}°C</p>
-              <p *ngIf="!row.isHealthy" color="danger">
-                <ion-icon name="alert-circle"></ion-icon>
-                <strong>Motor Failed:</strong> 
-                {{ row.healthStatus === 'NO_SPIKE' ? 'No current spike → jammed or disconnected' : 'Overcurrent' }}
-              </p>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+
 
     <!-- Toggle Raw Data -->
     <ion-button 

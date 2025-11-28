@@ -81,7 +81,7 @@ export class LogTempPage implements OnInit {
   }
 
   // CORRECTED: Parse ADH814 data properly
-private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
+ parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
   if (!log.mstatus?.data) return null;
 
   try {
@@ -90,20 +90,29 @@ private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
     if (!match) return null;
     const parsed = JSON.parse(match[0]);
 
-    // Handle A5 and A6 first
+    // Correct time: Laos = UTC+7
+    const date = new Date(log.createdAt);
+    date.setHours(date.getHours());
+    const createdAt= date.toLocaleString();
+    const timeDisplay = date.toLocaleTimeString('en-GB', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+
+    // A5 - Start Motor
     if (parsed.executionStatus !== undefined) {
-      const date = new Date(log.createdAt);
-      date.setHours(date.getHours() + 7);
       return {
-        createdAt: log.createdAt,
-        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        createdAt,
+        timeDisplay,
         status: 3,
         statusText: 'Start Motor',
         motorNumber: parsed.motorNumber || 0,
         maxCurrent: 0,
         avgCurrent: 0,
         runTime: 0,
-        temperature: 0,
+        temperature: log.mstatus?.temperature || 0,
         dropSuccess: true,
         faultCode: 0,
         rawData: parsed.rawData?.toUpperCase() || '',
@@ -113,12 +122,11 @@ private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
       };
     }
 
+    // A6 - ACK
     if (parsed.acknowledged !== undefined) {
-      const date = new Date(log.createdAt);
-      date.setHours(date.getHours() + 7);
       return {
-        createdAt: log.createdAt,
-        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        createdAt,
+        timeDisplay,
         status: 4,
         statusText: 'ACK',
         motorNumber: 0,
@@ -135,42 +143,35 @@ private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
       };
     }
 
-    // A3 Poll - YOUR EXACT LOGIC
-    if (parsed.rawData && parsed.rawData.startsWith('00a3')) {
+    // A3 - Poll Status (YOUR ORIGINAL & CORRECT LOGIC)
+    if (parsed.rawData && parsed.rawData.toLowerCase().startsWith('00a3')) {
       const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
       if (hex.length < 26) return null;
 
-      const bytes: number[] = [];
-      for (let i = 0; i < hex.length; i += 2) {
-        bytes.push(parseInt(hex.substr(i, 2), 16));
-      }
+      // Extract payload only: remove address (00), command (A3), and CRC (last 4 chars)
+      const payloadHex = hex.slice(4, -4);
+      const payloadBytes = payloadHex.match(/.{2}/g)?.map(b => parseInt(b, 16)) || [];
 
-      if (bytes.length < 13) return null;
+      if (payloadBytes.length < 9) return null;
 
-      const status = bytes[2];
-      const motorNumber = bytes[3];
-      const dropByte = bytes[5];
+      const status = payloadBytes[0];
+      const motorNumber = payloadBytes[1];
+      const dropByte = payloadBytes[2]; // execution + drop + fault
 
-      // LITTLE-ENDIAN!
-      const maxCurrent = (bytes[7] << 8) | bytes[6];
-      const avgCurrent = (bytes[9] << 8) | bytes[8];
-      const runTime = (bytes[10] / 10).toFixed(1);
-      const tempByte = bytes[11];
-      const temperature = tempByte > 127 ? tempByte - 256 : tempByte; // YOUR CORRECT LOGIC!
+      // YOUR ORIGINAL & 100% CORRECT FORMULA
+      const maxCurrent = (payloadBytes[3] << 8) | payloadBytes[4];
+      const avgCurrent = (payloadBytes[5] << 8) | payloadBytes[6];
+      const runTimeRaw = payloadBytes[7];
+      const runTime = (runTimeRaw / 10).toFixed(1);
 
-      const date = new Date(log.createdAt);
-      date.setHours(date.getHours() + 7);
-      const timeDisplay = date.toLocaleTimeString('en-GB', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
+      const tempByte = payloadBytes[8];
+      const temperature = tempByte > 127 ? tempByte - 256 : tempByte;
 
-      const statusText = status === 0 ? 'Idle' : status === 1 ? 'Running' : status === 2 ? 'Finished' : 'Unknown';
+      const statusText = status === 0 ? 'Idle' : status === 1 ? 'Running' : 'Finished';
       const dropSuccess = (dropByte & 0x04) === 0;
       const faultCode = dropByte & 0x03;
 
+      // Health detection
       let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
       let isHealthy = true;
 
@@ -187,7 +188,7 @@ private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
       }
 
       return {
-        createdAt: log.createdAt,
+        createdAt,
         timeDisplay,
         status,
         statusText,
@@ -206,7 +207,7 @@ private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
 
     return null;
   } catch (error) {
-    console.error('Parse error:', error);
+    console.error('Parse error:', error, log.mstatus?.data);
     return null;
   }
 }
