@@ -1,4 +1,3 @@
-// log-temp.page.ts — FULLY UPDATED & WORKING
 import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import axios from 'axios';
 import { LoadingController, ToastController } from '@ionic/angular';
@@ -11,7 +10,7 @@ interface MotorRunLog {
   machineId: string;
   mstatus: {
     device: string;
-    temperature: number | null;
+    temperature: number;
     data: string;
   } | null;
   description: string | null;
@@ -21,19 +20,20 @@ interface MotorRunLog {
 interface ParsedMotorData {
   createdAt: string;
   timeDisplay: string;
-  device: string;
+  status: number;
   statusText: string;
   motorNumber?: number;
   maxCurrent?: number;
   avgCurrent?: number;
   runTime?: number;
-  temperature?: number;
+  temperature: number;
   dropSuccess?: boolean;
   faultCode?: number;
   rawData: string;
-  healthStatus?: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' | 'VMC_DISPENSING' | 'VMC_SUCCESS' | 'VMC_FAILED';
   isHealthy?: boolean;
-  isVMC?: boolean;
+  healthStatus?: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN';
+  deviceType: 'ADH814' | 'VMC' | 'OTHER';
+  vmcStatus?: string;  // For VMC simple status
 }
 
 @Component({
@@ -42,6 +42,7 @@ interface ParsedMotorData {
   styleUrls: ['./log-temp.page.scss']
 })
 export class LogTempPage implements OnInit {
+
   @Input() machineId: string = '';
 
   fromDate!: string;
@@ -70,57 +71,55 @@ export class LogTempPage implements OnInit {
   }
 
   private async showToast(message: string, color: string = 'primary') {
-    const toast = await this.toastCtrl.create({ message, color, duration: 3000, position: 'top' });
+    const toast = await this.toastCtrl.create({
+      message,
+      color,
+      duration: 3000,
+      position: 'top'
+    });
     toast.present();
   }
 
-  // MAIN PARSER — SUPPORTS ADH814 + VMC + UNKNOWN
-  private parseLog(log: MotorRunLog): ParsedMotorData | null {
+  private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
     if (!log.mstatus?.data) return null;
-
-    const date = new Date(log.createdAt);
-    date.setHours(date.getHours() + 7); // Laos = UTC+7
-    const timeDisplay = date.toLocaleTimeString('en-GB', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-
-    const createdAt = date.toLocaleString('en-GB', {
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
-
-    const device = log.mstatus.device || 'Unknown';
 
     try {
       const jsonStr = log.mstatus.data;
       const match = jsonStr.match(/\{.*\}/);
-      if (!match) return { createdAt, timeDisplay, device, statusText: 'Raw Data', rawData: jsonStr };
-
+      if (!match) return null;
       const parsed = JSON.parse(match[0]);
 
-      // A5 / A6 (ADH814)
-      if (parsed.executionStatus !== undefined) {
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      const timeDisplay = date.toLocaleTimeString('en-GB', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      // A5 / A6
+      if (parsed.executionStatus !== undefined || parsed.acknowledged !== undefined) {
         return {
-          createdAt, timeDisplay, device,
-          statusText: parsed.executionStatus === 0 ? 'Motor Started' : 'Motor Failed',
+          createdAt: log.createdAt,
+          timeDisplay,
+          status: parsed.executionStatus !== undefined ? 3 : 4,
+          statusText: parsed.executionStatus !== undefined ? 'Start Motor' : 'ACK',
           motorNumber: parsed.motorNumber || 0,
+          maxCurrent: 0,
+          avgCurrent: 0,
+          runTime: 0,
+          temperature: log.mstatus?.temperature || 0,
+          dropSuccess: true,
+          faultCode: 0,
           rawData: parsed.rawData?.toUpperCase() || '',
-          healthStatus: parsed.executionStatus === 0 ? 'OK' : 'UNKNOWN'
-        };
-      }
-      if (parsed.acknowledged !== undefined) {
-        return {
-          createdAt, timeDisplay, device,
-          statusText: 'Result Acknowledged',
-          rawData: parsed.rawData?.toUpperCase() || '',
-          healthStatus: 'OK'
+          isHealthy: true,
+          healthStatus: 'OK',
+          deviceType: 'ADH814'
         };
       }
 
-      // ADH814 A3 Poll
+      // A3 - FULL MOTOR DIAGNOSTICS
       if (parsed.rawData && parsed.rawData.toLowerCase().startsWith('00a3')) {
         const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
         if (hex.length < 26) return null;
@@ -142,7 +141,7 @@ export class LogTempPage implements OnInit {
         const dropSuccess = (dropByte & 0x04) === 0;
         const faultCode = dropByte & 0x03;
 
-        let healthStatus: ParsedMotorData['healthStatus'] = 'UNKNOWN';
+        let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
         let isHealthy = true;
 
         if (status === 2) {
@@ -158,7 +157,9 @@ export class LogTempPage implements OnInit {
         }
 
         return {
-          createdAt, timeDisplay, device,
+          createdAt: log.createdAt,
+          timeDisplay,
+          status,
           statusText,
           motorNumber,
           maxCurrent,
@@ -169,50 +170,123 @@ export class LogTempPage implements OnInit {
           faultCode,
           rawData: parsed.rawData.toUpperCase(),
           isHealthy,
-          healthStatus
-        };
-      }
-
-      // VMC PROTOCOL
-      if (parsed.rawData && parsed.rawData.toLowerCase().startsWith('fafb04')) {
-        const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '').toLowerCase();
-        const statusByte = hex.substring(10, 12);
-
-        let statusText = '';
-        let healthStatus: ParsedMotorData['healthStatus'] = 'UNKNOWN';
-        let isHealthy = true;
-
-        if (statusByte === '01') { statusText = 'VMC: Dispensing'; healthStatus = 'VMC_DISPENSING'; }
-        else if (statusByte === '02') { statusText = 'VMC: Dispensed'; healthStatus = 'VMC_SUCCESS'; }
-        else if (statusByte === '03') { statusText = 'VMC: Failed'; healthStatus = 'VMC_FAILED'; isHealthy = false; }
-
-        return {
-          createdAt, timeDisplay, device,
-          statusText,
-          rawData: parsed.rawData.toUpperCase(),
-          isHealthy,
           healthStatus,
-          isVMC: true
+          deviceType: 'ADH814'
         };
       }
 
-      // Unknown / fallback
-      return {
-        createdAt, timeDisplay, device,
-        statusText: 'Unknown Event',
-        rawData: jsonStr,
-        healthStatus: 'UNKNOWN'
-      };
-
+      return null;
     } catch (error) {
       console.error('Parse error:', error);
+      return null;
+    }
+  }
+
+  // VMC: Simple status only
+  private parseVMCData(log: MotorRunLog): ParsedMotorData | null {
+    if (!log.mstatus?.data) return null;
+
+    try {
+      const jsonStr = log.mstatus.data;
+      const match = jsonStr.match(/\{.*\}/);
+      if (!match) return null;
+      const parsed = JSON.parse(match[0]);
+
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      const timeDisplay = date.toLocaleTimeString('en-GB', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      let statusText = 'VMC Online';
+      if (parsed.rawData) {
+        const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '').toLowerCase();
+        if (hex.startsWith('fafb04')) {
+          const code = hex.substring(10, 12);
+          statusText = code === '01' ? 'VMC Dispensing' :
+                       code === '02' ? 'VMC Dispensed' :
+                       code === '03' ? 'VMC Failed' : 'VMC Status';
+        }
+      }
+
       return {
-        createdAt, timeDisplay, device,
-        statusText: 'Parse Error',
-        rawData: log.mstatus.data,
-        healthStatus: 'UNKNOWN'
+        createdAt: log.createdAt,
+        timeDisplay,
+        status: 10,
+        statusText,
+        motorNumber: 0,
+        maxCurrent: 0,
+        avgCurrent: 0,
+        runTime: 0,
+        temperature: log.mstatus?.temperature || 0,
+        dropSuccess: true,
+        faultCode: 0,
+        rawData: parsed.rawData?.toUpperCase() || '',
+        isHealthy: true,
+        healthStatus: 'OK',
+        deviceType: 'VMC',
+        vmcStatus: statusText
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  // Main parser — detects device type
+  private parseLog(log: MotorRunLog): ParsedMotorData | null {
+    if (!log.mstatus) {
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      return {
+        createdAt: log.createdAt,
+        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        status: 99,
+        statusText: 'Device Online',
+        motorNumber: 0,
+        maxCurrent: 0,
+        avgCurrent: 0,
+        runTime: 0,
+        temperature: log.mstatus?.temperature || 0,
+        dropSuccess: true,
+        faultCode: 0,
+        rawData: '',
+        isHealthy: true,
+        healthStatus: 'OK',
+        deviceType: 'OTHER'
       };
     }
+
+    if (log.mstatus.device === 'ADH814') {
+      return this.parseADH814Data(log);
+    }
+
+    if (log.mstatus.device?.includes('VMC') || log.mstatus.data?.includes('fafb')) {
+      return this.parseVMCData(log);
+    }
+
+    // Fallback: just show temperature
+    const date = new Date(log.createdAt);
+    date.setHours(date.getHours() + 7);
+    return {
+      createdAt: log.createdAt,
+      timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      status: 99,
+      statusText: 'Device Online',
+      motorNumber: 0,
+      maxCurrent: 0,
+      avgCurrent: 0,
+      runTime: 0,
+      temperature: log.mstatus.temperature || 0,
+      dropSuccess: true,
+      faultCode: 0,
+      rawData: log.mstatus.data || '',
+      isHealthy: true,
+      healthStatus: 'OK',
+      deviceType: 'OTHER'
+    };
   }
 
   async fetchReport() {
@@ -222,7 +296,7 @@ export class LogTempPage implements OnInit {
     }
 
     const loading = await this.loadingCtrl.create({
-      message: 'Loading machine logs...',
+      message: 'Loading device logs...',
       spinner: 'crescent'
     });
     await loading.present();
@@ -267,13 +341,38 @@ export class LogTempPage implements OnInit {
     }
   }
 
-  getHealthColor(health?: string): string {
+  // Keep your existing getters and methods...
+  get finishedRuns() { return this.parsedRows.filter(r => r.deviceType === 'ADH814' && r.status === 2); }
+  get totalFinishedRuns() { return this.finishedRuns.length; }
+  get healthyRuns() { return this.finishedRuns.filter(r => r.isHealthy).length; }
+  get failedRuns() { return this.totalFinishedRuns - this.healthyRuns; }
+  get successRate() { return this.totalFinishedRuns > 0 ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100) : 0; }
+
+  getStatusColor(status: number): string {
+    if (status === 99) return 'medium';
+    if (status === 10) return 'tertiary';
+    switch (status) {
+      case 0: return 'medium';
+      case 1: return 'warning';
+      case 2: return 'success';
+      case 3: return 'primary';
+      case 4: return 'secondary';
+      default: return 'dark';
+    }
+  }
+
+  getHealthColor(health: any): string {
+    if (!health) return 'medium';
     switch (health) {
-      case 'OK': case 'VMC_SUCCESS': return 'success';
-      case 'NO_SPIKE': case 'VMC_FAILED': return 'danger';
-      case 'OVERCURRENT': case 'VMC_DISPENSING': return 'warning';
+      case 'OK': return 'success';
+      case 'NO_SPIKE': return 'danger';
+      case 'OVERCURRENT': return 'warning';
       default: return 'medium';
     }
+  }
+
+  getMotorDisplay(num: number): string {
+    return `#${num.toString().padStart(2, '0')}`;
   }
 
   toggleRawData() {
