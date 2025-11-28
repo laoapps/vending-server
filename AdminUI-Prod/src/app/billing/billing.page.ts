@@ -24,155 +24,241 @@ export class BillingPage implements OnInit {
     this.token = localStorage.getItem('lva_token');
   }
 
-  exportBankExcel(bankInMyData: any) {
-    const data = bankInMyData.map((item: any) => ({
+  // exportBankExcel(bankInMyData: any) {
+  //   const data = bankInMyData.map((item: any) => ({
+  //     "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+  //     "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
+  //     "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+  //     "ວັນທີ": item["ວັນທີ"].toString()
+  //   }));
+
+  //   // 1) สร้าง worksheet
+  //   const ws = XLSX.utils.json_to_sheet(data);
+
+  //   // 2) สร้าง workbook
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+  //   // 3) Convert → binary
+  //   const excelBuffer = XLSX.write(wb, {
+  //     bookType: 'xlsx',
+  //     type: 'array'
+  //   });
+
+  //   // 4) Download
+  //   const blob = new Blob([excelBuffer], {
+  //     type: "application/octet-stream"
+  //   });
+
+  //   const filename = `ບິນທັງໝົດທີ່ຕົງກັນ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+  //   saveAs(blob, filename);
+  // }
+
+
+  mapBankInMy(data: any[]) {
+    return data.map(item => ({
       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
       "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
       "ວັນທີ": item["ວັນທີ"].toString()
     }));
-
-    // 1) สร้าง worksheet
-    const ws = XLSX.utils.json_to_sheet(data);
-
-    // 2) สร้าง workbook
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-    // 3) Convert → binary
-    const excelBuffer = XLSX.write(wb, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
-
-    // 4) Download
-    const blob = new Blob([excelBuffer], {
-      type: "application/octet-stream"
-    });
-
-    const filename = `ບິນທັງໝົດທີ່ຕົງກັນ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-    saveAs(blob, filename);
   }
 
 
-  exportMyNotInBankNotPaid(bankInMyData: any) {
-    const data = bankInMyData.map((item: any) => ({
+
+  // exportMyNotInBankNotPaid(bankInMyData: any) {
+  //   const data = bankInMyData.map((item: any) => ({
+  //     "ເລກທູລະກຳ": item["transactionID"],
+  //     "ຈຳນວນເງິນ": item["totalvalue"],
+  //     "ຊ່ອງທາງ": item["paymentref"],
+  //     "ວັນທີ": item["createdAt"].toString()
+  //   }));
+
+  //   // 1) สร้าง worksheet
+  //   const ws = XLSX.utils.json_to_sheet(data);
+
+  //   // 2) สร้าง workbook
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+  //   // 3) Convert → binary
+  //   const excelBuffer = XLSX.write(wb, {
+  //     bookType: 'xlsx',
+  //     type: 'array'
+  //   });
+
+  //   // 4) Download
+  //   const blob = new Blob([excelBuffer], {
+  //     type: "application/octet-stream"
+  //   });
+
+  //   const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ບໍ່ໄດ້ຈ່າຍ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+  //   saveAs(blob, filename);
+  // }
+
+  mapMyNotInBankNotPaid(data: any[]) {
+    return data.map(item => ({
       "ເລກທູລະກຳ": item["transactionID"],
       "ຈຳນວນເງິນ": item["totalvalue"],
       "ຊ່ອງທາງ": item["paymentref"],
       "ວັນທີ": item["createdAt"].toString()
     }));
-
-    // 1) สร้าง worksheet
-    const ws = XLSX.utils.json_to_sheet(data);
-
-    // 2) สร้าง workbook
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-    // 3) Convert → binary
-    const excelBuffer = XLSX.write(wb, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
-
-    // 4) Download
-    const blob = new Blob([excelBuffer], {
-      type: "application/octet-stream"
-    });
-
-    const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ບໍ່ໄດ້ຈ່າຍ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-    saveAs(blob, filename);
   }
 
-  exportMyNotInBankPaid(bankInMyData: any) {
-    const data = bankInMyData.map((item: any) => ({
+
+  // exportMyNotInBankPaid(bankInMyData: any) {
+  //   const data = bankInMyData.map((item: any) => ({
+  //     "ເລກທູລະກຳ": item["billNumber"],
+  //     "ຈຳນວນເງິນ": item["txnAmount"],
+  //     "ຊ່ອງທາງ": item["refNo"],
+  //     "ວັນທີ": item["txnDateTime"].toString()
+  //   }));
+
+  //   // 1) สร้าง worksheet
+  //   const ws = XLSX.utils.json_to_sheet(data);
+
+  //   // 2) สร้าง workbook
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+  //   // 3) Convert → binary
+  //   const excelBuffer = XLSX.write(wb, {
+  //     bookType: 'xlsx',
+  //     type: 'array'
+  //   });
+
+  //   // 4) Download
+  //   const blob = new Blob([excelBuffer], {
+  //     type: "application/octet-stream"
+  //   });
+
+  //   const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ຈ່າຍແລ້ວ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+  //   saveAs(blob, filename);
+  // }
+
+
+  mapMyNotInBankPaid(data: any[]) {
+    return data.map(item => ({
       "ເລກທູລະກຳ": item["billNumber"],
       "ຈຳນວນເງິນ": item["txnAmount"],
       "ຊ່ອງທາງ": item["refNo"],
       "ວັນທີ": item["txnDateTime"].toString()
     }));
-
-    // 1) สร้าง worksheet
-    const ws = XLSX.utils.json_to_sheet(data);
-
-    // 2) สร้าง workbook
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-    // 3) Convert → binary
-    const excelBuffer = XLSX.write(wb, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
-
-    // 4) Download
-    const blob = new Blob([excelBuffer], {
-      type: "application/octet-stream"
-    });
-
-    const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ຈ່າຍແລ້ວ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-    saveAs(blob, filename);
   }
 
-  exportMyBankNoServer(bankInMyData: any) {
-    const data = bankInMyData.map((item: any) => ({
+
+  // exportMyBankNoServer(bankInMyData: any) {
+  //   const data = bankInMyData.map((item: any) => ({
+  //     "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+  //     "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
+  //     "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+  //     "ວັນທີ": item["ວັນທີ"].toString()
+  //   }));
+
+  //   // 1) สร้าง worksheet
+  //   const ws = XLSX.utils.json_to_sheet(data);
+
+  //   // 2) สร้าง workbook
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+  //   // 3) Convert → binary
+  //   const excelBuffer = XLSX.write(wb, {
+  //     bookType: 'xlsx',
+  //     type: 'array'
+  //   });
+
+  //   // 4) Download
+  //   const blob = new Blob([excelBuffer], {
+  //     type: "application/octet-stream"
+  //   });
+  //   const filename = `ບິນທີ່ມີໃນທະນາຄານແລະບໍ່ມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+  //   saveAs(blob, filename);
+  // }
+
+  mapMyBankNoServer(data: any[]) {
+    return data.map(item => ({
       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
       "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
       "ວັນທີ": item["ວັນທີ"].toString()
     }));
-
-    // 1) สร้าง worksheet
-    const ws = XLSX.utils.json_to_sheet(data);
-
-    // 2) สร้าง workbook
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-    // 3) Convert → binary
-    const excelBuffer = XLSX.write(wb, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
-
-    // 4) Download
-    const blob = new Blob([excelBuffer], {
-      type: "application/octet-stream"
-    });
-    const filename = `ບິນທີ່ມີໃນທະນາຄານແລະບໍ່ມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-    saveAs(blob, filename);
   }
 
-  exportMyBankServer(bankInMyData: any) {
-    const data = bankInMyData.map((item: any) => ({
+
+  // exportMyBankServer(bankInMyData: any) {
+  //   const data = bankInMyData.map((item: any) => ({
+  //     "ເລກທູລະກຳ": item["transactionID"],
+  //     "ຈຳນວນເງິນ": item["totalvalue"],
+  //     "ຊ່ອງທາງ": item["paymentref"],
+  //     "ວັນທີ": item["createdAt"].toString()
+  //   }));
+
+  //   // 1) สร้าง worksheet
+  //   const ws = XLSX.utils.json_to_sheet(data);
+
+  //   // 2) สร้าง workbook
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
+
+  //   // 3) Convert → binary
+  //   const excelBuffer = XLSX.write(wb, {
+  //     bookType: 'xlsx',
+  //     type: 'array'
+  //   });
+
+  //   // 4) Download
+  //   const blob = new Blob([excelBuffer], {
+  //     type: "application/octet-stream"
+  //   });
+
+  //   const filename = `ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+  //   saveAs(blob, filename);
+  // }
+
+  mapMyBankServer(data: any[]) {
+    return data.map(item => ({
       "ເລກທູລະກຳ": item["transactionID"],
       "ຈຳນວນເງິນ": item["totalvalue"],
       "ຊ່ອງທາງ": item["paymentref"],
       "ວັນທີ": item["createdAt"].toString()
     }));
+  }
 
-    // 1) สร้าง worksheet
-    const ws = XLSX.utils.json_to_sheet(data);
 
-    // 2) สร้าง workbook
+  exportAllSheets(
+    bankInMy,               // ชุด 1
+    myNotInBankNotPaid,     // ชุด 2
+    myNotInBankPaid,        // ชุด 3
+    myBankNoServer,         // ชุด 4
+    myBankServer            // ชุด 5
+  ) {
+    // 1) เตรียม workbook
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
 
-    // 3) Convert → binary
-    const excelBuffer = XLSX.write(wb, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
+    // 2) แปลงข้อมูลแต่ละชุดเป็น sheet
+    const sheet1 = XLSX.utils.json_to_sheet(this.mapBankInMy(bankInMy));
+    const sheet2 = XLSX.utils.json_to_sheet(this.mapMyNotInBankNotPaid(myNotInBankNotPaid));
+    const sheet3 = XLSX.utils.json_to_sheet(this.mapMyNotInBankPaid(myNotInBankPaid));
+    const sheet4 = XLSX.utils.json_to_sheet(this.mapMyBankNoServer(myBankNoServer));
+    const sheet5 = XLSX.utils.json_to_sheet(this.mapMyBankServer(myBankServer));
 
-    // 4) Download
-    const blob = new Blob([excelBuffer], {
-      type: "application/octet-stream"
-    });
+    // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
+    XLSX.utils.book_append_sheet(wb, sheet1, "ບິນທັງໝົດທີ່ຕົງກັນ");
+    XLSX.utils.book_append_sheet(wb, sheet2, "ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ບໍ່ໄດ້ຈ່າຍ");
+    XLSX.utils.book_append_sheet(wb, sheet3, "ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ຈ່າຍແລ້ວ");
+    XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ມີໃນທະນາຄານບໍ່ມີໃນserver");
+    XLSX.utils.book_append_sheet(wb, sheet5, "ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver");
 
-    const filename = `ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+    // 4) สร้างไฟล์ Excel
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+
+    // 5) ชื่อไฟล์
+    const filename = `ລາຍງານທັງໝົດ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
     saveAs(blob, filename);
   }
+
 
   // ✅ เมื่อเลือกไฟล์ Excel
   async onFileSelected(event: any) {
@@ -245,6 +331,16 @@ export class BillingPage implements OnInit {
         token: this.token,
       };
 
+      const paramsData = {
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        machineId: this.machineId,
+        // ownerUuid: this.ownerUuid,
+        token: this.token
+      }
+
+      const billNotPaid = await this.apiService.loadVendingMachineBillNotPaid(paramsData).toPromise();
+
       const dataServer = await this.apiService
         .loadVendingMachineSaleBillReport(data)
         .toPromise();
@@ -258,7 +354,7 @@ export class BillingPage implements OnInit {
       // 1. bankTrand ที่มีใน mytrand
       const bankInMy = this.dataExcel.filter(b => myIds.has(b["ເລກທູລະກຳ"]));
       console.log('-----> 1. bankTrand ที่มีใน mytrand :', bankInMy);
-      this.exportBankExcel(bankInMy);
+      // this.exportBankExcel(bankInMy);
 
 
       // 2. bankTrand ที่ไม่มีใน mytrand
@@ -312,16 +408,18 @@ export class BillingPage implements OnInit {
         }
       }
       console.log('-----> 5 myNotInBankNotPaid :', myNotInBankNotPaid);
-      this.exportMyNotInBankNotPaid(myNotInBankNotPaid);
+      // this.exportMyNotInBankNotPaid(myNotInBankNotPaid);
       console.log('-----> 6 myNotInBankPaid :', myNotInBankPaid);
-      this.exportMyNotInBankPaid(myNotInBankPaid);
+      // this.exportMyNotInBankPaid(myNotInBankPaid);
 
       console.log('-----> 7 myBankNoServer :', myBankNoServer);
-      this.exportMyBankNoServer(myBankNoServer);
+      // this.exportMyBankNoServer(myBankNoServer);
 
       console.log('-----> 8 myBankServer :', myBankServer);
-      this.exportMyBankServer(myBankServer);
+      // this.exportMyBankServer(myBankServer);
 
+
+      this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer);
 
 
       // 4. mytrand ที่ไม่มีใน bankTrand

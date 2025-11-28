@@ -4252,12 +4252,15 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/reportBillNotPaid',
                 this.checkSuperAdmin,
-
                 this.checkAdmin,
+
                 async (req, res) => {
                     try {
-                        const ownerUuid = req.body.ownerUuid;
+                        let ownerUuid = req.body.ownerUuid;
                         const machineId = req.body.machineId;
+                        if (!ownerUuid) {
+                            ownerUuid = res.locals["ownerUuid"];
+                        }
                         const data = req.body;
 
                         if (!ownerUuid || !machineId) {
