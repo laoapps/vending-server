@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 import { ApiService } from '../services/api.service';
@@ -18,7 +18,7 @@ import { ReportClientPage } from '../report-client/report-client.page';
 import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
 import { SaleReportPage } from '../sale/sale-report/sale-report.page';
 import { StockReportPage } from '../sale/stock-report/stock-report.page';
-
+import { IonContent } from '@ionic/angular'; // <-- ADD THIS
 interface MachineData {
   machineId: string;
   owner: string;
@@ -40,12 +40,17 @@ interface MachineData {
   styleUrls: ['./onlinemachines.page.scss'],
 })
 export class OnlinemachinesPage implements OnInit, OnDestroy {
+  @ViewChild(IonContent, { static: false }) content!: IonContent; // <-- ADD THIS
+
   onlineMachines: MachineData[] = [];
   brokenMachines: MachineData[] = [];
   private allMachinesUrl = `${environment.url}/getAllMachines`;
   private onlineMachinesUrl = `${environment.url}/getOnlineMachines`;
-  private intervalId: NodeJS.Timeout;
-  showAllSecrets: boolean = true; // Global toggle for all secrets
+  private intervalId!: NodeJS.Timeout;
+
+  showAllSecrets = true;
+  isRefreshing = false;        // For flash effect
+  flashClass = '';             // 'flash' class trigger
 
   constructor(public apiService: ApiService) { }
 
@@ -55,52 +60,57 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    clearInterval(this.intervalId);
+    if (this.intervalId) clearInterval(this.intervalId);
   }
 
+  // Manual refresh with flash + scroll to top
   async refreshData() {
+    this.isRefreshing = true;
     await this.loadData();
+    this.triggerFlash();
+    this.scrollToTop();
+    setTimeout(() => this.isRefreshing = false, 600);
   }
 
   private async loadData() {
+    const previousCount = this.onlineMachines.length + this.brokenMachines.length;
+
     try {
       const token = localStorage.getItem('token');
       const shopPhonenumber = '';
       const secret = localStorage.getItem('secretLocal');
       const payload = { secret, shopPhonenumber, token };
 
-      const [allMachinesResponse, onlineMachinesResponse] = await Promise.all([
+      const [allRes, onlineRes] = await Promise.all([
         axios.post(this.allMachinesUrl, payload),
         axios.post(this.onlineMachinesUrl, payload),
       ]);
 
-      const machines: MachineData[] = [];
-      const onlineMachinesMap = new Map<string, any>();
+      const onlineMap = new Map<string, any>();
+      onlineRes.data.data
+        ?.filter((item: any) => item?.machine)
+        .forEach((item: any) => onlineMap.set(item.machine.machineId, item));
+
       const now = new Date();
+      const machines: MachineData[] = [];
 
-      onlineMachinesResponse.data.data
-        ?.filter((item: any) => item && item.machine)
-        .forEach((item: any) => {
-          onlineMachinesMap.set(item.machine.machineId, item);
-        });
-
-      allMachinesResponse.data.data.forEach((machine: any) => {
-        const onlineData = onlineMachinesMap.get(machine.machineId);
+      allRes.data.data.forEach((machine: any) => {
+        const onlineData = onlineMap.get(machine.machineId);
         let status: 'Online' | 'Broken' = 'Broken';
         let lastUpdate: string | undefined;
         let temperature: number | undefined;
         let device = 'Unknown';
         let data = '{}';
 
-        if (onlineData && onlineData.status && onlineData.status.t) {
-          const lastUpdateTime = new Date(onlineData.status.t);
-          const minutesDiff = (now.getTime() - lastUpdateTime.getTime()) / 1000 / 60;
-          if (minutesDiff <= 5) {
+        if (onlineData?.status?.t) {
+          const lastTime = new Date(onlineData.status.t);
+          const diffMin = (now.getTime() - lastTime.getTime()) / 60000;
+          if (diffMin <= 5) {
             status = 'Online';
             lastUpdate = onlineData.status.t;
-            temperature = onlineData.status.b.temperature;
-            device = onlineData.status.b.device || 'Unknown';
-            data = JSON.stringify(onlineData.status.b.data || {}) || '{}';
+            temperature = onlineData.status.b?.temperature;
+            device = onlineData.status.b?.device ?? 'Unknown';
+            data = JSON.stringify(onlineData.status.b?.data || {});
           }
         }
 
@@ -117,34 +127,30 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           data,
           otp: machine.otp || 'N/A',
           settings: d || {},
-          showSecrets: true, // Default to showing secrets
+          showSecrets: this.showAllSecrets,
           ownerUuid: machine.ownerUuid
         });
       });
 
       machines.sort((a, b) => a.machineId.localeCompare(b.machineId));
-      this.onlineMachines = machines.filter((m) => m.status === 'Online');
-      this.brokenMachines = machines.filter((m) => m.status === 'Broken');
+
+      this.onlineMachines = machines.filter(m => m.status === 'Online');
+      this.brokenMachines = machines.filter(m => m.status === 'Broken');
+
+      // Trigger flash only if count changed (new data!)
+      const newCount = this.onlineMachines.length + this.brokenMachines.length;
+      if (newCount !== previousCount && !this.isRefreshing) {
+        this.triggerFlash();
+      }
+
     } catch (err) {
-      console.error('Error loading data:', err);
+      console.error('Load error:', err);
       this.onlineMachines = [];
       this.brokenMachines = [];
     }
   }
 
-  // Toggle all secrets globally
-  toggleAllSecrets() {
-    this.showAllSecrets = !this.showAllSecrets;
-    this.onlineMachines.forEach((machine) => (machine.showSecrets = this.showAllSecrets));
-    this.brokenMachines.forEach((machine) => (machine.showSecrets = this.showAllSecrets));
-    console.log(`All machines secrets visibility: ${this.showAllSecrets}`);
-  }
 
-  // Toggle secrets for a single machine
-  toggleMachineSecrets(machine: MachineData) {
-    machine.showSecrets = !machine.showSecrets;
-    console.log(`Machine ${machine.machineId} secrets visibility: ${machine.showSecrets}`);
-  }
 
   async exitApp(machineId: string) {
     try {
@@ -353,5 +359,25 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     // if (pages[i]) {
     //   this.apiService.showModal(pages[i], {}).then((r) => r?.present());
     // }
+  }
+
+  // Flash effect
+  triggerFlash() {
+    this.flashClass = 'flash';
+    setTimeout(() => this.flashClass = '', 600);
+  }
+
+  // Smooth scroll to top
+  scrollToTop() {
+    this.content?.scrollToTop(300);
+  }
+
+  toggleAllSecrets() {
+    this.showAllSecrets = !this.showAllSecrets;
+    [...this.onlineMachines, ...this.brokenMachines].forEach(m => m.showSecrets = this.showAllSecrets);
+  }
+
+  toggleMachineSecrets(machine: MachineData) {
+    machine.showSecrets = !machine.showSecrets;
   }
 }

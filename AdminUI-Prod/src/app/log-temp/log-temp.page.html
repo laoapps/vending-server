@@ -1,67 +1,195 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Temperature Logs</ion-title>
+    <ion-title>Motor Diagnostics</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-padding">
   <div class="container">
 
+    <!-- Date Range Picker -->
     <ion-card class="filter-card">
       <ion-card-header>
-        <ion-card-title>Select Date Range</ion-card-title>
+        <ion-card-title>
+          <ion-icon name="calendar-outline"></ion-icon>
+          Select Time Range
+        </ion-card-title>
       </ion-card-header>
 
       <ion-card-content>
         <ion-item>
-          <ion-label position="stacked">From Date</ion-label>
-          <ion-datetime presentation="date-time" [(ngModel)]="fromDate" displayFormat="YYYY-MM-DD HH:mm">
+          <ion-label position="stacked">From</ion-label>
+          <ion-datetime presentation="date-time" [(ngModel)]="fromDate" display-format="YYYY-MM-DD HH:mm"
+            hour-cycle="h23">
           </ion-datetime>
         </ion-item>
 
-        <ion-item>
-          <ion-label position="stacked">To Date</ion-label>
-          <ion-datetime presentation="date-time" [(ngModel)]="toDate" displayFormat="YYYY-MM-DD HH:mm">
+        <ion-item class="ion-margin-top">
+          <ion-label position="stacked">To</ion-label>
+          <ion-datetime presentation="date-time" [(ngModel)]="toDate" display-format="YYYY-MM-DD HH:mm"
+            hour-cycle="h23">
           </ion-datetime>
         </ion-item>
 
         <ion-button expand="block" color="primary" class="ion-margin-top" (click)="fetchReport()" [disabled]="loading">
           <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-          <span *ngIf="!loading">Process</span>
+          <span *ngIf="!loading">Analyze Motors</span>
         </ion-button>
       </ion-card-content>
     </ion-card>
 
-    <ion-card *ngIf="rows.length > 0">
+    <!-- Health Summary Card -->
+    <ion-card *ngIf="totalFinishedRuns > 0" class="summary-card">
       <ion-card-header>
-        <ion-card-title>Results ({{ rows.length }})</ion-card-title>
+        <ion-card-subtitle>Motor Run Summary</ion-card-subtitle>
+        <ion-card-title>{{ totalFinishedRuns }} Runs Completed</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-grid>
-          <ion-row class="header-row">
-            <ion-col size="3">Created At</ion-col>
-            <ion-col size="2">Device</ion-col>
-            <ion-col size="2">Temperature</ion-col>
-
-          </ion-row>
-
-          <ion-row *ngFor="let row of rows">
-            <ion-col size="3">{{row.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7'}}</ion-col>
-            <ion-col size="2">{{ row.mstatus?.device }}</ion-col>
-            <ion-col size="2">
-              <ion-badge [color]="getTemperatureColor(row.mstatus?.temperature)">
-                {{ row.mstatus?.temperature }}°C
-              </ion-badge>
+          <ion-row class="ion-align-items-center">
+            <ion-col size="4">
+              <ion-item lines="none" color="success">
+                <ion-icon name="checkmark-circle" size="large" slot="start"></ion-icon>
+                <ion-label text-center>
+                  <h2>{{ healthyRuns }}</h2>
+                  <p>Healthy</p>
+                </ion-label>
+              </ion-item>
             </ion-col>
-
+            <ion-col size="4">
+              <ion-item lines="none" [color]="failedRuns > 0 ? 'danger' : 'medium'">
+                <ion-icon [name]="failedRuns > 0 ? 'close-circle' : 'remove-circle'" size="large"
+                  slot="start"></ion-icon>
+                <ion-label text-center>
+                  <h2>{{ failedRuns }}</h2>
+                  <p>Failed</p>
+                </ion-label>
+              </ion-item>
+            </ion-col>
+            <ion-col size="4">
+              <ion-item lines="none" color="primary">
+                <ion-icon name="trending-up" size="large" slot="start"></ion-icon>
+                <ion-label text-center>
+                  <h2>{{ successRate }}%</h2>
+                  <p>Success Rate</p>
+                </ion-label>
+              </ion-item>
+            </ion-col>
           </ion-row>
         </ion-grid>
       </ion-card-content>
     </ion-card>
 
-    <div *ngIf="!loading && rows.length === 0" class="empty-state ion-text-center ion-padding">
-      <ion-icon name="thermometer-outline" size="large" color="medium"></ion-icon>
-      <p>No temperature data found</p>
+    <!-- Main Table -->
+    <ion-card *ngIf="parsedRows.length > 0">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="hardware-chip-outline"></ion-icon>
+          Motor Run Details ({{ parsedRows.length }} events)
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content class="ion-no-padding">
+
+        <!-- Header -->
+        <ion-item lines="none" class="header-row">
+          <ion-grid>
+            <ion-row class="ion-text-center">
+              <ion-col size="2.2"><strong>Time</strong></ion-col>
+              <ion-col size="1.3"><strong>Motor</strong></ion-col>
+              <ion-col size="1.8"><strong>Status</strong></ion-col>
+              <ion-col size="1.6"><strong>Max I</strong></ion-col>
+              <ion-col size="1.4"><strong>Avg I</strong></ion-col>
+              <ion-col size="1.1"><strong>Time</strong></ion-col>
+              <ion-col size="0.9"><strong>Temp</strong></ion-col>
+              <ion-col size="0.9"><strong>Drop</strong></ion-col>
+              <ion-col size="1.3"><strong>Health</strong></ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-item>
+
+        <!-- Rows -->
+        <ion-item *ngFor="let row of parsedRows" [color]="getStatusColor(row.status)">
+          <ion-grid>
+            <ion-row class="ion-align-items-center ion-text-center">
+              <ion-col size="2.2">
+                <div class="text-xs font-medium">{{ row.timeDisplay }}</div>
+              </ion-col>
+              <ion-col size="1.3">
+                <strong class="text-lg">{{ getMotorDisplay(row.motorNumber) }}</strong>
+              </ion-col>
+              <ion-col size="1.8">
+                <ion-badge [color]="getStatusColor(row.status)">
+                  {{ row.statusText }}
+                </ion-badge>
+              </ion-col>
+              <ion-col size="1.6">
+                <span [class.text-danger]="row.maxCurrent < 2000 && row.status === 2"
+                  [class.font-bold]="row.maxCurrent < 2000 && row.status === 2">
+                  {{ row.maxCurrent }} mA
+                </span>
+              </ion-col>
+              <ion-col size="1.4">{{ row.avgCurrent }} mA</ion-col>
+              <ion-col size="1.1">{{ row.runTime }}s</ion-col>
+              <ion-col size="0.9">
+                <span *ngIf="row.temperature === -40" class="text-danger">DISCONNECTED</span>
+                <span *ngIf="row.temperature === 120" class="text-warning">SHORTED</span>
+                <span *ngIf="row.temperature !== -40 && row.temperature !== 120">
+                  {{ row.temperature }}°C
+                </span>
+              </ion-col>
+              <ion-col size="0.9">
+                <ion-icon [name]="row.dropSuccess ? 'checkmark-circle' : 'close-circle'"
+                  [color]="row.dropSuccess ? 'success' : 'danger'" size="large">
+                </ion-icon>
+              </ion-col>
+              <ion-col size="1.3">
+                <ion-badge [color]="getHealthColor(row.healthStatus)">
+                  {{ row.healthStatus }}
+                </ion-badge>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-item>
+
+        <!-- Raw Data Toggle -->
+        <ion-item lines="none" button (click)="toggleRawData()">
+          <ion-icon [name]="showRawData ? 'eye-off-outline' : 'eye-outline'" slot="start"></ion-icon>
+          <ion-label>{{ showRawData ? 'Hide' : 'Show' }} Raw Data ({{ parsedRows.length }})</ion-label>
+        </ion-item>
+
+        <!-- Raw Data List -->
+        <div *ngIf="showRawData" class="ion-padding bg-light">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title class="text-sm">Raw ADH814 Protocol</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="inset">
+                <ion-item *ngFor="let row of parsedRows">
+                  <ion-label class="ion-text-wrap">
+                    <p class="text-xs">
+                      {{ row.timeDisplay }} — {{ row.statusText }}
+                      <strong *ngIf="row.motorNumber">Motor {{ getMotorDisplay(row.motorNumber) }}</strong>
+                    </p>
+                    <p class="font-mono text-xs bg-dark text-light px-2 py-1 rounded">
+                      {{ row.rawData }}
+                    </p>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && parsedRows.length === 0" class="empty-state ion-text-center ion-padding">
+      <ion-icon name="search-outline" size="large" color="medium"></ion-icon>
+      <h3>No Motor Data Found</h3>
+      <p>Select a time range and tap "Analyze Motors"</p>
     </div>
 
   </div>

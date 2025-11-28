@@ -3,7 +3,7 @@ import axios from 'axios';
 import { LoadingController, ToastController } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
 
-interface TemperatureRow {
+interface MotorRunLog {
   id: number;
   uuid: string;
   createdAt: string;
@@ -11,9 +11,29 @@ interface TemperatureRow {
   mstatus: {
     device: string;
     temperature: number;
+    data: string;
   } | null;
   description: string | null;
   updatedAt: string;
+}
+
+interface ParsedMotorData {
+  createdAt: string;           // Fixed: from original log
+  timeDisplay: string;         // Human readable time
+  status: number;              // 0=Idle, 1=Running, 2=Finished
+  statusText: string;
+  motorNumber: number;
+  maxCurrent: number;
+  avgCurrent: number;
+  runTime: number;             // seconds with 1 decimal
+  temperature: number;
+  dropSuccess: boolean;
+  faultCode: number;
+  rawData: string;
+  isHealthy: boolean;
+  healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN';
+  isA5?: boolean;
+  isA6?: boolean;
 }
 
 @Component({
@@ -23,13 +43,15 @@ interface TemperatureRow {
 })
 export class LogTempPage implements OnInit {
 
-  @Input() machineId: string;
+  @Input() machineId: string = '';
 
   fromDate!: string;
   toDate!: string;
 
   loading = false;
-  rows: TemperatureRow[] = [];
+  rows: MotorRunLog[] = [];
+  parsedRows: ParsedMotorData[] = [];
+  showRawData = false;
 
   constructor(
     private loadingCtrl: LoadingController,
@@ -38,7 +60,6 @@ export class LogTempPage implements OnInit {
   ) { }
 
   ngOnInit() {
-    // ตั้งค่า default (ย้อนหลัง 1 วัน)
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     this.fromDate = this.formatDateForInput(yesterday);
@@ -53,27 +74,115 @@ export class LogTempPage implements OnInit {
     const toast = await this.toastCtrl.create({
       message,
       color,
-      duration: 2500,
+      duration: 3000,
       position: 'top'
     });
     toast.present();
   }
 
+  // CORRECTED: Parse ADH814 data properly
+private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
+  if (!log.mstatus?.data) return null;
+
+  try {
+    const jsonStr = log.mstatus.data;
+    const match = jsonStr.match(/\{.*\}/);
+    if (!match) return null;
+
+    const parsed = JSON.parse(match[0]);
+    if (!parsed.rawData?.startsWith('00a3')) return null;
+
+    // Extract hex and convert to bytes
+    const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
+    if (hex.length < 26) return null;
+
+    const bytes: number[] = [];
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes.push(parseInt(hex.substr(i, 2), 16));
+    }
+
+    if (bytes.length < 13) return null;
+
+    // YOUR CORRECT PARSING LOGIC
+    const status = bytes[2];
+    const motorNumber = bytes[3];
+    const dropByte = bytes[5];
+
+    const maxCurrent = (bytes[7] << 8) | bytes[6];  // little-endian
+    const avgCurrent = (bytes[9] << 8) | bytes[8];  // little-endian
+    const runTime = bytes[10] * 0.1;
+    const tempByte = bytes[11];
+    const temperature = tempByte > 127 ? tempByte - 256 : tempByte; // ← YOUR CORRECT LOGIC!
+
+    // Time: use createdAt + 7 hours (Laos time)
+    const date = new Date(log.createdAt);
+    date.setHours(date.getHours() + 7);
+    const timeDisplay = date.toLocaleString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+
+    const statusText = status === 0 ? 'Idle' :
+                       status === 1 ? 'Running' :
+                       status === 2 ? 'Finished' : 'Unknown';
+
+    const dropSuccess = (dropByte & 0x04) === 0;
+    const faultCode = dropByte & 0x03;
+
+    let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
+    let isHealthy = true;
+
+    if (status === 2) {
+      if (maxCurrent < 2000) {
+        healthStatus = 'NO_SPIKE';
+        isHealthy = false;
+      } else if (maxCurrent > 8000) {
+        healthStatus = 'OVERCURRENT';
+        isHealthy = false;
+      } else {
+        healthStatus = 'OK';
+      }
+    }
+
+    return {
+      createdAt: log.createdAt,
+      timeDisplay,
+      status,
+      statusText,
+      motorNumber,
+      maxCurrent,
+      avgCurrent,
+      runTime: Number(runTime.toFixed(1)),
+      temperature,
+      dropSuccess,
+      faultCode,
+      rawData: parsed.rawData.toUpperCase(),
+      isHealthy,
+      healthStatus
+    };
+  } catch (error) {
+    console.error('Parse error:', error);
+    return null;
+  }
+}
+
   async fetchReport() {
     if (!this.fromDate || !this.toDate) {
-      this.showToast('Please select both From and To dates', 'warning');
+      this.showToast('Please select both dates', 'warning');
       return;
     }
 
     const loading = await this.loadingCtrl.create({
-      message: 'Loading data...',
+      message: 'Analyzing motor data...',
       spinner: 'crescent'
     });
     await loading.present();
     this.loading = true;
 
     try {
-      const token = localStorage.getItem('token'); // หรือใช้ token จาก env ก็ได้
+      const token = localStorage.getItem('token');
       const url = `${environment.url}/reportLogsTemp`;
 
       const payload = {
@@ -83,20 +192,34 @@ export class LogTempPage implements OnInit {
         token
       };
 
-      const headers = { 'Content-Type': 'application/json' };
-
-      const response = await axios.post(url, payload, { headers });
+      const response = await axios.post(url, payload, {
+        headers: { 'Content-Type': 'application/json' }
+      });
 
       if (response.data?.data?.rows?.length) {
         this.rows = response.data.data.rows;
-        this.showToast(`Loaded ${this.rows.length} records`, 'success');
+
+        this.parsedRows = this.rows
+          .map(log => this.parseADH814Data(log))
+          .filter((item): item is ParsedMotorData => item !== null)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        const finished = this.parsedRows.filter(r => r.status === 2);
+        const failed = finished.filter(r => !r.isHealthy);
+
+        if (failed.length > 0) {
+          this.showToast(`${failed.length}/${finished.length} motors failed!`, 'danger');
+        } else {
+          this.showToast(`All ${finished.length} motors healthy`, 'success');
+        }
       } else {
         this.rows = [];
+        this.parsedRows = [];
         this.showToast('No data found', 'medium');
       }
     } catch (error: any) {
-      console.error('API error:', error);
-      this.showToast('Error fetching data', 'danger');
+      console.error('API Error:', error);
+      this.showToast('Failed to load data', 'danger');
     } finally {
       this.loading = false;
       loading.dismiss();
@@ -106,19 +229,58 @@ export class LogTempPage implements OnInit {
 
   formatLocalTime(dateString: string): string {
     const date = new Date(dateString);
-    // ปรับให้เป็น timezone +7
     date.setHours(date.getHours() + 7);
-    return date.toLocaleString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric',
-      hour: '2-digit', minute: '2-digit'
+    return date.toLocaleString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
     });
   }
 
-  getTemperatureColor(temp?: number): string {
-    if (temp === undefined || temp === null) return 'medium';
-    if (temp < 5) return 'secondary';
-    if (temp < 15) return 'success';
-    if (temp < 30) return 'warning';
-    return 'danger';
+  getStatusColor(status: number): string {
+    switch (status) {
+      case 0: return 'medium';
+      case 1: return 'warning';
+      case 2: return 'success';
+      case 3: return 'primary';
+      case 4: return 'secondary';
+      default: return 'dark';
+    }
+  }
+
+  getHealthColor(health: ParsedMotorData['healthStatus']): string {
+    switch (health) {
+      case 'OK': return 'success';
+      case 'NO_SPIKE': return 'danger';
+      case 'OVERCURRENT': return 'warning';
+      default: return 'medium';
+    }
+  }
+
+  getMotorDisplay(num: number): string {
+    return `#${num.toString().padStart(2, '0')}`;
+  }
+
+  toggleRawData() {
+    this.showRawData = !this.showRawData;
+  }
+  // Add these getter methods to your component class
+  get totalFinishedRuns(): number {
+    return this.parsedRows.filter(r => r.status === 2).length;
+  }
+
+  get healthyRuns(): number {
+    return this.parsedRows.filter(r => r.status === 2 && r.isHealthy).length;
+  }
+
+  get failedRuns(): number {
+    return this.totalFinishedRuns - this.healthyRuns;
+  }
+
+  get successRate(): number {
+    return this.totalFinishedRuns > 0
+      ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100)
+      : 0;
   }
 }
