@@ -19,30 +19,19 @@
       <ion-card-content>
         <ion-item>
           <ion-label position="stacked">From</ion-label>
-          <ion-datetime
-            presentation="date-time"
-            [(ngModel)]="fromDate"
-            display-format="YYYY-MM-DD HH:mm"
+          <ion-datetime presentation="date-time" [(ngModel)]="fromDate" display-format="YYYY-MM-DD HH:mm"
             hour-cycle="h23">
           </ion-datetime>
         </ion-item>
 
         <ion-item class="ion-margin-top">
           <ion-label position="stacked">To</ion-label>
-          <ion-datetime
-            presentation="date-time"
-            [(ngModel)]="toDate"
-            display-format="YYYY-MM-DD HH:mm"
+          <ion-datetime presentation="date-time" [(ngModel)]="toDate" display-format="YYYY-MM-DD HH:mm"
             hour-cycle="h23">
           </ion-datetime>
         </ion-item>
 
-        <ion-button
-          expand="block"
-          color="primary"
-          class="ion-margin-top"
-          (click)="fetchReport()"
-          [disabled]="loading">
+        <ion-button expand="block" color="primary" class="ion-margin-top" (click)="fetchReport()" [disabled]="loading">
           <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
           <span *ngIf="!loading">Analyze Motors</span>
         </ion-button>
@@ -69,7 +58,8 @@
             </ion-col>
             <ion-col size="4">
               <ion-item lines="none" [color]="failedRuns > 0 ? 'danger' : 'medium'">
-                <ion-icon [name]="failedRuns > 0 ? 'close-circle' : 'remove-circle'" size="large" slot="start"></ion-icon>
+                <ion-icon [name]="failedRuns > 0 ? 'close-circle' : 'remove-circle'" size="large"
+                  slot="start"></ion-icon>
                 <ion-label text-center>
                   <h2>{{ failedRuns }}</h2>
                   <p>Failed</p>
@@ -135,18 +125,22 @@
               </ion-col>
               <ion-col size="1.6">
                 <span [class.text-danger]="row.maxCurrent < 2000 && row.status === 2"
-                      [class.font-bold]="row.maxCurrent < 2000 && row.status === 2">
+                  [class.font-bold]="row.maxCurrent < 2000 && row.status === 2">
                   {{ row.maxCurrent }} mA
                 </span>
               </ion-col>
               <ion-col size="1.4">{{ row.avgCurrent }} mA</ion-col>
               <ion-col size="1.1">{{ row.runTime }}s</ion-col>
-              <ion-col size="0.9">{{ row.temperature }}°C</ion-col>
               <ion-col size="0.9">
-                <ion-icon
-                  [name]="row.dropSuccess ? 'checkmark-circle' : 'close-circle'"
-                  [color]="row.dropSuccess ? 'success' : 'danger'"
-                  size="large">
+                <span *ngIf="row.temperature === -40" class="text-danger">DISCONNECTED</span>
+                <span *ngIf="row.temperature === 120" class="text-warning">SHORTED</span>
+                <span *ngIf="row.temperature !== -40 && row.temperature !== 120">
+                  {{ row.temperature }}°C
+                </span>
+              </ion-col>
+              <ion-col size="0.9">
+                <ion-icon [name]="row.dropSuccess ? 'checkmark-circle' : 'close-circle'"
+                  [color]="row.dropSuccess ? 'success' : 'danger'" size="large">
                 </ion-icon>
               </ion-col>
               <ion-col size="1.3">
