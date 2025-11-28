@@ -4498,7 +4498,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         const data = req.body;
                         const ownerUuid = res.locals["ownerUuid"];
-                        const machineId = data.machineId;
+                        // const machineId = data.machineId;
 
                         if (!transactionID) {
                             return res.send(PrintError('checkDBTransaction', {}, EMessage.bodyIsEmpty, returnLog(req, res, true)));

@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ApiService } from '../services/api.service';
+import *as moment from "moment-timezone";
 
 @Component({
   selector: 'app-billing',
@@ -24,89 +25,21 @@ export class BillingPage implements OnInit {
     this.token = localStorage.getItem('lva_token');
   }
 
-  // exportBankExcel(bankInMyData: any) {
-  //   const data = bankInMyData.map((item: any) => ({
-  //     "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-  //     "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
-  //     "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-  //     "ວັນທີ": item["ວັນທີ"].toString()
-  //   }));
-
-  //   // 1) สร้าง worksheet
-  //   const ws = XLSX.utils.json_to_sheet(data);
-
-  //   // 2) สร้าง workbook
-  //   const wb = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-  //   // 3) Convert → binary
-  //   const excelBuffer = XLSX.write(wb, {
-  //     bookType: 'xlsx',
-  //     type: 'array'
-  //   });
-
-  //   // 4) Download
-  //   const blob = new Blob([excelBuffer], {
-  //     type: "application/octet-stream"
-  //   });
-
-  //   const filename = `ບິນທັງໝົດທີ່ຕົງກັນ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-  //   saveAs(blob, filename);
-  // }
-
-
   mapBankInMy(data: any[]) {
-    return data.map(item => ({
-      "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-      "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
-      "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-      "ວັນທີ": item["ວັນທີ"].toString()
-    }));
+    return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
+      .map(item => ({
+        "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
+        "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+        "ວັນທີ": item["ວັນທີ"].toString()
+      }));
   }
 
 
-
-  // exportMyNotInBankNotPaid(bankInMyData: any) {
-  //   const data = bankInMyData.map((item: any) => ({
-  //     "ເລກທູລະກຳ": item["transactionID"],
-  //     "ຈຳນວນເງິນ": item["totalvalue"],
-  //     "ຊ່ອງທາງ": item["paymentref"],
-  //     "ວັນທີ": item["createdAt"].toString()
-  //   }));
-
-  //   // 1) สร้าง worksheet
-  //   const ws = XLSX.utils.json_to_sheet(data);
-
-  //   // 2) สร้าง workbook
-  //   const wb = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-  //   // 3) Convert → binary
-  //   const excelBuffer = XLSX.write(wb, {
-  //     bookType: 'xlsx',
-  //     type: 'array'
-  //   });
-
-  //   // 4) Download
-  //   const blob = new Blob([excelBuffer], {
-  //     type: "application/octet-stream"
-  //   });
-
-  //   const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ບໍ່ໄດ້ຈ່າຍ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-  //   saveAs(blob, filename);
-  // }
-
   mapMyNotInBankNotPaid(data: any[]) {
-    // return data.map(item => ({
-    //   "ເລກທູລະກຳ": item["transactionID"],
-    //   "ຈຳນວນເງິນ": item["totalvalue"],
-    //   "ຊ່ອງທາງ": item["paymentref"],
-    //   "ວັນທີ": item["createdAt"].toString()
-    // }));
-
     const EXCEL_LIMIT = 32767;
 
-    return data.map(item => {
+    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
       const sales = item['vendingsales'] || [];
 
       // 1) ตรวจว่ามี dropAt == null หรือไม่
@@ -129,9 +62,9 @@ export class BillingPage implements OnInit {
       // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
-        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": item["createdAt"].toString(),
+        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -147,126 +80,41 @@ export class BillingPage implements OnInit {
   }
 
 
-  // exportMyNotInBankPaid(bankInMyData: any) {
-  //   const data = bankInMyData.map((item: any) => ({
-  //     "ເລກທູລະກຳ": item["billNumber"],
-  //     "ຈຳນວນເງິນ": item["txnAmount"],
-  //     "ຊ່ອງທາງ": item["refNo"],
-  //     "ວັນທີ": item["txnDateTime"].toString()
-  //   }));
-
-  //   // 1) สร้าง worksheet
-  //   const ws = XLSX.utils.json_to_sheet(data);
-
-  //   // 2) สร้าง workbook
-  //   const wb = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-  //   // 3) Convert → binary
-  //   const excelBuffer = XLSX.write(wb, {
-  //     bookType: 'xlsx',
-  //     type: 'array'
-  //   });
-
-  //   // 4) Download
-  //   const blob = new Blob([excelBuffer], {
-  //     type: "application/octet-stream"
-  //   });
-
-  //   const filename = `ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ຈ່າຍແລ້ວ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-  //   saveAs(blob, filename);
-  // }
-
 
   mapMyNotInBankPaid(data: any[]) {
-    return data.map(item => ({
-      "ເລກທູລະກຳ": item["billNumber"],
-      "ຈຳນວນເງິນ": item["txnAmount"],
-      "ຊ່ອງທາງ": item["refNo"],
-      "ວັນທີ": item["txnDateTime"].toString()
-    }));
+    return data.filter(item => this.isBetweenDateMMoney(item["txnDateTime"].toString())).
+      map(item => ({
+        "ເລກທູລະກຳ": item["billNumber"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["txnAmount"].toString()),
+        "ຊ່ອງທາງ": item["refNo"],
+        "ວັນທີ": item["txnDateTime"].toString()
+      }));
   }
 
-
-  // exportMyBankNoServer(bankInMyData: any) {
-  //   const data = bankInMyData.map((item: any) => ({
-  //     "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-  //     "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
-  //     "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-  //     "ວັນທີ": item["ວັນທີ"].toString()
-  //   }));
-
-  //   // 1) สร้าง worksheet
-  //   const ws = XLSX.utils.json_to_sheet(data);
-
-  //   // 2) สร้าง workbook
-  //   const wb = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-  //   // 3) Convert → binary
-  //   const excelBuffer = XLSX.write(wb, {
-  //     bookType: 'xlsx',
-  //     type: 'array'
-  //   });
-
-  //   // 4) Download
-  //   const blob = new Blob([excelBuffer], {
-  //     type: "application/octet-stream"
-  //   });
-  //   const filename = `ບິນທີ່ມີໃນທະນາຄານແລະບໍ່ມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-  //   saveAs(blob, filename);
-  // }
-
   mapMyBankNoServer(data: any[]) {
-    return data.map(item => ({
+    return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-      "ຈຳນວນເງິນ": item["ຈຳນວນເງິນ"],
+      "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
       "ວັນທີ": item["ວັນທີ"].toString()
     }));
   }
 
 
-  // exportMyBankServer(bankInMyData: any) {
-  //   const data = bankInMyData.map((item: any) => ({
-  //     "ເລກທູລະກຳ": item["transactionID"],
-  //     "ຈຳນວນເງິນ": item["totalvalue"],
-  //     "ຊ່ອງທາງ": item["paymentref"],
-  //     "ວັນທີ": item["createdAt"].toString()
-  //   }));
+  mapAllMMoney(data: any[]) {
+    return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
+      "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+      "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
+      "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+      "ວັນທີ": item["ວັນທີ"].toString()
+    }));
+  }
 
-  //   // 1) สร้าง worksheet
-  //   const ws = XLSX.utils.json_to_sheet(data);
-
-  //   // 2) สร้าง workbook
-  //   const wb = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(wb, ws, "Bank Report");
-
-  //   // 3) Convert → binary
-  //   const excelBuffer = XLSX.write(wb, {
-  //     bookType: 'xlsx',
-  //     type: 'array'
-  //   });
-
-  //   // 4) Download
-  //   const blob = new Blob([excelBuffer], {
-  //     type: "application/octet-stream"
-  //   });
-
-  //   const filename = `ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-  //   saveAs(blob, filename);
-  // }
 
   mapMyBankServer(data: any[]) {
-    // return data.map(item => ({
-    //   "ເລກທູລະກຳ": item["transactionID"],
-    //   "ຈຳນວນເງິນ": item["totalvalue"],
-    //   "ຊ່ອງທາງ": item["paymentref"],
-    //   "ວັນທີ": item["createdAt"].toString()
-    // }));
     const EXCEL_LIMIT = 32767;
 
-    return data.map(item => {
+    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
       const sales = item['vendingsales'] || [];
 
       // 1) ตรวจว่ามี dropAt == null หรือไม่
@@ -289,9 +137,9 @@ export class BillingPage implements OnInit {
       // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
-        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": item["createdAt"].toString(),
+        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -308,15 +156,9 @@ export class BillingPage implements OnInit {
 
 
   MapMyBillNotPaid(data: any[]) {
-    // return data.map(item => ({
-    //   "ເລກທູລະກຳ": item["transactionID"],
-    //   "ຈຳນວນເງິນ": item["totalvalue"],
-    //   "ຊ່ອງທາງ": item["paymentmethod"],
-    //   "ວັນທີ": item["createdAt"].toString()
-    // }));
     const EXCEL_LIMIT = 32767;
 
-    return data.map(item => {
+    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
       const sales = item['vendingsales'] || [];
 
       // 1) ตรวจว่ามี dropAt == null หรือไม่
@@ -339,9 +181,9 @@ export class BillingPage implements OnInit {
       // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
-        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentmethod"],
-        "ວັນທີ": item["createdAt"].toString(),
+        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -359,7 +201,7 @@ export class BillingPage implements OnInit {
   MapMySaleServer(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
-    return data.map(item => {
+    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
       const sales = item['vendingsales'] || [];
 
       // 1) ตรวจว่ามี dropAt == null หรือไม่
@@ -382,9 +224,9 @@ export class BillingPage implements OnInit {
       // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
-        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": item["createdAt"].toString(),
+        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -403,7 +245,7 @@ export class BillingPage implements OnInit {
   MapMySaleSuccess(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
-    return data.map(item => {
+    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
       const sales = item['vendingsales'] || [];
 
       // 1) ตรวจว่ามี dropAt == null หรือไม่
@@ -426,9 +268,9 @@ export class BillingPage implements OnInit {
       // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
-        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": item["createdAt"].toString(),
+        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -442,7 +284,45 @@ export class BillingPage implements OnInit {
       return result;
     });
   }
+  clearPrice(price: string) {
+    return parseInt(price?.replace(/\D/g, ''));
+  }
 
+  isBetweenDateMMoney(
+    dateTime: string,
+
+  ): boolean {
+    const checkDate = new Date(dateTime);
+    const start = new Date(this.fromDate + " 00:00:00");
+    const end = new Date(this.toDate + " 23:59:59");
+    return checkDate >= start && checkDate <= end;
+  }
+
+  isBetweenDateHM(
+    utcDateTime: string,
+    timezoneOffsetHours: number = 7
+  ): boolean {
+
+    const utcDate = new Date(utcDateTime);
+
+    if (isNaN(utcDate.getTime())) {
+      return false;
+    }
+
+    const localTime = moment.utc(utcDateTime).tz("Asia/Bangkok").toDate();
+
+    const start = new Date(this.fromDate + "T00:00:00");
+    const end = new Date(this.toDate + "T23:59:59");
+
+    return localTime >= start && localTime <= end;
+  }
+
+  convertTimeZone(utcDateTime: string) {
+    // const utcDate = new Date(utcDateTime);
+    const localTime = moment.utc(utcDateTime).tz("Asia/Bangkok").format('YYYY-MM-DD HH:mm:ss');
+
+    return localTime;
+  }
 
 
   exportAllSheets(
@@ -453,7 +333,8 @@ export class BillingPage implements OnInit {
     myBankServer: any,            // ชุด 5
     billNotPaid: any,
     allSaleServer: any,
-    allSaleSuccess: any
+    allSaleSuccess: any,
+    allMMoney: any
 
   ) {
     // 1) เตรียม workbook
@@ -468,19 +349,42 @@ export class BillingPage implements OnInit {
     const sheet6 = XLSX.utils.json_to_sheet(this.MapMyBillNotPaid(billNotPaid));
     const sheet7 = XLSX.utils.json_to_sheet(this.MapMySaleServer(allSaleServer));
     const sheet8 = XLSX.utils.json_to_sheet(this.MapMySaleSuccess(allSaleSuccess));
+    const sheet9 = XLSX.utils.json_to_sheet(this.mapAllMMoney(allMMoney));
+
+    const finalArray = this.mergeData(this.MapMySaleServer(allSaleServer), this.mapMyNotInBankNotPaid(myNotInBankNotPaid), this.mapMyNotInBankPaid(myNotInBankPaid));
+
+    const sheet10 = XLSX.utils.json_to_sheet(this.mapAllData(finalArray));
 
 
 
 
     // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
-    XLSX.utils.book_append_sheet(wb, sheet1, "ບິນທັງໝົດທີ່ຕົງກັນ");
-    XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
-    XLSX.utils.book_append_sheet(wb, sheet2, "ບິນຍິງຕົກເອງ");
-    XLSX.utils.book_append_sheet(wb, sheet3, "ບິນທີ່ຕ້ອງທວງເງິນ");
-    XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
-    XLSX.utils.book_append_sheet(wb, sheet5, "ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver");
-    XLSX.utils.book_append_sheet(wb, sheet6, "ບິນບໍ່ທັນຈ່າຍ");
-    XLSX.utils.book_append_sheet(wb, sheet7, "ການຂາຍທັງໝົດ");
+    XLSX.utils.book_append_sheet(wb, sheet1, "1.ສັງລວມ");
+    XLSX.utils.book_append_sheet(wb, sheet9, "2.MMoney");
+    // XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
+    XLSX.utils.book_append_sheet(wb, sheet10, "3.ການຂາຍທັງໝົດ");
+    // console.log('----->3 :', [this.MapMySaleServer(allSaleServer)[0]]);
+
+    // XLSX.utils.book_append_sheet(wb, sheet2, "3.1.ບິນຍິງຕົກເອງ");
+    // console.log('----->3.1 :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
+
+    // XLSX.utils.book_append_sheet(wb, sheet3, "3.2.ບິນທີ່ຕ້ອງທວງເງິນ");
+    // console.log('----->3.2 :', [this.mapMyNotInBankPaid(myNotInBankPaid)[0]]);
+
+    XLSX.utils.book_append_sheet(wb, sheet4, "4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
+    XLSX.utils.book_append_sheet(wb, sheet6, "5.ບິນບໍ່ທັນຈ່າຍ");
+
+    XLSX.utils.book_append_sheet(wb, sheet2, "6.ບິນຍິງຕົກເອງ");
+    XLSX.utils.book_append_sheet(wb, sheet3, "7.ບິນທີ່ຕ້ອງທວງເງິນ");
+
+
+    // XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
+    // XLSX.utils.book_append_sheet(wb, sheet5, "ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver");
+    // XLSX.utils.book_append_sheet(wb, sheet6, "ບິນບໍ່ທັນຈ່າຍ");
+    // XLSX.utils.book_append_sheet(wb, sheet7, "ການຂາຍທັງໝົດ");
+
+
+    console.log('-----> finalArray :', finalArray);
 
 
 
@@ -493,6 +397,106 @@ export class BillingPage implements OnInit {
     saveAs(blob, filename);
   }
 
+
+  mergeData(data3: any[], data31: any[], data32: any[]) {
+    const result: any[] = [];
+
+    data3.forEach(main => {
+
+      const match31 = data31.find(d => d['ເລກທູລະກຳ'] === main['ເລກທູລະກຳ']);
+      const match32 = data32.find(d => d['ເລກທູລະກຳ'] === main['ເລກທູລະກຳ']);
+
+      result.push({
+        transactionID: main['ເລກທູລະກຳ'],
+        totalvalue: main['ຈຳນວນເງິນ'],
+        paymentref: main['ຊ່ອງທາງ'],
+        vendingsales: main['ref'],
+        createAt: main['ວັນທີ'] ?? '',
+        // เงื่อนไขตามที่คุณต้องการ
+        isSendDrop: !!match31,
+        isRequest: !!match32
+      });
+
+    });
+
+    return result;
+  }
+
+
+
+
+
+  // mergeData(data3: any[], data31: any[], data32: any[]) {
+  //   const result: any[] = [];
+
+  //   // ---------- ขั้นที่ 1: ใช้ data3 เป็นหลัก ----------
+  //   data3.forEach(main => {
+  //     const match31 = data31.find(d => d['ເລກທູລະກຳ'] === main['ເລກທູລະກຳ']);
+  //     const match32 = data32.find(d => d['ເລກທູລະກຳ'] === main['ເລກທູລະກຳ']);
+
+  //     result.push({
+  //       transactionID: main['ເລກທູລະກຳ'],
+  //       totalvalue: main['ຈຳນວນເງິນ'],
+  //       paymentref: main['ຊ່ອງທາງ'],
+  //       vendingsales: main['ref'] || [],
+  //       createAt: main['ວັນທີ'] ?? '',
+  //       isSendDrop: !!match31,
+  //       isRequest: !!match32,
+
+  //     });
+  //   });
+
+
+  //   // ---------- ขั้นที่ 2: หาใน 3.1 ที่ไม่มีใน 3 ----------
+  //   data31.forEach(drop => {
+  //     const exists = result.find(r => r['ເລກທູລະກຳ'] === drop['ເລກທູລະກຳ']);
+
+  //     if (!exists) {
+  //       result.push({
+  //         transactionID: drop['ເລກທູລະກຳ'],
+  //         totalvalue: drop['ຈຳນວນເງິນ'],
+  //         paymentref: drop['ຊ່ອງທາງ'],
+  //         vendingsales: [],
+  //         createAt: drop['ວັນທີ'] ?? '',
+  //         isSendDrop: true,
+  //         isRequest: false
+  //       });
+  //     }
+  //   });
+
+
+  //   // ---------- ขั้นที่ 3: หาใน 3.2 ที่ไม่มีใน 3 ----------
+  //   data32.forEach(req => {
+  //     const exists = result.find(r => r['ເລກທູລະກຳ'] === req['ເລກທູລະກຳ']);
+
+  //     if (!exists) {
+  //       result.push({
+  //         transactionID: req['ເລກທູລະກຳ'],
+  //         totalvalue: req['ຈຳນວນເງິນ'],
+  //         paymentref: req['ຊ່ອງທາງ'],
+  //         vendingsales: [],
+  //         createAt: req['ວັນທີ'] ?? '',
+  //         isSendDrop: false,
+  //         isRequest: true      // เพราะมาจาก 3.2
+  //       });
+  //     }
+  //   });
+
+  //   return result;
+  // }
+
+
+  mapAllData(data: any[]) {
+    return data.map(item => ({
+      "ເລກທູລະກຳ": item["transactionID"],
+      "ຈຳນວນເງິນ": item["totalvalue"],
+      "ຊ່ອງທາງ": item["paymentref"],
+      "ວັນທີ": item["createAt"].toString(),
+      "ref": item['vendingsales'],
+      "ຍິງຕົກເອງ": item['isSendDrop'] ? 'YES' : '',
+      "ຕ້ອງທວງເງິນ": item['isRequest'] ? 'YES' : '',
+    }));
+  }
 
   // ✅ เมื่อเลือกไฟล์ Excel
   async onFileSelected(event: any) {
@@ -660,7 +664,7 @@ export class BillingPage implements OnInit {
       // this.exportMyBankServer(myBankServer);
 
 
-      this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer, billNotPaidData, run, myInBank);
+      this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer, billNotPaidData, run, myInBank, this.dataExcel);
 
 
       // 4. mytrand ที่ไม่มีใน bankTrand
