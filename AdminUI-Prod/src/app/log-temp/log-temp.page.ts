@@ -31,9 +31,9 @@ interface ParsedMotorData {
   faultCode?: number;
   rawData: string;
   isHealthy?: boolean;
-  healthStatus?: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN';
+  healthStatus?: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'DROP_FAILED' | 'UNKNOWN';
   deviceType: 'ADH814' | 'VMC' | 'OTHER';
-  vmcStatus?: string;  // For VMC simple status
+  vmcStatus?: any;  // Full VMC parsed status
 }
 
 @Component({
@@ -43,7 +43,7 @@ interface ParsedMotorData {
 })
 export class LogTempPage implements OnInit {
 
-  @Input() machineId: string = '';
+ @Input() machineId: string = '';
 
   fromDate!: string;
   toDate!: string;
@@ -80,6 +80,7 @@ export class LogTempPage implements OnInit {
     toast.present();
   }
 
+  // ADH814 PARSER (your perfect version)
   private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
     if (!log.mstatus?.data) return null;
 
@@ -98,7 +99,6 @@ export class LogTempPage implements OnInit {
         second: '2-digit'
       });
 
-      // A5 / A6
       if (parsed.executionStatus !== undefined || parsed.acknowledged !== undefined) {
         return {
           createdAt: log.createdAt,
@@ -119,7 +119,6 @@ export class LogTempPage implements OnInit {
         };
       }
 
-      // A3 - FULL MOTOR DIAGNOSTICS
       if (parsed.rawData && parsed.rawData.toLowerCase().startsWith('00a3')) {
         const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
         if (hex.length < 26) return null;
@@ -141,11 +140,14 @@ export class LogTempPage implements OnInit {
         const dropSuccess = (dropByte & 0x04) === 0;
         const faultCode = dropByte & 0x03;
 
-        let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
+        let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'DROP_FAILED' | 'UNKNOWN' = 'UNKNOWN';
         let isHealthy = true;
 
         if (status === 2) {
-          if (maxCurrent < 1000) {
+          if (!dropSuccess) {
+            healthStatus = 'DROP_FAILED';
+            isHealthy = false;
+          } else if (maxCurrent < 1000) {
             healthStatus = 'NO_SPIKE';
             isHealthy = false;
           } else if (maxCurrent > 8000) {
@@ -177,12 +179,63 @@ export class LogTempPage implements OnInit {
 
       return null;
     } catch (error) {
-      console.error('Parse error:', error);
+      console.error('ADH814 Parse error:', error);
       return null;
     }
   }
+  
 
-  // VMC: Simple status only
+  // FULL VMC STATUS PARSER (from your original code)
+  private machineVMCStatus(hexString: string): any {
+    const cleanHex = hexString.replace(/[^0-9a-fA-F]/g, "").toLowerCase();
+    if (cleanHex.length < 10) return null;
+
+    if (cleanHex.substring(0, 4) !== "fafb" || cleanHex.substring(4, 6) !== "52") return null;
+
+    const length = parseInt(cleanHex.substring(6, 8), 16);
+    const expectedDataLength = length * 2;
+    const packetEnd = 8 + expectedDataLength;
+
+    if (cleanHex.length < packetEnd + 2) return null;
+
+    const data = cleanHex.substring(8, packetEnd);
+
+    const packNo = parseInt(data.substring(0, 2), 16);
+    const billStatus = parseInt(data.substring(2, 4), 16);
+    const coinStatus = parseInt(data.substring(4, 6), 16);
+    const cardStatus = parseInt(data.substring(6, 8), 16);
+    const tempControllerStatus = parseInt(data.substring(8, 10), 16);
+    const temperature = parseInt(data.substring(10, 12), 16);
+    const doorStatus = parseInt(data.substring(12, 14), 16);
+    const billChange = parseInt(data.substring(14, 22), 16) || 0;
+    const coinChange = parseInt(data.substring(22, 30), 16) || 0;
+    const machineIMEI = data.substring(30, 50);
+
+    let machineTemp = "aaaaaaaaaaaaaaaa";
+    let machineHumidity: string | undefined;
+    if (data.length >= 66) {
+      machineTemp = data.substring(50, 66);
+      if (data.length >= 82) {
+        machineHumidity = data.substring(66, 82);
+      }
+    }
+
+    return {
+      packNo,
+      billStatus,
+      coinStatus,
+      cardStatus,
+      tempControllerStatus,
+      temperature,
+      doorStatus,
+      billChange,
+      coinChange,
+      machineIMEI,
+      machineTemp,
+      machineHumidity
+    };
+  }
+  // VMC PARSER — FULL STATUS
   private parseVMCData(log: MotorRunLog): ParsedMotorData | null {
     if (!log.mstatus?.data) return null;
 
@@ -201,16 +254,8 @@ export class LogTempPage implements OnInit {
         second: '2-digit'
       });
 
-      let statusText = 'VMC Online';
-      if (parsed.rawData) {
-        const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '').toLowerCase();
-        if (hex.startsWith('fafb04')) {
-          const code = hex.substring(10, 12);
-          statusText = code === '01' ? 'VMC Dispensing' :
-                       code === '02' ? 'VMC Dispensed' :
-                       code === '03' ? 'VMC Failed' : 'VMC Status';
-        }
-      }
+      const vmcStatus = this.machineVMCStatus(parsed.rawData || '');
+      const statusText = vmcStatus ? 'VMC Status Update' : 'VMC Online';
 
       return {
         createdAt: log.createdAt,
@@ -228,7 +273,7 @@ export class LogTempPage implements OnInit {
         isHealthy: true,
         healthStatus: 'OK',
         deviceType: 'VMC',
-        vmcStatus: statusText
+        vmcStatus
       };
     } catch {
       return null;
@@ -236,6 +281,7 @@ export class LogTempPage implements OnInit {
   }
 
   // Main parser — detects device type
+ // MAIN PARSER — Handles ALL devices
   private parseLog(log: MotorRunLog): ParsedMotorData | null {
     if (!log.mstatus) {
       const date = new Date(log.createdAt);
@@ -245,13 +291,7 @@ export class LogTempPage implements OnInit {
         timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         status: 99,
         statusText: 'Device Online',
-        motorNumber: 0,
-        maxCurrent: 0,
-        avgCurrent: 0,
-        runTime: 0,
-        temperature: log.mstatus?.temperature || 0,
-        dropSuccess: true,
-        faultCode: 0,
+        temperature: 0,
         rawData: '',
         isHealthy: true,
         healthStatus: 'OK',
@@ -267,7 +307,6 @@ export class LogTempPage implements OnInit {
       return this.parseVMCData(log);
     }
 
-    // Fallback: just show temperature
     const date = new Date(log.createdAt);
     date.setHours(date.getHours() + 7);
     return {
@@ -275,13 +314,7 @@ export class LogTempPage implements OnInit {
       timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       status: 99,
       statusText: 'Device Online',
-      motorNumber: 0,
-      maxCurrent: 0,
-      avgCurrent: 0,
-      runTime: 0,
       temperature: log.mstatus.temperature || 0,
-      dropSuccess: true,
-      faultCode: 0,
       rawData: log.mstatus.data || '',
       isHealthy: true,
       healthStatus: 'OK',
