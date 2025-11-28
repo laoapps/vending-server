@@ -88,80 +88,123 @@ private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
     const jsonStr = log.mstatus.data;
     const match = jsonStr.match(/\{.*\}/);
     if (!match) return null;
-
     const parsed = JSON.parse(match[0]);
-    if (!parsed.rawData?.startsWith('00a3')) return null;
 
-    // Extract hex and convert to bytes
-    const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
-    if (hex.length < 26) return null;
-
-    const bytes: number[] = [];
-    for (let i = 0; i < hex.length; i += 2) {
-      bytes.push(parseInt(hex.substr(i, 2), 16));
+    // Handle A5 and A6 first
+    if (parsed.executionStatus !== undefined) {
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      return {
+        createdAt: log.createdAt,
+        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        status: 3,
+        statusText: 'Start Motor',
+        motorNumber: parsed.motorNumber || 0,
+        maxCurrent: 0,
+        avgCurrent: 0,
+        runTime: 0,
+        temperature: 0,
+        dropSuccess: true,
+        faultCode: 0,
+        rawData: parsed.rawData?.toUpperCase() || '',
+        isHealthy: parsed.executionStatus === 0,
+        healthStatus: parsed.executionStatus === 0 ? 'OK' : 'UNKNOWN',
+        isA5: true
+      };
     }
 
-    if (bytes.length < 13) return null;
+    if (parsed.acknowledged !== undefined) {
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      return {
+        createdAt: log.createdAt,
+        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        status: 4,
+        statusText: 'ACK',
+        motorNumber: 0,
+        maxCurrent: 0,
+        avgCurrent: 0,
+        runTime: 0,
+        temperature: 0,
+        dropSuccess: true,
+        faultCode: 0,
+        rawData: parsed.rawData?.toUpperCase() || '',
+        isHealthy: true,
+        healthStatus: 'OK',
+        isA6: true
+      };
+    }
 
-    // YOUR CORRECT PARSING LOGIC
-    const status = bytes[2];
-    const motorNumber = bytes[3];
-    const dropByte = bytes[5];
+    // A3 Poll - YOUR EXACT LOGIC
+    if (parsed.rawData && parsed.rawData.startsWith('00a3')) {
+      const hex = parsed.rawData.replace(/[^0-9a-fA-F]/g, '');
+      if (hex.length < 26) return null;
 
-    const maxCurrent = (bytes[7] << 8) | bytes[6];  // little-endian
-    const avgCurrent = (bytes[9] << 8) | bytes[8];  // little-endian
-    const runTime = bytes[10] * 0.1;
-    const tempByte = bytes[11];
-    const temperature = tempByte > 127 ? tempByte - 256 : tempByte; // ← YOUR CORRECT LOGIC!
-
-    // Time: use createdAt + 7 hours (Laos time)
-    const date = new Date(log.createdAt);
-    date.setHours(date.getHours() + 7);
-    const timeDisplay = date.toLocaleString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
-
-    const statusText = status === 0 ? 'Idle' :
-                       status === 1 ? 'Running' :
-                       status === 2 ? 'Finished' : 'Unknown';
-
-    const dropSuccess = (dropByte & 0x04) === 0;
-    const faultCode = dropByte & 0x03;
-
-    let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
-    let isHealthy = true;
-
-    if (status === 2) {
-      if (maxCurrent < 2000) {
-        healthStatus = 'NO_SPIKE';
-        isHealthy = false;
-      } else if (maxCurrent > 8000) {
-        healthStatus = 'OVERCURRENT';
-        isHealthy = false;
-      } else {
-        healthStatus = 'OK';
+      const bytes: number[] = [];
+      for (let i = 0; i < hex.length; i += 2) {
+        bytes.push(parseInt(hex.substr(i, 2), 16));
       }
+
+      if (bytes.length < 13) return null;
+
+      const status = bytes[2];
+      const motorNumber = bytes[3];
+      const dropByte = bytes[5];
+
+      // LITTLE-ENDIAN!
+      const maxCurrent = (bytes[7] << 8) | bytes[6];
+      const avgCurrent = (bytes[9] << 8) | bytes[8];
+      const runTime = (bytes[10] / 10).toFixed(1);
+      const tempByte = bytes[11];
+      const temperature = tempByte > 127 ? tempByte - 256 : tempByte; // YOUR CORRECT LOGIC!
+
+      const date = new Date(log.createdAt);
+      date.setHours(date.getHours() + 7);
+      const timeDisplay = date.toLocaleTimeString('en-GB', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      const statusText = status === 0 ? 'Idle' : status === 1 ? 'Running' : status === 2 ? 'Finished' : 'Unknown';
+      const dropSuccess = (dropByte & 0x04) === 0;
+      const faultCode = dropByte & 0x03;
+
+      let healthStatus: 'OK' | 'NO_SPIKE' | 'OVERCURRENT' | 'UNKNOWN' = 'UNKNOWN';
+      let isHealthy = true;
+
+      if (status === 2) {
+        if (maxCurrent < 1000) {
+          healthStatus = 'NO_SPIKE';
+          isHealthy = false;
+        } else if (maxCurrent > 8000) {
+          healthStatus = 'OVERCURRENT';
+          isHealthy = false;
+        } else {
+          healthStatus = 'OK';
+        }
+      }
+
+      return {
+        createdAt: log.createdAt,
+        timeDisplay,
+        status,
+        statusText,
+        motorNumber,
+        maxCurrent,
+        avgCurrent,
+        runTime: parseFloat(runTime),
+        temperature,
+        dropSuccess,
+        faultCode,
+        rawData: parsed.rawData.toUpperCase(),
+        isHealthy,
+        healthStatus
+      };
     }
 
-    return {
-      createdAt: log.createdAt,
-      timeDisplay,
-      status,
-      statusText,
-      motorNumber,
-      maxCurrent,
-      avgCurrent,
-      runTime: Number(runTime.toFixed(1)),
-      temperature,
-      dropSuccess,
-      faultCode,
-      rawData: parsed.rawData.toUpperCase(),
-      isHealthy,
-      healthStatus
-    };
+    return null;
   } catch (error) {
     console.error('Parse error:', error);
     return null;
@@ -265,22 +308,27 @@ private parseADH814Data(log: MotorRunLog): ParsedMotorData | null {
   toggleRawData() {
     this.showRawData = !this.showRawData;
   }
-  // Add these getter methods to your component class
-  get totalFinishedRuns(): number {
-    return this.parsedRows.filter(r => r.status === 2).length;
-  }
+ 
+  // Add these getters to your component class
+get finishedRuns(): ParsedMotorData[] {
+  return this.parsedRows.filter(r => r.status === 2);
+}
 
-  get healthyRuns(): number {
-    return this.parsedRows.filter(r => r.status === 2 && r.isHealthy).length;
-  }
+get totalFinishedRuns(): number {
+  return this.finishedRuns.length;
+}
 
-  get failedRuns(): number {
-    return this.totalFinishedRuns - this.healthyRuns;
-  }
+get healthyRuns(): number {
+  return this.finishedRuns.filter(r => r.isHealthy).length;
+}
 
-  get successRate(): number {
-    return this.totalFinishedRuns > 0
-      ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100)
-      : 0;
-  }
+get failedRuns(): number {
+  return this.totalFinishedRuns - this.healthyRuns;
+}
+
+get successRate(): number {
+  return this.totalFinishedRuns > 0
+    ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100)
+    : 0;
+}
 }
