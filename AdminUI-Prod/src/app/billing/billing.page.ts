@@ -97,12 +97,53 @@ export class BillingPage implements OnInit {
   // }
 
   mapMyNotInBankNotPaid(data: any[]) {
-    return data.map(item => ({
-      "ເລກທູລະກຳ": item["transactionID"],
-      "ຈຳນວນເງິນ": item["totalvalue"],
-      "ຊ່ອງທາງ": item["paymentref"],
-      "ວັນທີ": item["createdAt"].toString()
-    }));
+    // return data.map(item => ({
+    //   "ເລກທູລະກຳ": item["transactionID"],
+    //   "ຈຳນວນເງິນ": item["totalvalue"],
+    //   "ຊ່ອງທາງ": item["paymentref"],
+    //   "ວັນທີ": item["createdAt"].toString()
+    // }));
+
+    const EXCEL_LIMIT = 32767;
+
+    return data.map(item => {
+      const sales = item['vendingsales'] || [];
+
+      // 1) ตรวจว่ามี dropAt == null หรือไม่
+      const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
+
+      // 2) ย่อข้อมูล vendingsales
+      const compactSales = sales.map((s: any) => ({
+        position: s.position,
+        dropAt: s.dropAt,
+        machineId: s.machineId,
+        name: s.stock?.name,
+        price: s.stock?.price,
+        qtty: s.qtty
+      }));
+
+      // 3) JSON string
+      const refString = JSON.stringify(compactSales);
+      const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
+
+      // 4) สร้าง object ผลลัพธ์
+      const result: any = {
+        "ເລກທູລະກຳ": item["transactionID"],
+        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຊ່ອງທາງ": item["paymentref"],
+        "ວັນທີ": item["createdAt"].toString(),
+      };
+
+      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
+      if (hasNullDropAt) {
+        result["ພິເສດ"] = true;
+      }
+
+      // 6) ใส่ ref ต่อท้าย
+      result["ref"] = safeRef;
+
+      return result;
+    });
   }
 
 
@@ -217,21 +258,203 @@ export class BillingPage implements OnInit {
   // }
 
   mapMyBankServer(data: any[]) {
-    return data.map(item => ({
-      "ເລກທູລະກຳ": item["transactionID"],
-      "ຈຳນວນເງິນ": item["totalvalue"],
-      "ຊ່ອງທາງ": item["paymentref"],
-      "ວັນທີ": item["createdAt"].toString()
-    }));
+    // return data.map(item => ({
+    //   "ເລກທູລະກຳ": item["transactionID"],
+    //   "ຈຳນວນເງິນ": item["totalvalue"],
+    //   "ຊ່ອງທາງ": item["paymentref"],
+    //   "ວັນທີ": item["createdAt"].toString()
+    // }));
+    const EXCEL_LIMIT = 32767;
+
+    return data.map(item => {
+      const sales = item['vendingsales'] || [];
+
+      // 1) ตรวจว่ามี dropAt == null หรือไม่
+      const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
+
+      // 2) ย่อข้อมูล vendingsales
+      const compactSales = sales.map((s: any) => ({
+        position: s.position,
+        dropAt: s.dropAt,
+        machineId: s.machineId,
+        name: s.stock?.name,
+        price: s.stock?.price,
+        qtty: s.qtty
+      }));
+
+      // 3) JSON string
+      const refString = JSON.stringify(compactSales);
+      const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
+
+      // 4) สร้าง object ผลลัพธ์
+      const result: any = {
+        "ເລກທູລະກຳ": item["transactionID"],
+        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຊ່ອງທາງ": item["paymentref"],
+        "ວັນທີ": item["createdAt"].toString(),
+      };
+
+      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
+      if (hasNullDropAt) {
+        result["ພິເສດ"] = true;
+      }
+
+      // 6) ใส่ ref ต่อท้าย
+      result["ref"] = safeRef;
+
+      return result;
+    });
   }
 
 
+  MapMyBillNotPaid(data: any[]) {
+    // return data.map(item => ({
+    //   "ເລກທູລະກຳ": item["transactionID"],
+    //   "ຈຳນວນເງິນ": item["totalvalue"],
+    //   "ຊ່ອງທາງ": item["paymentmethod"],
+    //   "ວັນທີ": item["createdAt"].toString()
+    // }));
+    const EXCEL_LIMIT = 32767;
+
+    return data.map(item => {
+      const sales = item['vendingsales'] || [];
+
+      // 1) ตรวจว่ามี dropAt == null หรือไม่
+      const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
+
+      // 2) ย่อข้อมูล vendingsales
+      const compactSales = sales.map((s: any) => ({
+        position: s.position,
+        dropAt: s.dropAt,
+        machineId: s.machineId,
+        name: s.stock?.name,
+        price: s.stock?.price,
+        qtty: s.qtty
+      }));
+
+      // 3) JSON string
+      const refString = JSON.stringify(compactSales);
+      const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
+
+      // 4) สร้าง object ผลลัพธ์
+      const result: any = {
+        "ເລກທູລະກຳ": item["transactionID"],
+        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຊ່ອງທາງ": item["paymentmethod"],
+        "ວັນທີ": item["createdAt"].toString(),
+      };
+
+      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
+      if (hasNullDropAt) {
+        result["ພິເສດ"] = true;
+      }
+
+      // 6) ใส่ ref ต่อท้าย
+      result["ref"] = safeRef;
+
+      return result;
+    });
+  }
+
+  MapMySaleServer(data: any[]) {
+    const EXCEL_LIMIT = 32767;
+
+    return data.map(item => {
+      const sales = item['vendingsales'] || [];
+
+      // 1) ตรวจว่ามี dropAt == null หรือไม่
+      const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
+
+      // 2) ย่อข้อมูล vendingsales
+      const compactSales = sales.map((s: any) => ({
+        position: s.position,
+        dropAt: s.dropAt,
+        machineId: s.machineId,
+        name: s.stock?.name,
+        price: s.stock?.price,
+        qtty: s.qtty
+      }));
+
+      // 3) JSON string
+      const refString = JSON.stringify(compactSales);
+      const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
+
+      // 4) สร้าง object ผลลัพธ์
+      const result: any = {
+        "ເລກທູລະກຳ": item["transactionID"],
+        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຊ່ອງທາງ": item["paymentref"],
+        "ວັນທີ": item["createdAt"].toString(),
+      };
+
+      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
+      if (hasNullDropAt) {
+        result["ພິເສດ"] = true;
+      }
+
+      // 6) ใส่ ref ต่อท้าย
+      result["ref"] = safeRef;
+
+      return result;
+    });
+  }
+
+
+  MapMySaleSuccess(data: any[]) {
+    const EXCEL_LIMIT = 32767;
+
+    return data.map(item => {
+      const sales = item['vendingsales'] || [];
+
+      // 1) ตรวจว่ามี dropAt == null หรือไม่
+      const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
+
+      // 2) ย่อข้อมูล vendingsales
+      const compactSales = sales.map((s: any) => ({
+        position: s.position,
+        dropAt: s.dropAt,
+        machineId: s.machineId,
+        name: s.stock?.name,
+        price: s.stock?.price,
+        qtty: s.qtty
+      }));
+
+      // 3) JSON string
+      const refString = JSON.stringify(compactSales);
+      const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
+
+      // 4) สร้าง object ผลลัพธ์
+      const result: any = {
+        "ເລກທູລະກຳ": item["transactionID"],
+        "ຈຳນວນເງິນ": item["totalvalue"],
+        "ຊ່ອງທາງ": item["paymentref"],
+        "ວັນທີ": item["createdAt"].toString(),
+      };
+
+      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
+      if (hasNullDropAt) {
+        result["ພິເສດ"] = true;
+      }
+
+      // 6) ใส่ ref ต่อท้าย
+      result["ref"] = safeRef;
+
+      return result;
+    });
+  }
+
+
+
   exportAllSheets(
-    bankInMy,               // ชุด 1
-    myNotInBankNotPaid,     // ชุด 2
-    myNotInBankPaid,        // ชุด 3
-    myBankNoServer,         // ชุด 4
-    myBankServer            // ชุด 5
+    bankInMy: any,               // ชุด 1
+    myNotInBankNotPaid: any,     // ชุด 2
+    myNotInBankPaid: any,        // ชุด 3
+    myBankNoServer: any,         // ชุด 4
+    myBankServer: any,            // ชุด 5
+    billNotPaid: any,
+    allSaleServer: any,
+    allSaleSuccess: any
+
   ) {
     // 1) เตรียม workbook
     const wb = XLSX.utils.book_new();
@@ -242,13 +465,24 @@ export class BillingPage implements OnInit {
     const sheet3 = XLSX.utils.json_to_sheet(this.mapMyNotInBankPaid(myNotInBankPaid));
     const sheet4 = XLSX.utils.json_to_sheet(this.mapMyBankNoServer(myBankNoServer));
     const sheet5 = XLSX.utils.json_to_sheet(this.mapMyBankServer(myBankServer));
+    const sheet6 = XLSX.utils.json_to_sheet(this.MapMyBillNotPaid(billNotPaid));
+    const sheet7 = XLSX.utils.json_to_sheet(this.MapMySaleServer(allSaleServer));
+    const sheet8 = XLSX.utils.json_to_sheet(this.MapMySaleSuccess(allSaleSuccess));
+
+
+
 
     // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
     XLSX.utils.book_append_sheet(wb, sheet1, "ບິນທັງໝົດທີ່ຕົງກັນ");
-    XLSX.utils.book_append_sheet(wb, sheet2, "ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ບໍ່ໄດ້ຈ່າຍ");
-    XLSX.utils.book_append_sheet(wb, sheet3, "ບິນທີ່ບໍ່ມີໃນທະນາຄານ-ຈ່າຍແລ້ວ");
-    XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ມີໃນທະນາຄານບໍ່ມີໃນserver");
+    XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
+    XLSX.utils.book_append_sheet(wb, sheet2, "ບິນຍິງຕົກເອງ");
+    XLSX.utils.book_append_sheet(wb, sheet3, "ບິນທີ່ຕ້ອງທວງເງິນ");
+    XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
     XLSX.utils.book_append_sheet(wb, sheet5, "ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver");
+    XLSX.utils.book_append_sheet(wb, sheet6, "ບິນບໍ່ທັນຈ່າຍ");
+    XLSX.utils.book_append_sheet(wb, sheet7, "ການຂາຍທັງໝົດ");
+
+
 
     // 4) สร้างไฟล์ Excel
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -341,11 +575,18 @@ export class BillingPage implements OnInit {
 
       const billNotPaid = await this.apiService.loadVendingMachineBillNotPaid(paramsData).toPromise();
 
+      const billNotPaidData = JSON.parse(JSON.stringify(billNotPaid['data']?.rows ?? []));
+
+
       const dataServer = await this.apiService
         .loadVendingMachineSaleBillReport(data)
         .toPromise();
 
       const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
+
+      // console.log('-----> billPaid :', run);
+
+
 
 
       const bankIds = new Set(this.dataExcel.map(b => b["ເລກທູລະກຳ"]));
@@ -419,7 +660,7 @@ export class BillingPage implements OnInit {
       // this.exportMyBankServer(myBankServer);
 
 
-      this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer);
+      this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer, billNotPaidData, run, myInBank);
 
 
       // 4. mytrand ที่ไม่มีใน bankTrand
