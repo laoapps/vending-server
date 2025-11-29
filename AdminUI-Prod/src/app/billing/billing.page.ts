@@ -25,89 +25,326 @@ export class BillingPage implements OnInit {
     this.token = localStorage.getItem('lva_token');
   }
 
+  // mapBankInMy(data: any[]) {
+  //   return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
+  //     .map(item => ({
+  //       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+  //       "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
+  //       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+  //       "ວັນທີ": item["ວັນທີ"].toString()
+  //     }));
+  // }
+
   mapBankInMy(data: any[]) {
-    return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
+    // filter + map รายการปกติ
+    const filtered = data
+      .filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
       .map(item => ({
         "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
         "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
         "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
         "ວັນທີ": item["ວັນທີ"].toString()
       }));
+
+    // -------- คำนวณข้อมูลสรุป --------
+
+    // 1) จำนวนทั้งหมด
+    const totalCount = filtered.length;
+
+    // 2) รวมจำนวนเงินทั้งหมด
+    const totalMoney = filtered.reduce((sum, item) => {
+      return sum + Number(item["ຈຳນວນເງິນ"]);
+    }, 0);
+
+    // 3) อัตรา 4.5%
+    const rate = 4.5;
+
+    // 4) ค่าบริการ Franchise fee
+    const franchiseFee = (totalMoney * rate) / 100;
+
+    // -------- เพิ่ม 4 records ต่อท้าย --------
+    const summaryRows = [
+      {
+        "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
+        "ຄ່າ": totalCount
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "ເງິນທັງໝົດ",
+        "ຄ່າ": totalMoney
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "HM Franchase rate",
+        "ຄ່າ": "4.5%"
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "HM Franchase fee",
+        "ຄ່າ": franchiseFee
+      }
+    ];
+
+    // return = ข้อมูลเดิม + 4 แถวสรุป
+    return [...filtered, ...summaryRows];
   }
 
+
+
+  // mapMyNotInBankNotPaid(data: any[]) {
+  //   const EXCEL_LIMIT = 32767;
+
+  //   return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
+  //     const sales = item['vendingsales'] || [];
+
+  //     // 1) ตรวจว่ามี dropAt == null หรือไม่
+  //     const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
+
+  //     // 2) ย่อข้อมูล vendingsales
+  //     const compactSales = sales.map((s: any) => ({
+  //       position: s.position,
+  //       dropAt: s.dropAt,
+  //       machineId: s.machineId,
+  //       name: s.stock?.name,
+  //       price: s.stock?.price,
+  //       qtty: s.qtty
+  //     }));
+
+  //     // 3) JSON string
+  //     const refString = JSON.stringify(compactSales);
+  //     const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
+
+  //     // 4) สร้าง object ผลลัพธ์
+  //     const result: any = {
+  //       "ເລກທູລະກຳ": item["transactionID"],
+  //       "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
+  //       "ຊ່ອງທາງ": item["paymentref"],
+  //       "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+  //     };
+
+  //     // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
+  //     if (hasNullDropAt) {
+  //       result["ພິເສດ"] = true;
+  //     }
+
+  //     // 6) ใส่ ref ต่อท้าย
+  //     result["ref"] = safeRef;
+
+  //     return result;
+  //   });
+  // }
 
   mapMyNotInBankNotPaid(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
-    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
-      const sales = item['vendingsales'] || [];
+    // ⭐ 1) Filter + map ข้อมูลหลัก
+    const mapped = data
+      .filter(item => this.isBetweenDateHM(item["createdAt"].toString()))
+      .map(item => {
+        const sales = item['vendingsales'] || [];
 
-      // 1) ตรวจว่ามี dropAt == null หรือไม่
-      const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
+        // ตรวจ dropAt null
+        const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
 
-      // 2) ย่อข้อมูล vendingsales
-      const compactSales = sales.map((s: any) => ({
-        position: s.position,
-        dropAt: s.dropAt,
-        machineId: s.machineId,
-        name: s.stock?.name,
-        price: s.stock?.price,
-        qtty: s.qtty
-      }));
+        const compactSales = sales.map((s: any) => ({
+          position: s.position,
+          dropAt: s.dropAt,
+          machineId: s.machineId,
+          name: s.stock?.name,
+          price: s.stock?.price,
+          qtty: s.qtty
+        }));
 
-      // 3) JSON string
-      const refString = JSON.stringify(compactSales);
-      const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
+        const refString = JSON.stringify(compactSales);
+        const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
 
-      // 4) สร้าง object ผลลัพธ์
-      const result: any = {
-        "ເລກທູລະກຳ": item["transactionID"],
-        "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
-        "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
-      };
+        const result: any = {
+          "ເລກທູລະກຳ": item["transactionID"],
+          "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
+          "ຊ່ອງທາງ": item["paymentref"],
+          "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        };
 
-      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
-      if (hasNullDropAt) {
-        result["ພິເສດ"] = true;
-      }
+        // ถ้ามี dropAt null → เพิ่ม field พิเศษ
+        if (hasNullDropAt) {
+          result["ພິເສດ"] = true;
+        }
 
-      // 6) ใส่ ref ต่อท้าย
-      result["ref"] = safeRef;
+        result["ref"] = safeRef;
 
-      return result;
-    });
+        return result;
+      });
+
+
+    // ⭐ 2) คำนวณ summary
+    const totalCount = mapped.length;
+    const totalMoney = mapped.reduce(
+      (sum, item) => sum + Number(item["ຈຳນວນເງິນ"]),
+      0
+    );
+
+    const rate = 4.5;
+    const fee = totalMoney * (rate / 100);
+
+    // ⭐ 3) เพิ่ม 1 แถวว่าง + summary 4 แถว
+    // const emptyRow = { "": "" };
+
+    const summaryRows = [
+      { "ຈຳນວນທັງໝົດ": totalCount },
+      { "ເງິນທັງໝົດ": totalMoney },
+    ];
+
+    // ⭐ 4) return รวมทั้งหมด
+    return [...mapped, ...summaryRows];
   }
 
 
 
+
   mapMyNotInBankPaid(data: any[]) {
-    return data.filter(item => this.isBetweenDateMMoney(item["txnDateTime"].toString())).
+    // return data.filter(item => this.isBetweenDateMMoney(item["txnDateTime"].toString())).
+    //   map(item => ({
+    //     "ເລກທູລະກຳ": item["billNumber"],
+    //     "ຈຳນວນເງິນ": this.clearPrice(item["txnAmount"].toString()),
+    //     "ຊ່ອງທາງ": item["refNo"],
+    //     "ວັນທີ": item["txnDateTime"].toString()
+    //   }));
+
+    const filtered = data.filter(item => this.isBetweenDateMMoney(item["txnDateTime"].toString())).
       map(item => ({
         "ເລກທູລະກຳ": item["billNumber"],
         "ຈຳນວນເງິນ": this.clearPrice(item["txnAmount"].toString()),
         "ຊ່ອງທາງ": item["refNo"],
         "ວັນທີ": item["txnDateTime"].toString()
       }));
+
+    // -------- คำนวณข้อมูลสรุป --------
+
+    // 1) จำนวนทั้งหมด
+    const totalCount = filtered.length;
+
+    // 2) รวมจำนวนเงินทั้งหมด
+    const totalMoney = filtered.reduce((sum, item) => {
+      return sum + Number(item["ຈຳນວນເງິນ"]);
+    }, 0);
+
+    // 3) อัตรา 4.5%
+    const rate = 4.5;
+
+    // 4) ค่าบริการ Franchise fee
+    const franchiseFee = (totalMoney * rate) / 100;
+
+    // -------- เพิ่ม 4 records ต่อท้าย --------
+    const summaryRows = [
+      {
+        "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
+        "ຄ່າ": totalCount
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "ເງິນທັງໝົດ",
+        "ຄ່າ": totalMoney
+      },
+
+    ];
+
+    // return = ข้อมูลเดิม + 4 แถวสรุป
+    return [...filtered, ...summaryRows];
   }
 
   mapMyBankNoServer(data: any[]) {
-    return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
+    // return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
+    //   "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+    //   "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
+    //   "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+    //   "ວັນທີ": item["ວັນທີ"].toString()
+    // }));
+
+    const filtered = data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
       "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
       "ວັນທີ": item["ວັນທີ"].toString()
     }));
+
+    // -------- คำนวณข้อมูลสรุป --------
+
+    // 1) จำนวนทั้งหมด
+    const totalCount = filtered.length;
+
+    // 2) รวมจำนวนเงินทั้งหมด
+    const totalMoney = filtered.reduce((sum, item) => {
+      return sum + Number(item["ຈຳນວນເງິນ"]);
+    }, 0);
+
+
+    // -------- เพิ่ม 4 records ต่อท้าย --------
+    const summaryRows = [
+      {
+        "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
+        "ຄ່າ": totalCount
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "ເງິນທັງໝົດ",
+        "ຄ່າ": totalMoney
+      }
+    ];
+
+    return [...filtered, ...summaryRows];
   }
 
 
   mapAllMMoney(data: any[]) {
-    return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
-      "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-      "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
-      "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-      "ວັນທີ": item["ວັນທີ"].toString()
-    }));
+    // return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
+    //   "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+    //   "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
+    //   "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+    //   "ວັນທີ": item["ວັນທີ"].toString()
+    // }));
+
+    const filtered = data
+      .filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
+      .map(item => ({
+        "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
+        "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
+        "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
+        "ວັນທີ": item["ວັນທີ"].toString()
+      }));
+
+    // -------- คำนวณข้อมูลสรุป --------
+
+    // 1) จำนวนทั้งหมด
+    const totalCount = filtered.length;
+
+    // 2) รวมจำนวนเงินทั้งหมด
+    const totalMoney = filtered.reduce((sum, item) => {
+      return sum + Number(item["ຈຳນວນເງິນ"]);
+    }, 0);
+
+    // 3) อัตรา 4.5%
+    const rate = 4.5;
+
+    // 4) ค่าบริการ Franchise fee
+    const franchiseFee = (totalMoney * rate) / 100;
+
+    // -------- เพิ่ม 4 records ต่อท้าย --------
+    const summaryRows = [
+      {
+        "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
+        "ຄ່າ": totalCount
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "ເງິນທັງໝົດ",
+        "ຄ່າ": totalMoney
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "HM Franchase rate",
+        "ຄ່າ": "4.5%"
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "HM Franchase fee",
+        "ຄ່າ": franchiseFee
+      }
+    ];
+
+    // return = ข้อมูลเดิม + 4 แถวสรุป
+    return [...filtered, ...summaryRows];
   }
 
 
@@ -295,12 +532,12 @@ export class BillingPage implements OnInit {
     const checkDate = new Date(dateTime);
     const start = new Date(this.fromDate + " 00:00:00");
     const end = new Date(this.toDate + " 23:59:59");
+    end.setDate(end.getDate() - 1);
     return checkDate >= start && checkDate <= end;
   }
 
   isBetweenDateHM(
     utcDateTime: string,
-    timezoneOffsetHours: number = 7
   ): boolean {
 
     const utcDate = new Date(utcDateTime);
@@ -313,6 +550,7 @@ export class BillingPage implements OnInit {
 
     const start = new Date(this.fromDate + "T00:00:00");
     const end = new Date(this.toDate + "T23:59:59");
+    end.setDate(end.getDate() - 1);
 
     return localTime >= start && localTime <= end;
   }
@@ -487,7 +725,17 @@ export class BillingPage implements OnInit {
 
 
   mapAllData(data: any[]) {
-    return data.map(item => ({
+    // return data.map(item => ({
+    //   "ເລກທູລະກຳ": item["transactionID"],
+    //   "ຈຳນວນເງິນ": item["totalvalue"],
+    //   "ຊ່ອງທາງ": item["paymentref"],
+    //   "ວັນທີ": item["createAt"].toString(),
+    //   "ref": item['vendingsales'],
+    //   "ຍິງຕົກເອງ": item['isSendDrop'] ? 'YES' : '',
+    //   "ຕ້ອງທວງເງິນ": item['isRequest'] ? 'YES' : '',
+    // }));
+
+    const filtered = data.map(item => ({
       "ເລກທູລະກຳ": item["transactionID"],
       "ຈຳນວນເງິນ": item["totalvalue"],
       "ຊ່ອງທາງ": item["paymentref"],
@@ -496,6 +744,36 @@ export class BillingPage implements OnInit {
       "ຍິງຕົກເອງ": item['isSendDrop'] ? 'YES' : '',
       "ຕ້ອງທວງເງິນ": item['isRequest'] ? 'YES' : '',
     }));
+
+    // -------- คำนวณข้อมูลสรุป --------
+
+    // 1) จำนวนทั้งหมด
+    const totalCount = filtered.length;
+
+    // 2) รวมจำนวนเงินทั้งหมด
+    const totalMoney = filtered.reduce((sum, item) => {
+      return sum + Number(item["ຈຳນວນເງິນ"]);
+    }, 0);
+
+    // 3) อัตรา 4.5%
+    const rate = 4.5;
+
+    // 4) ค่าบริการ Franchise fee
+    const franchiseFee = (totalMoney * rate) / 100;
+
+    // -------- เพิ่ม 4 records ต่อท้าย --------
+    const summaryRows = [
+      {
+        "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
+        "ຄ່າ": totalCount
+      },
+      {
+        "ລາຍການສະຫຼຸບ": "ເງິນທັງໝົດ",
+        "ຄ່າ": totalMoney
+      }
+    ];
+
+    return [...filtered, ...summaryRows];
   }
 
   // ✅ เมื่อเลือกไฟล์ Excel
