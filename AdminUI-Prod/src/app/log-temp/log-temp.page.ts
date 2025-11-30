@@ -91,7 +91,7 @@ export class LogTempPage implements OnInit {
       const parsed = JSON.parse(match[0]);
 
       const date = new Date(log.createdAt);
-      date.setHours(date.getHours() + 7);
+      date.setHours(date.getHours() );
       const timeDisplay = date.toLocaleTimeString('en-GB', {
         hour12: false,
         hour: '2-digit',
@@ -246,7 +246,7 @@ export class LogTempPage implements OnInit {
       const parsed = JSON.parse(match[0]);
 
       const date = new Date(log.createdAt);
-      date.setHours(date.getHours() + 7);
+      date.setHours(date.getHours());
       const timeDisplay = date.toLocaleTimeString('en-GB', {
         hour12: false,
         hour: '2-digit',
@@ -285,7 +285,7 @@ export class LogTempPage implements OnInit {
   private parseLog(log: MotorRunLog): ParsedMotorData | null {
     if (!log.mstatus) {
       const date = new Date(log.createdAt);
-      date.setHours(date.getHours() + 7);
+      date.setHours(date.getHours());
       return {
         createdAt: log.createdAt,
         timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -308,7 +308,7 @@ export class LogTempPage implements OnInit {
     }
 
     const date = new Date(log.createdAt);
-    date.setHours(date.getHours() + 7);
+    date.setHours(date.getHours() );
     return {
       createdAt: log.createdAt,
       timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
