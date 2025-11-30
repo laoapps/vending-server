@@ -94,6 +94,8 @@ export class LogTempPage implements OnInit {
       date.setHours(date.getHours() );
       const timeDisplay = date.toLocaleTimeString('en-GB', {
         hour12: false,
+        month: '2-digit',
+        day:'2-digit',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
@@ -249,6 +251,8 @@ export class LogTempPage implements OnInit {
       date.setHours(date.getHours());
       const timeDisplay = date.toLocaleTimeString('en-GB', {
         hour12: false,
+         month: '2-digit',
+        day:'2-digit',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
@@ -288,7 +292,8 @@ export class LogTempPage implements OnInit {
       date.setHours(date.getHours());
       return {
         createdAt: log.createdAt,
-        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false,  month: '2-digit',
+        day:'2-digit',hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         status: 99,
         statusText: 'Device Online',
         temperature: 0,
@@ -311,7 +316,8 @@ export class LogTempPage implements OnInit {
     date.setHours(date.getHours() );
     return {
       createdAt: log.createdAt,
-      timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, month: '2-digit',
+        day:'2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       status: 99,
       statusText: 'Device Online',
       temperature: log.mstatus.temperature || 0,
