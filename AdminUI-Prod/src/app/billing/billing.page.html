@@ -54,30 +54,151 @@
   </ion-card>
 
   <!-- ✅ ตารางแสดงผล -->
-  <ion-card class="table-card" *ngIf="_l.length > 0">
+  <ion-card class="table-card" *ngIf="bankInMyData == null false : true > 0">
     <ion-card-header>
-      <ion-card-title>ລາຍການທຸລະກໍາ</ion-card-title>
+      <ion-card-title>1.ສັງລວມ</ion-card-title>
     </ion-card-header>
 
     <ion-card-content>
       <ion-grid class="custom-grid">
         <ion-row class="table-header">
-          <ion-col>ເລກທຸລະກຳ</ion-col>
-          <ion-col>ຊື່ບັນຊີ</ion-col>
-          <ion-col>ມູນຄ່າເງິນ</ion-col>
-          <ion-col>ວັນທີໂອນ</ion-col>
-          <ion-col>ເລກອ້າງອີງ</ion-col>
+          <ion-col>ຈຳນວນທັງໝົດ</ion-col>
+          <ion-col>ເງິນທັງໝົດ</ion-col>
+          <ion-col>HMFranchaseRate</ion-col>
+          <ion-col>HMFranchaseFee</ion-col>
+          <!-- <ion-col>ເລກອ້າງອີງ</ion-col> -->
         </ion-row>
 
-        <ion-row *ngFor="let p of _l" class="table-row">
-          <ion-col>{{ p.billNumber }}</ion-col>
-          <ion-col>{{ p.merchantName }}</ion-col>
-          <ion-col>{{ p.txnAmount | number }} {{ p.sourceCurrency }}</ion-col>
-          <ion-col>{{ p.txnDateTime }}</ion-col>
-          <ion-col>{{ p.memo }}</ion-col>
+        <ion-row *ngFor="let p of bankInMyData" class="table-row">
+          <ion-col>{{ p['ຈຳນວນທັງໝົດ'] }}</ion-col>
+          <ion-col>{{ p['ເງິນທັງໝົດ'] }}</ion-col>
+          <ion-col>{{ p['HMFranchaseRate'] }}</ion-col>
+          <ion-col>{{ p['HMFranchaseFee'] }}</ion-col>
+          <!-- <ion-col>{{ p.memo }}</ion-col> -->
         </ion-row>
       </ion-grid>
     </ion-card-content>
   </ion-card>
+
+  <!-- <ion-card class="table-card" *ngIf="allMMoneyData.length > 0">
+    <ion-card-header>
+      <ion-card-title>2.MMoney</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid class="custom-grid">
+        <ion-row class="table-header">
+          <ion-col>ເລກທູລະກຳ</ion-col>
+          <ion-col>ຈຳນວນເງິນ</ion-col>
+          <ion-col>ຊ່ອງທາງ</ion-col>
+          <ion-col>ວັນທີ</ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let p of allMMoneyData" class="table-row">
+          <ion-col>{{ p['ເລກທູລະກຳ'] }}</ion-col>
+          <ion-col>{{ p['ຈຳນວນເງິນ'] }}</ion-col>
+          <ion-col>{{ p['ຊ່ອງທາງ'] }}</ion-col>
+          <ion-col>{{ p['ວັນທີ'] }}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+  <ion-card class="table-card" *ngIf="finalArrayData.length > 0">
+    <ion-card-header>
+      <ion-card-title>3.ການຂາຍທັງໝົດ</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid class="custom-grid">
+        <ion-row class="table-header">
+          <ion-col>ເລກທູລະກຳ</ion-col>
+          <ion-col>ຈຳນວນເງິນ</ion-col>
+          <ion-col>ຊ່ອງທາງ</ion-col>
+          <ion-col>ວັນທີ</ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let p of finalArrayData" class="table-row">
+          <ion-col>{{ p['ເລກທູລະກຳ'] }}</ion-col>
+          <ion-col>{{ p['ຈຳນວນເງິນ'] }}</ion-col>
+          <ion-col>{{ p['ຊ່ອງທາງ'] }}</ion-col>
+          <ion-col>{{ p['ວັນທີ'] }}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="table-card" *ngIf="myBankNoServerData.length > 0">
+    <ion-card-header>
+      <ion-card-title>4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid class="custom-grid">
+        <ion-row class="table-header">
+          <ion-col>ເລກທູລະກຳ</ion-col>
+          <ion-col>ຈຳນວນເງິນ</ion-col>
+          <ion-col>ຊ່ອງທາງ</ion-col>
+          <ion-col>ວັນທີ</ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let p of myBankNoServerData" class="table-row">
+          <ion-col>{{ p['ເລກທູລະກຳ'] }}</ion-col>
+          <ion-col>{{ p['ຈຳນວນເງິນ'] }}</ion-col>
+          <ion-col>{{ p['ຊ່ອງທາງ'] }}</ion-col>
+          <ion-col>{{ p['ວັນທີ'] }}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+
+
+  <ion-card class="table-card" *ngIf="myNotInBankNotPaidData.length > 0">
+    <ion-card-header>
+      <ion-card-title>6.ບິນຍິງຕົກເອງ</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid class="custom-grid">
+        <ion-row class="table-header">
+          <ion-col>ເລກທູລະກຳ</ion-col>
+          <ion-col>ຈຳນວນເງິນ</ion-col>
+          <ion-col>ຊ່ອງທາງ</ion-col>
+          <ion-col>ວັນທີ</ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let p of myNotInBankNotPaidData" class="table-row">
+          <ion-col>{{ p['ເລກທູລະກຳ'] }}</ion-col>
+          <ion-col>{{ p['ຈຳນວນເງິນ'] }}</ion-col>
+          <ion-col>{{ p['ຊ່ອງທາງ'] }}</ion-col>
+          <ion-col>{{ p['ວັນທີ'] }}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="table-card" *ngIf="myNotInBankPaidData.length > 0">
+    <ion-card-header>
+      <ion-card-title>7.ບິນທີ່ຕ້ອງທວງເງິນ</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-grid class="custom-grid">
+        <ion-row class="table-header">
+          <ion-col>ເລກທູລະກຳ</ion-col>
+          <ion-col>ຈຳນວນເງິນ</ion-col>
+          <ion-col>ຊ່ອງທາງ</ion-col>
+          <ion-col>ວັນທີ</ion-col>
+        </ion-row>
+
+        <ion-row *ngFor="let p of myNotInBankPaidData" class="table-row">
+          <ion-col>{{ p['ເລກທູລະກຳ'] }}</ion-col>
+          <ion-col>{{ p['ຈຳນວນເງິນ'] }}</ion-col>
+          <ion-col>{{ p['ຊ່ອງທາງ'] }}</ion-col>
+          <ion-col>{{ p['ວັນທີ'] }}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card> -->
 
 </ion-content>

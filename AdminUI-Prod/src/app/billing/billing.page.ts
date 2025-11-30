@@ -12,6 +12,16 @@ import *as moment from "moment-timezone";
 export class BillingPage implements OnInit {
   private token: string;
   _l: any[] = [];
+  bankInMyData: any = null;
+  allMMoneyData: any[] = [];
+  finalArrayData: any[] = [];
+
+  myBankNoServerData: any[] = [];
+
+  // billNotPaidData: any[] = [];
+  myNotInBankNotPaidData: any[] = [];
+
+  myNotInBankPaidData: any[] = [];
   fromDate: string;
   toDate: string;
   @Input() machineId: string;
@@ -63,10 +73,11 @@ export class BillingPage implements OnInit {
     const franchiseFee = (totalMoney * rate) / 100;
 
     // -------- เพิ่ม 4 records ต่อท้าย --------
+
     const summaryRows = [
       {
         "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
-        "ຄ່າ": totalCount
+        "ຈຳນວນທັງໝົດ": totalCount
       },
       {
         "ລາຍການສະຫຼຸບ": "ເງິນທັງໝົດ",
@@ -79,6 +90,21 @@ export class BillingPage implements OnInit {
       {
         "ລາຍການສະຫຼຸບ": "HM Franchase fee",
         "ຄ່າ": franchiseFee
+      }
+    ];
+
+    this.bankInMyData = [
+      {
+        "ຈຳນວນທັງໝົດ": totalCount
+      },
+      {
+        "ເງິນທັງໝົດ": totalMoney
+      },
+      {
+        "HMFranchaseRate": "4.5%"
+      },
+      {
+        "HMFranchaseFee": franchiseFee
       }
     ];
 
@@ -191,6 +217,8 @@ export class BillingPage implements OnInit {
       { "ເງິນທັງໝົດ": totalMoney },
     ];
 
+    this.myNotInBankNotPaidData = summaryRows;
+
     // ⭐ 4) return รวมทั้งหมด
     return [...mapped, ...summaryRows];
   }
@@ -244,6 +272,8 @@ export class BillingPage implements OnInit {
 
     ];
 
+    this.myNotInBankPaidData = summaryRows;
+
     // return = ข้อมูลเดิม + 4 แถวสรุป
     return [...filtered, ...summaryRows];
   }
@@ -285,6 +315,7 @@ export class BillingPage implements OnInit {
         "ຄ່າ": totalMoney
       }
     ];
+    this.myBankNoServerData = summaryRows;
 
     return [...filtered, ...summaryRows];
   }
@@ -342,6 +373,7 @@ export class BillingPage implements OnInit {
         "ຄ່າ": franchiseFee
       }
     ];
+    this.allMMoneyData = summaryRows;
 
     // return = ข้อมูลเดิม + 4 แถวสรุป
     return [...filtered, ...summaryRows];
@@ -580,24 +612,45 @@ export class BillingPage implements OnInit {
 
     // 2) แปลงข้อมูลแต่ละชุดเป็น sheet
     const sheet1 = XLSX.utils.json_to_sheet(this.mapBankInMy(bankInMy));
+
     const sheet2 = XLSX.utils.json_to_sheet(this.mapMyNotInBankNotPaid(myNotInBankNotPaid));
+
     const sheet3 = XLSX.utils.json_to_sheet(this.mapMyNotInBankPaid(myNotInBankPaid));
+
     const sheet4 = XLSX.utils.json_to_sheet(this.mapMyBankNoServer(myBankNoServer));
+
     const sheet5 = XLSX.utils.json_to_sheet(this.mapMyBankServer(myBankServer));
     const sheet6 = XLSX.utils.json_to_sheet(this.MapMyBillNotPaid(billNotPaid));
+
     const sheet7 = XLSX.utils.json_to_sheet(this.MapMySaleServer(allSaleServer));
     const sheet8 = XLSX.utils.json_to_sheet(this.MapMySaleSuccess(allSaleSuccess));
     const sheet9 = XLSX.utils.json_to_sheet(this.mapAllMMoney(allMMoney));
 
+
     const finalArray = this.mergeData(this.MapMySaleServer(allSaleServer), this.mapMyNotInBankNotPaid(myNotInBankNotPaid), this.mapMyNotInBankPaid(myNotInBankPaid));
 
     const sheet10 = XLSX.utils.json_to_sheet(this.mapAllData(finalArray));
+    // console.log('----->1.ສັງລວມ :', [this.mapBankInMy(bankInMy)[0]]);
+    // this.bankInMyData = this.mapBankInMy(bankInMy);
+    // this.allMMoneyData = this.mapAllMMoney(allMMoney);
+    // this.finalArrayData = this.mapAllData(finalArray);
+    // this.myBankNoServerData = this.mapMyBankNoServer(myBankNoServer);
+    // this.billNotPaidData = this.MapMyBillNotPaid(billNotPaid);
+    // this.myNotInBankNotPaidData = this.mapMyNotInBankNotPaid(myNotInBankNotPaid);
+    // this.myNotInBankPaidData = this.mapMyNotInBankPaid(myNotInBankPaid);
 
 
 
+    // console.log('-----> 2.MMoney :', [this.mapAllMMoney(allMMoney)[0]]);
+    // console.log('-----> 3.ການຂາຍທັງໝົດ :', [this.mapAllData(finalArray)[0]]);
+    // console.log('-----> 4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ :', [this.mapMyBankNoServer(myBankNoServer)[0]]);
+    // console.log('-----> 5.ບິນບໍ່ທັນຈ່າຍ :', [this.MapMyBillNotPaid(billNotPaid)[0]]);
+    // console.log('-----> 6.ບິນຍິງຕົກເອງ :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
+    // console.log('-----> 7.ບິນທີ່ຕ້ອງທວງເງິນ :', this.mapMyNotInBankPaid(myNotInBankPaid)[0]);
 
     // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
     XLSX.utils.book_append_sheet(wb, sheet1, "1.ສັງລວມ");
+
     XLSX.utils.book_append_sheet(wb, sheet9, "2.MMoney");
     // XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
     XLSX.utils.book_append_sheet(wb, sheet10, "3.ການຂາຍທັງໝົດ");
@@ -621,18 +674,13 @@ export class BillingPage implements OnInit {
     // XLSX.utils.book_append_sheet(wb, sheet6, "ບິນບໍ່ທັນຈ່າຍ");
     // XLSX.utils.book_append_sheet(wb, sheet7, "ການຂາຍທັງໝົດ");
 
-
-    console.log('-----> finalArray :', finalArray);
-
-
-
     // 4) สร้างไฟล์ Excel
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
 
     // 5) ชื่อไฟล์
     const filename = `ລາຍງານທັງໝົດ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-    saveAs(blob, filename);
+    // saveAs(blob, filename);
   }
 
 
@@ -773,6 +821,8 @@ export class BillingPage implements OnInit {
       }
     ];
 
+    this.finalArrayData = summaryRows;
+
     return [...filtered, ...summaryRows];
   }
 
@@ -869,20 +919,18 @@ export class BillingPage implements OnInit {
       // console.log('-----> billPaid :', run);
 
 
-
-
       const bankIds = new Set(this.dataExcel.map(b => b["ເລກທູລະກຳ"]));
       const myIds = new Set(run.map(m => m.transactionID));
 
       // 1. bankTrand ที่มีใน mytrand
       const bankInMy = this.dataExcel.filter(b => myIds.has(b["ເລກທູລະກຳ"]));
-      console.log('-----> 1. bankTrand ที่มีใน mytrand :', bankInMy);
+      // console.log('-----> 1. bankTrand ที่มีใน mytrand :', bankInMy);
       // this.exportBankExcel(bankInMy);
 
 
       // 2. bankTrand ที่ไม่มีใน mytrand
       const bankNotInMy = this.dataExcel.filter(b => !myIds.has(b["ເລກທູລະກຳ"]));
-      console.log('-----> 2. bankTrand ที่ไม่มีใน mytrand :', bankNotInMy);
+      // console.log('-----> 2. bankTrand ที่ไม่มีใน mytrand :', bankNotInMy);
       let myBankNoServer = [];
       let myBankServer = [];
       for (let index = 0; index < bankNotInMy.length; index++) {
@@ -909,7 +957,7 @@ export class BillingPage implements OnInit {
 
       // 3. mytrand ที่มีใน bankTrand
       const myInBank = run.filter(m => bankIds.has(m.transactionID));
-      console.log('-----> 3. mytrand ที่มีใน bankTrand :', myInBank);
+      // console.log('-----> 3. mytrand ที่มีใน bankTrand :', myInBank);
 
 
       // 4. mytrand ที่ไม่มีใน bankTrand
@@ -917,7 +965,7 @@ export class BillingPage implements OnInit {
       let myNotInBankNotPaid = [];
       let myNotInBankPaid = [];
 
-      console.log('-----> 4. mytrand ที่ไม่มีใน bankTrand :', myNotInBank);
+      // console.log('-----> 4. mytrand ที่ไม่มีใน bankTrand :', myNotInBank);
       for (let index = 0; index < myNotInBank.length; index++) {
         const element = myNotInBank[index];
         const responseCheck = await this.apiService
@@ -930,15 +978,15 @@ export class BillingPage implements OnInit {
           myNotInBankNotPaid.push(element)
         }
       }
-      console.log('-----> 5 myNotInBankNotPaid :', myNotInBankNotPaid);
+      // console.log('-----> 5 myNotInBankNotPaid :', myNotInBankNotPaid);
       // this.exportMyNotInBankNotPaid(myNotInBankNotPaid);
-      console.log('-----> 6 myNotInBankPaid :', myNotInBankPaid);
+      // console.log('-----> 6 myNotInBankPaid :', myNotInBankPaid);
       // this.exportMyNotInBankPaid(myNotInBankPaid);
 
-      console.log('-----> 7 myBankNoServer :', myBankNoServer);
+      // console.log('-----> 7 myBankNoServer :', myBankNoServer);
       // this.exportMyBankNoServer(myBankNoServer);
 
-      console.log('-----> 8 myBankServer :', myBankServer);
+      // console.log('-----> 8 myBankServer :', myBankServer);
       // this.exportMyBankServer(myBankServer);
 
 
