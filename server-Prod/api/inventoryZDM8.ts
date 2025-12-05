@@ -3729,6 +3729,50 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+
+            router.post(
+                this.path + "/loadVendingMachineSaleBillReportManyMachine",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+
+                async (req, res) => {
+                    try {
+
+                        const data = req.body;
+                        const subadmin = res.locals['subadmin'];
+                        const ownerUuid = res.locals["ownerUuid"];
+                        const machineId = data.machineId;
+
+                        if (!Array.isArray(machineId) || machineId.length === 0) {
+                            res.send(PrintError("loadVendingMachineSaleBillReportManyMachine", {}, EMessage.error, returnLog(req, res, true)));
+                            return;
+                        }
+
+                        const fromDate = momenttz
+                            .tz(data.fromDate, SERVER_TIME_ZONE)
+                            .startOf('day')
+                            .toDate();
+
+                        const toDate = momenttz
+                            .tz(data.toDate, SERVER_TIME_ZONE)
+                            .endOf('day')
+                            .toDate();
+
+                        const run = await this.getReportSaleManyMachine(machineId, fromDate, toDate, ownerUuid);
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        res.send(PrintSucceeded("loadVendingMachineSaleBillReportManyMachine", response, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        res.send(PrintError("loadVendingMachineSaleBillReportManyMachine", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/loadVendingMachineDropPositionReport",
                 this.checkSuperAdmin,
@@ -4282,6 +4326,50 @@ export class InventoryZDM8 implements IBaseClass {
                     } catch (error) {
                         console.log('reportBillNotPaid :', error);
                         res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
+
+            router.post(this.path + '/reportBillNotPaidManyMachine',
+                this.checkSuperAdmin,
+                this.checkAdmin,
+
+                async (req, res) => {
+                    try {
+                        let ownerUuid = req.body.ownerUuid;
+                        const machineId = req.body.machineId;
+                        if (!ownerUuid) {
+                            ownerUuid = res.locals["ownerUuid"];
+                        }
+                        const data = req.body;
+
+                        if (!Array.isArray(machineId) || machineId.length === 0) {
+                            res.send(PrintError("reportBillNotPaidManyMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        }
+
+
+                        if (!ownerUuid) {
+                            res.send(PrintError("reportBillNotPaidManyMachine", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        // console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const run = await this.getReportBillNotPaidManyMachine(machineId, ownerUuid, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportBillNotPaidManyMachine :', error);
+                        res.send(PrintError("reportBillNotPaidManyMachine", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
 
@@ -7183,9 +7271,6 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                     });
 
-
-
-
                     const event: IVendingEventLog = {
                         machineId: bill?.machineId,
                         event: EVendingEvent.sold,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
@@ -8844,6 +8929,36 @@ export class InventoryZDM8 implements IBaseClass {
         });
     }
 
+    private async getReportSaleManyMachine(
+        machineId: any[],
+        fromDate: Date,
+        toDate: Date,
+        ownerUuid: string
+    ) {
+
+        const ent = VendingMachineBillFactory(
+            EEntity.vendingmachinebill + '_' + ownerUuid,
+            dbConnection
+        );
+
+        await ent.sync();
+
+        return await ent.findAndCountAll({
+            where: {
+                paymentstatus: {
+                    [Op.in]: [EPaymentStatus.paid, EPaymentStatus.delivered]
+                },
+                createdAt: {
+                    [Op.between]: [fromDate, toDate]
+                },
+                machineId: {
+                    [Op.in]: machineId
+                }
+            },
+            order: [['id', 'DESC']]
+        });
+    }
+
 
 
     private async getReportDrop(machineId: string, fromDate: string, toDate: string) {
@@ -8901,6 +9016,24 @@ export class InventoryZDM8 implements IBaseClass {
         );
         await ent.sync();
         const bill = await ent.findAndCountAll(condition);
+        return bill;
+    }
+
+
+    private async getReportBillNotPaidManyMachine(machineId: any[], ownerUuid: string, fromDate: string, toDate: string) {
+        const ent = VendingMachineBillFactory(
+            EEntity.vendingmachinebill + "_" + ownerUuid,
+            dbConnection
+        );
+        await ent.sync();
+        const bill = await ent.findAndCountAll({
+            where: {
+                machineId: { [Op.in]: machineId },
+                paymentstatus: EPaymentStatus.pending,
+                createdAt: { [Op.between]: [fromDate, toDate] }
+            },
+            order: [['id', 'DESC']]
+        });
         return bill;
     }
 

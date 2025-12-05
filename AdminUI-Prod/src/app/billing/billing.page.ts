@@ -619,11 +619,11 @@ export class BillingPage implements OnInit {
 
     const sheet4 = XLSX.utils.json_to_sheet(this.mapMyBankNoServer(myBankNoServer));
 
-    const sheet5 = XLSX.utils.json_to_sheet(this.mapMyBankServer(myBankServer));
+    // const sheet5 = XLSX.utils.json_to_sheet(this.mapMyBankServer(myBankServer));
     const sheet6 = XLSX.utils.json_to_sheet(this.MapMyBillNotPaid(billNotPaid));
 
-    const sheet7 = XLSX.utils.json_to_sheet(this.MapMySaleServer(allSaleServer));
-    const sheet8 = XLSX.utils.json_to_sheet(this.MapMySaleSuccess(allSaleSuccess));
+    // const sheet7 = XLSX.utils.json_to_sheet(this.MapMySaleServer(allSaleServer));
+    // const sheet8 = XLSX.utils.json_to_sheet(this.MapMySaleSuccess(allSaleSuccess));
     const sheet9 = XLSX.utils.json_to_sheet(this.mapAllMMoney(allMMoney));
 
 
@@ -649,7 +649,7 @@ export class BillingPage implements OnInit {
     // console.log('-----> 7.ບິນທີ່ຕ້ອງທວງເງິນ :', this.mapMyNotInBankPaid(myNotInBankPaid)[0]);
 
     // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
-    XLSX.utils.book_append_sheet(wb, sheet1, "1.ສັງລວມ");
+    XLSX.utils.book_append_sheet(wb, sheet1, "1.ສັງລວມ(3-6-7)");
 
     XLSX.utils.book_append_sheet(wb, sheet9, "2.MMoney");
     // XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
@@ -662,11 +662,11 @@ export class BillingPage implements OnInit {
     // XLSX.utils.book_append_sheet(wb, sheet3, "3.2.ບິນທີ່ຕ້ອງທວງເງິນ");
     // console.log('----->3.2 :', [this.mapMyNotInBankPaid(myNotInBankPaid)[0]]);
 
-    XLSX.utils.book_append_sheet(wb, sheet4, "4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
+    XLSX.utils.book_append_sheet(wb, sheet4, "4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ(2)");
     XLSX.utils.book_append_sheet(wb, sheet6, "5.ບິນບໍ່ທັນຈ່າຍ");
 
     XLSX.utils.book_append_sheet(wb, sheet2, "6.ບິນຍິງຕົກເອງ");
-    XLSX.utils.book_append_sheet(wb, sheet3, "7.ບິນທີ່ຕ້ອງທວງເງິນ");
+    XLSX.utils.book_append_sheet(wb, sheet3, "7.ບິນທີ່ຕ້ອງທວງເງິນ(7-2)");
 
 
     // XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
@@ -680,7 +680,7 @@ export class BillingPage implements OnInit {
 
     // 5) ชื่อไฟล์
     const filename = `ລາຍງານທັງໝົດ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-    // saveAs(blob, filename);
+    saveAs(blob, filename);
   }
 
 
@@ -996,7 +996,7 @@ export class BillingPage implements OnInit {
       // 4. mytrand ที่ไม่มีใน bankTrand
       // const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
     } catch (error) {
-      console.error('Error onProcess:', error);
+      console.error('Error onProcessBilling:', error);
     }
   }
 
