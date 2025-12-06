@@ -29,5 +29,7 @@ services:
 
 networks:
   tasmota-net:
-    external: true
-    name: tasmota-net          # ← must match exactly the network created above
+    driver: bridge
+    name: tasmota-net        # fixed global name
+    external: true           # only on second file? No — create it once
+    #sudo docker network create tasmota-net
