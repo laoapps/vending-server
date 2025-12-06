@@ -88,4 +88,4 @@ volumes:
 networks:
   tasmota-net:
     driver: bridge
-    name: tasmota-net          # ← IMPORTANT: give it a fixed name
+    name: tasmota-net        # fixed global name

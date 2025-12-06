@@ -8,7 +8,7 @@ services:
     ports:
       - '36884:3600'
     environment:
-      - PORT=3000
+      - PORT=3600
       - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-db:5432/tasmota?schema=public
       - JWT_SECRET=your_jwt_secret
       - MQTT_BROKER=mqtt://mqtt.laoapps.com
