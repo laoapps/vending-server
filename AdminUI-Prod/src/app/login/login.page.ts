@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { LaabApiService } from '../services/laab-api.service';
 import { LoginProcess } from './processes/login.process';
@@ -60,7 +60,14 @@ export class LoginPage implements OnInit {
             localStorage.setItem('secretLocal', result.secret);
           }
           localStorage.setItem('phoneNumberLocal', result.phoneNumber);
-          this.apiService.router.navigate(['/tabs/tab1']);
+          localStorage.setItem('secretLocal', result.secret);
+          this.apiService.router.navigate(['/tabs/onlinemachines']);
+          // if(this.apiService.logPlatformInfo() === 'ios'|| this.apiService.logPlatformInfo() === 'android'){
+          //   localStorage.setItem('secretLocal', result.secret);
+          //   this.apiService.router.navigate(['/tabs/onlinemachines']);
+          // }else{
+          //   this.apiService.router.navigate(['/tabs/tab1']);
+          // }
           resolve(IENMessage.success);
         }
         console.log('-----> result', result);

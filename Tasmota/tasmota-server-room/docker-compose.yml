@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  tasmota-room-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '31884:3000'
+    environment:
+      - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-db:5432/tasmota?schema=public
+      - JWT_SECRET=your_jwt_secret
+      - MQTT_BROKER=mqtt://mqtt:1883
+      - MQTT_WS_URL=wss://mqtt.laoapps.com
+      - MQTT_USERNAME=admin
+      - MQTT_PASSWORD=f15c58a3-0d3e-495d-91ca-54b18c13037f
+      - USERMANAGER_URL=https://nocnoc-api.laoapps.com
+      - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
+      - SERVICE_NAME=SMARTCB
+      - REDIS_URL=redis://tasmota-redis:6379
+      - ADMINGAME_NOCNOC_UUID=3d55d7f0-b611-11ef-8c5b-dfe3a2fc2c00
+      - hmVendingUrl=https://vending-service-api5.laoapps.com/zdm8/validateHMVending
+      - hmVendingWSUrl=https://vending-service-api5.laoapps.com/zdm8/wsalert
+      - NOTILAABX_URL=https://laab-notify.laoapps.com/api/v1/
+    depends_on:
+      - tasmota-room-db
+      - tasmota-room-redis
+    networks:
+      - tasmota-net
+    restart: unless-stopped
+
+  tasmota-room-db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=039153d3-9a68-444b-be96-10c6d1325197
+      - POSTGRES_DB=tasmota
+    ports:
+      - 31885:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d tasmota"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tasmota-net
+    restart: unless-stopped
+
+
+volumes:
+  pgdata:
+  redis_data:
+
+networks:
+  tasmota-net:
+    driver: bridge
