@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '36884:3000'
+      - '36884:3600'
     environment:
       - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-room-db:15432/tasmota-room?schema=public
       - JWT_SECRET=your_jwt_secret
