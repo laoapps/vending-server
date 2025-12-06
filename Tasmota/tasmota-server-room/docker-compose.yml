@@ -9,7 +9,7 @@ services:
       - '36884:3600'
     environment:
       - PORT=3600
-      - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-room-db:15432/tasmota-room?schema=public
+      - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-db:5432/tasmota-room?schema=public
       - JWT_SECRET=your_jwt_secret
       - MQTT_BROKER=mqtt://mqtt.laoapps.com
       - MQTT_WS_URL=wss://mqtt.laoapps.com
@@ -18,56 +18,19 @@ services:
       - USERMANAGER_URL=https://nocnoc-api.laoapps.com
       - BACKEND_KEY=aa65972e-e215-4b12-bd53-aacce0f72050
       - SERVICE_NAME=SMARTCB
-      - REDIS_URL=redis://tasmota-room-redis:16379
+      - REDIS_URL=redis://tasmota-redis:6379
       - ADMINGAME_NOCNOC_UUID=3d55d7f0-b611-11ef-8c5b-dfe3a2fc2c00
       - hmVendingUrl=https://vending-service-api5.laoapps.com/zdm8/validateHMVending
       - hmVendingWSUrl=https://vending-service-api5.laoapps.com/zdm8/wsalert
       - NOTILAABX_URL=https://laab-notify.laoapps.com/api/v1/
     depends_on:
-      tasmota-room-db:
+      tasmota-db:
         condition: service_healthy
-      tasmota-room-redis:
+      tasmota-redis:
         condition: service_healthy
     networks:
       - tasmota-net
     restart: unless-stopped
-
-  tasmota-room-db:
-    image: postgres:15
-    command: -p 15432                                   # This forces Postgres to listen on 15432 inside the container
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=039153d3-9a68-444b-be96-10c6d1325197
-      - POSTGRES_DB=tasmota-room
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d tasmota-room -p 15432"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    networks:
-      - tasmota-net
-    restart: unless-stopped
-
-  tasmota-room-redis:
-    image: redis:7
-    command: redis-server --port 16379 --save 900 1 --save 300 10 --save 60 10000 --appendonly yes
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-p", "16379", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    networks:
-      - tasmota-net
-    restart: unless-stopped
-
-volumes:
-  pgdata:
-  redis_data:
 
 networks:
   tasmota-net:
