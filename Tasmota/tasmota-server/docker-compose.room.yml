@@ -23,10 +23,6 @@ services:
       - hmVendingUrl=https://vending-service-api5.laoapps.com/zdm8/validateHMVending
       - hmVendingWSUrl=https://vending-service-api5.laoapps.com/zdm8/wsalert
       - NOTILAABX_URL=https://laab-notify.laoapps.com/api/v1/
-    depends_on:
-      - tasmota-db
-      - tasmota-redis
-      - mqtt
     networks:
       - tasmota-net
     restart: unless-stopped
