@@ -160,6 +160,24 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
       sensorData = JSON.parse(payload.toString());
     } catch (error) {
       console.error(`Error parsing SENSOR data for device ${tasmotaId}:`, error);
+      // Update database
+      const device = await models.Device.findOne({ where: { tasmotaId } });
+      if (!device) {
+        console.log(`Device ${tasmotaId} not found in database`);
+        return;
+      }
+
+      await device.update({status:payload?.toString() });
+
+      // Update Redis cache
+      const updatedData = {
+        tasmotaId,
+        status: device.dataValues.status,
+
+      };
+      await setDeviceInCache(tasmotaId, updatedData);
+
+      console.log(`Updated device ${tasmotaId} status ${payload?.toString() } in database and cache`);
       return;
     }
 
@@ -184,7 +202,7 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
     // Update Redis cache
     const updatedData = {
       tasmotaId,
-      status: device.dataValues.status,
+      status: device?.dataValues?.status,
       energy,
       power,
     };
