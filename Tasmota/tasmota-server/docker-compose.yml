@@ -90,3 +90,4 @@ networks:
     driver: bridge
     name: tasmota-net        # fixed global name
     external: true           # only on second file? No — create it once
+    #sudo docker network create tasmota-net
