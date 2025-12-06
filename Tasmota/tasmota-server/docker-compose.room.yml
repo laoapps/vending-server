@@ -8,8 +8,8 @@ services:
     ports:
       - '36884:3600'
     environment:
-      - PORT=3600
-      - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-db:5432/tasmota-room?schema=public
+      - PORT=3000
+      - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-db:5432/tasmota?schema=public
       - JWT_SECRET=your_jwt_secret
       - MQTT_BROKER=mqtt://mqtt.laoapps.com
       - MQTT_WS_URL=wss://mqtt.laoapps.com
@@ -23,10 +23,15 @@ services:
       - hmVendingUrl=https://vending-service-api5.laoapps.com/zdm8/validateHMVending
       - hmVendingWSUrl=https://vending-service-api5.laoapps.com/zdm8/wsalert
       - NOTILAABX_URL=https://laab-notify.laoapps.com/api/v1/
+    depends_on:
+      - tasmota-db
+      - tasmota-redis
+      - mqtt
     networks:
       - tasmota-net
     restart: unless-stopped
 
 networks:
   tasmota-net:
-    driver: bridge
+    external: true
+    name: tasmota-net          # ← must match exactly the network created above

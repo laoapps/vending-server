@@ -1,4 +1,5 @@
 version: '3.8'
+# Tasmota Server
 services:
   tasmota-api:
     build:
@@ -7,6 +8,7 @@ services:
     ports:
       - '31884:3000'
     environment:
+      - PORT=3000
       - DATABASE_URL=postgresql://user:039153d3-9a68-444b-be96-10c6d1325197@tasmota-db:5432/tasmota?schema=public
       - JWT_SECRET=your_jwt_secret
       - MQTT_BROKER=mqtt://mqtt.laoapps.com
@@ -86,3 +88,4 @@ volumes:
 networks:
   tasmota-net:
     driver: bridge
+    name: tasmota-net          # ← IMPORTANT: give it a fixed name
