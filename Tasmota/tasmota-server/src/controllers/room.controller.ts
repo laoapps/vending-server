@@ -3,7 +3,8 @@ import { Request, Response } from 'express';
 import RoomModel from '../models/room.model';
 import LocationModel from '../models/location.model';
 import { Device } from '../models/device';
-import Op from 'sequelize/types/operators';
+import { Op } from 'sequelize';
+
 
 export class RoomController {
     static async getByLocation(req: Request, res: Response) {
@@ -48,7 +49,7 @@ export class RoomController {
 
         // If assigning new device, make sure it's not used elsewhere
         if (deviceId) {
-            const used = await RoomModel.findOne({ where: { deviceId, id: { [Op.ne]: roomId } } });
+            const used = await RoomModel.findOne({ where: { deviceId, id: { [Op.eq]: roomId } } });
             if (used) return res.status(400).json({ error: 'Device already assigned to another room' });
         }
 
