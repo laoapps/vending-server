@@ -35,7 +35,7 @@ BookingModel.init(
   { sequelize, tableName: 'bookings', timestamps: true }
 );
 
-BookingModel.belongsTo(RoomModel, { foreignKey: 'roomId', as: 'room' });
-RoomModel.hasMany(BookingModel, { foreignKey: 'roomId', as: 'bookings' });
+// BookingModel.belongsTo(RoomModel, { foreignKey: 'roomId', as: 'room' });
+// RoomModel.hasMany(BookingModel, { foreignKey: 'roomId', as: 'bookings' });
 
 export default BookingModel;

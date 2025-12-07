@@ -52,8 +52,8 @@ RoomModel.init(
 );
 
 // Associations
-RoomModel.belongsTo(LocationModel, { foreignKey: 'locationId', as: 'location' });
-RoomModel.belongsTo(Device, { foreignKey: 'deviceId', as: 'device' });
-Device.hasOne(RoomModel, { foreignKey: 'deviceId', as: 'room' });
+// RoomModel.belongsTo(LocationModel, { foreignKey: 'locationId', as: 'location' });
+// RoomModel.belongsTo(Device, { foreignKey: 'deviceId', as: 'device' });
+// Device.hasOne(RoomModel, { foreignKey: 'deviceId', as: 'room' });
 
 export default RoomModel;
