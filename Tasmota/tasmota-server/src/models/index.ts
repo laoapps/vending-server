@@ -61,14 +61,14 @@ models.Order.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' })
 // models.Device.hasMany(models.ScheduleHistory, { foreignKey: 'deviceId', as: 'scheduleHistories' });
 // models.ScheduleHistory.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
 // Hotel System — NEW ASSOCIATIONS
-models.Location.hasMany(models.Room, { foreignKey: 'locationId', as: 'rooms' });
-models.Room.belongsTo(models.Location, { foreignKey: 'locationId', as: 'location' });
+// models.Location.hasMany(models.Room, { foreignKey: 'locationId', as: 'rooms' });
+// models.Room.belongsTo(models.Location, { foreignKey: 'locationId', as: 'location' });
 
-models.Room.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
-models.Device.hasOne(models.Room, { foreignKey: 'deviceId', as: 'room' });
+// models.Room.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+// models.Device.hasOne(models.Room, { foreignKey: 'deviceId', as: 'room' });
 
-models.Room.hasMany(models.Booking, { foreignKey: 'roomId', as: 'bookings' });
-models.Booking.belongsTo(models.Room, { foreignKey: 'roomId', as: 'room' });
+// models.Room.hasMany(models.Booking, { foreignKey: 'roomId', as: 'bookings' });
+// models.Booking.belongsTo(models.Room, { foreignKey: 'roomId', as: 'room' });
 
 
 export default models;
