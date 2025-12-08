@@ -1000,6 +1000,115 @@ export class BillingPage implements OnInit {
     }
   }
 
+
+
+  async onProcessBillingManyMachine() {
+    try {
+      if (!this.selectedFile) {
+        alert('กรุณาเลือกไฟล์ Excel ก่อน');
+        return;
+      }
+
+      const data = {
+        machineId: this.machineId,
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        token: this.token,
+      };
+
+      const paramsData = {
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        machineId: this.machineId,
+        // ownerUuid: this.ownerUuid,
+        token: this.token
+      }
+
+      const billNotPaid = await this.apiService.loadVendingMachineBillNotPaidManyMachine(paramsData).toPromise();
+
+      const billNotPaidData = JSON.parse(JSON.stringify(billNotPaid['data']?.rows ?? []));
+
+
+      const dataServer = await this.apiService
+        .loadVendingMachineSaleBillReportManyMachine(data)
+        .toPromise();
+
+      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
+
+      // console.log('-----> billPaid :', run);
+
+
+      const bankIds = new Set(this.dataExcel.map(b => b["ເລກທູລະກຳ"]));
+      const myIds = new Set(run.map(m => m.transactionID));
+
+      // 1. bankTrand ที่มีใน mytrand
+      const bankInMy = this.dataExcel.filter(b => myIds.has(b["ເລກທູລະກຳ"]));
+      // console.log('-----> 1. bankTrand ที่มีใน mytrand :', bankInMy);
+      // this.exportBankExcel(bankInMy);
+
+
+      // 2. bankTrand ที่ไม่มีใน mytrand
+      const bankNotInMy = this.dataExcel.filter(b => !myIds.has(b["ເລກທູລະກຳ"]));
+      // console.log('-----> 2. bankTrand ที่ไม่มีใน mytrand :', bankNotInMy);
+      let myBankNoServer = [];
+      let myBankServer = [];
+      for (let index = 0; index < bankNotInMy.length; index++) {
+        const transactionID = bankNotInMy[index]['ເລກທູລະກຳ'];
+        const data = {
+          machineId: this.machineId,
+          fromDate: this.fromDate,
+          toDate: this.toDate,
+          token: this.token,
+          transactionID: transactionID
+        };
+
+        const responseServer = await this.apiService
+          .checkDBTransaction(data)
+          .toPromise();
+        if (responseServer['status'] == 1) {
+          myBankServer.push(responseServer['data']?.data);
+        } else {
+          myBankNoServer.push(bankNotInMy[index])
+        }
+      }
+
+
+
+      // 3. mytrand ที่มีใน bankTrand
+      const myInBank = run.filter(m => bankIds.has(m.transactionID));
+      // console.log('-----> 3. mytrand ที่มีใน bankTrand :', myInBank);
+
+
+      // 4. mytrand ที่ไม่มีใน bankTrand
+      const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
+      let myNotInBankNotPaid = [];
+      let myNotInBankPaid = [];
+
+      // console.log('-----> 4. mytrand ที่ไม่มีใน bankTrand :', myNotInBank);
+      for (let index = 0; index < myNotInBank.length; index++) {
+        const element = myNotInBank[index];
+        const responseCheck = await this.apiService
+          .checkLaoQRTransaction(element?.transactionID)
+          .toPromise();
+
+        if (responseCheck['status'] == 1) {
+          myNotInBankPaid.push(responseCheck['data']?.data);
+        } else {
+          myNotInBankNotPaid.push(element)
+        }
+      }
+
+
+      this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer, billNotPaidData, run, myInBank, this.dataExcel);
+
+
+      // 4. mytrand ที่ไม่มีใน bankTrand
+      // const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
+    } catch (error) {
+      console.error('Error onProcessBilling:', error);
+    }
+  }
+
   // ✅ ยกเลิกไฟล์
   cancelFile() {
     this.selectedFile = null;

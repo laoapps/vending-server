@@ -574,6 +574,17 @@ export class ApiService {
         return this.http.post(this.url + '/loadVendingMachineSaleBillReport', payload, { headers: this.headerBase() });
     }
 
+    loadVendingMachineSaleBillReportManyMachine(data: any) {
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/loadVendingMachineSaleBillReportManyMachine', payload, { headers: this.headerBase() });
+    }
+
     checkAndConfirmBillToDeliver(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');
@@ -622,6 +633,17 @@ export class ApiService {
             secret
         };
         return this.http.post(this.url + '/reportBillNotPaid', payload, { headers: this.headerBase() });
+    }
+
+    loadVendingMachineBillNotPaidManyMachine(data: any) {
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/reportBillNotPaidManyMachine', payload, { headers: this.headerBase() });
     }
 
     CheckBillPaidFromMmoney(data: any) {

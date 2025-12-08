@@ -4586,14 +4586,14 @@ export class InventoryZDM8 implements IBaseClass {
 
                         const data = req.body;
                         const ownerUuid = res.locals["ownerUuid"];
-                        // const machineId = data.machineId;
+                        const machineId = data.machineId;
 
                         if (!transactionID) {
                             return res.send(PrintError('checkDBTransaction', {}, EMessage.bodyIsEmpty, returnLog(req, res, true)));
                         }
                         const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
                         await ent.sync();
-                        ent.findOne({ where: { transactionID: transactionID } }).then(r => {
+                        ent.findOne({ where: { transactionID: transactionID, machineId: machineId } }).then(r => {
                             if (r) {
                                 return res.send(PrintSucceeded('checkDBTransaction', r, EMessage.succeeded, returnLog(req, res, true)));
 
