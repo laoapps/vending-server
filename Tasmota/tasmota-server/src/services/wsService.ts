@@ -10,7 +10,11 @@ export const adminClients: Set<{WebSocket:WebSocket,uuid:string}> = new Set();
 export const ownerClients: Map<number, Set<{WebSocket:WebSocket,uuid:string}>> = new Map();
 
 export const notifyStakeholders = async (order: Order, message: string) => {
-  const device = await models.Device.findByPk(order.dataValues.deviceId);
+  if(!order) {
+    console.log('Order not found');
+    return;
+  }
+  const device = await models.Device.findByPk(order?.dataValues?.deviceId);
   if (!device) {
     console.log('Device not found');
  return;

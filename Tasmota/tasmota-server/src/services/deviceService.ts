@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import models from '../models';
-import { Device, DeviceAssociations, DeviceAttributes } from '../models/device';
+import { Device, DeviceAttributes } from '../models/device';
 import { publishMqttMessage } from './mqttService';
 import { findUuidByPhoneNumberOnUserManager } from './userManagerService';
 
-type DeviceWithAssociations = Device & DeviceAssociations;
+
 interface User {
   uuid: string;
   role: string;
@@ -96,7 +96,7 @@ export class DeviceService {
   static async controlDevice(deviceId: number, input: { command?: string; relay?: number; conditionType?: string; conditionValue?: number }): Promise<void> {
     try {
       const { command, relay, conditionType, conditionValue } = controlDeviceSchema.parse(input);
-      const device: DeviceWithAssociations | null = await models.Device.findByPk(deviceId);
+      const device = await models.Device.findByPk(deviceId);
 
       if (!device) throw new Error('Device not found');
       console.log(`Controlling device with ID: ${deviceId}, Command: ${command}, Relay: ${relay}`);
