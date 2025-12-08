@@ -1,17 +1,22 @@
+// capacitor.config.ts
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
+  appId: 'com.laoapps.vendingadminpro',
   appName: 'AdminUI',
   webDir: 'www',
   bundledWebRuntime: false,
-  "server": {
-    "hostname": "localhost",
-    "iosScheme": "https",
-    "androidScheme": "https",
-    "url": "http://localhost",
-    "allowNavigation": [
-    ]
+
+  // ← DELETE the entire "server" block or make it look like this:
+  // server: {
+  //   hostname: 'localhost'   // optional, harmless
+  // },
+
+  // This is important for Mac Catalyst apps that call real APIs
+  plugins: {
+    CapacitorHttp: {
+      enabled: true   // allows http + self-signed HTTPS on Mac
+    }
   }
 };
 

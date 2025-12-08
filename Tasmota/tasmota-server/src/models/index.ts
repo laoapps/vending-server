@@ -10,6 +10,9 @@ import { initUnregisteredDeviceModel, UnregisteredDevice } from './unregisteredD
 import { initScheduleHistoryModel, ScheduleHistory } from './scheduleHistory';
 import { initOrderModel, Order } from './order';
 import { initNotificationModel } from './notification';
+import RoomModel from './room.model';
+import BookingModel from './booking.model';
+import { initLocationModel } from './location.model';
 
 const models = {
   Owner: initOwnerModel(sequelize),
@@ -23,6 +26,10 @@ const models = {
   ScheduleHistory: initScheduleHistoryModel(sequelize),
   Order:initOrderModel(sequelize),
   Notification: initNotificationModel(sequelize),
+  // HOTEL MODELS — NOW REGISTERED!
+  Location: initLocationModel(sequelize),
+  Room: RoomModel,           // Already initialized in room.model.ts
+  Booking: BookingModel,     // Already initialized in booking.model.ts
 };
 
 // Define relationships
@@ -53,6 +60,16 @@ models.Order.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' })
 
 // models.Device.hasMany(models.ScheduleHistory, { foreignKey: 'deviceId', as: 'scheduleHistories' });
 // models.ScheduleHistory.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+// Hotel System — NEW ASSOCIATIONS
+// models.Location.hasMany(models.Room, { foreignKey: 'locationId', as: 'rooms' });
+// models.Room.belongsTo(models.Location, { foreignKey: 'locationId', as: 'location' });
+
+// models.Room.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+// models.Device.hasOne(models.Room, { foreignKey: 'deviceId', as: 'room' });
+
+// models.Room.hasMany(models.Booking, { foreignKey: 'roomId', as: 'bookings' });
+// models.Booking.belongsTo(models.Room, { foreignKey: 'roomId', as: 'room' });
+
 
 export default models;
 export { sequelize };

@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+
 
 import { publishMqttMessage, subscribeToTopic } from '../services/mqttService';
 import redis from '../config/redis';

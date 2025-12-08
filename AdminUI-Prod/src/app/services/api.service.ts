@@ -16,6 +16,8 @@ import { BehaviorSubject } from 'rxjs';
 // import * as XLSX from 'xlsx';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { Capacitor } from '@capacitor/core';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -154,6 +156,11 @@ export class ApiService {
             confirmButtonColor: '#A5DC86',
             heightAuto: false
         });
+    }
+    public  logPlatformInfo() {
+        const platform = Capacitor.getPlatform();
+        console.log(`Running on platform: ${platform}`);
+        return platform;
     }
 
     public async presentPhoneSecretDialog(): Promise<{ phoneNumber: string; secret: string } | null> {

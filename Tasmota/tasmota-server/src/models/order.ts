@@ -7,7 +7,7 @@ export interface OrderAttributes {
   uuid: string;
   deviceId: number;
   packageId: number;
-  paidTime: Date;
+  paidTime: Date|null;
   startedTime: Date;
   completedTime: Date;
   createdAt: Date;
