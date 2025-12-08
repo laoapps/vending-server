@@ -34,11 +34,11 @@ app.use('/api/schedule-packages', schedulePackageRoutes);
 app.use('/api/unregistered-devices', unregisteredDeviceRoutes);
 app.use('/api/orders', orderRoutes)
 // NEW: Hotel/Booking Routes
-app.use('/api', bookingRoutes);
+
 
 // Add these lines
-app.use('/api', locationRoutes);
-app.use('/api', roomRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/rooms', roomRoutes);
 // NEW: User Schedules Endpoint (missing before)
 // app.get('/api/schedules/my', authMiddleware, async (req, res) => {
 //   try {
@@ -56,11 +56,11 @@ app.use('/api', roomRoutes);
 // app.use('/api/rooms', roomRoutes);           // optional, if you want /rooms/:id
 app.use('/api/bookings', bookingRoutes);
 // NEW: QR Payment
-app.post('/api/payments/qr', authMiddleware, async (req, res) => {
-  const { bookingId, amount } = req.body;
-  const qrData = JSON.stringify({ id: bookingId, amount, token: req.headers.authorization?.split(' ')[1] });
-  res.json({ qrCode: qrData });
-});
+// app.post('/api/payments/qr', authMiddleware, async (req, res) => {
+//   const { bookingId, amount } = req.body;
+//   const qrData = JSON.stringify({ id: bookingId, amount, token: req.headers.authorization?.split(' ')[1] });
+//   res.json({ qrCode: qrData });
+// });
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
 app.use(errorHandler);
