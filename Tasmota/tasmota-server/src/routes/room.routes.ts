@@ -6,8 +6,8 @@ import { authMiddleware } from '../middleware/authMiddleware';
 const router = Router();
 
 // PUBLIC
-router.get('/locations/:locationId/rooms', RoomController.getByLocation);
-router.get('/rooms/:id', RoomController.getById);
+router.get('/locations/:locationId', RoomController.getByLocation);
+router.get('/:id', RoomController.getById);
 
 // OWNER + ADMIN ONLY
 router.get('/owner/rooms', authMiddleware, RoomController.getOwnerRooms);

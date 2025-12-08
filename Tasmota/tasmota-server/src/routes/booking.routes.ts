@@ -6,15 +6,15 @@ import { authMiddleware } from '../middleware/authMiddleware';
 const router = Router();
 
 // USER
-router.post('/bookings', authMiddleware, BookingController.create);
-router.post('/bookings/pay', BookingController.payCallback); // no auth — bank calls this
-router.get('/bookings/my', authMiddleware, BookingController.getMyBookings);
+router.post('/', authMiddleware, BookingController.create);
+router.post('/pay', BookingController.payCallback); // no auth — bank calls this
+router.get('/my', authMiddleware, BookingController.getMyBookings);
 
 // OWNER
-router.get('/bookings/owner', authMiddleware, BookingController.getOwnerBookings);
+router.get('/owner', authMiddleware, BookingController.getOwnerBookings);
 
 // ADMIN
-router.get('/bookings/admin', authMiddleware, BookingController.getAllBookings);
-router.get('/bookings/admin/:locationid', authMiddleware, BookingController.getBookingsByLocation);
+router.get('/admin', authMiddleware, BookingController.getAllBookings);
+router.get('/admin/:locationid', authMiddleware, BookingController.getBookingsByLocation);
 
 export default router;
