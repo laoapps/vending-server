@@ -8,7 +8,7 @@ export class LocationController {
   static async getAll(req: Request, res: Response) {
     try {
       const locations = await LocationModel.findAll({
-        include: [{ model: RoomModel, as: 'rooms' }],
+
       });
       res.json(locations);
     } catch (error: any) {
@@ -20,7 +20,7 @@ export class LocationController {
   static async getById(req: Request, res: Response) {
     try {
       const location = await LocationModel.findByPk(req.params.id, {
-        include: [{ model: RoomModel, as: 'rooms' }],
+        // include: [{ model: RoomModel, as: 'rooms' }],
       });
       if (!location) return res.status(404).json({ error: 'Location not found' });
       res.json(location);

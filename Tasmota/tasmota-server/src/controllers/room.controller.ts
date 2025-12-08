@@ -12,7 +12,7 @@ export class RoomController {
     try {
       const rooms = await RoomModel.findAll({
         where: { locationId: req.params.locationId },
-        include: [{ model: LocationModel, as: 'location' }],
+        // include: [{ model: LocationModel, as: 'location' }],
       });
       res.json(rooms);
     } catch (error: any) {
@@ -23,7 +23,7 @@ export class RoomController {
   static async getById(req: Request, res: Response) {
     try {
       const room = await RoomModel.findByPk(req.params.id, {
-        include: [{ model: LocationModel, as: 'location' }],
+        // include: [{ model: LocationModel, as: 'location' }],
       });
       if (!room) return res.status(404).json({ error: 'Room not found' });
       res.json(room);
@@ -40,10 +40,10 @@ export class RoomController {
     }
 
     const rooms = await RoomModel.findAll({
-      include: [
-        { model: LocationModel, as: 'location' },
-        { model: Device, as: 'device' }
-      ],
+    //   include: [
+    //     { model: LocationModel, as: 'location' },
+    //     { model: Device, as: 'device' }
+    //   ],
     });
     res.json(rooms);
   }
