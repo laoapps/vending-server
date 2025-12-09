@@ -9,7 +9,7 @@ export const userClients: Map<string, Set<{WebSocket:WebSocket,uuid:string}>> = 
 export const adminClients: Set<{WebSocket:WebSocket,uuid:string}> = new Set();
 export const ownerClients: Map<number, Set<{WebSocket:WebSocket,uuid:string}>> = new Map();
 
-export const notifyStakeholders = async (order: Order, message: string) => {
+export const notifyStakeholders = async (order?: Order, message?: string) => {
   if(!order) {
     console.log('Order not found');
     return;

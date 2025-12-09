@@ -8,83 +8,108 @@ import { generateQR } from '../services/lakService';
 import { publishMqttMessage } from '../services/mqttService';
 import redis from '../config/redis';
 import models from '../models';
+import { notifyStakeholders } from '../services/wsService';
 
 export class BookingController {
   // USER: Create booking
   static async create(req: Request, res: Response) {
-    const {
-      roomId,
-      checkIn = new Date().toISOString(),
-      guests = 1,
-      conditionType = 'time_duration',
-      conditionValue,
-    } = req.body;
     const userUuid = res.locals.user.uuid;
-
-    if (!['time_duration', 'energy_consumption'].includes(conditionType)) {
-      return res.status(400).json({ error: 'Invalid conditionType' });
-    }
-    if (!conditionValue || conditionValue <= 0) {
-      return res.status(400).json({ error: 'conditionValue required' });
-    }
+    let { roomId, checkIn, checkOut, guests = 1, conditionType, conditionValue, packageId } = req.body;
 
     try {
-      const room = await RoomModel.findByPk(roomId);
+      const room = await models.Room.findByPk(roomId);
       if (!room) return res.status(404).json({ error: 'Room not found' });
-      if (!room.available) return res.status(400).json({ error: 'Room not available' });
-      if (!room.deviceId) return res.status(400).json({ error: 'No device assigned' });
-
-      const device = await Device.findByPk(room.deviceId);
-      if (!device) return res.status(500).json({ error: 'Device error' });
+      if (!room.dataValues.available) return res.status(400).json({ error: 'Room unavailable' });
 
       let totalPrice = 0;
-      let checkOutDate: Date | null = null;
+      let mode: 'hotel' | 'condo' | 'package' = 'hotel';
 
-      if (conditionType === 'time_duration') {
-        const hours = Number(conditionValue);
-        totalPrice = room.price * hours * guests;
-        checkOutDate = new Date(new Date(checkIn).getTime() + hours * 60 * 60 * 1000);
-      } else {
-        const kwh = Number(conditionValue);
-        totalPrice = room.price * kwh * guests;
+      // Mode 1: Hotel by nights
+      if (conditionType === 'time_duration' && checkIn && checkOut) {
+        mode = 'hotel';
+        const checkInDate = new Date(checkIn);
+        const checkOutDate = new Date(checkOut);
+        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
+        totalPrice = room.price * nights * guests;
+
+        // Check availability
+        const conflicting = await models.Booking.findOne({
+          where: {
+            roomId,
+            status: { [Op.notIn]: ['cancelled', 'checked_out'] },
+            [Op.or]: [
+              { checkIn: { [Op.lt]: checkOutDate }, checkOut: { [Op.gt]: checkInDate } }
+            ]
+          }
+        });
+        if (conflicting) return res.status(400).json({ error: 'Dates unavailable' });
       }
 
-      const booking = await BookingModel.create({
+      // Mode 2: Condo by kWh
+      else if (conditionType === 'energy_consumption') {
+        mode = 'condo';
+        if (conditionValue <= 0) return res.status(400).json({ error: 'Invalid kWh' });
+        totalPrice = room.price * conditionValue;  // price per kWh
+      }
+
+      // Mode 3: Package
+      else if (packageId) {
+        mode = 'package';
+        const pkg = await models.SchedulePackage.findByPk(packageId);
+        if (!pkg) return res.status(404).json({ error: 'Package not found' });
+        totalPrice = pkg.dataValues.price;
+        conditionType = pkg.dataValues.conditionType;
+        conditionValue = pkg.dataValues.conditionValue;
+      }
+
+      else {
+        return res.status(400).json({ error: 'Invalid booking mode' });
+      }
+
+      // Create booking
+      const booking = await models.Booking.create({
         roomId,
         userUuid,
-        checkIn: new Date(checkIn),
-        checkOut: checkOutDate,
+        checkIn: checkIn ? new Date(checkIn) : null,
+        checkOut: checkOut ? new Date(checkOut) : null,
         guests,
         totalPrice,
-        conditionType,
-        conditionValue: Number(conditionValue),
         status: 'pending',
       });
 
-      const qr = await generateQR(
-        booking.id,
-        totalPrice,
-        req.headers.authorization?.split(' ')[1] || ''
-      );
+      // Generate QR
+      const qrData = await generateQR(booking.id, totalPrice, res.locals.user.token);
 
-      await redis.setex(`hotel_room_booked:${roomId}`, 300, '1');
+      // Cache for payment
+      await redis.set(`pending:${booking.id}`, JSON.stringify({ mode, deviceId: room.deviceId }), 'EX', 1800);
 
-      return res.json({
-        success: true,
-        booking,
-        paymentData: { amount: totalPrice },
-        qr,
-      });
-    } catch (err: any) {
-      console.error('Booking create error:', err);
-      return res.status(500).json({ error: 'Server error' });
+      res.json({ booking, qrCode: qrData.qrImage, totalPrice });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   }
 
   // PAYMENT CALLBACK (from bank)
   static async payCallback(req: Request, res: Response) {
-    // ... same as before — unchanged
-    // (kept exactly as working version above)
+    const { bookingId } = req.body;
+    try {
+      const cache = await redis.get(`pending:${bookingId}`);
+      if (!cache) return res.status(400).json({ error: 'Expired' });
+      const { mode, deviceId } = JSON.parse(cache);
+
+      await models.Booking.update({ status: 'paid', paidAt: new Date() }, { where: { id: bookingId } });
+
+      // Activate device
+      const device = await models.Device.findByPk(deviceId);
+      if (device) publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
+
+      notifyStakeholders(undefined, `Booking ${mode} paid`);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   }
 
   // USER: Get my bookings

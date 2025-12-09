@@ -7,7 +7,7 @@ const router = Router();
 
 // USER
 router.post('/', authMiddleware, BookingController.create);
-router.post('/pay', BookingController.payCallback); // no auth — bank calls this
+router.post('/pay', BookingController.payCallback); // no auth
 router.get('/my', authMiddleware, BookingController.getMyBookings);
 
 // OWNER

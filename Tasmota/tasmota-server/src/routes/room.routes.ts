@@ -8,7 +8,9 @@ const router = Router();
 // PUBLIC
 router.get('/locations/:locationId', RoomController.getByLocation);
 router.get('/:id', RoomController.getById);
-
+// src/routes/room.routes.ts  ← add these two lines
+router.put('/owner/update-type/:id', authMiddleware, RoomController.updateRoomType);
+router.get('/owner/my-rooms', authMiddleware, RoomController.getMyRooms);
 // OWNER + ADMIN ONLY
 router.get('/owner/rooms', authMiddleware, RoomController.getOwnerRooms);
 router.post('/owner/rooms', authMiddleware, RoomController.create);
