@@ -12,7 +12,7 @@ export interface DeviceGroupAttributes {
 
 export class DeviceGroup extends Model<DeviceGroupAttributes> {
   // Remove public class fields
-  // Attributes and associations are handled by Sequelize
+
 }
 
 export function initDeviceGroupModel(sequelize: Sequelize) {

@@ -19,12 +19,8 @@ export interface OrderAttributes {
   description:any;
 }
 
-export interface OrderAssociations {
-  package: SchedulePackage;
-  device: Device;
-}
 
-export class Order extends Model<OrderAttributes, OrderAssociations> {
+export class Order extends Model<OrderAttributes> {
   // declare getPackage: BelongsToGetAssociationMixin<SchedulePackage>;
   // declare getDevice: BelongsToGetAssociationMixin<Device>;
 }

@@ -1,170 +1,201 @@
 // src/controllers/booking.controller.ts
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 import BookingModel from '../models/booking.model';
 import RoomModel from '../models/room.model';
 import { Device } from '../models/device';
 import { generateQR } from '../services/lakService';
 import { publishMqttMessage } from '../services/mqttService';
 import redis from '../config/redis';
+import models from '../models';
+import { notifyStakeholders } from '../services/wsService';
 
 export class BookingController {
+  // USER: Create booking
   static async create(req: Request, res: Response) {
-    const {
-      roomId,
-      checkIn,
-      guests = 1,
-      conditionType = 'time_duration',
-      conditionValue,
-    } = req.body;
     const userUuid = res.locals.user.uuid;
-
-    if (!['time_duration', 'energy_consumption'].includes(conditionType)) {
-      return res.status(400).json({ error: 'Invalid conditionType' });
-    }
-    if (!conditionValue || conditionValue <= 0) {
-      return res.status(400).json({ error: 'conditionValue required' });
-    }
+    let { roomId, checkIn, checkOut, guests = 1, conditionType, conditionValue, packageId } = req.body;
 
     try {
-      // 1. Get room
-      const room = await RoomModel.findByPk(roomId);
+      const room = await models.Room.findByPk(roomId);
       if (!room) return res.status(404).json({ error: 'Room not found' });
-      if (!room.available) return res.status(400).json({ error: 'Room not available' });
-      if (!room.deviceId) return res.status(400).json({ error: 'No device assigned' });
+      if (!room.dataValues.available) return res.status(400).json({ error: 'Room unavailable' });
 
-      // 2. Get device manually
-      const device = await Device.findByPk(room.deviceId);
-      if (!device) return res.status(500).json({ error: 'Device not found in DB' });
-
-      // 3. Calculate price & checkout
       let totalPrice = 0;
-      let checkOutDate: Date | null = null;
+      let mode: 'hotel' | 'condo' | 'package' = 'hotel';
 
-      if (conditionType === 'time_duration') {
-        const hours = Number(conditionValue);
-        totalPrice = room.price * hours * guests;
-        checkOutDate = new Date(new Date(checkIn).getTime() + hours * 60 * 60 * 1000);
-      } else {
-        const kwh = Number(conditionValue);
-        totalPrice = room.price * kwh * guests;
+      // Mode 1: Hotel by nights
+      if (conditionType === 'time_duration' && checkIn && checkOut) {
+        mode = 'hotel';
+        const checkInDate = new Date(checkIn);
+        const checkOutDate = new Date(checkOut);
+        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
+        totalPrice = room.price * nights * guests;
+
+        // Check availability
+        const conflicting = await models.Booking.findOne({
+          where: {
+            roomId,
+            status: { [Op.notIn]: ['cancelled', 'checked_out'] },
+            [Op.or]: [
+              { checkIn: { [Op.lt]: checkOutDate }, checkOut: { [Op.gt]: checkInDate } }
+            ]
+          }
+        });
+        if (conflicting) return res.status(400).json({ error: 'Dates unavailable' });
       }
 
-      // 4. Create booking
-      const booking = await BookingModel.create({
+      // Mode 2: Condo by kWh
+      else if (conditionType === 'energy_consumption') {
+        mode = 'condo';
+        if (conditionValue <= 0) return res.status(400).json({ error: 'Invalid kWh' });
+        totalPrice = room.price * conditionValue;  // price per kWh
+      }
+
+      // Mode 3: Package
+      else if (packageId) {
+        mode = 'package';
+        const pkg = await models.SchedulePackage.findByPk(packageId);
+        if (!pkg) return res.status(404).json({ error: 'Package not found' });
+        totalPrice = pkg.dataValues.price;
+        conditionType = pkg.dataValues.conditionType;
+        conditionValue = pkg.dataValues.conditionValue;
+      }
+
+      else {
+        return res.status(400).json({ error: 'Invalid booking mode' });
+      }
+
+      // Create booking
+      const booking = await models.Booking.create({
         roomId,
         userUuid,
-        checkIn: new Date(checkIn),
-        checkOut: checkOutDate,
+        checkIn: checkIn ? new Date(checkIn) : null,
+        checkOut: checkOut ? new Date(checkOut) : null,
         guests,
         totalPrice,
-        conditionType,
-        conditionValue: Number(conditionValue),
         status: 'pending',
       });
 
-      // 5. Generate QR
-      const qr = await generateQR(
-        booking.id,
-        totalPrice,
-        req.headers.authorization?.split(' ')[1] || ''
-      );
+      // Generate QR
+      const qrData = await generateQR(booking.id, totalPrice, res.locals.user.token);
 
-      await redis.setex(`hotel_room_booked:${roomId}`, 300, '1');
+      // Cache for payment
+      await redis.set(`pending:${booking.id}`, JSON.stringify({ mode, deviceId: room.deviceId }), 'EX', 1800);
 
-      return res.json({
-        success: true,
-        booking,
-        paymentData: { amount: totalPrice },
-        qr,
-      });
-    } catch (err: any) {
-      console.error(err);
-      return res.status(500).json({ error: 'Server error' });
+      res.json({ booking, qrCode: qrData.qrImage, totalPrice });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   }
 
-  // PAYMENT CALLBACK
+  // PAYMENT CALLBACK (from bank)
   static async payCallback(req: Request, res: Response) {
     const { bookingId } = req.body;
-
     try {
-      const booking = await BookingModel.findByPk(bookingId);
-      if (!booking || booking.status !== 'pending') {
-        return res.status(400).json({ error: 'Invalid booking' });
-      }
+      const cache = await redis.get(`pending:${bookingId}`);
+      if (!cache) return res.status(400).json({ error: 'Expired' });
+      const { mode, deviceId } = JSON.parse(cache);
 
-      const room = await RoomModel.findByPk(booking.roomId);
-      if (!room || !room.deviceId) {
-        return res.status(500).json({ error: 'Room/device error' });
-      }
+      await models.Booking.update({ status: 'paid', paidAt: new Date() }, { where: { id: bookingId } });
 
-      const device = await Device.findByPk(room.deviceId);
-      if (!device) {
-        return res.status(500).json({ error: 'Device not found' });
-      }
+      // Activate device
+      const device = await models.Device.findByPk(deviceId);
+      if (device) publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
 
-      // Mark paid
-      await booking.update({ status: 'paid', paidAt: new Date() });
-
-      // Update room
-      await room.update({
-        available: false,
-        hotelCheckIn: booking.checkIn,
-        hotelCheckOut: booking.checkOut || new Date(Date.now() + 86400000),
-      });
-
-      // Clear old rules
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
-
-      // Apply time or kWh rule
-      if (booking.dataValues.conditionType === 'time_duration') {
-        const minutes = Math.ceil(booking.dataValues.conditionValue * 60);
-        const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
-        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, timer);
-      } else {
-        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
-        const target = (device.dataValues.energy || 0) + (booking.dataValues.conditionValue / 1000);
-        const rule = `ON Energy#Total>${target} DO Power1 OFF ENDON`;
-        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
-        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
-      }
-
-      // Turn ON
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER1`, 'ON');
+      notifyStakeholders(undefined, `Booking ${mode} paid`);
 
       res.json({ success: true });
-    } catch (err: any) {
-      console.error(err);
-      res.status(500).json({ error: 'Payment failed' });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   }
 
-  // GET MY BOOKINGS
+  // USER: Get my bookings
   static async getMyBookings(req: Request, res: Response) {
     const userUuid = res.locals.user.uuid;
 
-    try {
-      const bookings = await BookingModel.findAll({
-        where: { userUuid },
-        include: [RoomModel], // only room, no nested device
-        order: [['createdAt', 'DESC']],
-      });
+    const bookings = await BookingModel.findAll({
+      where: { userUuid },
+    //   include: [{
+    //     model: RoomModel,
+    //     include: ['location']
+    //   }],
+      order: [['createdAt', 'DESC']],
+    });
 
-      // Add device info manually if needed
-      const result = await Promise.all(
-        bookings.map(async (b: any) => {
-          if (b.room?.deviceId) {
-            const device = await Device.findByPk(b.room.deviceId);
-            b.dataValues.device = device;
-          }
-          return b;
-        })
-      );
+    // Add device info manually
+    const result = await Promise.all(
+      bookings.map(async (b: any) => {
+        if (b.room?.deviceId) {
+          const device = await Device.findByPk(b.room.deviceId);
+          b.dataValues.device = device;
+        }
+        return b;
+      })
+    );
 
-      res.json(result);
-    } catch (err) {
-      res.status(500).json({ error: 'Load failed' });
+    res.json(result);
+  }
+
+  // OWNER: Get all bookings in their hotels
+  static async getOwnerBookings(req: Request, res: Response) {
+    const userUuid = res.locals.user.uuid;
+    const userRole = res.locals.user.role;
+
+    if (userRole !== 'owner') {
+      return res.status(403).json({ error: 'Owner access only' });
     }
+
+    const bookings = await BookingModel.findAll({
+    //   include: [{
+    //     model: RoomModel,
+    //     include: ['location'],
+    //     where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
+    //   }],
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json(bookings);
+  }
+
+  // ADMIN: Get all bookings (global)
+  static async getAllBookings(req: Request, res: Response) {
+    const userRole = res.locals.user.role;
+    if (userRole !== 'admin') {
+      return res.status(403).json({ error: 'Admin access only' });
+    }
+
+    const bookings = await BookingModel.findAll({
+    //   include: [{
+    //     model: RoomModel,
+    //     include: ['location']
+    //   }],
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json(bookings);
+  }
+
+  // ADMIN: Get bookings by location
+  static async getBookingsByLocation(req: Request, res: Response) {
+    const userRole = res.locals.user.role;
+    if (userRole !== 'admin') {
+      return res.status(403).json({ error: 'Admin access only' });
+    }
+
+    const { locationid } = req.params;
+
+    const bookings = await BookingModel.findAll({
+    //   include: [{
+    //     model: RoomModel,
+    //     where: { locationId: locationid },
+    //     // include: ['location']
+    //   }],
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json(bookings);
   }
 }

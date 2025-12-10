@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import models from '../models';
-
-import { Device, DeviceAssociations } from '../models/device';
 import { Op } from 'sequelize';
-type DeviceWithAssociations = Device & DeviceAssociations;
+
 export const createSchedulePackage = async (req: Request, res: Response) => {
   const { name, price, conditionType, conditionValue, description } = req.body;
   console.log('createSchedulePackage',req.body, description);
