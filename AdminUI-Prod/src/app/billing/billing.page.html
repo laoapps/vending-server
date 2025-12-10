@@ -49,6 +49,11 @@
           <ion-icon name="play-outline" slot="start"></ion-icon>
           Process Billing
         </ion-button>
+
+        <ion-button expand="block" color="success" (click)="onProcessBillingManyMachine()" [disabled]="!selectedFile">
+          <ion-icon name="play-outline" slot="start"></ion-icon>
+          Process Multi Billing
+        </ion-button>
       </div>
     </ion-card-content>
   </ion-card>

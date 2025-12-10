@@ -1010,7 +1010,7 @@ export class BillingPage implements OnInit {
       }
 
       const data = {
-        machineId: this.machineId,
+        machineId: ['55555002', '55555003'],
         fromDate: this.fromDate,
         toDate: this.toDate,
         token: this.token,
