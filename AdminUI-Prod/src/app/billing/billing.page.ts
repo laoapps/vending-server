@@ -12,6 +12,8 @@ import *as moment from "moment-timezone";
 export class BillingPage implements OnInit {
   private token: string;
   _l: any[] = [];
+
+  _lServer: any[] = [];
   bankInMyData: any = null;
   allMMoneyData: any[] = [];
   finalArrayData: any[] = [];
@@ -53,7 +55,11 @@ export class BillingPage implements OnInit {
         "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
         "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
         "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-        "ວັນທີ": item["ວັນທີ"].toString()
+        "ວັນທີ": item["ວັນທີ"].toString(),
+        "ເລກຕູ້": this._lServer.find(
+          item2 => item2["transactionID"] === item["ເລກທູລະກຳ"]
+        )?.machineId ?? ""
+
       }));
 
     // -------- คำนวณข้อมูลสรุป --------
@@ -186,6 +192,7 @@ export class BillingPage implements OnInit {
           "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
           "ຊ່ອງທາງ": item["paymentref"],
           "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+          "ເລກຕູ້": item["machineId"] ?? ''
         };
 
         // ถ้ามี dropAt null → เพิ่ม field พิเศษ
@@ -240,7 +247,11 @@ export class BillingPage implements OnInit {
         "ເລກທູລະກຳ": item["billNumber"],
         "ຈຳນວນເງິນ": this.clearPrice(item["txnAmount"].toString()),
         "ຊ່ອງທາງ": item["refNo"],
-        "ວັນທີ": item["txnDateTime"].toString()
+        "ວັນທີ": item["txnDateTime"].toString(),
+        "ເລກຕູ້": this._lServer.find(
+          item2 => item2["transactionID"] === item["billNumber"]
+        )?.machineId ?? ""
+
       }));
 
     // -------- คำนวณข้อมูลสรุป --------
@@ -290,7 +301,11 @@ export class BillingPage implements OnInit {
       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
       "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-      "ວັນທີ": item["ວັນທີ"].toString()
+      "ວັນທີ": item["ວັນທີ"].toString(),
+      "ເລກຕູ້": this._lServer.find(
+        item2 => item2["transactionID"] === item["ເລກທູລະກຳ"]
+      )?.machineId ?? ""
+
     }));
 
     // -------- คำนวณข้อมูลสรุป --------
@@ -335,7 +350,11 @@ export class BillingPage implements OnInit {
         "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
         "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
         "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-        "ວັນທີ": item["ວັນທີ"].toString()
+        "ວັນທີ": item["ວັນທີ"].toString(),
+        "ເລກຕູ້": this._lServer.find(
+          item2 => item2["transactionID"] === item["ເລກທູລະກຳ"]
+        )?.machineId ?? ""
+
       }));
 
     // -------- คำนวณข้อมูลสรุป --------
@@ -409,6 +428,7 @@ export class BillingPage implements OnInit {
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
         "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ເລກຕູ້": item["machineId"] ?? ''
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -453,6 +473,7 @@ export class BillingPage implements OnInit {
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentmethod"],
         "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ເລກຕູ້": item["machineId"] ?? ''
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -496,6 +517,7 @@ export class BillingPage implements OnInit {
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
         "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ເລກຕູ້": item["machineId"] ?? ''
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -540,6 +562,7 @@ export class BillingPage implements OnInit {
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
         "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ເລກຕູ້": item["machineId"] ?? ''
       };
 
       // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
@@ -700,7 +723,11 @@ export class BillingPage implements OnInit {
         createAt: main['ວັນທີ'] ?? '',
         // เงื่อนไขตามที่คุณต้องการ
         isSendDrop: !!match31,
-        isRequest: !!match32
+        isRequest: !!match32,
+        "ເລກຕູ້": this._lServer.find(
+          item2 => item2["transactionID"] === main["ເລກທູລະກຳ"]
+        )?.machineId ?? ""
+
       });
 
     });
@@ -791,6 +818,10 @@ export class BillingPage implements OnInit {
       "ref": item['vendingsales'],
       "ຍິງຕົກເອງ": item['isSendDrop'] ? 'YES' : '',
       "ຕ້ອງທວງເງິນ": item['isRequest'] ? 'YES' : '',
+      "ເລກຕູ້": this._lServer.find(
+        item2 => item2["transactionID"] === item["transactionID"]
+      )?.machineId ?? ""
+
     }));
 
     // -------- คำนวณข้อมูลสรุป --------
@@ -914,7 +945,23 @@ export class BillingPage implements OnInit {
         .loadVendingMachineSaleBillReport(data)
         .toPromise();
 
+
+      const dataAllPa = {
+        machineId: ['55555002', '55555003'],
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        token: this.token,
+      };
+
+      const dataAll = await this.apiService
+        .loadVendingMachineSaleBillReportManyMachine(dataAllPa)
+        .toPromise();
+
       const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
+      this._lServer = run;
+
+      const runAll = JSON.parse(JSON.stringify(dataAll['data']?.rows ?? []));
+      this._lServer = runAll;
 
       // console.log('-----> billPaid :', run);
 
@@ -1034,6 +1081,7 @@ export class BillingPage implements OnInit {
         .toPromise();
 
       const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
+      this._lServer = run;
 
       // console.log('-----> billPaid :', run);
 
@@ -1063,7 +1111,7 @@ export class BillingPage implements OnInit {
         };
 
         const responseServer = await this.apiService
-          .checkDBTransaction(data)
+          .checkDBTransactionMulti(data)
           .toPromise();
         if (responseServer['status'] == 1) {
           myBankServer.push(responseServer['data']?.data);

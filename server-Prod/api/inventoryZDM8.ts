@@ -4626,26 +4626,61 @@ export class InventoryZDM8 implements IBaseClass {
                         const ownerUuid = res.locals["ownerUuid"];
 
                         if (!transactionID) {
-                            return res.send(PrintError('checkDBTransaction', {}, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return res.send(PrintError('checkDBTransactionMulti', {}, EMessage.bodyIsEmpty, returnLog(req, res, true)));
                         }
                         const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
                         await ent.sync();
                         ent.findOne({ where: { transactionID: transactionID } }).then(r => {
                             if (r) {
-                                return res.send(PrintSucceeded('checkDBTransaction', r, EMessage.succeeded, returnLog(req, res, true)));
-
+                                return res.send(PrintSucceeded('checkDBTransactionMulti', r, EMessage.succeeded, returnLog(req, res, true)));
                             } else {
-                                return res.send(PrintError('checkDBTransaction', {}, EMessage.error, returnLog(req, res, true)));
+                                return res.send(PrintError('checkDBTransactionMulti', {}, EMessage.error, returnLog(req, res, true)));
                             }
                         }).catch(err => {
-                            console.error('err checkDBTransaction is :', JSON.stringify(err));
+                            console.error('err checkDBTransactionMulti is :', JSON.stringify(err));
 
-                            res.send(PrintError('checkDBTransaction', err, EMessage.error, returnLog(req, res, true)));
+                            res.send(PrintError('checkDBTransactionMulti', err, EMessage.error, returnLog(req, res, true)));
 
                         })
                     } catch (error) {
-                        console.error('Error checkDBTransaction is :', JSON.stringify(error));
-                        res.send(PrintError('checkDBTransaction', error, EMessage.error, returnLog(req, res, true)));
+                        console.error('Error checkDBTransactionMulti is :', JSON.stringify(error));
+                        res.send(PrintError('checkDBTransactionMulti', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            )
+
+
+            router.post(this.path + '/checkBillTransactionFromDB',
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const transactionID = req.body.transactionID;
+
+                        // const data = req.body;
+                        const ownerUuid = req.body.ownerUuid;
+
+                        if (!transactionID) {
+                            return res.send(PrintError('checkBillTransactionFromDB', {}, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+                        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + "_" + ownerUuid, dbConnection);
+                        await ent.sync();
+                        ent.findOne({ where: { transactionID: transactionID } }).then(r => {
+                            if (r) {
+                                return res.send(PrintSucceeded('checkBillTransactionFromDB', r, EMessage.succeeded, returnLog(req, res, true)));
+                            } else {
+                                return res.send(PrintError('checkBillTransactionFromDB', {}, EMessage.error, returnLog(req, res, true)));
+                            }
+                        }).catch(err => {
+                            console.error('err checkBillTransactionFromDB is :', JSON.stringify(err));
+
+                            res.send(PrintError('checkBillTransactionFromDB', err, EMessage.error, returnLog(req, res, true)));
+
+                        })
+                    } catch (error) {
+                        console.error('Error checkBillTransactionFromDB is :', JSON.stringify(error));
+                        res.send(PrintError('checkBillTransactionFromDB', error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             )

@@ -157,7 +157,7 @@ export class ApiService {
             heightAuto: false
         });
     }
-    public  logPlatformInfo() {
+    public logPlatformInfo() {
         const platform = Capacitor.getPlatform();
         console.log(`Running on platform: ${platform}`);
         return platform;
@@ -618,6 +618,18 @@ export class ApiService {
             secret
         };
         return this.http.post(this.url + '/checkDBTransaction', payload, { headers: this.headerBase() });
+    }
+
+
+    checkDBTransactionMulti(data: any) {
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            shopPhonenumber,
+            secret
+        };
+        return this.http.post(this.url + '/checkDBTransactionMulti', payload, { headers: this.headerBase() });
     }
 
     loadVendingMachineDropReport(data: any) {
