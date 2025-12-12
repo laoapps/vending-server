@@ -19,7 +19,7 @@ export class BookingController {
     try {
       const room = await models.Room.findByPk(roomId);
       if (!room) return res.status(404).json({ error: 'Room not found' });
-      if (!room.dataValues.available) return res.status(400).json({ error: 'Room unavailable' });
+      if (!room.dataValues.capacity) return res.status(400).json({ error: 'Room unavailable' });
 
       let totalPrice = 0;
       let mode: 'hotel' | 'condo' | 'package' = 'hotel';
