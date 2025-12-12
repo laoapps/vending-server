@@ -45,7 +45,7 @@ export const createDevice = async (req: Request, res: Response) => {
 
 export const getDevices = async (req: Request, res: Response) => {
   const user = res.locals.user;
-  const { dtype } = req.body;
+  const dtype = req.params['dtype'];
   try {
     const devices = await DeviceService.getDevices(user,dtype);
     res.json(devices);

@@ -6,7 +6,7 @@ import { createDevice, getDevices, updateDevice, deleteDevice, controlDevice, cl
 const router = Router();
 
 router.post('/', authMiddleware, validate(createDeviceSchema), createDevice);
-router.get('/', authMiddleware, getDevices);
+router.get('/:dtype', authMiddleware, getDevices);
 router.post('/getDevicesBy', authMiddleware, getDevicesBy);
 router.post('/getDevicesByHMVending',authHMVending, getDevicesByHMVending);
 router.put('/:id', authMiddleware, validate(createDeviceSchema), updateDevice);
