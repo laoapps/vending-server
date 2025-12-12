@@ -79,7 +79,7 @@ static async updateRoomType(req: Request, res: Response) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { locationId, name, price, details, photo, deviceId } = req.body;
+    const { locationId, name, price, details, photo, deviceId, roomType, capacity  } = req.body;
 
     try {
       if (deviceId) {
@@ -94,6 +94,8 @@ static async updateRoomType(req: Request, res: Response) {
         details,
         photo,
         deviceId: deviceId || null,
+        roomType,
+        capacity
       });
 
       res.status(201).json(room);
@@ -104,7 +106,7 @@ static async updateRoomType(req: Request, res: Response) {
 
   static async update(req: Request, res: Response) {
     const { id } = req.params;
-    const { name, price, details, photo, deviceId } = req.body;
+    const { name, price, details, photo, deviceId, roomType, capacity } = req.body;
     const userRole = res.locals.user.role;
 
     if (!['owner', 'admin'].includes(userRole)) {
@@ -122,7 +124,7 @@ static async updateRoomType(req: Request, res: Response) {
         if (used) return res.status(400).json({ error: 'Device already used' });
       }
 
-      await room.update({ name, price, details, photo, deviceId });
+      await room.update({ name, price, details, photo, deviceId, roomType, capacity });
       res.json(room);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
