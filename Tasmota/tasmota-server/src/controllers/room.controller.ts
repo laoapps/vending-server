@@ -98,7 +98,7 @@ static async updateRoomType(req: Request, res: Response) {
         capacity
       });
 
-      res.status(201).json(room);
+      res.status(200).json(room);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

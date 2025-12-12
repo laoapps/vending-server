@@ -45,7 +45,7 @@ export class LocationController {
         description,
         photo,
       });
-      res.status(201).json(location);
+      res.status(200).json(location);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
