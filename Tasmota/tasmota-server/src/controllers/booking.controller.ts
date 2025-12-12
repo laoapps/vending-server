@@ -14,7 +14,7 @@ export class BookingController {
   // USER: Create booking
   static async create(req: Request, res: Response) {
     const userUuid = res.locals.user.uuid;
-    let { roomId, checkIn, checkOut, guests = 1, conditionType, conditionValue, packageId } = req.body;
+    let { roomId, checkIn, checkOut, guests = 1 } = req.body;
 
     try {
       const room = await models.Room.findByPk(roomId);
@@ -25,13 +25,13 @@ export class BookingController {
       let mode: 'hotel' | 'condo' | 'package' = 'hotel';
 
       // Mode 1: Hotel by nights
-      if (conditionType === 'time_duration' && checkIn && checkOut) {
+      if (room?.dataValues?.roomType === 'time_only' && checkIn && checkOut) {
         mode = 'hotel';
         const checkInDate = new Date(checkIn);
         const checkOutDate = new Date(checkOut);
         const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
         if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
-        totalPrice = room.price * nights * guests;
+        totalPrice = room?.dataValues?.price * nights;
 
         // Check availability
         const conflicting = await models.Booking.findOne({
@@ -46,22 +46,22 @@ export class BookingController {
         if (conflicting) return res.status(400).json({ error: 'Dates unavailable' });
       }
 
-      // Mode 2: Condo by kWh
-      else if (conditionType === 'energy_consumption') {
-        mode = 'condo';
-        if (conditionValue <= 0) return res.status(400).json({ error: 'Invalid kWh' });
-        totalPrice = room.price * conditionValue;  // price per kWh
-      }
+      // // Mode 2: Condo by kWh
+      // else if (conditionType === 'energy_consumption') {
+      //   mode = 'condo';
+      //   if (conditionValue <= 0) return res.status(400).json({ error: 'Invalid kWh' });
+      //   totalPrice = room.price * conditionValue;  // price per kWh
+      // }
 
-      // Mode 3: Package
-      else if (packageId) {
-        mode = 'package';
-        const pkg = await models.SchedulePackage.findByPk(packageId);
-        if (!pkg) return res.status(404).json({ error: 'Package not found' });
-        totalPrice = pkg.dataValues.price;
-        conditionType = pkg.dataValues.conditionType;
-        conditionValue = pkg.dataValues.conditionValue;
-      }
+      // // Mode 3: Package
+      // else if (packageId) {
+      //   mode = 'package';
+      //   const pkg = await models.SchedulePackage.findByPk(packageId);
+      //   if (!pkg) return res.status(404).json({ error: 'Package not found' });
+      //   totalPrice = pkg.dataValues.price;
+      //   conditionType = pkg.dataValues.conditionType;
+      //   conditionValue = pkg.dataValues.conditionValue;
+      // }
 
       else {
         return res.status(400).json({ error: 'Invalid booking mode' });
