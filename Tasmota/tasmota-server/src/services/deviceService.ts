@@ -21,7 +21,7 @@ const controlDeviceSchema = z.object({
 );
 
 export class DeviceService {
-  static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string, groupId?: number, description?:any): Promise<Device> {
+  static async createDevice(ownerUuid: string, name: string, tasmotaId: string, zone?: string, groupId?: number, description?: any): Promise<Device> {
     console.log('createDevice2');
 
     const owner = await models.Owner.findOne({ where: { uuid: ownerUuid } });
@@ -47,26 +47,48 @@ export class DeviceService {
 
   static async getDevicesBy(data: any): Promise<Device[]> {
     if (data?.id) {
-      return models.Device.findAll({
-        where: { ownerId: data.ownerId, id: data.id },
-      });
+
+      if (data?.dtype) {
+        return models.Device.findAll({
+          where: { ownerId: data.ownerId, id: data.id, description: { dtype: data.dtype } },
+        });
+      } else {
+        return models.Device.findAll({
+          where: { ownerId: data.ownerId, id: data.id },
+        });
+      }
+
     } else {
-      return models.Device.findAll({
-        where: { ownerId: data.ownerId },
-      });
+
+      if (data?.dtype) {
+        return models.Device.findAll({
+          where: { ownerId: data.ownerId, description: { dtype: data.dtype } },
+        });
+      } else {
+        return models.Device.findAll({
+          where: { ownerId: data.ownerId },
+        });
+      }
     }
   }
 
-  static async getDevices(user: User): Promise<Device[]> {
+  static async getDevices(user: User, dtype: string): Promise<Device[]> {
     if (user.role === 'admin') {
-      return models.Device.findAll();
+      return dtype ? models.Device.findAll({ where: { description: { dtype } } }) : models.Device.findAll();
     } else if (user.role === 'owner') {
       const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
       if (!owner) throw new Error('Owner not found');
 
-      return models.Device.findAll({
-        where: { ownerId: owner.dataValues.id },
-      });
+      if (dtype) {
+        return models.Device.findAll({
+          where: { ownerId: owner.dataValues.id, description: { dtype } },
+        });
+      } else {
+        return models.Device.findAll({
+          where: { ownerId: owner.dataValues.id },
+        });
+      }
+
     } else {
       return models.Device.findAll();
     }

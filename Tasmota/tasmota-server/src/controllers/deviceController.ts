@@ -45,9 +45,9 @@ export const createDevice = async (req: Request, res: Response) => {
 
 export const getDevices = async (req: Request, res: Response) => {
   const user = res.locals.user;
-
+  const { dtype } = req.body;
   try {
-    const devices = await DeviceService.getDevices(user);
+    const devices = await DeviceService.getDevices(user,dtype);
     res.json(devices);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch devices' });
@@ -56,12 +56,12 @@ export const getDevices = async (req: Request, res: Response) => {
 
 export const getDevicesBy = async (req: Request, res: Response) => {
   const user = res.locals.user;
-  const { ownerId, id } = req.body;
+  const { ownerId, id, dtype } = req.body;
   if (!ownerId) {
     return res.status(403).json({ error: 'Owner not found' });
   }
   try {
-    const devices = await DeviceService.getDevicesBy({ ownerId, id });
+    const devices = await DeviceService.getDevicesBy({ ownerId, id, dtype });
     res.json(devices);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch devices' });
@@ -70,9 +70,10 @@ export const getDevicesBy = async (req: Request, res: Response) => {
 
 export const getDevicesByHMVending = async (req: Request, res: Response) => {
   const user = res.locals.user;
+  const { dtype } = req.body;
   try {
     const owner = await models.Owner.findOne({ where: { uuid: user.uuid } })
-    const devices = await DeviceService.getDevicesBy({ ownerId: owner?.dataValues?.id });
+    const devices = await DeviceService.getDevicesBy({ ownerId: owner?.dataValues?.id, dtype })
     res.json(devices);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message || 'Failed to fetch devices' });
