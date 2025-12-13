@@ -81,7 +81,8 @@ export class BookingController {
       });
 
       // Generate QR
-      const qrData = await generateQR(booking.id, totalPrice, res.locals.user.token);
+      const token = req.headers.authorization?.split(' ')[1];
+      const qrData = await generateQR(booking.id, totalPrice, token || '');
 
       // Cache for payment
       await redis.set(`pending:${booking.id}`, JSON.stringify({ mode, deviceId: room.deviceId }), 'EX', 1800);
