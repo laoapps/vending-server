@@ -27,7 +27,7 @@ RoomModel.init({
   deviceId: { type: DataTypes.INTEGER, allowNull: true },
   roomType: {
     type: DataTypes.ENUM('time_only', 'kwh_only', 'both', 'package_only'),
-    defaultValue: 'both',
+    defaultValue: 'time_only',
   },
   acceptsTime: { type: DataTypes.BOOLEAN, defaultValue: true },
   acceptsKwh: { type: DataTypes.BOOLEAN, defaultValue: true },

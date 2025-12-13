@@ -8,35 +8,35 @@ import BookingModel from '../models/booking.model';
 import models from '../models';
 
 export class RoomController {
-    static async getMyRooms(req: Request, res: Response) {
-  const owner = await models.Owner.findOne({ where: { uuid: res.locals.user.uuid } });
-  if (!owner) return res.status(403).json({ error: 'Not owner' });
+  static async getMyRooms(req: Request, res: Response) {
+    const owner = await models.Owner.findOne({ where: { uuid: res.locals.user.uuid } });
+    if (!owner) return res.status(403).json({ error: 'Not owner' });
 
-  const rooms = await models.Room.findAll({
-    // include: [{ model: models.Location, attributes: ['name'] }],
-    where: { ownerId: owner.dataValues.id }
-  });
-  res.json(rooms);
-}
+    const rooms = await models.Room.findAll({
+      // include: [{ model: models.Location, attributes: ['name'] }],
+      where: { ownerId: owner.dataValues.id }
+    });
+    res.json(rooms);
+  }
 
-static async updateRoomType(req: Request, res: Response) {
-  const { id } = req.params;
-  const { roomType, price } = req.body; // roomType: 'time_only' | 'kwh_only' | 'both' | 'package_only'
+  static async updateRoomType(req: Request, res: Response) {
+    const { id } = req.params;
+    const { roomType, price } = req.body; // roomType: 'time_only' | 'kwh_only' | 'both' | 'package_only'
 
-  const owner = await models.Owner.findOne({ where: { uuid: res.locals.user.uuid } });
-  if (!owner) return res.status(403).json({ error: 'Not owner' });
+    const owner = await models.Owner.findOne({ where: { uuid: res.locals.user.uuid } });
+    if (!owner) return res.status(403).json({ error: 'Not owner' });
 
-  const room = await models.Room.findOne({ where: { id, ownerId: owner.dataValues.id } });
-  if (!room) return res.status(404).json({ error: 'Room not found' });
+    const room = await models.Room.findOne({ where: { id, ownerId: owner.dataValues.id } });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
 
-  await room.update({ roomType, price });
-  res.json({ success: true, room });
-}
+    await room.update({ roomType, price });
+    res.json({ success: true, room });
+  }
   // PUBLIC
   static async getByLocation(req: Request, res: Response) {
     try {
       const rooms = await RoomModel.findAll({
-        where: { locationId: req.params.locationId },
+        where: { locationId: req.params.locationId,roomType:'' },
         // include: [{ model: LocationModel, as: 'location' }],
       });
       res.json(rooms);
@@ -65,10 +65,10 @@ static async updateRoomType(req: Request, res: Response) {
     }
 
     const rooms = await RoomModel.findAll({
-    //   include: [
-    //     { model: LocationModel, as: 'location' },
-    //     { model: Device, as: 'device' }
-    //   ],
+      //   include: [
+      //     { model: LocationModel, as: 'location' },
+      //     { model: Device, as: 'device' }
+      //   ],
     });
     res.json(rooms);
   }
@@ -79,7 +79,7 @@ static async updateRoomType(req: Request, res: Response) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { locationId, name, price, details, photo, deviceId, roomType, capacity  } = req.body;
+    const { locationId, name, price, details, photo, deviceId, roomType, capacity } = req.body;
 
     try {
       if (deviceId) {
