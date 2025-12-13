@@ -43,6 +43,8 @@ export class BookingController {
             ]
           }
         });
+        console.log('conflicting',conflicting);
+        
         if (conflicting) return res.status(400).json({ error: 'Dates unavailable' });
       }
 
