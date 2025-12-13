@@ -204,6 +204,7 @@ export class BookingController {
   static async deletebookingsByRoomId(req: Request, res: Response) {
     const { roomId } = req.params;
     const userRole = res.locals.user.role;
+    console.log('deletebookingsByRoomId', roomId, userRole);
     if (userRole !== 'owner') {
       return res.status(403).json({ error: 'Owner access only' });
     }

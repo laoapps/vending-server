@@ -19,6 +19,16 @@
 # Replace placeholders: {{jwtToken}}, {{userUuid}}, {{ownerUuid}}, {{ownerId}}, {{deviceId}}, {{packageId}}, {{orderId}}, {{transId}}, {{tasmotaId}}
 
 ### Add New Device
+POST http://{{host}}/api/bookings/owner/delete/2
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+x-owner: true
+
+{
+
+}
+
+### Add New Device
 POST http://{{host}}/api/devices
 Content-Type: application/json
 Authorization: Bearer {{jwtToken}}
