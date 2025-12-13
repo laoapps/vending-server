@@ -14,7 +14,7 @@ export class BookingController {
   // USER: Create booking
   static async create(req: Request, res: Response) {
     const userUuid = res.locals.user.uuid;
-    let { roomId, checkIn, checkOut, guests = 1,totalKwh } = req.body;
+    let { roomId, checkIn, checkOut, guests = 1, totalKwh } = req.body;
 
     try {
       const room = await models.Room.findByPk(roomId);
@@ -49,10 +49,35 @@ export class BookingController {
       }
 
       // // Mode 2: Condo by kWh
-      else if (room?.dataValues?.roomType  === 'kwh_only' && totalKwh) {
+      else if (room?.dataValues?.roomType === 'kwh_only' && totalKwh) {
         mode = 'condo';
+
+        if (checkIn && checkOut) {
+          const checkInDate = new Date(checkIn);
+          const checkOutDate = new Date(checkOut);
+          const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
+          totalPrice = room?.dataValues?.price * nights;
+
+          // Check availability
+          const conflicting = await models.Booking.findOne({
+            where: {
+              roomId,
+              status: { [Op.notIn]: ['cancelled', 'checked_out'] },
+              [Op.or]: [
+                { checkIn: { [Op.lt]: checkOutDate }, checkOut: { [Op.gt]: checkInDate } }
+              ]
+            }
+          });
+          console.log('conflicting', conflicting);
+
+          if (conflicting) return res.status(400).json({ error: 'Dates unavailable' });
+        }
+
+        ////
+
         if (totalKwh <= 0) return res.status(400).json({ error: 'Invalid kWh' });
-        totalPrice = room.price * totalKwh;  // price per kWh
+        totalPrice += room.price * totalKwh;  // price per kWh
       }
 
       // // Mode 3: Package
@@ -82,7 +107,7 @@ export class BookingController {
 
       // Generate QR
       const token = req.headers.authorization?.split(' ')[1];
-      const qrData = await generateQR(booking.dataValues.id, totalPrice, token || '', false ,true);
+      const qrData = await generateQR(booking.dataValues.id, totalPrice, token || '', false, true);
 
       // Cache for payment
       await redis.set(`pending:${booking.dataValues.id}`, JSON.stringify({ mode, deviceId: room.deviceId }), 'EX', 1800);
