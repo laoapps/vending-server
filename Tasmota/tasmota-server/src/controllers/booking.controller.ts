@@ -82,12 +82,14 @@ export class BookingController {
 
       // Generate QR
       const token = req.headers.authorization?.split(' ')[1];
-      const qrData = await generateQR(booking.dataValues.id, totalPrice, token || '');
+      const qrData = await generateQR(booking.dataValues.id, totalPrice, token || '', false ,true);
 
       // Cache for payment
       await redis.set(`pending:${booking.dataValues.id}`, JSON.stringify({ mode, deviceId: room.deviceId }), 'EX', 1800);
 
-      res.json({ booking, qrCode: qrData.qrImage, totalPrice });
+      // res.json({ qr, data: { order } });
+      // res.json({ booking, qrCode: qrData.qrImage, totalPrice });
+      res.json({ booking, qrCode: qrData, totalPrice });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
