@@ -45,6 +45,7 @@ export function generateQR(orderID: number, value: number, token: string, fromve
   return new Promise<any>(async (resolve, reject) => {
     try {
       const data = { orderID, path: 'orders/pay', txnAmount: value }
+      console.log('generateQRdata', data);
       let vending: any = null
       if (fromvending == true) {
         vending = 'true'
