@@ -79,7 +79,7 @@ export class RoomController {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { locationId, name, price, details, photo, deviceId, roomType, capacity } = req.body;
+    const { locationId, name, price, details, photo, deviceId, roomType, capacity,lockId } = req.body;
 
     try {
       if (deviceId) {
@@ -95,7 +95,8 @@ export class RoomController {
         photo,
         deviceId: deviceId || null,
         roomType,
-        capacity
+        capacity,
+        lockId
       });
 
       res.status(200).json(room);

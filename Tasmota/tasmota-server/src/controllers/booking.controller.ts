@@ -9,6 +9,7 @@ import { publishMqttMessage } from '../services/mqttService';
 import redis from '../config/redis';
 import models from '../models';
 import { notifyStakeholders } from '../services/wsService';
+import { activateLock } from '../services/lockService';
 
 export class BookingController {
   // USER: Create booking
@@ -128,11 +129,26 @@ export class BookingController {
       if (!cache) return res.status(400).json({ error: 'Expired' });
       const { mode, deviceId } = JSON.parse(cache);
 
-      await models.Booking.update({ status: 'paid', paidAt: new Date() }, { where: { id: bookingId } });
+      const booking = await models.Booking.findByPk(bookingId);
+      if (!booking) return res.status(400).json({ error: 'Booking not found' });
+      const room = await models.Room.findByPk(booking.dataValues.id,);
+      if (!room) return res.status(400).json({ error: 'Room not found' });
 
-      // Activate device
-      const device = await models.Device.findByPk(deviceId);
-      if (device) publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
+      await models.Booking.update(
+        { status: 'paid', paidAt: new Date() },
+        { where: { id: bookingId } }
+      );
+
+      // Activate power device (existing)
+      if (deviceId) {
+        const device = await models.Device.findByPk(deviceId);
+        if (device) publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
+      }
+
+      // NEW: Activate door lock if room has lockId
+      if (room.dataValues.lockId) {
+        await activateLock(room.dataValues.lockId);
+      }
 
       notifyStakeholders(undefined, `Booking ${mode} paid`);
 

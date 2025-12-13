@@ -12,6 +12,7 @@ export class RoomModel extends Model {
   public capacity!: number;
   public deviceId?: number | null;
   public roomType!: 'time_only' | 'kwh_only' | 'both' | 'package_only';
+  public lockId?:string;
   public acceptsTime!: boolean;
   public acceptsKwh!: boolean;
 }
@@ -29,6 +30,11 @@ RoomModel.init({
     type: DataTypes.ENUM('time_only', 'kwh_only', 'both', 'package_only'),
     defaultValue: 'time_only',
   },
+  lockId: {
+  type: DataTypes.STRING, // or INTEGER, depending on your lock server
+  allowNull: true,
+  comment: 'ID of the lock in the external lock management server'
+},
   acceptsTime: { type: DataTypes.BOOLEAN, defaultValue: true },
   acceptsKwh: { type: DataTypes.BOOLEAN, defaultValue: true },
 }, {
