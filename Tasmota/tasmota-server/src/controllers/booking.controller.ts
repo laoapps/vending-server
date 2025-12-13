@@ -43,8 +43,8 @@ export class BookingController {
             ]
           }
         });
-        console.log('conflicting',conflicting);
-        
+        console.log('conflicting', conflicting);
+
         if (conflicting) return res.status(400).json({ error: 'Dates unavailable' });
       }
 
@@ -120,10 +120,10 @@ export class BookingController {
 
     const bookings = await BookingModel.findAll({
       where: { userUuid },
-    //   include: [{
-    //     model: RoomModel,
-    //     include: ['location']
-    //   }],
+      //   include: [{
+      //     model: RoomModel,
+      //     include: ['location']
+      //   }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -151,11 +151,11 @@ export class BookingController {
     }
 
     const bookings = await BookingModel.findAll({
-    //   include: [{
-    //     model: RoomModel,
-    //     include: ['location'],
-    //     where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
-    //   }],
+      //   include: [{
+      //     model: RoomModel,
+      //     include: ['location'],
+      //     where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
+      //   }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -170,10 +170,10 @@ export class BookingController {
     }
 
     const bookings = await BookingModel.findAll({
-    //   include: [{
-    //     model: RoomModel,
-    //     include: ['location']
-    //   }],
+      //   include: [{
+      //     model: RoomModel,
+      //     include: ['location']
+      //   }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -190,14 +190,28 @@ export class BookingController {
     const { locationid } = req.params;
 
     const bookings = await BookingModel.findAll({
-    //   include: [{
-    //     model: RoomModel,
-    //     where: { locationId: locationid },
-    //     // include: ['location']
-    //   }],
+      //   include: [{
+      //     model: RoomModel,
+      //     where: { locationId: locationid },
+      //     // include: ['location']
+      //   }],
       order: [['createdAt', 'DESC']],
     });
 
     res.json(bookings);
+  }
+
+  static async deletebookingsByRoomId(req: Request, res: Response) {
+    const { roomId } = req.params;
+    const userRole = res.locals.user.role;
+    if (userRole !== 'owner') {
+      return res.status(403).json({ error: 'Owner access only' });
+    }
+    try {
+      await BookingModel.destroy({ where: { roomId } });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   }
 }

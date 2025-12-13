@@ -12,6 +12,7 @@ router.get('/my', authMiddleware, BookingController.getMyBookings);
 
 // OWNER
 router.get('/owner', authMiddleware, BookingController.getOwnerBookings);
+router.post('/owner/delete/:roomId', authMiddleware, BookingController.deletebookingsByRoomId);
 
 // ADMIN
 router.get('/admin', authMiddleware, BookingController.getAllBookings);
