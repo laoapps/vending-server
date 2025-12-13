@@ -65,4 +65,55 @@ app.use('/api/bookings', bookingRoutes);
 app.get('/health', (req, res) => res.json({ status: 'OK', timestamp: new Date() }));
 app.use(errorHandler);
 
+
+
+import { logToFile, listLogs, readLog, deleteLog } from './services/logger';
+
+// API to write a log (e.g., POST /api/logs with { "message": "My log" } in body)
+app.post('/api/logs', async (req, res) => {
+  const { message } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
+  try {
+    await logToFile(message);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to write log' });
+  }
+});
+
+// API to list all log files (GET /api/logs)
+app.get('/api/logs', async (req, res) => {
+  try {
+    const logs = await listLogs();
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to list logs' });
+  }
+});
+
+// API to read a specific log file (GET /api/logs/:fileName)
+app.get('/api/logs/:fileName', async (req, res) => {
+  const { fileName } = req.params;
+  try {
+    const content = await readLog(fileName);
+    res.send(content); // Send as plain text for easy viewing
+  } catch (err) {
+    res.status(404).json({ error: (err as Error).message });
+  }
+});
+
+// API to delete a specific log file (DELETE /api/logs/:fileName)
+app.delete('/api/logs/:fileName', async (req, res) => {
+  const { fileName } = req.params;
+  try {
+    await deleteLog(fileName);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(404).json({ error: (err as Error).message });
+  }
+});
+
+
 export default app;

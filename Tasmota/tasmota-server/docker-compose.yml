@@ -28,6 +28,8 @@ services:
     networks:
       - tasmota-net
     restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
 
   tasmota-db:
     image: postgres:15
@@ -82,6 +84,7 @@ volumes:
   pgdata:
   mqtt_data:
   redis_data:
+
 
 networks:
   tasmota-net:

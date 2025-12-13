@@ -13,7 +13,7 @@ export class RoomController {
   if (!owner) return res.status(403).json({ error: 'Not owner' });
 
   const rooms = await models.Room.findAll({
-    include: [{ model: models.Location, attributes: ['name'] }],
+    // include: [{ model: models.Location, attributes: ['name'] }],
     where: { ownerId: owner.dataValues.id }
   });
   res.json(rooms);
