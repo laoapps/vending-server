@@ -16,6 +16,7 @@ import models from './models';
 import BookingModel from './models/booking.model';
 import RoomModel from './models/room.model';
 import { Device } from './models/device';
+import { LocationModel } from './models/location.model';
 
 const PORT = process.env.PORT || 3000;
 
@@ -109,7 +110,15 @@ cron.schedule('*/5 * * * *', async () => {
         status: 'paid',
         checkOut: { [Op.gt]: new Date() }
       },
-      include: [{ model: RoomModel,as:'room', attributes: ['id', 'deviceId', 'name'] }]
+      include: [{ model: RoomModel,
+      as: 'room',
+      include: [
+        {
+          model: LocationModel,
+          as: 'location'
+        }
+      ],
+       attributes: ['id', 'deviceId', 'name'] }]
     });
 
     const hotelMap: Record<string, CachedHotelBooking> = {};

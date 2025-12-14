@@ -254,6 +254,7 @@ export class BookingController {
     const bookings = await BookingModel.findAll({
       include: [{
         model: RoomModel,
+        as:'room',
         include: [{
           model:LocationModel,
           as:'location'}],
@@ -275,6 +276,7 @@ export class BookingController {
     const bookings = await BookingModel.findAll({
       include: [{
         model: RoomModel,
+        as:'room',
         include: [{
           model:LocationModel,
           as:'location'}]
@@ -297,6 +299,7 @@ export class BookingController {
     const bookings = await BookingModel.findAll({
       include: [{
         model: RoomModel,
+        as:'room',
         where: { locationId: locationid },
         include: [{
           model:LocationModel,
