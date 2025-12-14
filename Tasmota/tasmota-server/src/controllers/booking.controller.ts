@@ -19,7 +19,7 @@ static async create(req: Request, res: Response) {
   try {
     const room = await models.Room.findByPk(roomId);
     if (!room) return res.status(404).json({ error: 'Room not found' });
-
+    console.log('room.roomType',room.roomType)
     let rentalPrice = 0;
     let electricityPrice = 0;
     let checkInDate: Date | null = null;
