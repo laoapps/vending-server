@@ -26,5 +26,39 @@ const models = {
   Booking: BookingModel,
 };
 
+// ==================== ASSOCIATIONS (Minimal & Safe) ====================
+
+// Location ↔ Room
+models.Location.hasMany(models.Room, { foreignKey: 'locationId', as: 'rooms', onDelete: 'CASCADE' });
+models.Room.belongsTo(models.Location, { foreignKey: 'locationId', as: 'location' });
+
+// Room ↔ Device
+models.Room.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device', onDelete: 'SET NULL' });
+models.Device.hasOne(models.Room, { foreignKey: 'deviceId', as: 'room' });
+
+// Room ↔ Booking
+models.Room.hasMany(models.Booking, { foreignKey: 'roomId', as: 'bookings', onDelete: 'CASCADE' });
+models.Booking.belongsTo(models.Room, { foreignKey: 'roomId', as: 'room' });
+
+// Device ↔ Order (vending)
+models.Device.hasMany(models.Order, { foreignKey: 'deviceId', as: 'orders', onDelete: 'CASCADE' });
+models.Order.belongsTo(models.Device, { foreignKey: 'deviceId', as: 'device' });
+
+// Owner relationships
+models.Owner.hasMany(models.Device, { foreignKey: 'ownerId', as: 'devices' });
+models.Device.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+
+models.Owner.hasMany(models.Location, { foreignKey: 'ownerId', as: 'locations' });
+models.Location.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+
+models.Owner.hasMany(models.SchedulePackage, { foreignKey: 'ownerId', as: 'packages' });
+models.SchedulePackage.belongsTo(models.Owner, { foreignKey: 'ownerId', as: 'owner' });
+
+// DeviceGroup ↔ Device
+models.DeviceGroup.hasMany(models.Device, { foreignKey: 'groupId', as: 'devices' });
+models.Device.belongsTo(models.DeviceGroup, { foreignKey: 'groupId', as: 'group' });
+
+// ====================================================================
+
 export default models;
 export { sequelize };
