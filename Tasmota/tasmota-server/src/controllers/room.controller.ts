@@ -13,7 +13,7 @@ export class RoomController {
     if (!owner) return res.status(403).json({ error: 'Not owner' });
 
     const rooms = await models.Room.findAll({
-      // include: [{ model: models.Location, attributes: ['name'] }],
+      include: [{ model: models.Location, attributes: ['name'] }],
       where: { ownerId: owner.dataValues.id }
     });
     res.json(rooms);
@@ -37,7 +37,7 @@ export class RoomController {
     try {
       const rooms = await RoomModel.findAll({
         where: { locationId: req.params.locationId},
-        // include: [{ model: LocationModel, as: 'location' }],
+        include: [{ model: LocationModel, as: 'location' }],
       });
       res.json(rooms);
     } catch (error: any) {
@@ -65,10 +65,10 @@ export class RoomController {
     }
 
     const rooms = await RoomModel.findAll({
-      //   include: [
-      //     { model: LocationModel, as: 'location' },
-      //     { model: Device, as: 'device' }
-      //   ],
+        include: [
+          { model: LocationModel, as: 'location' },
+          { model: Device, as: 'device' }
+        ],
     });
     res.json(rooms);
   }

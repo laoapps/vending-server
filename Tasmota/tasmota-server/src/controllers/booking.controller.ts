@@ -190,10 +190,10 @@ export class BookingController {
 
     const bookings = await BookingModel.findAll({
       where: { userUuid },
-      //   include: [{
-      //     model: RoomModel,
-      //     include: ['location']
-      //   }],
+        include: [{
+          model: RoomModel,
+          include: ['location']
+        }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -221,11 +221,11 @@ export class BookingController {
     }
 
     const bookings = await BookingModel.findAll({
-      //   include: [{
-      //     model: RoomModel,
-      //     include: ['location'],
-      //     where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
-      //   }],
+        include: [{
+          model: RoomModel,
+          include: ['location'],
+          where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
+        }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -240,10 +240,10 @@ export class BookingController {
     }
 
     const bookings = await BookingModel.findAll({
-      //   include: [{
-      //     model: RoomModel,
-      //     include: ['location']
-      //   }],
+        include: [{
+          model: RoomModel,
+          include: ['location']
+        }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -260,11 +260,11 @@ export class BookingController {
     const { locationid } = req.params;
 
     const bookings = await BookingModel.findAll({
-      //   include: [{
-      //     model: RoomModel,
-      //     where: { locationId: locationid },
-      //     // include: ['location']
-      //   }],
+        include: [{
+          model: RoomModel,
+          where: { locationId: locationid },
+          include: ['location']
+        }],
       order: [['createdAt', 'DESC']],
     });
 
