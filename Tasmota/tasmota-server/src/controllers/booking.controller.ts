@@ -141,41 +141,45 @@ export class BookingController {
 }
 
   // PAYMENT CALLBACK (from bank)
-  static async payCallback(req: Request, res: Response) {
-    const { bookingId } = req.body;
-    try {
-      const cache = await redis.get(`pending:${bookingId}`);
-      if (!cache) return res.status(400).json({ error: 'Expired' });
-      const { mode, deviceId } = JSON.parse(cache);
+ static async payCallback(req: Request, res: Response) {
+  const { bookingId } = req.body;
+  try {
+    const cache = await redis.get(`pending:${bookingId}`);
+    if (!cache) return res.status(400).json({ error: 'Payment expired or invalid' });
 
-      const booking = await models.Booking.findByPk(bookingId);
-      if (!booking) return res.status(400).json({ error: 'Booking not found' });
-      const room = await models.Room.findByPk(booking.dataValues.id,);
-      if (!room) return res.status(400).json({ error: 'Room not found' });
+    const { deviceId } = JSON.parse(cache);
 
-      await models.Booking.update(
-        { status: 'paid', paidAt: new Date() },
-        { where: { id: bookingId } }
-      );
+    const booking = await models.Booking.findByPk(bookingId);
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-      // Activate power device (existing)
-      if (deviceId) {
-        const device = await models.Device.findByPk(deviceId);
-        if (device) publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
+    // Fixed: use booking.roomId, not booking.id
+    const room = await models.Room.findByPk(booking.dataValues.roomId);
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    await booking.update({ status: 'paid', paidAt: new Date() });
+
+    // Activate power
+    if (deviceId) {
+      const device = await models.Device.findByPk(deviceId);
+      if (device) {
+        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
       }
-
-      // NEW: Activate door lock if room has lockId
-      if (room.dataValues.lockId) {
-        await activateLock(room.dataValues.lockId);
-      }
-
-      notifyStakeholders(undefined, `Booking ${mode} paid`);
-
-      res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
     }
+
+    // Activate lock if exists
+    if (room.lockId) {
+      await activateLock(room.dataValues.lockId);
+    }
+
+    await notifyStakeholders(booking, 'Booking paid and activated');
+
+    await redis.del(`pending:${bookingId}`); // clean up
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+}
 
   // USER: Get my bookings
   static async getMyBookings(req: Request, res: Response) {
