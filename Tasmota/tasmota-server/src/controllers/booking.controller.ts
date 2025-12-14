@@ -20,9 +20,7 @@ export class BookingController {
     try {
       const room = await models.Room.findByPk(roomId);
       if (!room) return res.status(404).json({ error: 'Room not found' });
-      if (!room.dataValues.capacity) return res.status(400).json({ error: 'Room unavailable' });
-      room.locationId;
-      const location = await models.Location.findByPk(room.locationId);
+      const location = await models.Location.findByPk(room?.dataValues.locationId);
       if (!location) return res.status(400).json({ error: 'location not found' });
 
       let totalPrice = 0;
@@ -104,7 +102,7 @@ export class BookingController {
         ////
 
         if (totalKwh <= 0) return res.status(400).json({ error: 'Invalid kWh' });
-        totalPrice += room.price * totalKwh;  // price per kWh
+        totalPrice += room.dataValues.price * totalKwh;  // price per kWh
       }
 
       // // Mode 3: Package
@@ -137,7 +135,7 @@ export class BookingController {
       const qrData = await generateQR(booking.dataValues.id, totalPrice, token || '', false, true);
 
       // Cache for payment
-      await redis.set(`pending:${booking.dataValues.id}`, JSON.stringify({ mode, deviceId: room.deviceId }), 'EX', 1800);
+      await redis.set(`pending:${booking.dataValues.id}`, JSON.stringify({ mode, deviceId: room.dataValues.deviceId }), 'EX', 1800);
 
       // res.json({ qr, data: { order } });
       // res.json({ booking, qrCode: qrData.qrImage, totalPrice });
