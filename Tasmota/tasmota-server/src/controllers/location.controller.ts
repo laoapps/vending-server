@@ -4,24 +4,30 @@ import LocationModel from '../models/location.model';
 import RoomModel from '../models/room.model';
 
 export class LocationController {
-  // PUBLIC: List all hotels
+  // PUBLIC: List all locations (filter by type: ?locationType=hotel or condo)
   static async getAll(req: Request, res: Response) {
     try {
-      const locations = await LocationModel.findAll({
+      const { locationType } = req.query;
 
-      });
+      let locations;
+      if (locationType && ['hotel', 'condo'].includes(locationType as string)) {
+        locations = await LocationModel.findAll({
+          where: { locationType }
+        });
+      } else {
+        locations = await LocationModel.findAll();
+      }
+
       res.json(locations);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // PUBLIC: Get one hotel
+  // PUBLIC: Get one location
   static async getById(req: Request, res: Response) {
     try {
-      const location = await LocationModel.findByPk(req.params.id, {
-        // include: [{ model: RoomModel, as: 'rooms' }],
-      });
+      const location = await LocationModel.findByPk(req.params.id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
       res.json(location);
     } catch (error: any) {
@@ -29,32 +35,37 @@ export class LocationController {
     }
   }
 
-  // OWNER/ADMIN: Create new hotel
+  // OWNER/ADMIN: Create new location
   static async create(req: Request, res: Response) {
-    const { name, address, description, photo } = req.body;
+    const { name, address, description = {}, photo, locationType = 'hotel' } = req.body;
     const userRole = res.locals.user.role;
 
     if (!['owner', 'admin'].includes(userRole)) {
       return res.status(403).json({ error: 'Only owner or admin can create locations' });
     }
 
+    if (!['hotel', 'condo'].includes(locationType)) {
+      return res.status(400).json({ error: 'locationType must be hotel or condo' });
+    }
+
     try {
       const location = await LocationModel.create({
         name,
         address,
-        description,
+        description: description, // JSONB
         photo,
+        locationType
       });
-      res.status(200).json(location);
+      res.json(location);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // OWNER/ADMIN: Update hotel
+  // OWNER/ADMIN: Update location
   static async update(req: Request, res: Response) {
     const { id } = req.params;
-    const { name, address, description, photo } = req.body;
+    const { name, address, description = {}, photo, locationType } = req.body;
     const userRole = res.locals.user.role;
 
     if (!['owner', 'admin'].includes(userRole)) {
@@ -65,14 +76,22 @@ export class LocationController {
       const location = await LocationModel.findByPk(id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
 
-      await location.update({ name, address, description, photo });
+      const updateData: any = { name, address, description, photo };
+      if (locationType) {
+        if (!['hotel', 'condo'].includes(locationType)) {
+          return res.status(400).json({ error: 'locationType must be hotel or condo' });
+        }
+        updateData.locationType = locationType;
+      }
+
+      await location.update(updateData);
       res.json(location);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // OWNER/ADMIN: Delete hotel
+  // OWNER/ADMIN: Delete location
   static async delete(req: Request, res: Response) {
     const { id } = req.params;
     const userRole = res.locals.user.role;
@@ -85,7 +104,6 @@ export class LocationController {
       const location = await LocationModel.findByPk(id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
 
-      // Optional: prevent delete if has rooms
       const roomCount = await RoomModel.count({ where: { locationId: id } });
       if (roomCount > 0) {
         return res.status(400).json({ error: 'Cannot delete location with rooms' });

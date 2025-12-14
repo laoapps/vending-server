@@ -7,8 +7,9 @@ export class LocationModel extends Model {
   public id!: number;
   public name!: string;
   public address!: string;
-  public description?: string;
+  public description?: any;
   public photo?: string;
+  public locationType?:string;
 }
 
 LocationModel.init(
@@ -27,9 +28,12 @@ LocationModel.init(
       allowNull: false,
     },
     description: {
-      type: DataTypes.TEXT,
+      type: DataTypes.JSONB,
     },
     photo: {
+      type: DataTypes.STRING,
+    },
+    locationType: {
       type: DataTypes.STRING,
     },
   },
@@ -49,8 +53,9 @@ export function initLocationModel(sequelize: Sequelize) {
     },
     name: { type: DataTypes.STRING, allowNull: false },
     address: { type: DataTypes.STRING, allowNull: false },
-    description: DataTypes.TEXT,
+    description: DataTypes.JSONB, //{locationType:'hotel'|'condo'}
     photo: DataTypes.STRING,
+    locationType:DataTypes.STRING
   }, {
     tableName: 'locations',
     timestamps: true,

@@ -36,7 +36,7 @@ export class RoomController {
   static async getByLocation(req: Request, res: Response) {
     try {
       const rooms = await RoomModel.findAll({
-        where: { locationId: req.params.locationId,roomType:'' },
+        where: { locationId: req.params.locationId},
         // include: [{ model: LocationModel, as: 'location' }],
       });
       res.json(rooms);
