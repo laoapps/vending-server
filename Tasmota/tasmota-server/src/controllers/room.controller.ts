@@ -104,6 +104,7 @@ export class RoomController {
       res.status(500).json({ error: error.message });
     }
   }
+  
 
   static async update(req: Request, res: Response) {
     const { id } = req.params;
@@ -185,4 +186,25 @@ export class RoomController {
       res.status(500).json({ error: error.message });
     }
   }
+ 
+
+static async getOwnerLocations(req: Request, res: Response) {
+  if (res.locals.user.role !== 'owner') {
+    return res.status(403).json({ error: 'Owner only' });
+  }
+
+  try {
+    const owner = await models.Owner.findOne({ where: { uuid: res.locals.user.uuid } });
+    if (!owner) return res.status(404).json({ error: 'Owner not found' });
+
+    const locations = await models.Location.findAll({
+      where: { ownerId: owner.dataValues.id },
+      include: [{ model: models.Room, as: 'rooms' }]
+    });
+
+    res.json(locations);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+}
 }

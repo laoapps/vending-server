@@ -10,6 +10,7 @@ import redis from '../config/redis';
 import models from '../models';
 import { notifyStakeholders } from '../services/wsService';
 import { activateLock } from '../services/lockService';
+import sequelize from 'sequelize';
 
 export class BookingController {
   // USER: Create booking
@@ -188,10 +189,10 @@ export class BookingController {
 
     const bookings = await BookingModel.findAll({
       where: { userUuid },
-        include: [{
-          model: RoomModel,
-          include: ['location']
-        }],
+      include: [{
+        model: RoomModel,
+        include: ['location']
+      }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -219,11 +220,11 @@ export class BookingController {
     }
 
     const bookings = await BookingModel.findAll({
-        include: [{
-          model: RoomModel,
-          include: ['location'],
-          where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
-        }],
+      include: [{
+        model: RoomModel,
+        include: ['location'],
+        where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
+      }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -238,10 +239,10 @@ export class BookingController {
     }
 
     const bookings = await BookingModel.findAll({
-        include: [{
-          model: RoomModel,
-          include: ['location']
-        }],
+      include: [{
+        model: RoomModel,
+        include: ['location']
+      }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -258,11 +259,11 @@ export class BookingController {
     const { locationid } = req.params;
 
     const bookings = await BookingModel.findAll({
-        include: [{
-          model: RoomModel,
-          where: { locationId: locationid },
-          include: ['location']
-        }],
+      include: [{
+        model: RoomModel,
+        where: { locationId: locationid },
+        include: ['location']
+      }],
       order: [['createdAt', 'DESC']],
     });
 
@@ -282,5 +283,48 @@ export class BookingController {
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  }
+
+
+  // src/controllers/booking.controller.ts — add these
+
+  static async getRoomSummary(req: Request, res: Response) {
+    const { roomId } = req.params;
+    const { from, to } = req.query;
+    const where: any = { roomId, status: 'paid' };
+    if (from && to) {
+      where.paidAt = { [Op.between]: [new Date(from as string), new Date(to as string)] };
+    }
+
+    const total = await models.Booking.sum('totalPrice', { where });
+    res.json({ roomId, totalPaid: total || 0 });
+  }
+
+  static async getLocationSummary(req: Request, res: Response) {
+    const { locationId } = req.params;
+    const { from, to } = req.query;
+    const where: any = { status: 'paid' };
+    if (from && to) {
+      where.paidAt = { [Op.between]: [new Date(from as string), new Date(to as string)] };
+    }
+
+    const bookings = await models.Booking.findAll({
+      where,
+      include: [{ model: models.Room, where: { locationId } }]
+    });
+
+    const total = bookings.reduce((sum, b) => sum + b.totalPrice, 0);
+    res.json({ locationId, totalPaid: total });
+  }
+
+  static async getTotalSummary(req: Request, res: Response) {
+    const { from, to } = req.query;
+    const where: any = { status: 'paid' };
+    if (from && to) {
+      where.paidAt = { [Op.between]: [new Date(from as string), new Date(to as string)] };
+    }
+
+    const total = await models.Booking.sum('totalPrice', { where });
+    res.json({ totalPaid: total || 0 });
   }
 }

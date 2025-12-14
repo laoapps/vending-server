@@ -18,4 +18,8 @@ router.post('/owner/delete/:roomId', authMiddleware, BookingController.deleteboo
 router.get('/admin', authMiddleware, BookingController.getAllBookings);
 router.get('/admin/:locationid', authMiddleware, BookingController.getBookingsByLocation);
 
+
+router.get('/summary/room/:roomId', authMiddleware, BookingController.getRoomSummary);
+router.get('/summary/location/:locationId', authMiddleware, BookingController.getLocationSummary);
+router.get('/summary/total', authMiddleware, BookingController.getTotalSummary);
 export default router;
