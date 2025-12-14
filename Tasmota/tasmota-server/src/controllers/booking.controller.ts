@@ -21,9 +21,12 @@ export class BookingController {
       const room = await models.Room.findByPk(roomId);
       if (!room) return res.status(404).json({ error: 'Room not found' });
       if (!room.dataValues.capacity) return res.status(400).json({ error: 'Room unavailable' });
+      room.locationId;
+      const location = await models.Location.findByPk(room.locationId);
+      if (!location) return res.status(400).json({ error: 'location not found' });
 
       let totalPrice = 0;
-      let mode: 'hotel' | 'condo' | 'package' = 'hotel';
+      let mode = location.dataValues.locationType || 'hotel';
 
       // Mode 1: Hotel by nights
       if (room?.dataValues?.roomType === 'time_only' && checkIn && checkOut) {
@@ -35,18 +38,41 @@ export class BookingController {
         totalPrice = room?.dataValues?.price * nights;
 
         // Check availability
+        const now = new Date();
+        const holdMinutes = 3; // Change to 5 or 15 if you want
+        const holdTime = new Date(now.getTime() - holdMinutes * 60 * 1000);
+
         const conflicting = await models.Booking.findOne({
           where: {
             roomId,
-            status: { [Op.notIn]: ['cancelled', 'checked_out'] },
+            status: { [Op.notIn]: ['cancelled', 'checked_out'] }, // exclude finished
+            // Exclude old pending bookings (older than hold time)
             [Op.or]: [
-              { checkIn: { [Op.lt]: checkOutDate }, checkOut: { [Op.gt]: checkInDate } }
+              // Active paid bookings OR recent pending
+              {
+                status: 'paid',
+                [Op.or]: [
+                  { checkIn: { [Op.lt]: checkOutDate } },
+                  { checkOut: { [Op.gt]: checkInDate } }
+                ]
+              },
+              {
+                status: 'pending',
+                createdAt: { [Op.gte]: holdTime }, // only recent pending
+                [Op.or]: [
+                  { checkIn: { [Op.lt]: checkOutDate } },
+                  { checkOut: { [Op.gt]: checkInDate } }
+                ]
+              }
             ]
           }
         });
-        console.log('conflicting', conflicting);
 
-        if (conflicting) return res.status(400).json({ error: 'Dates unavailable' });
+        if (conflicting) {
+          return res.status(400).json({
+            error: `Room unavailable. Currently held by another user (expires in ${holdMinutes} minutes if not paid).`
+          });
+        }
       }
 
       // // Mode 2: Condo by kWh
