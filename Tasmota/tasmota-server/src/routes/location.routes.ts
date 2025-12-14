@@ -6,10 +6,10 @@ import { authMiddleware } from '../middleware/authMiddleware';
 const router = Router();
 
 // PUBLIC - anyone can list (but owners see only theirs)
-router.get('/', authMiddleware, LocationController.getAll);
+router.get('/', LocationController.getAll);
 
 // PUBLIC - get one location
-router.get('/:id', authMiddleware, LocationController.getById);
+router.get('/:id', LocationController.getById);
 
 // ADMIN ONLY
 router.post('/', authMiddleware, LocationController.create);
