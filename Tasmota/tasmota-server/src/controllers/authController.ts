@@ -10,7 +10,7 @@ export const registerOwner = async (req: Request, res: Response) => {
   try {
     const uuid = await findRealDB(token);
     if (!uuid) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ error: ' regiseter owner Invalid token' });
     }
 
     const existingOwner = await models.Owner.findOne({ where: { uuid } });

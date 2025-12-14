@@ -33,7 +33,7 @@ export class OwnerController {
       const uuid = await findRealDB(token);
       const phoneNumber = await findPhoneNumberByUuid(uuid);
       if (!uuid) {
-        return res.status(401).json({ error: 'Invalid token' });
+        return res.status(401).json({ error: 'owner Invalid token' });
       }
 
       const existing = await models.Owner.findOne({ where: { ownerUuid: uuid } });

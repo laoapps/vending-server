@@ -60,7 +60,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     res.locals.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
+    res.status(401).json({ error: 'authMiddleware Invalid token',err:error });
   }
 };
 
