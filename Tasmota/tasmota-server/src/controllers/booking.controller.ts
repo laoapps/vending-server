@@ -199,6 +199,7 @@ export class BookingController {
       order: [['createdAt', 'DESC']]
     });
 
+    console.log('booking',bookings)
     if (bookings.length === 0) {
       return res.json([]);
     }
@@ -207,6 +208,8 @@ export class BookingController {
     const deviceIds = bookings
       .map(b => b.dataValues.room?.deviceId)
       .filter(id => id !== null && id !== undefined);
+
+    console.log('deviceIds',deviceIds)
 
     // Step 3: Fetch ALL devices in ONE query
     let devicesMap: Record<number, any> = {};
@@ -221,6 +224,8 @@ export class BookingController {
         return map;
       }, {} as Record<number, any>);
     }
+        console.log('devicesMap',devicesMap)
+
 
     // Step 4: Attach device to each booking
     const result = bookings.map((booking: any) => {
@@ -230,6 +235,8 @@ export class BookingController {
       }
       return plain;
     });
+        console.log('result',result)
+    
 
     res.json(result);
   } catch (error: any) {
