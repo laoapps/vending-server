@@ -13,25 +13,48 @@ import { activateLock } from '../services/lockService';
 export class BookingController {
   // USER: Create booking
   static async create(req: Request, res: Response) {
-    const userUuid = res.locals.user.uuid;
-    const { roomId, checkIn, checkOut, guests = 1, kwhAmount = 0 } = req.body;
+  const userUuid = res.locals.user.uuid;
+  const { roomId, checkIn, checkOut, guests = 1, kwhAmount } = req.body;
 
-    try {
-      const room = await models.Room.findByPk(roomId);
-      if (!room) return res.status(404).json({ error: 'Room not found' });
-      console.log('room.roomType', room.dataValues.roomType);
-      console.log('room', room);
-      let rentalPrice = 0;
-      let electricityPrice = 0;
-      let checkInDate: Date | null = null;
-      let checkOutDate: Date | null = null;
+  try {
+    const room = await models.Room.findByPk(roomId);
+    if (!room) return res.status(404).json({ error: 'Room not found' });
 
-      // === HOTEL MODE (only rental) ===
-      if (room.dataValues.roomType === 'time_only') {
-        if (!checkIn || !checkOut) {
-          return res.status(400).json({ error: 'checkIn and checkOut required' });
-        }
+    let rentalPrice = 0;
+    let electricityPrice = 0;
+    let checkInDate: Date | null = null;
+    let checkOutDate: Date | null = null;
+    let mode = 'hotel';
 
+    // === HOTEL MODE ===
+    if (room.dataValues.roomType === 'time_only') {
+      if (!checkIn || !checkOut) {
+        return res.status(400).json({ error: 'checkIn and checkOut required' });
+      }
+
+      checkInDate = new Date(checkIn);
+      checkOutDate = new Date(checkOut);
+      const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
+      if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
+
+      rentalPrice = Number(room.dataValues.price) * nights * guests;
+      mode = 'hotel';
+    }
+
+    // === CONDO MODE ===
+    else if (room.dataValues.roomType === 'kwh_only' || room.dataValues.roomType === 'both') {
+      mode = 'condo';
+
+      // Electricity — REQUIRED
+      if (!kwhAmount || kwhAmount <= 0) {
+        return res.status(400).json({ error: 'kWh amount required for condo booking' });
+      }
+
+      const pricePerKwh = room.dataValues.kwhPrice && room.dataValues.kwhPrice > 0 ? Number(room.dataValues.kwhPrice) : Number(room.dataValues.price);
+      electricityPrice = pricePerKwh * kwhAmount;
+
+      // Rental — OPTIONAL (dates)
+      if (checkIn && checkOut) {
         checkInDate = new Date(checkIn);
         checkOutDate = new Date(checkOut);
         const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
@@ -39,101 +62,86 @@ export class BookingController {
 
         rentalPrice = Number(room.dataValues.price) * nights * guests;
       }
+    }
 
-      // === CONDO MODE (rental + electricity) ===
-      else if (room.dataValues.roomType === 'kwh_only' || room.dataValues.roomType === 'both') {
-        // Rental part (optional)
-        if (checkIn && checkOut) {
-          checkInDate = new Date(checkIn);
-          checkOutDate = new Date(checkOut);
-          const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
-          if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
-          rentalPrice = Number(room.dataValues.price) * nights * guests;
+    else {
+      return res.status(400).json({ error: 'Unsupported room type' });
+    }
+
+    const totalPrice = rentalPrice + electricityPrice;
+    if (totalPrice <= 0) {
+      return res.status(400).json({ error: 'Total price must be greater than 0' });
+    }
+
+    // === OVERLAP CHECK ===
+    if (checkInDate && checkOutDate) {
+      const now = new Date();
+      const holdMinutes = 3;
+      const holdTime = new Date(now.getTime() - holdMinutes * 60 * 1000);
+
+      const conflicting = await models.Booking.findOne({
+        where: {
+          roomId,
+          status: { [Op.notIn]: ['cancelled', 'checked_out'] },
+          [Op.or]: [
+            {
+              status: 'paid',
+              [Op.or]: [
+                { checkIn: { [Op.lt]: checkOutDate } },
+                { checkOut: { [Op.gt]: checkInDate } }
+              ]
+            },
+            {
+              status: 'pending',
+              createdAt: { [Op.gte]: holdTime },
+              [Op.or]: [
+                { checkIn: { [Op.lt]: checkOutDate } },
+                { checkOut: { [Op.gt]: checkInDate } }
+              ]
+            }
+          ]
         }
-
-        // Electricity part (required for condo)
-        if (kwhAmount <= 0) {
-          return res.status(400).json({ error: 'kWh amount required for condo booking' });
-        }
-
-        const pricePerKwh = room.dataValues.kwhPrice && room.dataValues.kwhPrice > 0 ? room.dataValues.kwhPrice : room.dataValues.price;
-        electricityPrice = Number(pricePerKwh) * kwhAmount;
-      }
-
-      else {
-        return res.status(400).json({ error: 'Unsupported room type' });
-      }
-
-      const totalPrice = rentalPrice + electricityPrice;
-
-      if (totalPrice <= 0) {
-        return res.status(400).json({ error: 'Total price must be greater than 0' });
-      }
-
-      // === OVERLAP CHECK (only if dates provided) ===
-      if (checkInDate && checkOutDate) {
-        const now = new Date();
-        const holdMinutes = 3;
-        const holdTime = new Date(now.getTime() - holdMinutes * 60 * 1000);
-
-        const conflicting = await models.Booking.findOne({
-          where: {
-            roomId,
-            status: { [Op.notIn]: ['cancelled', 'checked_out'] },
-            [Op.or]: [
-              {
-                status: 'paid',
-                [Op.or]: [
-                  { checkIn: { [Op.lt]: checkOutDate } },
-                  { checkOut: { [Op.gt]: checkInDate } }
-                ]
-              },
-              {
-                status: 'pending',
-                createdAt: { [Op.gte]: holdTime },
-                [Op.or]: [
-                  { checkIn: { [Op.lt]: checkOutDate } },
-                  { checkOut: { [Op.gt]: checkInDate } }
-                ]
-              }
-            ]
-          }
-        });
-
-        if (conflicting) {
-          const msg = conflicting.status === 'paid'
-            ? 'Room already booked for these dates'
-            : `Room held by another user (expires in ${holdMinutes} minutes)`;
-          return res.status(400).json({ error: msg });
-        }
-      }
-
-      // === CREATE BOOKING ===
-      const booking = await models.Booking.create({
-        roomId,
-        userUuid,
-        checkIn: checkInDate,
-        checkOut: checkOutDate,
-        guests,
-        totalPrice,
-        status: 'pending'
       });
 
-      const token = req.headers.authorization?.split(' ')[1] || '';
-      const qrData = await generateQR(booking.dataValues.id, totalPrice, token, false, true);
-
-      await redis.set(`pending:${booking.dataValues.id}`, JSON.stringify({
-        mode: 'condo',
-        deviceId: room.dataValues.deviceId
-      }), 'EX', 1800);
-
-      res.json({ booking, qrCode: qrData, totalPrice, breakdown: { rentalPrice, electricityPrice } });
-
-    } catch (error: any) {
-      console.error('Booking error:', error);
-      res.status(500).json({ error: error.message || 'Server error' });
+      if (conflicting) {
+        const msg = conflicting.status === 'paid'
+          ? 'Room already booked for these dates'
+          : `Room held by another user (expires in ${holdMinutes} minutes)`;
+        return res.status(400).json({ error: msg });
+      }
     }
+
+    // === CREATE BOOKING ===
+    const booking = await models.Booking.create({
+      roomId,
+      userUuid,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      guests,
+      totalPrice,
+      status: 'pending'
+    });
+
+    const token = req.headers.authorization?.split(' ')[1] || '';
+    const qrData = await generateQR(booking.id, totalPrice, token, false, true);
+
+    await redis.set(`pending:${booking.id}`, JSON.stringify({
+      mode,
+      deviceId: room.dataValues.deviceId
+    }), 'EX', 1800);
+
+    res.json({
+      booking,
+      qrCode: qrData,
+      totalPrice,
+      breakdown: { rentalPrice, electricityPrice }
+    });
+
+  } catch (error: any) {
+    console.error('Booking error:', error);
+    res.status(500).json({ error: error.message || 'Server error' });
   }
+}
 
   // PAYMENT CALLBACK (from bank)
   static async payCallback(req: Request, res: Response) {
@@ -224,8 +232,8 @@ export class BookingController {
       const result = bookings.map(booking => {
         const plainBooking = booking.get({ plain: true });
 
-        if (plainBooking.room?.deviceId && devicesMap[plainBooking.room.deviceId]) {
-          plainBooking.device = devicesMap[plainBooking.room.deviceId];
+        if (plainBooking.room?.deviceId && devicesMap[plainBooking.room.dataValues.deviceId]) {
+          plainBooking.device = devicesMap[plainBooking.room.dataValues.deviceId];
         }
 
         return plainBooking;
