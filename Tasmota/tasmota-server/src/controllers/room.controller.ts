@@ -1,10 +1,6 @@
 // src/controllers/room.controller.ts
 import { Request, Response } from 'express';
-
-
-
 import { Op } from 'sequelize';
-
 import models from '../models';
 
 export class RoomController {

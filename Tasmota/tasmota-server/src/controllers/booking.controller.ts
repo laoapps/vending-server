@@ -1,9 +1,6 @@
 // src/controllers/booking.controller.ts
 import { Request, Response } from 'express';
 import { Model, Op } from 'sequelize';
-
-
-import { Device } from '../models/device';
 import { generateQR } from '../services/lakService';
 import { publishMqttMessage } from '../services/mqttService';
 import redis from '../config/redis';
@@ -216,7 +213,7 @@ export class BookingController {
     // Fetch all devices in ONE query
     const devicesMap: Record<number, any> = {};
     if (deviceIds.length > 0) {
-      const devices = await Device.findAll({
+      const devices = await models.Device.findAll({
         where: { id: deviceIds },
         attributes: ['id', 'tasmotaId', 'name', 'status', 'power', 'energy']
       });
