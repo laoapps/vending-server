@@ -1,8 +1,8 @@
 // src/controllers/booking.controller.ts
 import { Request, Response } from 'express';
-import { Op } from 'sequelize';
-import BookingModel from '../models/booking.model';
-import RoomModel from '../models/room.model';
+import { Model, Op } from 'sequelize';
+
+
 import { Device } from '../models/device';
 import { generateQR } from '../services/lakService';
 import { publishMqttMessage } from '../services/mqttService';
@@ -10,8 +10,8 @@ import redis from '../config/redis';
 import models from '../models';
 import { notifyStakeholders } from '../services/wsService';
 import { activateLock } from '../services/lockService';
-import sequelize from 'sequelize';
-import { LocationModel } from '../models/location.model';
+
+
 
 export class BookingController {
   // USER: Create booking
@@ -187,11 +187,11 @@ export class BookingController {
   const userUuid = res.locals.user.uuid;
 
   try {
-    const bookings = await BookingModel.findAll({
+    const bookings = await models.Booking.findAll({
       where: { userUuid },
       include: [
         {
-          model: RoomModel,
+          model: models.Room,
           as: 'room',
           include: [
             {
@@ -253,9 +253,9 @@ export class BookingController {
       return res.status(403).json({ error: 'Owner access only' });
     }
 
-    const bookings = await BookingModel.findAll({
+    const bookings = await models.Booking.findAll({
       include: [{
-        model: RoomModel,
+        model: models.Room,
         as:'room',
         include: [{
           model:models.Location,
@@ -275,9 +275,9 @@ export class BookingController {
       return res.status(403).json({ error: 'Admin access only' });
     }
 
-    const bookings = await BookingModel.findAll({
+    const bookings = await models.Booking.findAll({
       include: [{
-        model: RoomModel,
+        model: models.Room,
         as:'room',
         include: [{
           model:models.Location,
@@ -298,9 +298,9 @@ export class BookingController {
 
     const { locationid } = req.params;
 
-    const bookings = await BookingModel.findAll({
+    const bookings = await models.Booking.findAll({
       include: [{
-        model: RoomModel,
+        model: models.Room,
         as:'room',
         where: { locationId: locationid },
         include: [{
@@ -321,7 +321,7 @@ export class BookingController {
       return res.status(403).json({ error: 'Owner access only' });
     }
     try {
-      await BookingModel.destroy({ where: { roomId } });
+      await models.Booking.destroy({ where: { roomId } });
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

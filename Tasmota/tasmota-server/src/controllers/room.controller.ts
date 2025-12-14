@@ -1,10 +1,10 @@
 // src/controllers/room.controller.ts
 import { Request, Response } from 'express';
-import RoomModel from '../models/room.model';
-import LocationModel from '../models/location.model';
-import { Device } from '../models/device';
+
+
+
 import { Op } from 'sequelize';
-import BookingModel from '../models/booking.model';
+
 import models from '../models';
 
 export class RoomController {
@@ -35,9 +35,9 @@ export class RoomController {
   // PUBLIC
   static async getByLocation(req: Request, res: Response) {
     try {
-      const rooms = await RoomModel.findAll({
+      const rooms = await models.Room.findAll({
         where: { locationId: req.params.locationId },
-        include: [{ model: LocationModel, as: 'location' }],
+        include: [{ model: models.Location, as: 'location' }],
       });
       res.json(rooms);
     } catch (error: any) {
@@ -47,8 +47,8 @@ export class RoomController {
 
   static async getById(req: Request, res: Response) {
     try {
-      const room = await RoomModel.findByPk(req.params.id, {
-        include: [{ model: LocationModel, as: 'location' }],
+      const room = await models.Room.findByPk(req.params.id, {
+        include: [{ model: models.Location, as: 'location' }],
       });
       if (!room) return res.status(404).json({ error: 'Room not found' });
       res.json(room);
@@ -64,10 +64,10 @@ export class RoomController {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const rooms = await RoomModel.findAll({
+    const rooms = await models.Room.findAll({
       include: [
-        { model: LocationModel, as: 'location' },
-        { model: Device, as: 'device' }
+        { model: models.Location, as: 'location' },
+        { model: models.Device, as: 'device' }
       ],
     });
     res.json(rooms);
@@ -83,7 +83,7 @@ export class RoomController {
 
     try {
       if (deviceId) {
-        const used = await RoomModel.findOne({ where: { deviceId } });
+        const used = await models.Room.findOne({ where: { deviceId } });
         if (used) return res.status(400).json({ error: 'Room already assigned' });
       }
       const location = await models.Location.findByPk(locationId);
@@ -98,7 +98,7 @@ export class RoomController {
       }
 
       const finalRoomType = roomType || allowedRoomType;
-      const room = await RoomModel.create({
+      const room = await models.Room.create({
         locationId,
         name,
         price,
@@ -127,11 +127,11 @@ export class RoomController {
     }
 
     try {
-      const room = await RoomModel.findByPk(id);
+      const room = await models.Room.findByPk(id);
       if (!room) return res.status(404).json({ error: 'Room not found' });
 
       if (deviceId && deviceId !== room.deviceId) {
-        const used = await RoomModel.findOne({
+        const used = await models.Room.findOne({
           where: { deviceId, id: { [Op.ne]: id } }
         });
         if (used) return res.status(400).json({ error: 'Device already used' });
@@ -165,11 +165,11 @@ export class RoomController {
     }
 
     try {
-      const room = await RoomModel.findByPk(id);
+      const room = await models.Room.findByPk(id);
       if (!room) return res.status(404).json({ error: 'Room not found' });
 
       // Prevent delete if has active booking
-      const activeBooking = await BookingModel.findOne({
+      const activeBooking = await models.Booking.findOne({
         where: { roomId: id, status: { [Op.in]: ['pending', 'paid'] } }
       });
       if (activeBooking) {
@@ -193,11 +193,11 @@ export class RoomController {
     }
 
     try {
-      const room = await RoomModel.findByPk(roomId);
+      const room = await models.Room.findByPk(roomId);
       if (!room) return res.status(404).json({ error: 'Room not found' });
 
       if (deviceId) {
-        const used = await RoomModel.findOne({
+        const used = await models.Room.findOne({
           where: { deviceId, id: { [Op.ne]: roomId } }
         });
         if (used) return res.status(400).json({ error: 'Device already assigned' });

@@ -16,7 +16,7 @@ import models from './models';
 import BookingModel from './models/booking.model';
 import RoomModel from './models/room.model';
 import { Device } from './models/device';
-import { LocationModel } from './models/location.model';
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -114,7 +114,7 @@ cron.schedule('*/5 * * * *', async () => {
       as: 'room',
       include: [
         {
-          model: LocationModel,
+          model: models.Location,
           as: 'location'
         }
       ],

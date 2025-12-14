@@ -1,7 +1,6 @@
 // src/controllers/location.controller.ts
 import { Request, Response } from 'express';
-import LocationModel from '../models/location.model';
-import RoomModel from '../models/room.model';
+
 import models from '../models';
 
 export class LocationController {
@@ -12,11 +11,11 @@ export class LocationController {
 
       let locations;
       if (locationType && ['hotel', 'condo'].includes(locationType as string)) {
-        locations = await LocationModel.findAll({
+        locations = await models.Location.findAll({
           where: { locationType }
         });
       } else {
-        locations = await LocationModel.findAll();
+        locations = await models.Location.findAll();
       }
 
       res.json(locations);
@@ -28,7 +27,7 @@ export class LocationController {
   // PUBLIC: Get one location
   static async getById(req: Request, res: Response) {
     try {
-      const location = await LocationModel.findByPk(req.params.id);
+      const location = await models.Location.findByPk(req.params.id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
       res.json(location);
     } catch (error: any) {
@@ -49,7 +48,7 @@ export class LocationController {
     }
 
     try {
-      const location = await LocationModel.create({
+      const location = await models.Location.create({
         name,
         address,
         description,
@@ -73,7 +72,7 @@ export class LocationController {
     const updates = req.body;
 
     try {
-      const location = await LocationModel.findByPk(id);
+      const location = await models.Location.findByPk(id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
 
       await location.update(updates);
@@ -91,10 +90,10 @@ export class LocationController {
 
     const { id } = req.params;
     try {
-      const location = await LocationModel.findByPk(id);
+      const location = await models.Location.findByPk(id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
 
-      const roomCount = await RoomModel.count({ where: { locationId: id } });
+      const roomCount = await models.Room.count({ where: { locationId: id } });
       if (roomCount > 0) {
         return res.status(400).json({ error: 'Cannot delete location with rooms' });
       }
@@ -120,7 +119,7 @@ export class LocationController {
     }
 
     try {
-      const location = await LocationModel.findByPk(id);
+      const location = await models.Location.findByPk(id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
 
       const owner = await models.Owner.findByPk(ownerId);
