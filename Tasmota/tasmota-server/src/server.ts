@@ -109,7 +109,7 @@ cron.schedule('*/5 * * * *', async () => {
         status: 'paid',
         checkOut: { [Op.gt]: new Date() }
       },
-      include: [{ model: RoomModel, attributes: ['id', 'deviceId', 'name'] }]
+      include: [{ model: RoomModel,as:'room', attributes: ['id', 'deviceId', 'name'] }]
     });
 
     const hotelMap: Record<string, CachedHotelBooking> = {};

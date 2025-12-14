@@ -13,7 +13,7 @@ export class RoomController {
     if (!owner) return res.status(403).json({ error: 'Not owner' });
 
     const rooms = await models.Room.findAll({
-      include: [{ model: models.Location, attributes: ['name'] }],
+      include: [{ model: models.Location , as :'location', attributes: ['name'] }],
       where: { ownerId: owner.dataValues.id }
     });
     res.json(rooms);
@@ -48,7 +48,7 @@ export class RoomController {
   static async getById(req: Request, res: Response) {
     try {
       const room = await RoomModel.findByPk(req.params.id, {
-        // include: [{ model: LocationModel, as: 'location' }],
+        include: [{ model: LocationModel, as: 'location' }],
       });
       if (!room) return res.status(404).json({ error: 'Room not found' });
       res.json(room);

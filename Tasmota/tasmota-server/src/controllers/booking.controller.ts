@@ -187,47 +187,46 @@ export class BookingController {
   const userUuid = res.locals.user.uuid;
 
   try {
-    // Step 1: Get all bookings with room + location
     const bookings = await BookingModel.findAll({
       where: { userUuid },
       include: [
         {
           model: RoomModel,
-          include: [LocationModel] // proper model, not string
+          as: 'room',           // ← THIS WAS MISSING!
+          include: [
+            {
+              model: LocationModel,
+              as: 'location'     // ← Also needs 'as' if you used alias
+            }
+          ]
         }
       ],
       order: [['createdAt', 'DESC']]
     });
 
-    console.log('booking',bookings)
     if (bookings.length === 0) {
       return res.json([]);
     }
 
-    // Step 2: Collect all deviceIds
+    // Collect device IDs
     const deviceIds = bookings
-      .map(b => b.dataValues.room?.deviceId)
-      .filter(id => id !== null && id !== undefined);
+      .filter(b => b.dataValues.room?.deviceId)
+      .map(b => b.dataValues.room.deviceId);
 
-    console.log('deviceIds',deviceIds)
-
-    // Step 3: Fetch ALL devices in ONE query
     let devicesMap: Record<number, any> = {};
     if (deviceIds.length > 0) {
       const devices = await Device.findAll({
         where: { id: deviceIds },
-        attributes: ['id', 'tasmotaId', 'name', 'status', 'power', 'energy'] // only needed fields
+        attributes: ['id', 'tasmotaId', 'name', 'status', 'power', 'energy']
       });
 
       devicesMap = devices.reduce((map, dev) => {
-        map[dev.dataValues.id] = dev;
+        map[dev.dataValues.id] = dev.get({ plain: true });
         return map;
       }, {} as Record<number, any>);
     }
-        console.log('devicesMap',devicesMap)
 
-
-    // Step 4: Attach device to each booking
+    // Attach device info
     const result = bookings.map((booking: any) => {
       const plain = booking.get({ plain: true });
       if (plain.room?.deviceId && devicesMap[plain.room.deviceId]) {
@@ -235,13 +234,11 @@ export class BookingController {
       }
       return plain;
     });
-        console.log('result',result)
-    
 
     res.json(result);
   } catch (error: any) {
     console.error('getMyBookings error:', error);
-    res.status(500).json({ error: 'Failed to fetch bookings',err:error });
+    res.status(500).json({ error: 'Failed to fetch bookings' });
   }
 }
 
@@ -257,7 +254,9 @@ export class BookingController {
     const bookings = await BookingModel.findAll({
       include: [{
         model: RoomModel,
-        include: ['location'],
+        include: [{
+          model:LocationModel,
+          as:'location'}],
         where: { uuid: userUuid } // assuming rooms have ownerUuid or via location
       }],
       order: [['createdAt', 'DESC']],
@@ -276,7 +275,9 @@ export class BookingController {
     const bookings = await BookingModel.findAll({
       include: [{
         model: RoomModel,
-        include: ['location']
+        include: [{
+          model:LocationModel,
+          as:'location'}]
       }],
       order: [['createdAt', 'DESC']],
     });
@@ -297,7 +298,9 @@ export class BookingController {
       include: [{
         model: RoomModel,
         where: { locationId: locationid },
-        include: ['location']
+        include: [{
+          model:LocationModel,
+          as:'location'}]
       }],
       order: [['createdAt', 'DESC']],
     });
@@ -345,7 +348,7 @@ export class BookingController {
 
     const bookings = await models.Booking.findAll({
       where,
-      include: [{ model: models.Room, where: { locationId } }]
+      include: [{ model: models.Room, as:'room', where: { locationId } }]
     });
 
     const total = bookings.reduce((sum, b) => sum + b.totalPrice, 0);
