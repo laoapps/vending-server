@@ -8,8 +8,9 @@ export class LocationModel extends Model {
   public name!: string;
   public address!: string;
   public description?: any;
-  public photo?: string;
-  public locationType?:string;
+  public photo?: any; // JSONB → can be string or array/object
+  public locationType?: 'hotel' | 'condo';
+  public ownerId?: number | null;
 }
 
 LocationModel.init(
@@ -19,23 +20,12 @@ LocationModel.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    address: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.JSONB,
-    },
-    photo: {
-      type: DataTypes.STRING,
-    },
-    locationType: {
-      type: DataTypes.STRING,
-    },
+    name: { type: DataTypes.STRING, allowNull: false },
+    address: { type: DataTypes.STRING, allowNull: false },
+    description: { type: DataTypes.JSONB },
+    photo: { type: DataTypes.JSONB }, // now stores array or object
+    locationType: { type: DataTypes.STRING },
+    ownerId: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     sequelize,
@@ -54,8 +44,9 @@ export function initLocationModel(sequelize: Sequelize) {
     name: { type: DataTypes.STRING, allowNull: false },
     address: { type: DataTypes.STRING, allowNull: false },
     description: DataTypes.JSONB, //{locationType:'hotel'|'condo'}
-    photo: DataTypes.STRING,
-    locationType:DataTypes.STRING
+    photo: DataTypes.JSONB,
+    locationType:DataTypes.STRING,
+    ownerId:DataTypes.NUMBER
   }, {
     tableName: 'locations',
     timestamps: true,

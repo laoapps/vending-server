@@ -5,13 +5,18 @@ import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// PUBLIC
-router.get('/', LocationController.getAll);
-router.get('/:id', LocationController.getById);
+// PUBLIC - anyone can list (but owners see only theirs)
+router.get('/', authMiddleware, LocationController.getAll);
 
-// OWNER + ADMIN ONLY
-router.post('/', authMiddleware, LocationController.create);           // CREATE
-router.put('/:id', authMiddleware, LocationController.update);        // UPDATE
-router.delete('/:id', authMiddleware, LocationController.delete);     // DELETE
+// PUBLIC - get one location
+router.get('/:id', authMiddleware, LocationController.getById);
+
+// ADMIN ONLY
+router.post('/', authMiddleware, LocationController.create);
+router.put('/:id', authMiddleware, LocationController.update);
+router.delete('/:id', authMiddleware, LocationController.delete);
+
+// ADMIN ONLY - assign owner to location
+router.patch('/:id/assign-owner', authMiddleware, LocationController.assignOwner);
 
 export default router;
