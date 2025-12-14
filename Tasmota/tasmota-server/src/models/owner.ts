@@ -5,7 +5,6 @@ export interface OwnerAttributes {
   id?: number;
   uuid?: string;
   phoneNumber: string;
-  ownerUuid: string;
   merchantKey?: string;   // sensitive
   walletKey?: string;     // sensitive
   createdAt?: Date;
@@ -28,11 +27,6 @@ export function initOwnerModel(sequelize: Sequelize) {
         allowNull: false,
       },
       phoneNumber: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
-      ownerUuid: {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,

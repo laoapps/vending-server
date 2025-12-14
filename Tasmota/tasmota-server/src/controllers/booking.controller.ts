@@ -223,7 +223,7 @@ export class BookingController {
       include: [{
         model: RoomModel,
         include: ['location'],
-        where: { ownerUuid: userUuid } // assuming rooms have ownerUuid or via location
+        where: { uuid: userUuid } // assuming rooms have ownerUuid or via location
       }],
       order: [['createdAt', 'DESC']],
     });

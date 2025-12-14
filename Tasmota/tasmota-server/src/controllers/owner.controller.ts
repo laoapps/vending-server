@@ -12,7 +12,7 @@ export class OwnerController {
 
     try {
       const owners = await models.Owner.findAll({
-        attributes: ['id', 'uuid', 'phoneNumber', 'ownerUuid', 'merchantKey', 'walletKey', 'createdAt'],
+        attributes: ['id', 'uuid', 'phoneNumber', 'merchantKey', 'walletKey', 'createdAt'],
         order: [['createdAt', 'DESC']]
       });
       res.json(owners);
@@ -36,14 +36,14 @@ export class OwnerController {
         return res.status(401).json({ error: 'owner Invalid token' });
       }
 
-      const existing = await models.Owner.findOne({ where: { ownerUuid: uuid } });
+      const existing = await models.Owner.findOne({ where: { uuid: uuid } });
       if (existing) {
         return res.status(200).json(existing); // already exists
       }
 
       const owner = await models.Owner.create({
         phoneNumber, // can be updated later
-        ownerUuid: uuid
+        uuid: uuid
       });
 
       res.status(201).json(owner);
@@ -82,8 +82,8 @@ export class OwnerController {
 
     try {
       const owner = await models.Owner.findOne({
-        where: { ownerUuid: userUuid },
-        attributes: ['id', 'uuid', 'phoneNumber', 'ownerUuid', 'createdAt'] // hide keys
+        where: { uuid: userUuid },
+        attributes: ['id', 'uuid', 'phoneNumber', 'createdAt'] // hide keys
       });
 
       if (!owner) return res.status(404).json({ error: 'Owner profile not found' });
