@@ -124,7 +124,7 @@ export class BookingController {
 
       await redis.set(`pending:${booking.dataValues.id}`, JSON.stringify({
         mode: 'condo',
-        deviceId: room.dataValues.dataValues.deviceId
+        deviceId: room.dataValues.deviceId
       }), 'EX', 1800);
 
       res.json({ booking, qrCode: qrData, totalPrice, breakdown: { rentalPrice, electricityPrice } });
