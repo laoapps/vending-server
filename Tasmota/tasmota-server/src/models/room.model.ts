@@ -15,6 +15,8 @@ export class RoomModel extends Model {
   public lockId?:string;
   public acceptsTime!: boolean;
   public acceptsKwh!: boolean;
+  public kwhPrice?:number;
+  public others?:any;
 }
 
 RoomModel.init({
@@ -37,6 +39,8 @@ RoomModel.init({
 },
   acceptsTime: { type: DataTypes.BOOLEAN, defaultValue: true },
   acceptsKwh: { type: DataTypes.BOOLEAN, defaultValue: true },
+  kwhPrice:{type:DataTypes.NUMBER,defaultValue:0},
+  others:{type:DataTypes.JSONB}
 }, {
   sequelize,
   tableName: 'rooms',

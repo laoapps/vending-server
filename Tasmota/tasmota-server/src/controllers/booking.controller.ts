@@ -12,57 +12,64 @@ import { activateLock } from '../services/lockService';
 
 export class BookingController {
   // USER: Create booking
-  static async create(req: Request, res: Response) {
+static async create(req: Request, res: Response) {
   const userUuid = res.locals.user.uuid;
-  const { roomId, checkIn, checkOut, guests = 1, kwhAmount } = req.body; // renamed
+  const { roomId, checkIn, checkOut, guests = 1, kwhAmount = 0 } = req.body;
 
   try {
     const room = await models.Room.findByPk(roomId);
     if (!room) return res.status(404).json({ error: 'Room not found' });
 
-    const location = await models.Location.findByPk(room.dataValues.locationId);
-    if (!location) return res.status(400).json({ error: 'Location not found' });
-
-    let totalPrice = 0;
+    let rentalPrice = 0;
+    let electricityPrice = 0;
     let checkInDate: Date | null = null;
     let checkOutDate: Date | null = null;
 
-    // === HOTEL MODE ===
-    if (room.dataValues.roomType === 'time_only' || room.dataValues.roomType === 'both') {
+    // === HOTEL MODE (only rental) ===
+    if (room.roomType === 'time_only') {
       if (!checkIn || !checkOut) {
-        return res.status(400).json({ error: 'checkIn and checkOut required for hotel booking' });
+        return res.status(400).json({ error: 'checkIn and checkOut required' });
       }
 
       checkInDate = new Date(checkIn);
       checkOutDate = new Date(checkOut);
-      const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+      const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
       if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
 
-      totalPrice = room.dataValues.price * nights * guests;
+      rentalPrice = Number(room.price) * nights * guests;
     }
 
-    // === CONDO MODE ===
-    else if (room.dataValues.roomType === 'kwh_only' || room.dataValues.roomType === 'both') {
-      if (!kwhAmount || kwhAmount <= 0) {
-        return res.status(400).json({ error: 'Valid kWh amount required' });
-      }
-
-      totalPrice = room.dataValues.price * kwhAmount;
-
-      // Optional dates for condo (for reporting)
+    // === CONDO MODE (rental + electricity) ===
+    else if (room.roomType === 'kwh_only' || room.roomType === 'both') {
+      // Rental part (optional)
       if (checkIn && checkOut) {
         checkInDate = new Date(checkIn);
         checkOutDate = new Date(checkOut);
-        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
         if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
+        rentalPrice = Number(room.price) * nights * guests;
       }
+
+      // Electricity part (required for condo)
+      if (kwhAmount <= 0) {
+        return res.status(400).json({ error: 'kWh amount required for condo booking' });
+      }
+
+      const pricePerKwh = room.kwhPrice && room.kwhPrice > 0 ? room.kwhPrice : room.price;
+      electricityPrice = Number(pricePerKwh) * kwhAmount;
     }
 
     else {
       return res.status(400).json({ error: 'Unsupported room type' });
     }
 
-    // === COMMON OVERLAP + HOLD TIME CHECK ===
+    const totalPrice = rentalPrice + electricityPrice;
+
+    if (totalPrice <= 0) {
+      return res.status(400).json({ error: 'Total price must be greater than 0' });
+    }
+
+    // === OVERLAP CHECK (only if dates provided) ===
     if (checkInDate && checkOutDate) {
       const now = new Date();
       const holdMinutes = 3;
@@ -73,7 +80,6 @@ export class BookingController {
           roomId,
           status: { [Op.notIn]: ['cancelled', 'checked_out'] },
           [Op.or]: [
-            // Paid → always block
             {
               status: 'paid',
               [Op.or]: [
@@ -81,7 +87,6 @@ export class BookingController {
                 { checkOut: { [Op.gt]: checkInDate } }
               ]
             },
-            // Pending → only if recent AND overlaps
             {
               status: 'pending',
               createdAt: { [Op.gte]: holdTime },
@@ -95,13 +100,10 @@ export class BookingController {
       });
 
       if (conflicting) {
-        if (conflicting.status === 'paid') {
-          return res.status(400).json({ error: 'Room already booked for these dates' });
-        } else {
-          return res.status(400).json({
-            error: `Room temporarily held by another user. Try again in ${holdMinutes} minutes or choose different dates.`
-          });
-        }
+        const msg = conflicting.status === 'paid'
+          ? 'Room already booked for these dates'
+          : `Room held by another user (expires in ${holdMinutes} minutes)`;
+        return res.status(400).json({ error: msg });
       }
     }
 
@@ -113,133 +115,127 @@ export class BookingController {
       checkOut: checkOutDate,
       guests,
       totalPrice,
-      status: 'pending',
+      status: 'pending'
     });
 
-    // Generate QR
     const token = req.headers.authorization?.split(' ')[1] || '';
-    const qrData = await generateQR(booking.dataValues.id, totalPrice, token, false, true);
+    const qrData = await generateQR(booking.id, totalPrice, token, false, true);
 
-    // Cache for payment callback
-    await redis.set(`pending:${booking.dataValues.id}`, JSON.stringify({
-      mode: room.dataValues.roomType.includes('time') ? 'hotel' : 'condo',
-      deviceId: room.dataValues.deviceId
+    await redis.set(`pending:${booking.id}`, JSON.stringify({
+      mode: 'condo',
+      deviceId: room.deviceId
     }), 'EX', 1800);
 
-    res.json({
-      booking,
-      qrCode: qrData,
-      totalPrice
-    });
+    res.json({ booking, qrCode: qrData, totalPrice, breakdown: { rentalPrice, electricityPrice } });
 
   } catch (error: any) {
-    console.error('Booking create error:', error);
+    console.error('Booking error:', error);
     res.status(500).json({ error: error.message || 'Server error' });
   }
 }
 
   // PAYMENT CALLBACK (from bank)
- static async payCallback(req: Request, res: Response) {
-  const { bookingId } = req.body;
-  try {
-    const cache = await redis.get(`pending:${bookingId}`);
-    if (!cache) return res.status(400).json({ error: 'Payment expired or invalid' });
+  static async payCallback(req: Request, res: Response) {
+    const { bookingId } = req.body;
+    try {
+      const cache = await redis.get(`pending:${bookingId}`);
+      if (!cache) return res.status(400).json({ error: 'Payment expired or invalid' });
 
-    const { deviceId } = JSON.parse(cache);
+      const { deviceId } = JSON.parse(cache);
 
-    const booking = await models.Booking.findByPk(bookingId);
-    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+      const booking = await models.Booking.findByPk(bookingId);
+      if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-    // Fixed: use booking.roomId, not booking.id
-    const room = await models.Room.findByPk(booking.dataValues.roomId);
-    if (!room) return res.status(404).json({ error: 'Room not found' });
+      // Fixed: use booking.roomId, not booking.id
+      const room = await models.Room.findByPk(booking.dataValues.roomId);
+      if (!room) return res.status(404).json({ error: 'Room not found' });
 
-    await booking.update({ status: 'paid', paidAt: new Date() });
+      await booking.update({ status: 'paid', paidAt: new Date() });
 
-    // Activate power
-    if (deviceId) {
-      const device = await models.Device.findByPk(deviceId);
-      if (device) {
-        await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
+      // Activate power
+      if (deviceId) {
+        const device = await models.Device.findByPk(deviceId);
+        if (device) {
+          await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
+        }
       }
+
+      // Activate lock if exists
+      if (room.dataValues.lockId) {
+        await activateLock(room.dataValues.lockId);
+      }
+
+      await notifyStakeholders(booking, 'Booking paid and activated');
+
+      await redis.del(`pending:${bookingId}`); // clean up
+
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
-
-    // Activate lock if exists
-    if (room.dataValues.lockId) {
-      await activateLock(room.dataValues.lockId);
-    }
-
-    await notifyStakeholders(booking, 'Booking paid and activated');
-
-    await redis.del(`pending:${bookingId}`); // clean up
-
-    res.json({ success: true });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
   }
-}
 
   // USER: Get my bookings
- static async getMyBookings(req: Request, res: Response) {
-  const userUuid = res.locals.user.uuid;
+  static async getMyBookings(req: Request, res: Response) {
+    const userUuid = res.locals.user.uuid;
 
-  try {
-    const bookings = await models.Booking.findAll({
-      where: { userUuid },
-      include: [
-        {
-          model: models.Room,
-          as: 'room',
-          include: [
-            {
-              model: models.Location,
-              as: 'location'
-            }
-          ]
-        }
-      ],
-      order: [['createdAt', 'DESC']]
-    });
-
-    if (bookings.length === 0) {
-      return res.json([]);
-    }
-
-    // Collect device IDs from included room
-    const deviceIds = bookings
-      .map(booking => booking.dataValues.room?.deviceId)
-      .filter((id): id is number => id !== null && id !== undefined);
-
-    // Fetch all devices in ONE query
-    const devicesMap: Record<number, any> = {};
-    if (deviceIds.length > 0) {
-      const devices = await models.Device.findAll({
-        where: { id: deviceIds },
-        attributes: ['id', 'tasmotaId', 'name', 'status', 'power', 'energy']
+    try {
+      const bookings = await models.Booking.findAll({
+        where: { userUuid },
+        include: [
+          {
+            model: models.Room,
+            as: 'room',
+            include: [
+              {
+                model: models.Location,
+                as: 'location'
+              }
+            ]
+          }
+        ],
+        order: [['createdAt', 'DESC']]
       });
 
-      for (const device of devices) {
-        devicesMap[device.dataValues.id] = device.get({ plain: true });
+      if (bookings.length === 0) {
+        return res.json([]);
       }
+
+      // Collect device IDs from included room
+      const deviceIds = bookings
+        .map(booking => booking.dataValues.room?.deviceId)
+        .filter((id): id is number => id !== null && id !== undefined);
+
+      // Fetch all devices in ONE query
+      const devicesMap: Record<number, any> = {};
+      if (deviceIds.length > 0) {
+        const devices = await models.Device.findAll({
+          where: { id: deviceIds },
+          attributes: ['id', 'tasmotaId', 'name', 'status', 'power', 'energy']
+        });
+
+        for (const device of devices) {
+          devicesMap[device.dataValues.id] = device.get({ plain: true });
+        }
+      }
+
+      // Build final response
+      const result = bookings.map(booking => {
+        const plainBooking = booking.get({ plain: true });
+
+        if (plainBooking.room?.deviceId && devicesMap[plainBooking.room.deviceId]) {
+          plainBooking.device = devicesMap[plainBooking.room.deviceId];
+        }
+
+        return plainBooking;
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error('getMyBookings error:', error);
+      res.status(500).json({ error: 'Failed to fetch bookings' });
     }
-
-    // Build final response
-    const result = bookings.map(booking => {
-      const plainBooking = booking.get({ plain: true });
-
-      if (plainBooking.room?.deviceId && devicesMap[plainBooking.room.deviceId]) {
-        plainBooking.device = devicesMap[plainBooking.room.deviceId];
-      }
-
-      return plainBooking;
-    });
-
-    res.json(result);
-  } catch (error: any) {
-    console.error('getMyBookings error:', error);
-    res.status(500).json({ error: 'Failed to fetch bookings' });
   }
-}
 
   // OWNER: Get all bookings in their hotels
   static async getOwnerBookings(req: Request, res: Response) {
@@ -253,10 +249,11 @@ export class BookingController {
     const bookings = await models.Booking.findAll({
       include: [{
         model: models.Room,
-        as:'room',
+        as: 'room',
         include: [{
-          model:models.Location,
-          as:'location'}],
+          model: models.Location,
+          as: 'location'
+        }],
         where: { uuid: userUuid } // assuming rooms have ownerUuid or via location
       }],
       order: [['createdAt', 'DESC']],
@@ -275,10 +272,11 @@ export class BookingController {
     const bookings = await models.Booking.findAll({
       include: [{
         model: models.Room,
-        as:'room',
+        as: 'room',
         include: [{
-          model:models.Location,
-          as:'location'}]
+          model: models.Location,
+          as: 'location'
+        }]
       }],
       order: [['createdAt', 'DESC']],
     });
@@ -298,11 +296,12 @@ export class BookingController {
     const bookings = await models.Booking.findAll({
       include: [{
         model: models.Room,
-        as:'room',
+        as: 'room',
         where: { locationId: locationid },
         include: [{
-          model:models.Location,
-          as:'location'}]
+          model: models.Location,
+          as: 'location'
+        }]
       }],
       order: [['createdAt', 'DESC']],
     });
@@ -350,7 +349,7 @@ export class BookingController {
 
     const bookings = await models.Booking.findAll({
       where,
-      include: [{ model: models.Room, as:'room', where: { locationId } }]
+      include: [{ model: models.Room, as: 'room', where: { locationId } }]
     });
 
     const total = bookings.reduce((sum, b) => sum + b.totalPrice, 0);

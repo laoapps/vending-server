@@ -75,7 +75,7 @@ export class RoomController {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { locationId, name, price, details, photo, deviceId, roomType, capacity, lockId } = req.body;
+    const { locationId, name, price,kwhPrice,others, details, photo, deviceId, roomType, capacity, lockId } = req.body;
 
     try {
       if (deviceId) {
@@ -103,7 +103,9 @@ export class RoomController {
         deviceId: deviceId || null,
         roomType:finalRoomType,
         capacity,
-        lockId
+        lockId,
+        kwhPrice,
+        others
       });
 
       res.status(200).json(room);
@@ -115,7 +117,8 @@ export class RoomController {
 
   static async update(req: Request, res: Response) {
     const { id } = req.params;
-    const { name, price, details, photo, deviceId, roomType, capacity } = req.body;
+    const { name, price, kwhPrice,
+        others, details, photo, deviceId, roomType, capacity } = req.body;
     const userRole = res.locals.user.role;
 
     if (!['owner', 'admin'].includes(userRole)) {
@@ -145,7 +148,8 @@ export class RoomController {
       }
 
       const finalRoomType = roomType || allowedRoomType;
-      await room.update({ name, price, details, photo, deviceId, roomType:finalRoomType, capacity });
+      await room.update({ name, price, kwhPrice,
+        others, details, photo, deviceId, roomType:finalRoomType, capacity });
       res.json(room);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
