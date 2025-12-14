@@ -6,26 +6,17 @@ import models from '../models';
 
 export class LocationController {
   // GET /api/locations — admin sees all, owner sees only own
-  static async getAll(req: Request, res: Response) {
-    const userRole = res.locals.user.role;
-    const userUuid = res.locals.user.uuid;
-
+    static async getAll(req: Request, res: Response) {
     try {
-      let locations;
-      if (userRole === 'admin') {
-        locations = await LocationModel.findAll({
-          order: [['createdAt', 'DESC']]
-        });
-      } else if (userRole === 'owner') {
-        const owner = await models.Owner.findOne({ where: { uuid: userUuid } });
-        if (!owner) return res.status(404).json({ error: 'Owner not found' });
+      const { locationType } = req.query;
 
+      let locations;
+      if (locationType && ['hotel', 'condo'].includes(locationType as string)) {
         locations = await LocationModel.findAll({
-          where: { ownerId: owner.dataValues.id },
-          order: [['createdAt', 'DESC']]
+          where: { locationType }
         });
       } else {
-        return res.status(403).json({ error: 'Forbidden' });
+        locations = await LocationModel.findAll();
       }
 
       res.json(locations);
@@ -34,7 +25,7 @@ export class LocationController {
     }
   }
 
-  // GET /api/locations/:id
+  // PUBLIC: Get one location
   static async getById(req: Request, res: Response) {
     try {
       const location = await LocationModel.findByPk(req.params.id);
