@@ -1,35 +1,17 @@
-import { Router, Request, Response } from 'express';
+// src/routes/owner.routes.ts
+import { Router } from 'express';
+import { OwnerController } from '../controllers/owner.controller';
 import { authMiddleware } from '../middleware/authMiddleware';
-import models from '../models';
 
 const router = Router();
 
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
-  const user = res.locals.user;
+// ADMIN ONLY
+router.get('/admin/all', authMiddleware, OwnerController.getAllOwners);           // List all with keys
+router.post('/admin/create', authMiddleware, OwnerController.createOwner);        // Create from token
+router.put('/admin/:id', authMiddleware, OwnerController.updateOwnerKeys);        // Admin update keys
 
-  try {
-    if (user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-
-    const owners = await models.Owner.findAll();
-
-    res.json(owners);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to fetch owners' });
-  }
-});
-
-router.get('/findByID', authMiddleware, async (req: Request, res: Response) => {
-  const user = res.locals.user;
-  try {
-    const owner = await models.Owner.findOne({
-      where: { uuid: user.uuid }
-    });
-    res.json(owner);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message || 'Failed to fetch owner' });
-  }
-});
+// OWNER SELF
+router.get('/me', authMiddleware, OwnerController.getMyProfile);                   // Owner sees own (no keys)
+router.get('/findByID', authMiddleware, OwnerController.getMyProfile);             // Keep old endpoint
 
 export default router;

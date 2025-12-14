@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env';
 import { findPhoneNumberByUuid, findRealDB, validateHMVending } from '../services/userManagerService';
 import models from '../models';
 import redis from '../config/redis';
