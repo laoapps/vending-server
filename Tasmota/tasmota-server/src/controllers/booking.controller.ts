@@ -232,8 +232,8 @@ export class BookingController {
       const result = bookings.map(booking => {
         const plainBooking = booking.get({ plain: true });
 
-        if (plainBooking.room?.deviceId && devicesMap[plainBooking.room.dataValues.deviceId]) {
-          plainBooking.device = devicesMap[plainBooking.room.dataValues.deviceId];
+        if (plainBooking.room?.deviceId && devicesMap[plainBooking.room.deviceId]) {
+          plainBooking.device = devicesMap[plainBooking.room.deviceId];
         }
 
         return plainBooking;
