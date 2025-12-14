@@ -192,11 +192,11 @@ export class BookingController {
       include: [
         {
           model: RoomModel,
-          as: 'room',           // ← THIS WAS MISSING!
+          as: 'room',
           include: [
             {
               model: LocationModel,
-              as: 'location'     // ← Also needs 'as' if you used alias
+              as: 'location'
             }
           ]
         }
@@ -208,31 +208,33 @@ export class BookingController {
       return res.json([]);
     }
 
-    // Collect device IDs
+    // Collect device IDs from included room
     const deviceIds = bookings
-      .filter(b => b.dataValues.room?.deviceId)
-      .map(b => b.dataValues.room.deviceId);
+      .map(booking => booking.dataValues.room?.deviceId)
+      .filter((id): id is number => id !== null && id !== undefined);
 
-    let devicesMap: Record<number, any> = {};
+    // Fetch all devices in ONE query
+    const devicesMap: Record<number, any> = {};
     if (deviceIds.length > 0) {
       const devices = await Device.findAll({
         where: { id: deviceIds },
         attributes: ['id', 'tasmotaId', 'name', 'status', 'power', 'energy']
       });
 
-      devicesMap = devices.reduce((map, dev) => {
-        map[dev.dataValues.id] = dev.get({ plain: true });
-        return map;
-      }, {} as Record<number, any>);
+      for (const device of devices) {
+        devicesMap[device.dataValues.id] = device.get({ plain: true });
+      }
     }
 
-    // Attach device info
-    const result = bookings.map((booking: any) => {
-      const plain = booking.get({ plain: true });
-      if (plain.room?.deviceId && devicesMap[plain.room.deviceId]) {
-        plain.device = devicesMap[plain.room.deviceId];
+    // Build final response
+    const result = bookings.map(booking => {
+      const plainBooking = booking.get({ plain: true });
+
+      if (plainBooking.room?.deviceId && devicesMap[plainBooking.room.deviceId]) {
+        plainBooking.device = devicesMap[plainBooking.room.deviceId];
       }
-      return plain;
+
+      return plainBooking;
     });
 
     res.json(result);
