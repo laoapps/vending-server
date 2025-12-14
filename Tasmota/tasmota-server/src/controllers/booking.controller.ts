@@ -11,6 +11,7 @@ import models from '../models';
 import { notifyStakeholders } from '../services/wsService';
 import { activateLock } from '../services/lockService';
 import sequelize from 'sequelize';
+import { LocationModel } from '../models/location.model';
 
 export class BookingController {
   // USER: Create booking
@@ -182,31 +183,60 @@ export class BookingController {
 }
 
   // USER: Get my bookings
-  static async getMyBookings(req: Request, res: Response) {
-    const userUuid = res.locals.user.uuid;
+ static async getMyBookings(req: Request, res: Response) {
+  const userUuid = res.locals.user.uuid;
 
+  try {
+    // Step 1: Get all bookings with room + location
     const bookings = await BookingModel.findAll({
       where: { userUuid },
-      include: [{
-        model: RoomModel,
-        include: ['location']
-      }],
-      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: RoomModel,
+          include: [LocationModel] // proper model, not string
+        }
+      ],
+      order: [['createdAt', 'DESC']]
     });
 
-    // Add device info manually
-    const result = await Promise.all(
-      bookings.map(async (b: any) => {
-        if (b.room?.deviceId) {
-          const device = await Device.findByPk(b.room.deviceId);
-          b.dataValues.device = device;
-        }
-        return b;
-      })
-    );
+    if (bookings.length === 0) {
+      return res.json([]);
+    }
+
+    // Step 2: Collect all deviceIds
+    const deviceIds = bookings
+      .map(b => b.dataValues.room?.deviceId)
+      .filter(id => id !== null && id !== undefined);
+
+    // Step 3: Fetch ALL devices in ONE query
+    let devicesMap: Record<number, any> = {};
+    if (deviceIds.length > 0) {
+      const devices = await Device.findAll({
+        where: { id: deviceIds },
+        attributes: ['id', 'tasmotaId', 'name', 'status', 'power', 'energy'] // only needed fields
+      });
+
+      devicesMap = devices.reduce((map, dev) => {
+        map[dev.dataValues.id] = dev;
+        return map;
+      }, {} as Record<number, any>);
+    }
+
+    // Step 4: Attach device to each booking
+    const result = bookings.map((booking: any) => {
+      const plain = booking.get({ plain: true });
+      if (plain.room?.deviceId && devicesMap[plain.room.deviceId]) {
+        plain.device = devicesMap[plain.room.deviceId];
+      }
+      return plain;
+    });
 
     res.json(result);
+  } catch (error: any) {
+    console.error('getMyBookings error:', error);
+    res.status(500).json({ error: 'Failed to fetch bookings' });
   }
+}
 
   // OWNER: Get all bookings in their hotels
   static async getOwnerBookings(req: Request, res: Response) {
