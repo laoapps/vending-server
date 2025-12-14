@@ -22,7 +22,7 @@ export class BookingController {
     const room = await models.Room.findByPk(roomId);
     if (!room) return res.status(404).json({ error: 'Room not found' });
 
-    const location = await models.Location.findByPk(room.locationId);
+    const location = await models.Location.findByPk(room.dataValues.locationId);
     if (!location) return res.status(400).json({ error: 'Location not found' });
 
     let totalPrice = 0;
@@ -167,7 +167,7 @@ export class BookingController {
     }
 
     // Activate lock if exists
-    if (room.lockId) {
+    if (room.dataValues.lockId) {
       await activateLock(room.dataValues.lockId);
     }
 
