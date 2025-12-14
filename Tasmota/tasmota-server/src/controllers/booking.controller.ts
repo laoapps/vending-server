@@ -234,7 +234,7 @@ export class BookingController {
     res.json(result);
   } catch (error: any) {
     console.error('getMyBookings error:', error);
-    res.status(500).json({ error: 'Failed to fetch bookings' });
+    res.status(500).json({ error: 'Failed to fetch bookings',err:error });
   }
 }
 
