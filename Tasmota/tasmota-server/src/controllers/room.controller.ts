@@ -36,7 +36,7 @@ export class RoomController {
   static async getByLocation(req: Request, res: Response) {
     try {
       const rooms = await RoomModel.findAll({
-        where: { locationId: req.params.locationId},
+        where: { locationId: req.params.locationId },
         include: [{ model: LocationModel, as: 'location' }],
       });
       res.json(rooms);
@@ -65,10 +65,10 @@ export class RoomController {
     }
 
     const rooms = await RoomModel.findAll({
-        include: [
-          { model: LocationModel, as: 'location' },
-          { model: Device, as: 'device' }
-        ],
+      include: [
+        { model: LocationModel, as: 'location' },
+        { model: Device, as: 'device' }
+      ],
     });
     res.json(rooms);
   }
@@ -79,14 +79,25 @@ export class RoomController {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { locationId, name, price, details, photo, deviceId, roomType, capacity,lockId } = req.body;
+    const { locationId, name, price, details, photo, deviceId, roomType, capacity, lockId } = req.body;
 
     try {
       if (deviceId) {
         const used = await RoomModel.findOne({ where: { deviceId } });
-        if (used) return res.status(400).json({ error: 'Device already assigned' });
+        if (used) return res.status(400).json({ error: 'Room already assigned' });
+      }
+      const location = await models.Location.findByPk(locationId);
+      if (!location) return res.status(404).json({ error: 'Location not found' });
+
+      // Enforce match
+      const allowedRoomType = location.dataValues.locationType === 'hotel' ? 'time_only' : 'kwh_only';
+      if (roomType && roomType !== allowedRoomType) {
+        return res.status(400).json({
+          error: `This location is ${location.dataValues.locationType}. Room type must be ${allowedRoomType}`
+        });
       }
 
+      const finalRoomType = roomType || allowedRoomType;
       const room = await RoomModel.create({
         locationId,
         name,
@@ -94,7 +105,7 @@ export class RoomController {
         details,
         photo,
         deviceId: deviceId || null,
-        roomType,
+        roomType:finalRoomType,
         capacity,
         lockId
       });
@@ -104,7 +115,7 @@ export class RoomController {
       res.status(500).json({ error: error.message });
     }
   }
-  
+
 
   static async update(req: Request, res: Response) {
     const { id } = req.params;
@@ -126,7 +137,19 @@ export class RoomController {
         if (used) return res.status(400).json({ error: 'Device already used' });
       }
 
-      await room.update({ name, price, details, photo, deviceId, roomType, capacity });
+       const location = await models.Location.findByPk(room.dataValues.locationId);
+      if (!location) return res.status(404).json({ error: 'Location not found' });
+
+      // Enforce match
+      const allowedRoomType = location.dataValues.locationType === 'hotel' ? 'time_only' : 'kwh_only';
+      if (roomType && roomType !== allowedRoomType) {
+        return res.status(400).json({
+          error: `This location is ${location.dataValues.locationType}. Room type must be ${allowedRoomType}`
+        });
+      }
+
+      const finalRoomType = roomType || allowedRoomType;
+      await room.update({ name, price, details, photo, deviceId, roomType:finalRoomType, capacity });
       res.json(room);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -186,25 +209,25 @@ export class RoomController {
       res.status(500).json({ error: error.message });
     }
   }
- 
 
-static async getOwnerLocations(req: Request, res: Response) {
-  if (res.locals.user.role !== 'owner') {
-    return res.status(403).json({ error: 'Owner only' });
+
+  static async getOwnerLocations(req: Request, res: Response) {
+    if (res.locals.user.role !== 'owner') {
+      return res.status(403).json({ error: 'Owner only' });
+    }
+
+    try {
+      const owner = await models.Owner.findOne({ where: { uuid: res.locals.user.uuid } });
+      if (!owner) return res.status(404).json({ error: 'Owner not found' });
+
+      const locations = await models.Location.findAll({
+        where: { ownerId: owner.dataValues.id },
+        include: [{ model: models.Room, as: 'rooms' }]
+      });
+
+      res.json(locations);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   }
-
-  try {
-    const owner = await models.Owner.findOne({ where: { uuid: res.locals.user.uuid } });
-    if (!owner) return res.status(404).json({ error: 'Owner not found' });
-
-    const locations = await models.Location.findAll({
-      where: { ownerId: owner.dataValues.id },
-      include: [{ model: models.Room, as: 'rooms' }]
-    });
-
-    res.json(locations);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-}
 }
