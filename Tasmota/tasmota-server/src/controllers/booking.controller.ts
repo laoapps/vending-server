@@ -195,7 +195,7 @@ export class BookingController {
           as: 'room',
           include: [
             {
-              model: LocationModel,
+              model: models.Location,
               as: 'location'
             }
           ]
@@ -258,7 +258,7 @@ export class BookingController {
         model: RoomModel,
         as:'room',
         include: [{
-          model:LocationModel,
+          model:models.Location,
           as:'location'}],
         where: { uuid: userUuid } // assuming rooms have ownerUuid or via location
       }],
@@ -280,7 +280,7 @@ export class BookingController {
         model: RoomModel,
         as:'room',
         include: [{
-          model:LocationModel,
+          model:models.Location,
           as:'location'}]
       }],
       order: [['createdAt', 'DESC']],
@@ -304,7 +304,7 @@ export class BookingController {
         as:'room',
         where: { locationId: locationid },
         include: [{
-          model:LocationModel,
+          model:models.Location,
           as:'location'}]
       }],
       order: [['createdAt', 'DESC']],
