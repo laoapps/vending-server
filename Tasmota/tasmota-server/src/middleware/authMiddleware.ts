@@ -17,21 +17,21 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   try {
     // Check Redis cache
     // const cacheKey = `user:${token}`;
-    const cacheKey = 'test'
-    const cachedData = await redis.get(cacheKey);
+    // const cachedData = await redis.get(cacheKey);
+    const cachedData = false
     let user: { uuid: string; role: string,token:string };
 
     if (cachedData && isOwnerFunction && JSON.parse(cachedData)?.role == 'owner') {
-      console.log('justtest1');
+      console.log('bbjkjkjusttest1');
       
       user = JSON.parse(cachedData);
     }else if(cachedData && !isOwnerFunction){
-      console.log('justtest2');
+      console.log('bbjkjkjusttest2');
 
       user = JSON.parse(cachedData);
       user.role = 'user'
     } else {
-      console.log('justtest3');
+      console.log('bbjkjkjusttest3');
 
 
       const validatedUuid = await findRealDB(token);
@@ -39,14 +39,14 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         return res.status(401).json({ error: 'Invalid token or user not found' });
       }
 
-      console.log('justtes4');
+      console.log('bbjkjkjusttes4');
 
       const owner = await models.Owner.findOne({ where: { uuid: validatedUuid } });
       console.log('owner444444444', owner, isOwnerFunction);
 
       let role = owner ? 'owner' : 'user';
 
-      console.log('justtest5');
+      console.log('bbjusttest5');
 
       if (!isOwnerFunction) {
         role = 'user';
@@ -72,7 +72,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
       }
 
-      console.log('justtest6');
+      console.log('bbjkjkjusttest6');
 
 
       user = { uuid: validatedUuid, role,token };
@@ -80,12 +80,12 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       await redis.set(cacheKey, JSON.stringify(user), 'EX', 3600);
     }
 
-      console.log('justtest7');
+      console.log('bbjkjkjusttest7');
 
     res.locals.user = user;
     next();
   } catch (error) {
-      console.log('justtestERROR');
+      console.log('bbjkjkjusttestERROR');
 
     res.status(401).json({ error: 'authMiddleware Invalid token',err:error });
   }
