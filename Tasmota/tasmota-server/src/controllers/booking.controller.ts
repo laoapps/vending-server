@@ -8,7 +8,7 @@ import models from '../models';
 import { notifyStakeholders } from '../services/wsService';
 import { activateLock } from '../services/lockService';
 import { notilaabx_smartcb } from '../services/notificationService';
-
+import { DeviceService } from '../services/deviceService';
 
 
 export class BookingController {
@@ -164,7 +164,7 @@ export class BookingController {
 
       // Temp block room
       await redis.setex(`hotel_room_booked:${roomId}`, 300, '1');
-      await redis.setex(`bookingID_laabxapp:${booking.dataValues.id}`, 5 * 60,  + '');
+      await redis.setex(`bookingID_laabxapp:${booking.dataValues.id}`, 5 * 60, + '');
 
       res.json({
         success: true,
@@ -207,7 +207,41 @@ export class BookingController {
       if (deviceId) {
         const device = await models.Device.findByPk(deviceId);
         if (device) {
-          await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/POWER`, 'ON');
+          device.dataValues.status //TODO: extend by exist data here 
+          const checkInDate = new Date(booking.dataValues.checkIn);
+          const checkOutDate = new Date(booking.dataValues.checkOut);
+          const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
+          const conditionValue = booking.dataValues.conditionValue || 0;
+
+          if (conditionValue > 0) {
+            await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
+            const rule = `ON Energy#Total>${(conditionValue / 1000) + (device?.dataValues?.energy || 0)} DO Power${1} OFF ENDON`;
+            await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
+            await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
+
+            const newconditionValue = (device.dataValues.energy || 0) + (conditionValue / 1000)
+             const updateNewconditionValue = await booking.update({
+              conditionValue: newconditionValue
+            });
+            console.log('updateNewconditionValue', updateNewconditionValue.toJSON());
+          }
+          if (nights > 0) {
+            const minutes = DeviceService.minutesUntilNoonAfterNights(nights);
+            const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
+            await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, timer);
+            const newconditionValue = minutes;
+             const updateNewconditionValue = await booking.update({
+              conditionValue: newconditionValue
+            });
+            console.log('updateNewconditionValue', updateNewconditionValue.toJSON());
+
+          }
+         
+          const relay = 1;
+          const command = 'ON';
+          const mqttTopic = `cmnd/${device.dataValues.tasmotaId}/POWER${relay === 1 ? '' : relay}`;
+          console.log(`Sending MQTT command to ${mqttTopic} with payload: ${command}`);
+          await publishMqttMessage(mqttTopic, command);
         }
       }
 

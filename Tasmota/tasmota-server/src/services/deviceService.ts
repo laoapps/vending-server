@@ -147,4 +147,28 @@ export class DeviceService {
       throw error;
     }
   }
+  static  minutesUntilNoonAfterNights(nights: number = 6): number {
+    // Current time
+    const now = new Date();
+
+    // Create a date that is exactly "nights" days ahead
+    const targetDate = new Date(now);
+    targetDate.setDate(now.getDate() + nights);
+
+    // Set the time to 12:00:00.000 (noon) on that day
+    targetDate.setHours(12, 0, 0, 0);
+
+    // If the calculated noon is in the past (e.g., if now is already past 12:00 on that day),
+    // move to the next day's noon
+    if (targetDate <= now) {
+      targetDate.setDate(targetDate.getDate() + 1);
+      targetDate.setHours(12, 0, 0, 0);
+    }
+
+    // Calculate difference in minutes
+    const diffMs = targetDate.getTime() - now.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+    return diffMinutes;
+  }
 }
