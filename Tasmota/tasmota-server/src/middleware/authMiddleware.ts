@@ -16,7 +16,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
   try {
     // Check Redis cache
-    const cacheKey = `user:${token}`;
+    // const cacheKey = `user:${token}`;
+    const cacheKey = 'test'
     const cachedData = await redis.get(cacheKey);
     let user: { uuid: string; role: string,token:string };
 
