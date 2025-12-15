@@ -95,7 +95,7 @@ export class BookingController {
         status: 'pending',
       });
 
-      const qr = await generateQR(booking.id, totalPrice, req.headers.authorization?.split(' ')[1] || '');
+      const qr = await generateQR(booking.dataValues.id, totalPrice, req.headers.authorization?.split(' ')[1] || '');
 
       // Temp block room
       await redis.setex(`hotel_room_booked:${roomId}`, 300, '1');
