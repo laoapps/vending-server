@@ -69,17 +69,47 @@ export class BookingController {
       if (totalPrice <= 0) return res.status(400).json({ error: 'Total price must be > 0' });
 
       // === OVERLAP CHECK (only if dates exist) ===
+      // === OVERLAP CHECK (only if dates exist) ===
       if (checkInDate && checkOutDate) {
-        const conflict = await models.Booking.findOne({
+        const now = new Date();
+        const holdMinutes = 3;
+        const holdTime = new Date(now.getTime() - holdMinutes * 60 * 1000);
+
+        const conflicting = await models.Booking.findOne({
           where: {
             roomId,
-            status: { [Op.in]: ['pending', 'paid'] },
+            status: { [Op.notIn]: ['cancelled', 'checked_out'] },
             [Op.or]: [
-              { checkIn: { [Op.lt]: checkOutDate }, checkOut: { [Op.gt]: checkInDate } }
-            ]
-          }
+              // 1. Paid bookings → always block
+              {
+                status: 'paid',
+                [Op.or]: [
+                  { checkIn: { [Op.lt]: checkOutDate } },
+                  { checkOut: { [Op.gt]: checkInDate } },
+                ],
+              },
+              // 2. Pending bookings → only block if recent (within hold time)
+              {
+                status: 'pending',
+                createdAt: { [Op.gte]: holdTime },
+                [Op.or]: [
+                  { checkIn: { [Op.lt]: checkOutDate } },
+                  { checkOut: { [Op.gt]: checkInDate } },
+                ],
+              },
+            ],
+          },
         });
-        if (conflict) return res.status(400).json({ error: 'Room already booked for these dates' });
+
+        if (conflicting) {
+          if (conflicting.status === 'paid') {
+            return res.status(400).json({ error: 'Room already booked for these dates' });
+          } else {
+            return res.status(400).json({
+              error: `Room is temporarily held by another user. Please try again in ${holdMinutes} minutes or choose different dates.`,
+            });
+          }
+        }
       }
 
       // === CREATE BOOKING ===
