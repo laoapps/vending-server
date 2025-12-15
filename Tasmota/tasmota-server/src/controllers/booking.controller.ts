@@ -26,7 +26,6 @@ export class BookingController {
       const room = await models.Room.findByPk(roomId, { include: ['device'] });
       if (!room) return res.status(404).json({ error: 'Room not found' });
       if (!room.dataValues.deviceId) return res.status(400).json({ error: 'No device assigned' });
-      if (!room.dataValues.available) return res.status(400).json({ error: 'Room not available' });
 
       let rentalPrice = 0;
       let electricityPrice = 0;
@@ -51,10 +50,6 @@ export class BookingController {
       else if (room.dataValues.roomType === 'kwh_only' || room.dataValues.roomType === 'both') {
         const kwhPrice = room.dataValues.kwhPrice && room.dataValues.kwhPrice > 0 ? Number(room.dataValues.kwhPrice) : Number(room.dataValues.price);
 
-        // kWh is ALWAYS required for condo
-        // if (!kwhAmount || kwhAmount <= 0) {
-        //   return res.status(400).json({ error: 'kWh amount required for condo booking' });
-        // }
         electricityPrice = kwhPrice * kwhAmount;
 
         // Rental is OPTIONAL
