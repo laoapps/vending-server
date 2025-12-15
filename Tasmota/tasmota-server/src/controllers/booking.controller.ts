@@ -7,6 +7,7 @@ import redis from '../config/redis';
 import models from '../models';
 import { notifyStakeholders } from '../services/wsService';
 import { activateLock } from '../services/lockService';
+import { notilaabx_smartcb } from '../services/notificationService';
 
 
 
@@ -14,6 +15,7 @@ export class BookingController {
   // USER: Create booking
   static async create(req: Request, res: Response) {
     const userUuid = res.locals.user.uuid;
+    const token = res.locals.user.token;
     const {
       roomId,
       checkIn,        // optional for condo kWh-only
@@ -27,6 +29,26 @@ export class BookingController {
       if (!room) return res.status(404).json({ error: 'Room not found' });
       if (!room.dataValues.deviceId) return res.status(400).json({ error: 'No device assigned' });
 
+
+
+      const deviceId = room.dataValues.deviceId;
+
+      // === SHARED LOCK WITH VENDING SYSTEM ===
+      const activeLock = await redis.get(`deviceID:${deviceId}`);
+      if (activeLock) {
+        return res.status(400).json({
+          error: 'This Smart CB is currently in use (vending or another booking). Please try again later.'
+        });
+      }
+      // Temp lock the device (3 minutes — same as vending)
+      await redis.setex(`deviceID:${deviceId}`, 3 * 60, JSON.stringify({
+        deviceId,
+        time: new Date(),
+        type: 'hotel_booking',
+        roomId
+      }));
+
+
       let rentalPrice = 0;
       let electricityPrice = 0;
       let checkInDate: Date | null = null;
@@ -35,13 +57,17 @@ export class BookingController {
       // === HOTEL MODE (time_only) ===
       if (room.roomType === 'time_only') {
         if (!checkIn || !checkOut) {
+          await redis.del(`deviceID:${deviceId}`); // unlock on error
           return res.status(400).json({ error: 'Check-in and check-out dates required' });
         }
 
         checkInDate = new Date(checkIn);
         checkOutDate = new Date(checkOut);
         const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
-        if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
+        if (nights <= 0) {
+          await redis.del(`deviceID:${deviceId}`); // unlock on error
+          return res.status(400).json({ error: 'Invalid dates' })
+        };
 
         rentalPrice = Number(room.dataValues.price) * nights; //* guests;
       }
@@ -57,16 +83,23 @@ export class BookingController {
           checkInDate = new Date(checkIn);
           checkOutDate = new Date(checkOut);
           const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
-          if (nights < 0) return res.status(400).json({ error: 'Invalid dates' });
+          if (nights < 0) {
+            await redis.del(`deviceID:${deviceId}`); // unlock on error
+            return res.status(400).json({ error: 'Invalid dates' })
+          };
 
           rentalPrice = Number(room.dataValues.price) * nights;//* guests;
         }
       } else {
+        await redis.del(`deviceID:${deviceId}`); // unlock on error
         return res.status(400).json({ error: 'Unsupported room type' });
       }
 
       const totalPrice = rentalPrice + electricityPrice;
-      if (totalPrice <= 0) return res.status(400).json({ error: 'Total price must be > 0' });
+      if (totalPrice <= 0) {
+        await redis.del(`deviceID:${deviceId}`); // unlock on error
+        return res.status(400).json({ error: 'Total price must be > 0' })
+      };
 
       // === OVERLAP CHECK (only if dates exist) ===
       // === OVERLAP CHECK (only if dates exist) ===
@@ -103,8 +136,10 @@ export class BookingController {
 
         if (conflicting) {
           if (conflicting.status === 'paid') {
+            await redis.del(`deviceID:${deviceId}`); // unlock on error
             return res.status(400).json({ error: 'Room already booked for these dates' });
           } else {
+            await redis.del(`deviceID:${deviceId}`); // unlock on error
             return res.status(400).json({
               error: `Room is temporarily held by another user. Please try again in ${holdMinutes} minutes or choose different dates.`,
             });
@@ -129,6 +164,7 @@ export class BookingController {
 
       // Temp block room
       await redis.setex(`hotel_room_booked:${roomId}`, 300, '1');
+      await redis.setex(`bookingID_laabxapp:${booking.dataValues.id}`, 5 * 60,  + '');
 
       res.json({
         success: true,
@@ -139,6 +175,11 @@ export class BookingController {
       });
 
     } catch (err: any) {
+      const roomId = req.body.roomId;
+      if (roomId) {
+        const room = await models.Room.findByPk(roomId);
+        if (room?.dataValues.deviceId) await redis.del(`deviceID:${room.dataValues.deviceId}`);
+      }
       console.error('Booking error:', err);
       res.status(500).json({ error: err.message || 'Server error' });
     }
@@ -179,6 +220,11 @@ export class BookingController {
 
       await redis.del(`pending:${bookingId}`); // clean up
 
+
+      const token_user = await redis.get(`bookingID_laabxapp:${booking.dataValues.id}`);
+      const datanoti = { callback: 'true', booking }
+      const noti = await notilaabx_smartcb(datanoti, token_user || '')
+      console.log('notilaabx_smartcb000', noti);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

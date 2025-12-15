@@ -17,7 +17,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     // Check Redis cache
     const cacheKey = `user:${token}`;
     const cachedData = await redis.get(cacheKey);
-    let user: { uuid: string; role: string };
+    let user: { uuid: string; role: string,token:string };
 
     if (cachedData && isOwnerFunction && JSON.parse(cachedData)?.role == 'owner') {
       user = JSON.parse(cachedData);
@@ -52,7 +52,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         role = 'admin';
       }
 
-      user = { uuid: validatedUuid, role };
+      user = { uuid: validatedUuid, role,token };
       // Cache for 60 minutes (3600 seconds)
       await redis.set(cacheKey, JSON.stringify(user), 'EX', 3600);
     }
