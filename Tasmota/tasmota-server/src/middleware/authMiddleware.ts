@@ -8,7 +8,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   const adminKey = req.headers['x-admin-key'];
   const isOwnerFunction = req.headers['x-owner'] === 'true';
   console.log('isOwnerFunction', isOwnerFunction, typeof (isOwnerFunction), req.headers['x-owner'], typeof (req.headers['x-owner']));
-
+  console.log('isadmin_adminKey',adminKey);
+  
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
@@ -40,6 +41,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       }
       // Admin verification
       if (adminKey === 'super-admin') {
+  console.log('isadmin_adminKey2',adminKey);
+
         const admin = await models.Admin.findOne({ where: { uuid: validatedUuid } });
         if (!admin) {
           const phoneNumber = await findPhoneNumberByUuid(validatedUuid);
@@ -49,7 +52,12 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
           }
           await models.Admin.create({ uuid: validatedUuid, phoneNumber } as any);
         }
+
+
         role = 'admin';
+
+  console.log('isadmin_adminKey3',role);
+
       }
 
       user = { uuid: validatedUuid, role,token };
