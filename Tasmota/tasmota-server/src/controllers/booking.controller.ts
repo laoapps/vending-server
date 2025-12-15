@@ -58,7 +58,7 @@ export class BookingController {
         checkInDate = new Date(checkIn);
         checkOutDate = new Date(checkOut);
         const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / 86400000);
-        if (nights <= 0) return res.status(400).json({ error: 'Invalid dates' });
+        if (nights < 0) return res.status(400).json({ error: 'Invalid dates' });
 
         rentalPrice = Number(room.dataValues.price) * nights * guests;
       }
