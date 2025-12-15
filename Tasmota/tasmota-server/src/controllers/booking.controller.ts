@@ -125,7 +125,7 @@ export class BookingController {
         status: 'pending',
       });
 
-      const qr = await generateQR(booking.dataValues.id, totalPrice, req.headers.authorization?.split(' ')[1] || '');
+      const qrCode = await generateQR(booking.dataValues.id, totalPrice, req.headers.authorization?.split(' ')[1] || '');
 
       // Temp block room
       await redis.setex(`hotel_room_booked:${roomId}`, 300, '1');
@@ -133,7 +133,7 @@ export class BookingController {
       res.json({
         success: true,
         booking,
-        qr,
+        qrCode,
         paymentData: { amount: totalPrice },
         breakdown: { rentalPrice, electricityPrice }
       });
