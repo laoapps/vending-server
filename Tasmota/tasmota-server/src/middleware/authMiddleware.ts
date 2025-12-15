@@ -21,21 +21,32 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     let user: { uuid: string; role: string,token:string };
 
     if (cachedData && isOwnerFunction && JSON.parse(cachedData)?.role == 'owner') {
+      console.log('justtest1');
+      
       user = JSON.parse(cachedData);
     }else if(cachedData && !isOwnerFunction){
+      console.log('justtest2');
+
       user = JSON.parse(cachedData);
       user.role = 'user'
     } else {
+      console.log('justtest3');
+
 
       const validatedUuid = await findRealDB(token);
       if (!validatedUuid) {
         return res.status(401).json({ error: 'Invalid token or user not found' });
       }
 
+      console.log('justtes4');
+
       const owner = await models.Owner.findOne({ where: { uuid: validatedUuid } });
       console.log('owner444444444', owner, isOwnerFunction);
 
       let role = owner ? 'owner' : 'user';
+
+      console.log('justtest5');
+
       if (!isOwnerFunction) {
         role = 'user';
       }
@@ -60,14 +71,21 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
       }
 
+      console.log('justtest6');
+
+
       user = { uuid: validatedUuid, role,token };
       // Cache for 60 minutes (3600 seconds)
       await redis.set(cacheKey, JSON.stringify(user), 'EX', 3600);
     }
 
+      console.log('justtest7');
+
     res.locals.user = user;
     next();
   } catch (error) {
+      console.log('justtestERROR');
+
     res.status(401).json({ error: 'authMiddleware Invalid token',err:error });
   }
 };
