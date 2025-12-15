@@ -162,6 +162,7 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
     let sensorData;
     try {
       sensorData = JSON.parse(payload.toString());
+      console.warn('sensorData ',sensorData)
     } catch (error) {
       console.error(`Error parsing SENSOR data for device ${tasmotaId}:`, error);
       // Update database
