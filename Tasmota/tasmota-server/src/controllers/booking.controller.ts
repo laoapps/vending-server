@@ -164,7 +164,7 @@ export class BookingController {
 
       // Temp block room
       await redis.setex(`hotel_room_booked:${roomId}`, 300, '1');
-      await redis.setex(`bookingID_laabxapp:${booking.dataValues.id}`, 5 * 60, + '');
+      await redis.setex(`bookingID_laabxapp:${booking.dataValues.id}`, 5 * 60, token);
 
       res.json({
         success: true,
