@@ -73,7 +73,7 @@ export class BookingController {
         const conflict = await models.Booking.findOne({
           where: {
             roomId,
-            status: { [Op.in]: ['pending', 'paid', 'can'] },
+            status: { [Op.in]: ['pending', 'paid'] },
             [Op.or]: [
               { checkIn: { [Op.lt]: checkOutDate }, checkOut: { [Op.gt]: checkInDate } }
             ]
