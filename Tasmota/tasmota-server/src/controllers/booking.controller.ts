@@ -55,7 +55,7 @@ export class BookingController {
       let checkOutDate: Date | null = null;
 
       // === HOTEL MODE (time_only) ===
-      if (room.roomType === 'time_only') {
+      if (room.dataValues.roomType === 'time_only') {
         if (!checkIn || !checkOut) {
           await redis.del(`deviceID:${deviceId}`); // unlock on error
           return res.status(400).json({ error: 'Check-in and check-out dates required' });
