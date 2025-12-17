@@ -358,126 +358,136 @@ export const payOrder = async (req: Request, res: Response) => {
   const { orderID, data } = req.body;
 
   try {
-    // const orderId = await redis.get(`qr:${trandID}`);
-    // if (!orderId) {
-    //   return res.status(403).json({ error: 'Transaction ID not found' });
-    // }
-
-    console.log('payOrder==========', req.body);
+    console.log('payOrder ==========', req.body);
 
     const order = await models.Order.findByPk(Number(orderID));
-    const deviceId = order?.dataValues.deviceId;
-    const ordersD = await findActiveOrderByDeviceId(deviceId)
-    if (ordersD.length) {
-      ordersD.forEach(v => {
-        const key = `activeOrder:${v?.orderId}`;
-        redis.del(key)
-      })
-    }
-    // close exist Order
-    await closeActiveOrder(deviceId);
-
-    // update redis deviceID not use setex for block other user create new order with the device
-    const keyDevice = `deviceID:${deviceId}`;
-    const activeDevice = await redis.get(keyDevice)
-    if (activeDevice) {
-      await redis.del(keyDevice)
-      const active_device_data = { deviceId, time: new Date(), paid: true }
-      await redis.set(`deviceID:${deviceId}`, JSON.stringify(active_device_data));
-      // await redis.set(`deviceID:${deviceId}`, deviceId + '');
-    }
-
-
-
-    console.log('payOrder==========111', order);
-
     if (!order) {
       return res.status(403).json({ error: 'Order not found' });
     }
+
+    const deviceId = order.dataValues.deviceId;
+    const device = await models.Device.findByPk(deviceId);
+    if (!device) {
+      return res.status(403).json({ error: 'Device not found' });
+    }
+
+    const tasmotaId = device.dataValues.tasmotaId;
+    const relay = order.dataValues.relay || 1;
+    const existingEnergy = device.dataValues.energy || 0; // accumulated kWh from previous uses
 
     const schedulePackage = await SchedulePackage.findByPk(order.dataValues.packageId);
     if (!schedulePackage) {
       return res.status(403).json({ error: 'Package not found' });
     }
 
-    const device = await models.Device.findByPk(order.dataValues.deviceId);
-    if (!device) {
-      return res.status(403).json({ error: 'Device not found' });
+    // === Close any existing active orders on this device ===
+    const activeOrders = await findActiveOrderByDeviceId(deviceId);
+    if (activeOrders.length > 0) {
+      for (const activeOrder of activeOrders) {
+        await redis.del(`activeOrder:${activeOrder.orderId}`);
+      }
     }
+    await closeActiveOrder(deviceId);
 
-    // if (!device?.dataValues?.energy) {
-    //   return res.status(404).json({ error: 'Device energy not found' });
-    // }
+    // === Update device lock in Redis (mark as active/paid) ===
+    const keyDevice = `deviceID:${deviceId}`;
+    await redis.del(keyDevice); // Clear any old lock
+    const activeDeviceData = { deviceId, time: new Date(), paid: true };
+    await redis.set(keyDevice, JSON.stringify(activeDeviceData));
 
-    console.log('payOrder==========222', device?.dataValues?.energy);
-
-
+    // === Mark order as paid and started ===
     order.set('paidTime', new Date());
     order.set('data', data);
     order.set('startedTime', new Date());
     await order.save();
 
-    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '0');
-    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '');
-    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '0');
-    await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, '');
+    // === Clear previous rules and timers ===
+    await publishMqttMessage(`cmnd/${tasmotaId}/Rule1`, '0'); // Disable
+    await publishMqttMessage(`cmnd/${tasmotaId}/Rule1`, '');  // Clear
+    await publishMqttMessage(`cmnd/${tasmotaId}/Timer1`, '0'); // Disable
+    await publishMqttMessage(`cmnd/${tasmotaId}/Timer1`, '');  // Clear
 
-    let newconditionValue = 0;
+    let appliedConditionValue = 0; // Will store the effective limit (kWh or minutes)
+
+    // === Apply condition based on package type ===
     if (schedulePackage.dataValues.conditionType === 'energy_consumption') {
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/EnergyReset`, '0');
-      const rule = `ON Energy#Total>${(schedulePackage.dataValues.conditionValue / 1000) + (device?.dataValues?.energy || 0)} DO Power${order.dataValues.relay || 1} OFF ENDON`;
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, rule);
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Rule1`, '1');
+      // User/package defines limit in kWh → use directly
+      const packageLimitKwh = Number(schedulePackage.dataValues.conditionValue);
 
-      newconditionValue = (device.dataValues.energy || 0) + (schedulePackage.dataValues.conditionValue / 1000)
-      const updateNewconditionValue = await order.update({
-        conditionValue: newconditionValue
-      });
-      console.log('updateNewconditionValue', updateNewconditionValue.toJSON());
-    } else if (schedulePackage.dataValues.conditionType === 'time_duration') {
-      const minutes = Math.ceil(schedulePackage.dataValues.conditionValue);
+      // Reset energy counter to start fresh
+      await publishMqttMessage(`cmnd/${tasmotaId}/EnergyReset`, '0');
+
+      // Total threshold = package allowance + any previously accumulated energy
+      const thresholdKwh = packageLimitKwh + existingEnergy;
+
+      const rule = `ON Energy#Total>${thresholdKwh} DO Power${relay} OFF ENDON`;
+
+      await publishMqttMessage(`cmnd/${tasmotaId}/Rule1`, rule);
+      await publishMqttMessage(`cmnd/${tasmotaId}/Rule1`, '1'); // Enable
+
+      appliedConditionValue = thresholdKwh; // Store effective total limit
+
+      console.log(`Energy rule set: Power${relay} OFF when Total > ${thresholdKwh} kWh`);
+    } 
+    else if (schedulePackage.dataValues.conditionType === 'time_duration') {
+      // conditionValue is in minutes
+      const minutes = Math.ceil(Number(schedulePackage.dataValues.conditionValue));
+
       const timer = `{"Enable":1,"Mode":0,"Time":"0:${minutes}","Action":0}`;
-      await publishMqttMessage(`cmnd/${device.dataValues.tasmotaId}/Timer1`, timer);
-      newconditionValue = minutes;
+      await publishMqttMessage(`cmnd/${tasmotaId}/Timer1`, timer);
+
+      appliedConditionValue = minutes;
+
+      console.log(`Timer set: Power${relay} OFF after ${minutes} minutes`);
     }
 
-    const command = 'ON';
-    const topic = `cmnd/${device.dataValues.tasmotaId}/POWER${order.dataValues.relay || 1}`;
-    await publishMqttMessage(topic, command);
+    // === Save the applied condition value to order (for tracking) ===
+    await order.update({ conditionValue: appliedConditionValue });
 
+    // === Turn ON the relay ===
+    const powerTopic = `cmnd/${tasmotaId}/POWER${relay === 1 ? '' : relay}`;
+    await publishMqttMessage(powerTopic, 'ON');
+    console.log(`Relay ON: ${powerTopic} -> ON`);
+
+    // === Save active order details to Redis ===
     const orderDetails = {
       orderId: order.dataValues.id,
       deviceId: order.dataValues.deviceId,
       tasmotaId: device.dataValues.tasmotaId,
       packageId: order.dataValues.packageId,
       conditionType: schedulePackage.dataValues.conditionType,
-      conditionValue: newconditionValue,
+      conditionValue: appliedConditionValue,
       startedTime: order.dataValues.startedTime.getTime(),
-      relay: order.dataValues.relay || 1,
+      relay: relay,
     };
-    await redis.set(`activeOrder:${order.dataValues.id}`, JSON.stringify(orderDetails), 'EX', 24 * 60 * 60);
 
-    console.log('payOrder==========333', `activeOrder:${order.dataValues.id}`);
+    await redis.set(
+      `activeOrder:${order.dataValues.id}`,
+      JSON.stringify(orderDetails),
+      'EX',
+      24 * 60 * 60 // 24 hours expiry
+    );
 
+    console.log(`Active order saved in Redis: activeOrder:${order.dataValues.id}`);
 
-
+    // === Notify vending machine via WebSocket (if connected) ===
     const token_vending = await redis.get(`orderID:${order.dataValues.id}`);
     if (token_vending) {
-      await WS_HMVending(token_vending, orderDetails)
+      await WS_HMVending(token_vending, orderDetails);
     }
 
-    //======= axios noti laabx for send ws to client dismiss modal ========
+    // === Notify user app via push/WebSocket ===
     const token_user = await redis.get(`orderID_laabxapp:${order.dataValues.id}`);
-    const datanoti = { callback: 'true', orderDetails }
-    const noti = await notilaabx_smartcb(datanoti, token_user || '')
-    console.log('notilaabx_smartcb000', noti);
+    const datanoti = { callback: 'true', orderDetails };
+    const noti = await notilaabx_smartcb(datanoti, token_user || '');
+    console.log('notilaabx_smartcb result:', noti);
 
-
-
-    res.json({ message: 'Command sent', order });
-  } catch (error) {
-    console.log('payOrder error', error);
-    res.status(500).json({ error: (error as Error).message || 'Failed to process order' });
+    return res.json({ message: 'Order paid and device activated', order: orderDetails });
+  } catch (error: any) {
+    console.error('payOrder error:', error);
+    return res.status(500).json({ 
+      error: error.message || 'Failed to process order payment' 
+    });
   }
 };
 
