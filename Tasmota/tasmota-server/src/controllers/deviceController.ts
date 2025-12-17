@@ -124,7 +124,7 @@ export const updateDeviceForAdmin = async (req: Request, res: Response) => {
 export const deleteDevice = async (req: Request, res: Response) => {
   const { id } = req.params;
   const user = res.locals.user;
-  console.log('deleteDevice', id, user.role);
+  console.log('deleteDevice', id, user.role,user.uuid,user);
   try {
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can delete devices' });
