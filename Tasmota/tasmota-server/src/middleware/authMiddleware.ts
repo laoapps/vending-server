@@ -14,72 +14,67 @@ export const authMiddleware = async (
 ) => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
-  const adminKey = req.headers["x-admin-key"] as string | undefined;
-  const isOwnerFunction = req.headers["x-owner"] === "true"; // Keep this — used for route protection
 
-  console.log("isOwnerFunction:", isOwnerFunction);
-  console.log("adminKey:", adminKey);
+  const isOwnerMode = req.headers["x-owner"] === "true";
+  const isAdminMode = req.headers["x-admin-key"] === "super-admin";
+
+  console.log("Mode flags:", { isOwnerMode, isAdminMode });
 
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
   }
 
   try {
-    const cacheKey = `user:${token}`;
-    let cachedData = await redis.get(cacheKey);
+    const cacheKey = `auth:${token}`; // Only cache UUID, not role
+    let uuid: string;
 
-    let user: { uuid: string; role: "user" | "owner" | "admin"; token: string };
-
-    if (cachedData) {
-      user = JSON.parse(cachedData);
-      console.log("User from cache:", { uuid: user.uuid, role: user.role });
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      uuid = cached;
+      console.log("UUID from cache");
     } else {
       // Validate token and get real UUID
-      const uuid = await findRealDB(token);
+      uuid = await findRealDB(token);
       if (!uuid) {
         return res.status(401).json({ error: "Invalid token or user not found" });
       }
-
-      let role: "user" | "owner" | "admin" = "user";
-
-      // Highest priority: super-admin key → force admin role + ensure record exists
-      if (adminKey === "super-admin") {
-        const admin = await models.Admin.findOne({ where: { uuid } });
-        if (!admin) {
-          const phoneNumber = await findPhoneNumberByUuid(uuid);
-          if (!phoneNumber) {
-            return res.status(400).json({ error: "Phone number not found for admin creation" });
-          }
-          await models.Admin.create({ uuid, phoneNumber } as any);
-        }
-        role = "admin";
-      }
-      // Next: check if user is owner
-      else {
-        const owner = await models.Owner.findOne({ where: { uuid } });
-        if (owner) {
-          role = "owner";
-        }
-        // else remains "user"
-      }
-
-      user = { uuid, role, token };
-
-      // Cache the correct role for 1 hour
-      await redis.set(cacheKey, JSON.stringify(user), "EX", 3600);
-      console.log("User cached with role:", role);
+      // Cache only the UUID for 1 hour (fast validation next time)
+      await redis.set(cacheKey, uuid, "EX", 3600);
+      console.log("UUID validated and cached");
     }
 
-    // === Critical Fix: Enforce owner requirement if route demands it ===
-    if (isOwnerFunction) {
-      if (user.role !== "owner" && user.role !== "admin") {
-        return res.status(403).json({ error: "Owner access required for this endpoint" });
-      }
-      console.log("Owner-only route: Access granted (role =", user.role, ")");
+    // === Determine role purely based on flags ===
+    let role: "user" | "owner" | "admin" = "user";
+
+    if (isAdminMode) {
+      role = "admin";
+      console.log("Admin mode activated via x-admin-key");
+    } else if (isOwnerMode) {
+      role = "owner";
+      console.log("Owner mode activated via x-owner: true");
+    } else {
+      role = "user";
+      console.log("Normal user mode (no flags)");
     }
 
-    // Attach authenticated user to request
+    // Optional: If you still want to auto-create Admin record when entering admin mode
+    if (isAdminMode) {
+      const admin = await models.Admin.findOne({ where: { uuid } });
+      if (!admin) {
+        const phoneNumber = await findPhoneNumberByUuid(uuid);
+        if (!phoneNumber) {
+          return res.status(400).json({ error: "Phone number not found for admin setup" });
+        }
+        await models.Admin.create({ uuid, phoneNumber } as any);
+        console.log("Admin record created");
+      }
+    }
+
+    // Attach user with dynamically assigned role
+    const user = { uuid, role, token };
     res.locals.user = user;
+
+    console.log("Final role assigned:", role);
 
     next();
   } catch (error) {
