@@ -5,8 +5,8 @@ import redis from '../config/redis';
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1];
-  const adminKey = req.headers['x-admin-key'];
-  const isOwnerFunction = req.headers['x-owner'] === 'true';
+  const adminKey = req.headers['X-Admin-Key'];
+  const isOwnerFunction = req.headers['X-Owner'] === 'true';
   console.log('isOwnerFunction', isOwnerFunction, typeof (isOwnerFunction), req.headers['x-owner'], typeof (req.headers['x-owner']));
   console.log('isadmin_adminKey',adminKey);
   
