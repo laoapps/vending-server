@@ -9,8 +9,13 @@ router.post('/', authMiddleware, validate(createDeviceSchema), createDevice);
 
 // both admin and owner
 router.get('/:dtype', authMiddleware, getDevices);
-// owner only
+
+// owner only 
+// ownerId: data.ownerId,
+// data.groupId,
+// data.dtype 
 router.post('/getDevicesBy', authMiddleware, getDevicesBy);
+
 
 router.post('/getDevicesByHMVending',authHMVending, getDevicesByHMVending);
 

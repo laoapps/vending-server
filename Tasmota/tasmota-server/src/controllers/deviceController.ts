@@ -59,6 +59,20 @@ export const getDevices = async (req: Request, res: Response) => {
 // both owner
 export const getDevicesBy = async (req: Request, res: Response) => {
   const user = res.locals.user;
+  const { ownerId, dtype,groupId,id } = req.body;
+  if (!ownerId) {
+    return res.status(403).json({ error: 'Owner not found' });
+  }
+  try {
+    const devices = await DeviceService.getDevicesBy({ ownerId, dtype,groupId,id });
+    res.json(devices);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to fetch devices' });
+  }
+};
+
+export const getDevicesByGroup = async (req: Request, res: Response) => {
+  const user = res.locals.user;
   const { ownerId, id, dtype } = req.body;
   if (!ownerId) {
     return res.status(403).json({ error: 'Owner not found' });
