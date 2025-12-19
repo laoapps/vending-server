@@ -235,7 +235,8 @@ export class BookingController {
       }
 
       // Mark booking as paid
-      await booking.update({ status: "paid", paidAt: new Date() });
+      const paid=await booking.update({ status: "paid", paidAt: new Date() });
+      console.log('paid',paid)
 
       // Activate device power and rules if device exists
       if (deviceId) {
@@ -312,6 +313,7 @@ export class BookingController {
         `bookingID_laabxapp:${booking.dataValues.id}`
       );
       const datanoti = { callback: "true", booking };
+      console.log('booking token',token_user)
       const noti = await notilaabx_smartcb(datanoti, token_user || "");
       console.log("notilaabx_smartcb result:", noti);
 
