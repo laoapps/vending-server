@@ -22,6 +22,9 @@ export const createDevice = async (req: Request, res: Response) => {
   const user = res.locals.user;
   console.log('createDevice', name, tasmotaId, zone, groupId, user);
   try {
+    if (!name || !tasmotaId) {
+      return res.status(403).json({ error: 'body is empty' });
+    }
     if (user.role !== 'owner') {
       return res.status(403).json({ error: 'Only owners can create devices' });
     }

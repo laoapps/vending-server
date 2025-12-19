@@ -5,7 +5,8 @@ import { createDevice, getDevices, updateDevice, deleteDevice, controlDevice, cl
 
 const router = Router();
 
-router.post('/', authMiddleware, validate(createDeviceSchema), createDevice);
+// validate(createDeviceSchema)
+router.post('/', authMiddleware,createDevice);
 
 // both admin and owner
 router.get('/:dtype', authMiddleware, getDevices);
