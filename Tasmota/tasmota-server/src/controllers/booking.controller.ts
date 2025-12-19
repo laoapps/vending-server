@@ -481,7 +481,10 @@ export class BookingController {
       return res.status(403).json({ error: "Owner access only" });
     }
     try {
-      await models.Booking.destroy({ where: { roomId } });
+      const booking = await models.Booking.findOne({where:{roomId,status:'paid'}});
+      if(booking!==null){
+      await booking.update({ status: 'cancelled' });
+      }
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
