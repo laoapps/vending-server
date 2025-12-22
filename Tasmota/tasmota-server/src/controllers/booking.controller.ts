@@ -176,11 +176,13 @@ export class BookingController {
         status: "pending",
       });
 
-      const qrCode = await generateQR(
-        booking.dataValues.id,
-        totalPrice,
-        req.headers.authorization?.split(" ")[1] || ""
-      );
+      // const qrCode = await generateQR(
+      //   booking.dataValues.id,
+      //   totalPrice,
+      //   req.headers.authorization?.split(" ")[1] || ""
+      // );
+
+      const qrCode = await generateQR(booking.dataValues.id, totalPrice, req.headers.authorization?.split(" ")[1] || "", false,true);
 
       // Temp block room
       await redis.setex(`hotel_room_booked:${roomId}`, 300, "1");
