@@ -3,6 +3,7 @@ import { env } from '../config/env';
 
 import redis from '../config/redis';
 import models from '../models';
+import { logToFile } from './logger';
 
 // Initialize Redis client (ensure compatibility with previous fixes)
 const redisClient = redis; // Assuming redis is exported from '../config/redis'
@@ -33,11 +34,14 @@ client.on('reconnect', () => {
 });
 
 client.on('error', (err: any) => {
-  // console.error('MQTT error:', err);
+  console.error('MQTT error:', err);
+  logToFile('MQTT error:' + JSON.stringify(err));
+  
 });
 
 client.on('close', () => {
   console.warn('MQTT connection closed');
+  logToFile('MQTT connection closed');
   // No need for manual client.connect() due to reconnectPeriod
 });
 
@@ -158,6 +162,7 @@ const sensorCallback = async (receivedTopic: string, payload: Buffer) => {
     let sensorData;
     try {
       sensorData = JSON.parse(payload.toString());
+      console.warn('sensorData ',sensorData)
     } catch (error) {
       console.error(`Error parsing SENSOR data for device ${tasmotaId}:`, error);
       // Update database

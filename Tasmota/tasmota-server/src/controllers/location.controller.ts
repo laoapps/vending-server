@@ -1,27 +1,33 @@
 // src/controllers/location.controller.ts
 import { Request, Response } from 'express';
-import LocationModel from '../models/location.model';
-import RoomModel from '../models/room.model';
+
+import models from '../models';
 
 export class LocationController {
-  // PUBLIC: List all hotels
-  static async getAll(req: Request, res: Response) {
+  // GET /api/locations — admin sees all, owner sees only own
+    static async getAll(req: Request, res: Response) {
     try {
-      const locations = await LocationModel.findAll({
+      const { locationType } = req.query;
 
-      });
+      let locations;
+      if (locationType && ['hotel', 'condo'].includes(locationType as string)) {
+        locations = await models.Location.findAll({
+          where: { locationType }
+        });
+      } else {
+        locations = await models.Location.findAll();
+      }
+
       res.json(locations);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // PUBLIC: Get one hotel
+  // PUBLIC: Get one location
   static async getById(req: Request, res: Response) {
     try {
-      const location = await LocationModel.findByPk(req.params.id, {
-        // include: [{ model: RoomModel, as: 'rooms' }],
-      });
+      const location = await models.Location.findByPk(req.params.id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
       res.json(location);
     } catch (error: any) {
@@ -29,21 +35,26 @@ export class LocationController {
     }
   }
 
-  // OWNER/ADMIN: Create new hotel
+  // POST /api/locations — admin only
   static async create(req: Request, res: Response) {
-    const { name, address, description, photo } = req.body;
-    const userRole = res.locals.user.role;
+    if (res.locals.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin only' });
+    }
 
-    if (!['owner', 'admin'].includes(userRole)) {
-      return res.status(403).json({ error: 'Only owner or admin can create locations' });
+    const { name, address, description = {}, photo = [], locationType = 'hotel', ownerId } = req.body;
+
+    if (!name || !address) {
+      return res.status(400).json({ error: 'Name and address required' });
     }
 
     try {
-      const location = await LocationModel.create({
+      const location = await models.Location.create({
         name,
         address,
         description,
-        photo,
+        photo, // JSONB array
+        locationType,
+        ownerId: ownerId || null
       });
       res.status(201).json(location);
     } catch (error: any) {
@@ -51,48 +62,71 @@ export class LocationController {
     }
   }
 
-  // OWNER/ADMIN: Update hotel
+  // PUT /api/locations/:id — admin only
   static async update(req: Request, res: Response) {
-    const { id } = req.params;
-    const { name, address, description, photo } = req.body;
-    const userRole = res.locals.user.role;
-
-    if (!['owner', 'admin'].includes(userRole)) {
-      return res.status(403).json({ error: 'Forbidden' });
+    if (res.locals.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin only' });
     }
 
+    const { id } = req.params;
+    const updates = req.body;
+
     try {
-      const location = await LocationModel.findByPk(id);
+      const location = await models.Location.findByPk(id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
 
-      await location.update({ name, address, description, photo });
+      await location.update(updates);
       res.json(location);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
 
-  // OWNER/ADMIN: Delete hotel
+  // DELETE /api/locations/:id — admin only
   static async delete(req: Request, res: Response) {
-    const { id } = req.params;
-    const userRole = res.locals.user.role;
-
-    if (!['owner', 'admin'].includes(userRole)) {
-      return res.status(403).json({ error: 'Forbidden' });
+    if (res.locals.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin only' });
     }
 
+    const { id } = req.params;
     try {
-      const location = await LocationModel.findByPk(id);
+      const location = await models.Location.findByPk(id);
       if (!location) return res.status(404).json({ error: 'Location not found' });
 
-      // Optional: prevent delete if has rooms
-      const roomCount = await RoomModel.count({ where: { locationId: id } });
+      const roomCount = await models.Room.count({ where: { locationId: id } });
       if (roomCount > 0) {
         return res.status(400).json({ error: 'Cannot delete location with rooms' });
       }
 
       await location.destroy();
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // PATCH /api/locations/:id/assign-owner — admin only
+  static async assignOwner(req: Request, res: Response) {
+    if (res.locals.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin only' });
+    }
+
+    const { id } = req.params;
+    const { ownerId } = req.body;
+
+    if (!ownerId) {
+      return res.status(400).json({ error: 'ownerId required' });
+    }
+
+    try {
+      const location = await models.Location.findByPk(id);
+      if (!location) return res.status(404).json({ error: 'Location not found' });
+
+      const owner = await models.Owner.findByPk(ownerId);
+      if (!owner) return res.status(404).json({ error: 'Owner not found' });
+
+      await location.update({ ownerId });
+      res.json({ success: true, location });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

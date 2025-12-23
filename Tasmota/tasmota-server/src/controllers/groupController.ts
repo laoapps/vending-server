@@ -92,6 +92,28 @@ export const updateGroup = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message || 'Failed to update group' });
   }
 };
+export const activateGroup = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { isActive=false||true } = req.body;
+  const user = res.locals.user;
+
+  try {
+    const owner = await models.Owner.findOne({ where: { uuid: user.uuid } });
+    if (!owner) {
+      return res.status(403).json({ error: 'Only owners can update groups' });
+    }
+
+    const group = await models.DeviceGroup.findOne({ where: { id: parseInt(id), ownerId: owner.dataValues.id } });
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found or not owned' });
+    }
+
+    await group.update({ isActive });
+    res.json(group);
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message || 'Failed to update group' });
+  }
+};
 
 export const deleteGroup = async (req: Request, res: Response) => {
   const { id } = req.params;

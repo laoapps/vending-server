@@ -24,7 +24,8 @@ export const createDeviceSchema = z.object({
   name: z.string().min(1),
   tasmotaId: z.string().min(1),
   zone: z.string().optional(),
-  groupId: z.number(),
+  // groupId: z.number(),
+  groupId: z.coerce.number(),
 });
 
 // export const controlDeviceSchema = z.object({

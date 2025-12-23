@@ -1,16 +1,17 @@
+// src/models/owner.ts
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export interface OwnerAttributes {
-  id: number;
-  uuid: string;
+  id?: number;
+  uuid?: string;
   phoneNumber: string;
-  createdAt: Date;
-  updatedAt: Date;
+  merchantKey?: string;   // sensitive
+  walletKey?: string;     // sensitive
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export class Owner extends Model<OwnerAttributes> {
-  // No public class fields, which is correct
-}
+export class Owner extends Model<OwnerAttributes> {}
 
 export function initOwnerModel(sequelize: Sequelize) {
   Owner.init(
@@ -29,6 +30,14 @@ export function initOwnerModel(sequelize: Sequelize) {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
+      },
+      merchantKey: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      walletKey: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

@@ -4,6 +4,7 @@
 # Replace placeholders: {{jwtToken}}, {{userUuid}}, {{ownerUuid}}, {{ownerId}}, {{deviceId}}, {{packageId}}, {{orderId}}, {{transId}}, {{tasmotaId}}
 @jwtToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0Nzk0ZGYwZGZkZTYxNWQ3ZjE1YjNlMTFjZTgzYzQzY2M1YjQ1MGI2NDY5MDQzYzUzNmVhYTUwMTk3MzExMWYzNmFmN2FhM2VkN2M5OTlkZTg2YTY3MWVmYjRiNTFhZTM2NzgwZjhiYmNlNjA3ZWFmOGYwZDYxMDg2YmM4NDg4NGMiLCJwaG9uZU51bWJlciI6Iis4NTYyMDU1NTE2MzIxIiwidXVpZCI6Ijg2MmY5NmEwLWFjNDUtMTFlZC1hZjA0LTU1ZmE3ZTc0ZTE5NCIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc1NTc2MTAzOSwiZXhwIjozNjAwMDAwMTc1NTc2MTA0MH0.1xnc-ITa4NqPRAD3mKoHS3p8TFhGxQQnvFwF6zrU01A
 @binryToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0YmI0OTg3YjJiMTQ5YmY3ZGI2NjE1Y2RlMzFjMzZhOTQ4MjEyM2M0Y2I1YzFkMGNhYWRhY2NjMWFhZGU2MjY4YjY4YmQ4YTUxNmI0NzY3ZTRmOGU4MDk3OTk3YWM0ZjIwMTM3ZTg5ZmM3MDJhMWNlMjc5NGQ5NjhhNjZjMWU3ZGIiLCJwaG9uZU51bWJlciI6Iis4NTYyMDk2MTIzMzgxIiwidXVpZCI6IjllYzM1MTUwLWIyN2QtMTFlZC05M2JkLWM5M2ZiMDNkMWZjMiIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc1NTc1OTQ2NCwiZXhwIjozNjAwMDAwMTc1NTc1OTQ2NH0.1CfeHjhamoXfDkoRLdtCJzld_WnLhA76xaB9Q0jGiJE
+@suckToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0Y2U0Mzg3MzBlNDA1YmNhYTg4YWUwNjQ4MGMwOGVkZGY2MWMzNDkwYzM5ZjUwOWIwOTcyMGZkNjkyMmMwYjA2OWMzNGIyZjZjYmY3YmVlMzM2MjkwZDViYzA4YTZiNmEzNzkwNjU3NzQ2YWJjNGNhZTFkNGUyYjJjMGI3YTQ3OTYiLCJwaG9uZU51bWJlciI6Iis4NTYyMDc2MTQzNTE1IiwidXVpZCI6IjVmOTMzMWUwLTM1MDctMTFlZi05NmM0LTk3ZmVjOWM4NzE0ZiIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTc2NTQ0Njk4MCwiZXhwIjozNjAwMDAwMTc2NTQ0Njk4MH0.fjCiy34h3uOfJTxwGDNwlUsX3s77-_VFncQSP5VOmpQ
 @tasmotaId=tongou_3B0444
 @ownerUuid=86f96a0-ac45-11ed-af04-55fa7e74e194
 @ownerId=1
@@ -17,6 +18,25 @@
 # Test file for Tasmota API endpoints
 # Use with VS Code REST Client or similar tools
 # Replace placeholders: {{jwtToken}}, {{userUuid}}, {{ownerUuid}}, {{ownerId}}, {{deviceId}}, {{packageId}}, {{orderId}}, {{transId}}, {{tasmotaId}}
+
+### https://smartcb-api.laoapps.com/api/bookings/owner/delete/1
+POST https://smartcb-api.laoapps.com/api/bookings/owner/delete/1
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+x-owner: true
+
+{
+
+}
+
+### 
+GET https://smartcb-api.laoapps.com/api/bookings/my
+Content-Type: application/json
+Authorization: Bearer {{suckToken}}
+
+{
+
+}
 
 ### Add New Device
 POST http://{{host}}/api/devices

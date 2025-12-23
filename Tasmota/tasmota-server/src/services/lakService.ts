@@ -41,10 +41,11 @@ export function updateLAXUserBalance(data: any, token: string): Promise<any> {
     }
   });
 }
-export function generateQR(orderID: number, value: number, token: string, fromvending: boolean=false): Promise<any> {
+export function generateQR(orderID: number, value: number, token: string, fromvending: boolean=false,frombooking=false): Promise<any> {
   return new Promise<any>(async (resolve, reject) => {
     try {
-      const data = { orderID, path: 'orders/pay', txnAmount: value }
+      const data = { orderID, path: frombooking? 'bookings/pay':'orders/pay', txnAmount: value }
+      console.log('generateQRdata', data);
       let vending: any = null
       if (fromvending == true) {
         vending = 'true'

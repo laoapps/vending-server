@@ -53,14 +53,18 @@ export const notifyStakeholders = async (order?: Order, message?: string) => {
     }
   }
 
+
   // Send to owner
-  if (ownerClients.has(owner.dataValues.id)) {
-    for (const ws of ownerClients.get(owner.dataValues.id)||[]) {
-      if (ws.WebSocket.readyState === WebSocket.OPEN) {
-        ws.WebSocket.send(json);
+  if(Number.isInteger(owner.dataValues.id)){
+    if (ownerClients.has(owner.dataValues.id||-1000)) {
+      for (const ws of ownerClients.get(owner.dataValues.id||-1000)||[]) {
+        if (ws.WebSocket.readyState === WebSocket.OPEN) {
+          ws.WebSocket.send(json);
+        }
       }
     }
   }
+  
 
   // Record to Notification table
   await Notification.create({

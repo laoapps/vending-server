@@ -17,5 +17,6 @@ router.post('/owner/rooms', authMiddleware, RoomController.create);
 router.put('/owner/rooms/:id', authMiddleware, RoomController.update);
 router.delete('/owner/rooms/:id', authMiddleware, RoomController.delete);
 router.post('/owner/rooms/assign-device', authMiddleware, RoomController.assignDeviceToRoom);
-
+// Add these lines
+router.get('/owner/locations', authMiddleware, RoomController.getOwnerLocations); // owner sees his locations + rooms
 export default router;
