@@ -182,7 +182,7 @@ export class BookingController {
       //   req.headers.authorization?.split(" ")[1] || ""
       // );
 
-      const qrCode = await generateQR(booking.dataValues.id, totalPrice, req.headers.authorization?.split(" ")[1] || "", false,true);
+      const qrCode = await generateQR(booking.dataValues.id, totalPrice, req.headers.authorization?.split(" ")[1] || "", false, true);
 
       // Temp block room
       await redis.setex(`hotel_room_booked:${roomId}`, 300, "1");
@@ -190,6 +190,12 @@ export class BookingController {
         `bookingID_laabxapp:${booking.dataValues.id}`,
         5 * 60,
         token
+      );
+
+      await redis.setex(
+        `pending:${booking.dataValues.id}`,
+        5 * 60, // 5 minutes
+        JSON.stringify({ deviceId })
       );
 
       res.json({
@@ -214,31 +220,37 @@ export class BookingController {
   // PAYMENT CALLBACK (from bank)
   static async payCallback(req: Request, res: Response) {
     const { bookingId } = req.body;
-    console.log('payCallback_bookingId',bookingId);
+    console.log('payCallback_bookingId', bookingId);
     try {
       // Check pending payment cache
       const cache = await redis.get(`pending:${bookingId}`);
+      console.log('payCallback_bookingId2', cache);
       if (!cache) {
         return res.status(400).json({ error: "Payment expired or invalid" });
       }
 
       const { deviceId } = JSON.parse(cache);
+      console.log('payCallback_bookingId2.5', deviceId)
+
 
       // Fetch booking
       const booking = await models.Booking.findByPk(bookingId);
+      console.log('payCallback_bookingId3', booking);
       if (!booking) {
         return res.status(404).json({ error: "Booking not found" });
       }
 
       // Fetch room (using correct roomId from booking)
       const room = await models.Room.findByPk(booking.dataValues.roomId);
+      console.log('payCallback_bookingId4', room);
+
       if (!room) {
         return res.status(404).json({ error: "Room not found" });
       }
 
       // Mark booking as paid
-      const paid=await booking.update({ status: "paid", paidAt: new Date() });
-      console.log('paid',paid)
+      const paid = await booking.update({ status: "paid", paidAt: new Date() });
+      console.log('payCallback_bookingId5', paid)
 
       // Activate device power and rules if device exists
       if (deviceId) {
@@ -291,9 +303,8 @@ export class BookingController {
 
           // --- Turn ON the relay ---
           const relay = 1;
-          const mqttTopic = `cmnd/${tasmotaId}/POWER${
-            relay === 1 ? "" : relay
-          }`;
+          const mqttTopic = `cmnd/${tasmotaId}/POWER${relay === 1 ? "" : relay
+            }`;
           console.log(`Sending MQTT: ${mqttTopic} -> ON`);
           await publishMqttMessage(mqttTopic, "ON");
         }
@@ -315,7 +326,7 @@ export class BookingController {
         `bookingID_laabxapp:${booking.dataValues.id}`
       );
       const datanoti = { callback: "true", booking };
-      console.log('booking token',token_user)
+      console.log('booking token', token_user)
       const noti = await notilaabx_smartcb(datanoti, token_user || "");
       console.log("notilaabx_smartcb result:", noti);
 
@@ -485,9 +496,9 @@ export class BookingController {
       return res.status(403).json({ error: "Owner access only" });
     }
     try {
-      const booking = await models.Booking.findOne({where:{roomId,status:'paid'}});
-      if(booking!==null){
-      await booking.update({ status: 'cancelled' });
+      const booking = await models.Booking.findOne({ where: { roomId, status: 'paid' } });
+      if (booking !== null) {
+        await booking.update({ status: 'cancelled' });
       }
       res.json({ success: true });
     } catch (error: any) {
