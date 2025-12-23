@@ -214,7 +214,7 @@ export class BookingController {
   // PAYMENT CALLBACK (from bank)
   static async payCallback(req: Request, res: Response) {
     const { bookingId } = req.body;
-
+    console.log('payCallback_bookingId',bookingId);
     try {
       // Check pending payment cache
       const cache = await redis.get(`pending:${bookingId}`);
