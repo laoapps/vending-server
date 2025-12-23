@@ -488,10 +488,35 @@ export class BookingController {
     res.json(bookings);
   }
 
+  static async loadlog_deletebookingsByRoomId(req: Request, res: Response) {
+    const raw = await redis.get("log_deletebookingsByRoomId");
+    const logs = raw ? JSON.parse(raw) : [];
+    res.json(logs);
+  }
+
+  static async clearlog_deletebookingsByRoomId(req: Request, res: Response) {
+    await redis.del("log_deletebookingsByRoomId");
+    res.json({ success: true });
+  }
+
   static async deletebookingsByRoomId(req: Request, res: Response) {
     const { roomId } = req.params;
     const userRole = res.locals.user.role;
-    console.log("deletebookingsByRoomId", roomId, userRole);
+    const userUuid = res.locals.user.uuid;
+
+    //save log deletebookingsByRoomId
+    const log_data = {
+      roomId: roomId,
+      userRole: userRole,
+      userUuid: userUuid,
+      timestamp: new Date().toISOString(),
+    }
+    const raw = await redis.get("log_deletebookingsByRoomId");
+    const logs = raw ? JSON.parse(raw) : [];
+    logs.push(log_data);
+    await redis.set("log_deletebookingsByRoomId", JSON.stringify(logs));
+
+    console.log("deletebookingsByRoomId", roomId, userRole, userUuid);
     if (userRole !== "owner") {
       return res.status(403).json({ error: "Owner access only" });
     }

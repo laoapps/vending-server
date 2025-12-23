@@ -13,6 +13,8 @@ router.get('/my', authMiddleware, BookingController.getMyBookings);
 // OWNER
 router.get('/owner', authMiddleware, BookingController.getOwnerBookings);
 router.post('/owner/delete/:roomId', authMiddleware, BookingController.deletebookingsByRoomId);
+router.get('/owner/loadlog', authMiddleware, BookingController.loadlog_deletebookingsByRoomId);
+router.get('/owner/clearlog', authMiddleware, BookingController.clearlog_deletebookingsByRoomId);
 
 // ADMIN
 router.get('/admin', authMiddleware, BookingController.getAllBookings);
