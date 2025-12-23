@@ -4652,7 +4652,6 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + '/checkBillTransactionFromDB',
                 this.checkSuperAdmin,
-
                 this.checkAdmin,
                 async (req, res) => {
                     try {

@@ -560,6 +560,7 @@ export class ApiService {
         if (!o.name || !o.price) { alert('Body is empty'); return null; }
         return this.http.post<IResModel>(this.url + '/addProductImageSystem', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
+
     readMachineSaleForAdmin(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');

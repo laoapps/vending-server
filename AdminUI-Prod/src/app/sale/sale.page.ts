@@ -153,11 +153,9 @@ export class SalePage implements OnInit {
       ro?.present();
       ro?.onDidDismiss().then(r => {
         if (r?.data?.s) {
-          // delete r?.data?.s?.stock?.image;
           const sData: IVendingMachineSale = r?.data?.s as IVendingMachineSale;
 
 
-          // console.log(`Data to save :${JSON.stringify(sData)}`);
 
           this.apiService.disableSale(false, sData.id).subscribe(rx => {
             console.log('Success');
@@ -201,25 +199,23 @@ export class SalePage implements OnInit {
               this.apiService.simpleMessage(IENMessage.addMachineFail);
               return;
             } else {
-              // rx.data.image = data.image;
-              // this._l.unshift(rx.data);
               this.apiService.simpleMessage(IENMessage.success);
             }
             await this.loadSaleList();
-            const position = this._l.map(v => v.position).length ? this._l.map(v => v.position) : []
-            let pos = [...new Array<number>(200).keys()];
 
-            pos = pos.filter(v => !position.includes(v));
+            const usedPositions = new Set(this._l.map(v => v.position));
 
-            // console.log('-----> POS :', pos);
-            if (pos.length > 3) {
-              sSave.position = pos[2];
+            if (!usedPositions.has(sData.position)) {
+              sSave.position = sData.position;
+            } else {
+              for (let i = 0; i < 200; i++) {
+                if (!usedPositions.has(i)) {
+                  sSave.position = i;
+                  break;
+                }
+              }
             }
-
-            // console.log(`Data to Add :${JSON.stringify(sSave)}`);
             this.apiService.addSale(sSave)?.subscribe(rx => {
-              // console.log(`rx`, rx);
-              // console.log(`rx stock`, rx.data.stock);
               if (rx.status) {
                 rx.data.stock.image = r?.data?.s?.stock?.image;
                 this._l.unshift(rx.data);
@@ -228,12 +224,11 @@ export class SalePage implements OnInit {
                 ry.present();
               })
 
-            })
+            });
+            this.loadSaleList();
+
 
           },);
-
-
-
 
         }
 
@@ -243,6 +238,8 @@ export class SalePage implements OnInit {
       })
     })
   }
+
+
   deletesale(s: IVendingMachineSale) {
     if (!confirm('Are you sure?')) return;
 

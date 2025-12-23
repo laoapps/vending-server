@@ -947,7 +947,7 @@ export class BillingPage implements OnInit {
 
 
       const dataAllPa = {
-        machineId: ['55555002', '55555003'],
+        machineId: ['54265001', '54265002', '54265003'],
         fromDate: this.fromDate,
         toDate: this.toDate,
         token: this.token,
