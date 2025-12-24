@@ -13,9 +13,8 @@ import { startDeviceMonitoring } from './controllers/monitorOrderController';
 import { publishMqttMessage } from './services/mqttService';
 import redis from './config/redis';
 import models from './models';
-import BookingModel from './models/booking.model';
-import RoomModel from './models/room.model';
 import { Device } from './models/device';
+import RoomModel from './models/room.model';
 
 
 const PORT = process.env.PORT || 3000;
@@ -105,7 +104,7 @@ cron.schedule('*/5 * * * *', async () => {
   console.log('Refreshing active bookings/orders cache...');
   try {
     // Hotel bookings
-    const activeBookings = await BookingModel.findAll({
+    const activeBookings = await models.Booking.findAll({
       where: {
         status: 'paid',
         checkOut: { [Op.gt]: new Date() }
@@ -200,7 +199,7 @@ cron.schedule('* * * * *', async () => {
 
     // Cleanup old pending bookings (10 min hold)
     const holdCutoff = new Date(now - 10 * 60 * 1000);
-    const cancelledCount = await BookingModel.update(
+    const cancelledCount = await models.Booking.update(
       { status: 'cancelled', cancelledAt: new Date() },
       {
         where: {
