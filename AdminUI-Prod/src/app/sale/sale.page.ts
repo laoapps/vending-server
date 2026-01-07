@@ -181,7 +181,8 @@ export class SalePage implements OnInit {
             filename: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
             imageurl: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
             qtty: 1000,
-            isActive: true
+            isActive: true,
+            id: s.id
           } as IStock;
           // console.log('params', params);
 

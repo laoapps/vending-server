@@ -2766,6 +2766,78 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+
+
+            router.post(
+                this.path + "/editProductDetail",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const machineId = req.body.machineId ?? "";
+
+                        const price = Number(req.body.price);
+                        const image = req.body.image;
+                        const name = req.body.name;
+                        const filename = req.body.filename;
+                        const imageurl = req.body.imageurl;
+                        const id = Number(req.body.id);
+
+
+
+
+                        const sEnt = VendingMachineSaleFactory(
+                            EEntity.vendingmachinesale + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        const delSale = await sEnt
+                            .destroy({ where: { id } }).catch((e) => { });
+
+                        const sEntStock = StockFactory(
+                            EEntity.product + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        // await sEnt.sync();
+                        const o = {
+                            price,
+                            image,
+                            name,
+                            isActive: true,
+                            qtty: 1000,
+                        } as IStock;
+                        const newData = await sEntStock
+                            .create(o).catch((e) => { });
+                        console.log('-----> NEW DATA :', JSON.parse(JSON.stringify(newData)));
+
+                        const sEntList = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEntList.sync();
+
+                        const listSale = await sEntList
+                            .findAll({ where: { machineId, isActive: { [Op.in]: [true, false] } } })
+                            .catch((e) => {
+                                console.log("error listSaleByMachine", e);
+                                res.send(PrintError("listSaleByMachine", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
+                        console.log('-----> LIST DATA :', JSON.parse(JSON.stringify(listSale)));
+
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("editProductDetail", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+
             router.post(
                 this.path + "/updateSale",
                 this.checkSuperAdmin,

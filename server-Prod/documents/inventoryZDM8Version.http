@@ -194,3 +194,15 @@ Content-Type: application/json
 
 ###
 GET https://tvending4.khamvong.com/testQueue
+
+###
+POST https://laabx-api.laoapps.com/api/v1/activityLog/selmany
+Content-Type: application/json
+
+{ 
+        "skip": 0, 
+        "action": "other_url" ,
+        "startDate": "", 
+        "endDate": "",
+        "secretKey":""
+}
