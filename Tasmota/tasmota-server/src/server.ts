@@ -109,15 +109,17 @@ cron.schedule('*/5 * * * *', async () => {
         status: 'paid',
         checkOut: { [Op.gt]: new Date() }
       },
-      include: [{ model: RoomModel,
-      as: 'room',
-      include: [
-        {
-          model: models.Location,
-          as: 'location'
-        }
-      ],
-       attributes: ['id', 'deviceId', 'name'] }]
+      include: [{
+        model: RoomModel,
+        as: 'room',
+        include: [
+          {
+            model: models.Location,
+            as: 'location'
+          }
+        ],
+        attributes: ['id', 'deviceId', 'name']
+      }]
     });
 
     const hotelMap: Record<string, CachedHotelBooking> = {};
@@ -211,6 +213,27 @@ cron.schedule('* * * * *', async () => {
     if (cancelledCount[0] > 0) {
       console.log(`Cancelled ${cancelledCount[0]} old pending bookings`);
     }
+
+
+    // === AUTO CHECK-OUT HOTEL BOOKINGS ===
+    const checkedOutCount = await models.Booking.update(
+      {
+        status: 'checked_out',
+      },
+      {
+        where: {
+          status: 'paid',
+          checkOut: { [Op.lt]: new Date() }
+        }
+      }
+    );
+
+    if (checkedOutCount[0] > 0) {
+      console.log(`Auto checked-out ${checkedOutCount[0]} bookings`);
+      // clear cache to avoid stale data
+      await redis.del(ACTIVE_BOOKINGS_CACHE_KEY);
+    }
+
 
   } catch (error) {
     console.error('Minute cron error:', error);
