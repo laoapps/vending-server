@@ -2784,51 +2784,69 @@ export class InventoryZDM8 implements IBaseClass {
                         const price = Number(req.body.price);
                         const image = req.body.image;
                         const name = req.body.name;
-                        const filename = req.body.filename;
-                        const imageurl = req.body.imageurl;
+                        const max = Number(req.body.max);
                         const id = Number(req.body.id);
 
+                        const transaction = await dbConnection.transaction();
+
+                        try {
+
+                            const sEnt = VendingMachineSaleFactory(
+                                EEntity.vendingmachinesale + "_" + ownerUuid,
+                                dbConnection
+                            );
+
+                            await sEnt.sync();
+                            await sEnt
+                                .destroy({ where: { id }, transaction });
 
 
+                            const sEntStock = StockFactory(
+                                EEntity.product + "_" + ownerUuid,
+                                dbConnection
+                            );
+                            await sEntStock.sync();
+                            const o = {
+                                price,
+                                image,
+                                name,
+                                isActive: true,
 
-                        const sEnt = VendingMachineSaleFactory(
-                            EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEnt.sync();
-                        const delSale = await sEnt
-                            .destroy({ where: { id } }).catch((e) => { });
+                                qtty: 1000,
+                            } as IStock;
+                            let newData: IStock = await sEntStock
+                                .create(o, { transaction });
 
-                        const sEntStock = StockFactory(
-                            EEntity.product + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        // await sEnt.sync();
-                        const o = {
-                            price,
-                            image,
-                            name,
-                            isActive: true,
-                            qtty: 1000,
-                        } as IStock;
-                        const newData = await sEntStock
-                            .create(o).catch((e) => { });
-                        console.log('-----> NEW DATA :', JSON.parse(JSON.stringify(newData)));
-
-                        const sEntList = VendingMachineSaleFactory(EEntity.vendingmachinesale + "_" + ownerUuid,
-                            dbConnection
-                        );
-                        await sEntList.sync();
-
-                        const listSale = await sEntList
-                            .findAll({ where: { machineId, isActive: { [Op.in]: [true, false] } } })
-                            .catch((e) => {
-                                console.log("error listSaleByMachine", e);
-                                res.send(PrintError("listSaleByMachine", e, EMessage.error, returnLog(req, res, true)));
+                            const listSale = await sEnt.findAll({
+                                where: { machineId },
+                                attributes: ['position'],
                             });
 
-                        console.log('-----> LIST DATA :', JSON.parse(JSON.stringify(listSale)));
+                            const usedPositions = new Set(listSale.map(i => i.position));
 
+                            let availablePosition: number | null = null;
+
+                            for (let i = 1; i <= 200; i++) {
+                                if (!usedPositions.has(i)) {
+                                    availablePosition = i;
+                                    break;
+                                }
+                            }
+                            const oSave = {
+                                isActive: true,
+                                machineId: machineId,
+                                max: max,
+                                position: availablePosition,
+                                stock: newData,
+                            } as IVendingMachineSale;
+
+                            const newSale = await sEnt.create(oSave, { transaction });
+                        } catch (err) {
+                            await transaction.rollback();
+                        }
+                        await transaction.commit();
+
+                        return res.send(PrintSucceeded("editProductDetail", {}, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
@@ -5337,7 +5355,7 @@ export class InventoryZDM8 implements IBaseClass {
     }
     checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log('checkSupAdmin');
+            // console.log('checkSupAdmin');
             const token = req.body.token;
             const secret = req.body.secret;
             let phoneNumber = req.body.shopPhonenumber;
@@ -5435,7 +5453,7 @@ export class InventoryZDM8 implements IBaseClass {
     // }
     checkAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log('checkAdmin');
+            // console.log('checkAdmin');
             if (res.locals['ownerUuid']) {
                 next();
             }
@@ -8483,7 +8501,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 }
 
                                 ///
-                                console.log(`----->MachineId :${ws['machineId']} clientVersion`, clientVersion);
+                                // console.log(`----->MachineId :${ws['machineId']} clientVersion`, clientVersion);
 
 
                                 // console.log('=====>pingData', d.data);
@@ -8594,7 +8612,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         console.log('parsing error setting', error);
                                         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = { start: 3, end: 2 }; setting.limiter = 100000; setting.imei = '';
                                     }
-                                    console.log('ready to pong');
+                                    // console.log('ready to pong');
                                     const limiter = setting.limiter; // TODO: Get limiter 
                                     const merchant = 0; // TODO:Get merchant balance
 

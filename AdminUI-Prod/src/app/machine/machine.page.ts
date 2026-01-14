@@ -26,6 +26,7 @@ import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
   styleUrls: ['./machine.page.scss'],
 })
 export class MachinePage implements OnInit {
+
   offsettz = 420;
   dateformat = 'yy-MM-dd HH:mm:ss'
   private loadMachineListProcess: LoadMachineListProcess;
@@ -195,7 +196,7 @@ export class MachinePage implements OnInit {
             setting.imgLogo = '';
           }
 
-          this.settings[v.machineId] = setting;
+          this.settings[v?.machineId] = setting;
         })
 
       }
@@ -222,6 +223,7 @@ export class MachinePage implements OnInit {
         if (this.readonly == true) return resolve(IENMessage.success);
 
         this._l.forEach(v => {
+          console.log('-----> MACHINEID :', v?.machineId);
           if (!Array.isArray(v.data)) v.data = [v.data]
           let setting = v.data?.find(vx => vx?.settingName == 'setting');
           console.log('setting', setting);
@@ -248,7 +250,8 @@ export class MachinePage implements OnInit {
 
           console.log('setting.adsList', setting.adsList);
 
-          this.settings[v.machineId] = setting;
+
+          this.settings[v?.machineId] = setting;
         });
 
         resolve(IENMessage.success);
@@ -261,7 +264,7 @@ export class MachinePage implements OnInit {
   }
 
   findMachine(m: string) {
-    return this.myMachineStatus.find(v => v['machineId'] == m)?.mstatus;
+    return this.myMachineStatus.find((v): any => v?.machineId == m)?.mstatus;
   }
   updateSetting(m: string) {
     // const setting = this.settings[m];
@@ -285,7 +288,7 @@ export class MachinePage implements OnInit {
       setting.adsList = [];
     }
 
-    const o = this._l.find(v => v.machineId == m);
+    const o = this._l.find(v => v?.machineId == m);
     const oldData = JSON.stringify(o.data);
     o.data = [setting];
     console.log('setting', o);
@@ -495,7 +498,7 @@ export class MachinePage implements OnInit {
   machineWallet(id: number) {
     const s = this._l.find(v => v.id == id);
     if (!s) return alert('Not found');
-    this.apiService.currentMachineId = s.machineId;
+    this.apiService.currentMachineId = s?.machineId;
     this.apiService.showModal(MachineWalletPage, { s }).then(r => {
       r.present();
       r.onDidDismiss().then(() => {

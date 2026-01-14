@@ -187,10 +187,10 @@ export function checkPhoneNumberOnUserManager(phoneNumber: string): Promise<any>
                     phoneNumber
                 }
             }
-            console.log('param', validateParams);
+            // console.log('param', validateParams);
 
             const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
-            console.log('phoneNumber', validated.data);//
+            // console.log('phoneNumber', validated.data);//
 
             if (validated.data.status != 1) return resolve('');
             resolve(validated.data.data[0]);//{uuid:string,phoneNumber:string}
@@ -210,10 +210,10 @@ export function findUuidByPhoneNumberOnUserManager(phoneNumber: string): Promise
                     phoneNumber
                 }
             }
-            console.log('param', validateParams);
+            // console.log('param', validateParams);
 
             const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
-            console.log('phoneNumber', validated.data);//
+            // console.log('phoneNumber', validated.data);//
 
             if (validated.data.status != 1) return resolve('');
             resolve(validated.data.data[0]);//{uuid:string,phoneNumber:string}
@@ -233,10 +233,10 @@ export function findPhoneNumberByUuidOnUserManager(uuid: string): Promise<any> {
                     uuid
                 }
             }
-            console.log('param', validateParams);
+            // console.log('param', validateParams);
 
             const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
-            console.log('phoneNumber', validated.data);//
+            // console.log('phoneNumber', validated.data);//
 
             if (validated.data.status != 1) return resolve('');
             resolve(validated.data.data[0]);//{uuid:string,phoneNumber:string}
@@ -258,10 +258,10 @@ export function validateTokenOnUserManager(token: string): Promise<any> {
                     token
                 }
             }
-            console.log('param', validateParams);
+            // console.log('param', validateParams);
 
             const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
-            console.log('validated', validated.data);
+            // console.log('validated', validated.data);
 
             if (validated.data.status != 1) return resolve('');
             resolve(validated.data.data);//uuid
@@ -317,10 +317,10 @@ export function generateTokenOnUserManager(): Promise<any> {
                 username: 'v2',
                 password: '76901806'
             }
-            console.log('param', validateParams);
+            // console.log('param', validateParams);
 
             const validated = await axios.post(url, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
-            console.log('validated', validated.data);
+            // console.log('validated', validated.data);
 
             if (validated.data.status != 1) return resolve('');
             resolve(validated.data.data);//uuid
@@ -351,10 +351,10 @@ export function isTokenValidOnUserManager(token: string): Promise<any> {
 
 export function findRealDB(token: string): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
-        console.log('validate token on usermanager');
+        // console.log('validate token on usermanager');
 
         validateTokenOnUserManager(token).then(r => {
-            console.log('validate token on usermanager', r[0]);
+            // console.log('validate token on usermanager', r[0]);
             resolve(r[0]);
         }).catch(e => {
             resolve('')
@@ -809,20 +809,20 @@ export function CheckMmoneyPaid(transactionID: string): Promise<{ status: number
 }
 
 // Store payment transaction when QR code is generated
-export async function storePaymentTransaction(machineId:string, transactionId:string) {
+export async function storePaymentTransaction(machineId: string, transactionId: string) {
     const key = `unpaid:${machineId}:${transactionId}`;
     // Set with 10-minute TTL (300 seconds)
     await redisClient.set(key, JSON.stringify({ machineId, transactionId, createdAt: Date.now() }), 'EX', 600);
 }
 
 // Mark payment as paid (remove from unpaid list)
-export async function markPaymentAsPaid(machineId:string, transactionId:string) {
+export async function markPaymentAsPaid(machineId: string, transactionId: string) {
     const key = `unpaid:${machineId}:${transactionId}`;
     await redisClient.del(key);
 }
 
 // Monitor and clean up unpaid transactions
-export async function monitorUnpaidPayments(machineId:string) {
+export async function monitorUnpaidPayments(machineId: string) {
     try {
         // Get all keys matching the unpaid pattern
         const keys = await redisClient.keys(`unpaid:${machineId}:*`);

@@ -196,13 +196,16 @@ Content-Type: application/json
 GET https://tvending4.khamvong.com/testQueue
 
 ###
-POST https://laabx-api.laoapps.com/api/v1/activityLog/selmany
+POST https://laabx-api.laoapps.com/api/v1/laab/showlogCB_PARAM_Mmoney
 Content-Type: application/json
+Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNpZ25hdHVyZSI6IjA0YmI0OTg3YjJiMTQ5YmY3ZGI2NjE1Y2RlMzFjMzZhOTQ4MjEyM2M0Y2I1YzFkMGNhYWRhY2NjMWFhZGU2MjY4YjY4YmQ4YTUxNmI0NzY3ZTRmOGU4MDk3OTk3YWM0ZjIwMTM3ZTg5ZmM3MDJhMWNlMjc5NGQ5NjhhNjZjMWU3ZGIiLCJwaG9uZU51bWJlciI6Iis4NTYyMDk2MTIzMzgxIiwidXVpZCI6IjllYzM1MTUwLWIyN2QtMTFlZC05M2JkLWM5M2ZiMDNkMWZjMiIsImlwIjoiMTkyLjE2OC44OC44MSIsIm1hY2hpbmUiOiJ3aW5kb3dzIiwib3RoZXJpbmZvIjoibGFvYXBwLmNvbSIsImxvY2F0aW9uIjoidmllbnRpYW5lIn0sImlhdCI6MTczODU2MDUzNSwiZXhwIjozNjAwMDAwMTczODU2MDUzNn0.UiS3VuECl7z6FiZALauUG0foJyiT71cf3BNWgD1wXws
 
-{ 
-        "skip": 0, 
-        "action": "other_url" ,
-        "startDate": "", 
-        "endDate": "",
-        "secretKey":""
+{
+    "name":"",
+    //"name":"_log",
+    //"action": "other_url",
+    "action": "",
+    "startDate": "2026-01-12",
+    "endDate": "2026-01-13",
+    "secretKey": "R3pJfT9bKmS82Qw"
 }

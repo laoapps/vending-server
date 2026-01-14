@@ -1570,7 +1570,7 @@ export class InventoryLocker implements IBaseClass {
     }
     checkAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log('checkAdmin');
+            // console.log('checkAdmin');
             if (res.locals['ownerUuid']) {
                 next();
             }
@@ -2997,7 +2997,7 @@ export class InventoryLocker implements IBaseClass {
                                         console.log('parsing error setting', error);
                                         setting.allowVending = true, setting.allowCashIn = true; setting.lowTemp = 5; setting.highTemp = 10; setting.light = true; setting.limiter = 100000; setting.imei = '';
                                     }
-                                    console.log('ready to pong');
+                                    // console.log('ready to pong');
                                     const limiter = setting.limiter; // TODO: Get limiter 
                                     const merchant = 0; // TODO:Get merchant balance
                                     ws.send(

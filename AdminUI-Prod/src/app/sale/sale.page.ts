@@ -241,6 +241,51 @@ export class SalePage implements OnInit {
   }
 
 
+
+  editProductDetailNew(id: number | undefined) {
+    const s = this._l.find(v => v.id == id);
+    // console.log('edit detail');
+
+    if (!s) return alert('Not found');
+    this.apiService.showModal(SaleDetailsPage, { machineId: this.machineId, s, sales: this._l }).then(ro => {
+      ro?.present();
+      ro?.onDidDismiss().then(r => {
+        if (r?.data?.s) {
+          const sData: IVendingMachineSale = r?.data?.s as IVendingMachineSale;
+
+          let newParam = {
+            machineId: sData?.machineId,
+            price: Number(sData.stock.price),
+            image: r?.data?.s?.stock?.imageUrl,
+            name: sData.stock.name,
+            filename: r?.data?.s?.stock?.imageUrl,
+            imageurl: r?.data?.s?.stock?.imageUrl,
+            max: sData.max,
+            id: s.id,
+          };
+          const stockData = r?.data?.s?.stock;
+          stockData.image = r?.data?.s?.stock?.imageUrl;
+          newParam['stock'] = stockData;
+
+          this.apiService.editProductDetail(newParam)?.subscribe(rx => {
+            if (rx.status) {
+              this.loadSaleList();
+            }
+            this.apiService.toast.create({ message: rx.message, duration: 2000 }).then(ry => {
+              ry.present();
+            })
+          });
+
+        }
+
+      }).catch(e => {
+        console.log(e);
+
+      })
+    })
+  }
+
+
   deletesale(s: IVendingMachineSale) {
     if (!confirm('Are you sure?')) return;
 

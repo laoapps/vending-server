@@ -505,6 +505,13 @@ export class ApiService {
         const secret = localStorage.getItem('secretLocal');
         return this.http.post<IResModel>(this.url + '/addSale', { data: o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
     }
+
+    editProductDetail(o: any) {
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/editProductDetail', { ...o, token, shopPhonenumber, secret }, { headers: this.headerBase() });
+    }
     listProduct(isActive: string = 'all') {
         const token = localStorage.getItem('lva_token');
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
