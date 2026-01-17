@@ -125,6 +125,7 @@
       </ion-card-header>
 
       <ion-card-content class="ion-no-padding">
+
         <!-- Header -->
         <ion-item lines="none" class="header-row">
           <ion-grid>
@@ -144,112 +145,100 @@
         </ion-item>
 
         <!-- Rows -->
-        <ion-item *ngFor="let row of parsedRows" [color]="getStatusColor(row.status)">
+        <ion-item *ngFor="let row of parsedRows; trackBy: trackByCreatedAt"
+          [color]="STATUS_COLOR[row.status] || STATUS_COLOR['default']">
+
           <ion-grid>
             <ion-row class="ion-align-items-center ion-text-center">
 
-              <!-- Time -->
               <ion-col size="2.2">
                 <div class="text-xs font-medium">{{ row.timeDisplay }}</div>
               </ion-col>
 
-              <!-- Device Type -->
               <ion-col size="1.5">
-                <ion-badge [color]="row.deviceType === 'ADH814' ? 'primary' : 
-                   row.deviceType === 'VMC' ? 'tertiary' : 
-                   'medium'">
+                <ion-badge [color]="DEVICE_TYPE_COLOR[row.deviceType] || 'medium'">
                   {{ row.deviceType }}
                 </ion-badge>
               </ion-col>
 
-              <!-- Status -->
               <ion-col size="1.8">
-                <ion-badge [color]="getStatusColor(row.status)">
+                <ion-badge [color]="STATUS_COLOR[row.status] || STATUS_COLOR['default']">
                   {{ row.statusText }}
                 </ion-badge>
               </ion-col>
 
-              <!-- Motor Number -->
               <ion-col size="1.3">
-                <strong *ngIf="row.motorNumber !== undefined && row.motorNumber > 0">
+                <strong *ngIf="row.motorNumber && row.motorNumber > 0">
                   {{ getMotorDisplay(row.motorNumber) }}
                 </strong>
-                <span *ngIf="row.motorNumber === undefined || row.motorNumber === 0">-</span>
+                <span *ngIf="!row.motorNumber || row.motorNumber === 0">-</span>
               </ion-col>
 
-              <!-- Max Current -->
               <ion-col size="1.6">
-                <span *ngIf="row.maxCurrent !== undefined"
-                  [class.text-danger]="row.maxCurrent < 1000 && row.status === 2"
-                  [class.font-bold]="row.maxCurrent < 1000 && row.status === 2">
-                  {{ row.maxCurrent }} mA
-                </span>
-                <span *ngIf="row.maxCurrent === undefined">-</span>
+                <ng-container *ngIf="row.maxCurrent !== undefined; else noMax">
+                  <span [class.text-danger]="row.maxCurrent < 1000 && row.status === 2"
+                    [class.font-bold]="row.maxCurrent < 1000 && row.status === 2">
+                    {{ row.maxCurrent }} mA
+                  </span>
+                </ng-container>
+                <ng-template #noMax>-</ng-template>
               </ion-col>
 
-              <!-- Avg Current -->
               <ion-col size="1.4">
-                <span *ngIf="row.avgCurrent !== undefined">{{ row.avgCurrent }} mA</span>
-                <span *ngIf="row.avgCurrent === undefined">-</span>
+                {{ row.avgCurrent !== undefined ? (row.avgCurrent + ' mA') : '-' }}
               </ion-col>
 
-              <!-- Run Time -->
               <ion-col size="1.1">
-                <span *ngIf="row.runTime !== undefined">{{ row.runTime }}s</span>
-                <span *ngIf="row.runTime === undefined">-</span>
+                {{ row.runTime !== undefined ? (row.runTime + 's') : '-' }}
               </ion-col>
 
-              <!-- Temperature -->
               <ion-col size="1">
-                <span *ngIf="row.temperature === -40" class="text-danger font-bold">DISCONNECTED</span>
-                <span *ngIf="row.temperature === 120" class="text-warning font-bold">SHORTED</span>
-                <span *ngIf="row.temperature !== -40 && row.temperature !== 120">
+                <ng-container *ngIf="TEMPERATURE_DISPLAY[row.temperature]; let disp">
+                  <span [class]="disp.class || ''">{{ disp.text }}</span>
+                </ng-container>
+                <ng-container *ngIf="!TEMPERATURE_DISPLAY[row.temperature]">
                   {{ row.temperature }}°C
-                </span>
+                </ng-container>
               </ion-col>
 
-              <!-- Drop Success -->
               <ion-col size="1">
-                <div *ngIf="row.dropSuccess !== undefined">
+                <div *ngIf="row.dropSuccess !== undefined; else noDrop">
                   <ion-icon [name]="row.dropSuccess ? 'checkmark-circle' : 'close-circle'"
                     [color]="row.dropSuccess ? 'success' : 'danger'" size="large">
                   </ion-icon>
                 </div>
-                <span *ngIf="row.dropSuccess === undefined">-</span>
+                <ng-template #noDrop>-</ng-template>
               </ion-col>
 
-              <!-- Health + VMC Status -->
               <ion-col size="1.5">
-                <!-- ADH814 Health -->
-                <ion-badge *ngIf="row.deviceType === 'ADH814'" [color]="getHealthColor(row.healthStatus)">
-                  <strong>
-                    {{ row.healthStatus === 'OK' ? 'OK' :
-                    row.healthStatus === 'NO_SPIKE' ? 'NO POWER' :
-                    row.healthStatus === 'DROP_FAILED' ? 'DROP FAILED' :
-                    row.healthStatus === 'OVERCURRENT' ? 'OVERCURRENT' : 'OK' }}
-                  </strong>
-                </ion-badge>
+                <!-- ADH814 -->
+                <ng-container *ngIf="row.deviceType === 'ADH814'">
+                  <ion-badge [color]="HEALTH_COLOR[row.healthStatus || 'UNKNOWN']">
+                    <strong>{{ HEALTH_LABEL[row.healthStatus || 'UNKNOWN'] }}</strong>
+                  </ion-badge>
+                </ng-container>
 
-                <!-- VMC Full Status -->
-                <div *ngIf="row.deviceType === 'VMC' && row.vmcStatus" class="ion-text-wrap text-xs">
-                  <strong>VMC:</strong><br>
-                  Bill={{ row.vmcStatus.billStatus }} |
-                  Coin={{ row.vmcStatus.coinStatus }} |
-                  Card={{ row.vmcStatus.cardStatus }} |
-                  Door={{ row.vmcStatus.doorStatus }} |
-                  TempCtrl={{ row.vmcStatus.tempControllerStatus }}
-                </div>
+                <!-- VMC -->
+                <ng-container *ngIf="row.deviceType === 'VMC' && row.vmcStatus">
+                  <div class="ion-text-wrap text-xs">
+                    <strong>VMC:</strong><br>
+                    Bill={{ row.vmcStatus.billStatus }} |
+                    Coin={{ row.vmcStatus.coinStatus }} |
+                    Card={{ row.vmcStatus.cardStatus }} |
+                    Door={{ row.vmcStatus.doorStatus }} |
+                    TempCtrl={{ row.vmcStatus.tempControllerStatus }}
+                  </div>
+                </ng-container>
 
-                <!-- Other devices -->
-                <ion-badge *ngIf="row.deviceType === 'OTHER'" color="medium">
-                  ONLINE
-                </ion-badge>
+                <!-- OTHER -->
+                <ng-container *ngIf="row.deviceType === 'OTHER'">
+                  <ion-badge color="medium">ONLINE</ion-badge>
+                </ng-container>
               </ion-col>
 
             </ion-row>
           </ion-grid>
         </ion-item>
-
 
       </ion-card-content>
     </ion-card>
