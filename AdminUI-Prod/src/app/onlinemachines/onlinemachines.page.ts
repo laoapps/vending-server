@@ -62,6 +62,9 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.intervalId) clearInterval(this.intervalId);
   }
+  trackByMachine(index: number, item: MachineData): string {
+    return item.machineId; // Or item.machineId + item.status if you want to be stricter
+  }
 
   // Manual refresh with flash + scroll to top
   async refreshData() {
@@ -138,10 +141,10 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       this.brokenMachines = machines.filter(m => m.status === 'Broken');
 
       // Trigger flash only if count changed (new data!)
-      const newCount = this.onlineMachines.length + this.brokenMachines.length;
-      if (newCount !== previousCount && !this.isRefreshing) {
-        this.triggerFlash();
-      }
+      // const newCount = this.onlineMachines.length + this.brokenMachines.length;
+      // if (newCount !== previousCount && !this.isRefreshing) {
+      //   this.triggerFlash();
+      // }
 
     } catch (err) {
       console.error('Load error:', err);
