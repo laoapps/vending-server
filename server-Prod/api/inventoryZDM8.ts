@@ -154,6 +154,7 @@ import { uploadExcelMemory } from "../middlewares/upload.middleware";
 import { checkQRPaidMmoneyResponse, reportAllBill, reportAllBillNotPaid, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
 import { apiQueue } from "./queue.services";
+import { getTransactionsLaoQRFromRedis, saveTransactionLaoQrToRedis } from "../services/laoqrredis";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -615,6 +616,9 @@ export class InventoryZDM8 implements IBaseClass {
                             const phoneNumber = d?.data?.phone;
 
                             const checkCountGen = await checkGenerateCount(machineId?.machineId);
+                            // console.log('-----> checkCountGen', checkCountGen.message);
+
+
                             if (checkCountGen.status == 1) {
                                 const wsx = this.wsClient.filter(v => v['machineId'] === machineId.machineId);
                                 wsx.forEach(ws => {
@@ -734,6 +738,8 @@ export class InventoryZDM8 implements IBaseClass {
                                     transactionID: bill.transactionID,
                                     createdAt: new Date()
                                 });
+                                // console.log('-----> trandList', trandList);
+
 
                                 if (phoneNumber) {
                                     redisClient.setex(r.transactionID + EMessage.TransactionPhone, 60 * 15, JSON.stringify({
@@ -752,8 +758,9 @@ export class InventoryZDM8 implements IBaseClass {
                                     month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
                                     year: momenttz().tz(SERVER_TIME_ZONE).year()
                                 };
+                                await saveTransactionLaoQrToRedis(machineId.machineId, qr.requestId);
                                 await setVendingEvent(EVendingEvent.selling, event);
-                                res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
+                                return res.send(PrintSucceeded(d.command, r, EMessage.succeeded, null));
                             });
                         } else if (d.command == EClientCommand.buyLAABX) {
 
@@ -787,23 +794,6 @@ export class InventoryZDM8 implements IBaseClass {
                             if (!mId || !ownerPhone || !owner) {
                                 return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
                             }
-
-                            // 🔁 พยายาม generate QR ไม่เกิน 3 ครั้ง
-                            // let qr;
-                            // let attempts = 0;
-                            // const maxAttempts = 3;
-                            // const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-                            // while (attempts < maxAttempts) {
-                            //     qr = await this.generateBillLaoQRPro(value, mId, owner, ownerPhone);
-                            //     if (qr?.status === 'OK') break;
-                            //     console.log('Attempt', attempts + 1, 'failed. Retrying...');
-                            //     attempts++;
-                            //     await delay(500);
-                            // }
-
-                            // if (!qr || qr.status !== 'OK') {
-                            //     return res.send(PrintError(d.command, [], EMessage.generateQRFailed, null));
-                            // }
 
 
                             var responseData = await this.generateBillLAABXPro(value, d?.token);
@@ -1123,7 +1113,7 @@ export class InventoryZDM8 implements IBaseClass {
                         //     });
                         // }
                         else {
-                            res.send(PrintError(d.command, [], EMessage.notsupport, null));
+                            return res.send(PrintError(d.command, [], EMessage.notsupport, null));
                         }
                     }
                 } catch (error: any) {
@@ -1692,6 +1682,13 @@ export class InventoryZDM8 implements IBaseClass {
                         //     });
 
 
+                        try {
+                            await getTransactionsLaoQRFromRedis(machineId);
+                        } catch (errorC) {
+
+                        }
+
+
                         /// using redis method
                         this.getBillProcess(machineId, async (b) => {
                             console.log("getPaidBills length", b.map(v => v.bill)?.length);
@@ -1719,7 +1716,7 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                             this.sendWSToMachine(machineId, resx);
-                            res.send(
+                            return res.send(
                                 PrintSucceeded(
                                     "getPaidBills",
                                     resx.data, EMessage.succeeded, returnLog(req, res)
@@ -1727,7 +1724,7 @@ export class InventoryZDM8 implements IBaseClass {
                             );
                         });
                     } catch (error) {
-                        console.log(error);
+                        console.log('getPaidBills', error);
                         res.send(PrintError("getPaidBills", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
@@ -1936,7 +1933,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                         });
 
-                        res.send(
+                        return res.send(
                             PrintSucceeded(
                                 "confirmPaidBill",
                                 {},
@@ -1944,7 +1941,7 @@ export class InventoryZDM8 implements IBaseClass {
                             )
                         );
                     } catch (error) {
-                        console.log(error);
+                        console.log('confirmPaidBill', error);
                         writeErrorLogs(error.message, error);
                         res.send(PrintError("retryProcessBill", error, EMessage.error, returnLog(req, res, true)));
                         // writeMachineLockDrop(res.locals["machineId"]?.machineId);
@@ -6911,7 +6908,7 @@ export class InventoryZDM8 implements IBaseClass {
                     { headers: { 'Content-Type': 'application/json', timeout: 10000 } }
                 )
                 .then((rx) => {
-                    console.log("generateBillLaoQRPro", rx.data);
+                    // console.log("generateBillLaoQRPro", rx.data);
                     if (rx.status) {
                         resolve(rx.data.data as ILaoQRGenerateQRRes);
                     } else {
@@ -6947,7 +6944,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             apiQueue.add(() => {
                 this.api.post<IResModel>('/api/v1/laab/genmmoneyqr_vending', qr, { headers: { 'Content-Type': 'application/json', timeout: 10000 } }).then((rx) => {
-                    console.log("generateBillLaoQRPro", rx.data);
+                    // console.log("generateBillLaoQRPro", rx.data);
                     if (rx.status) {
                         resolve(rx.data.data as ILaoQRGenerateQRRes);
                     } else {
@@ -8286,7 +8283,7 @@ export class InventoryZDM8 implements IBaseClass {
                 };
                 ws.onclose = (ev: CloseEvent) => {
                     this.wsClient = this.wsClient.filter((v) => v !== ws); // Remove from array
-                    console.log('WebSocket closed:', ev.reason);
+                    // console.log('WebSocket closed:', ev.reason);
                 };
                 ws.onerror = (ev: Event) => {
                     console.log(" WS error", ev);
@@ -8378,7 +8375,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 res.data = { clientId: ws["clientId"] };
 
                                 this.wsClient.push(ws);
-                                console.log(`Machine connected: ${machineId?.machineId}`);
+                                // console.log(`Machine connected: ${machineId?.machineId}`);
                                 return ws.send(
                                     JSON.stringify(
                                         PrintSucceeded(d.command, res, EMessage.succeeded, null)

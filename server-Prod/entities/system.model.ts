@@ -1048,6 +1048,7 @@ export enum EMessage {
     machineNotExist = "machineNotExist",
     LaoQRCount = "LaoQRCount",
     ListTransactionMmoneyCheck = "ListTransactionMmoneyCheck",
+    ListTransactionLaoQRCheck = "ListTransactionLaoQRCheck",
     openstock = "openstock",
     clearLocalBill = "clearLocalBill",
     TransactionPhone = "TransactionPhone",

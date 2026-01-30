@@ -441,3 +441,63 @@ export function checkQRPaidMmoneyResponse(transactionID: string): Promise<{ stat
         }
     });
 }
+
+
+export function checkQRPaidMmoneyAndConfirmServer(transactionID: string): Promise<{ status: number, message: any }> {
+    return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
+
+        try {
+            const agent = new https.Agent({
+                rejectUnauthorized: false,
+            });
+
+            const API_BASE_URL = 'https://gateway.ltcdev.la/PartnerGenerateQR/checkTransactionByBillV3';
+
+            const authUsername = 'lmm'
+            const authPassword = 'Lmm@2024qaz2wsx'
+
+            const authToken = Buffer.from(`${authUsername}:${authPassword}`).toString('base64');
+
+            const headers = {
+                "Authorization": `Basic ${authToken}`,
+                "username": 'Vendeex',
+                "password": 'vendeex@2025qaz2wsx',
+                "apikey": 'eb718666-b20e-4091-b964-67a61e06fffe',
+                "Content-Type": 'application/json'
+            }
+
+            const res = await axios.post(API_BASE_URL, {
+                requestId: transactionID,
+                billNumber: transactionID
+            },
+                { headers, httpsAgent: agent, timeout: 10000 });
+
+            if (res.data.success) {
+                axios.post(process.env.SERVER_URL, {
+                    "command": "confirmLAOQR",
+                    "data": {
+                        "trandID": transactionID,
+                        "bankname": res.data.data?.bankname ?? ''
+                    }
+                }, {
+                    headers: {
+                        "Content-Type": 'application/json', timeout: 10000
+                    }
+                }).then(async r => {
+                    // console.log('=====>CONFIRM PAID', r.data);
+
+                    return resolve({ status: 1, message: r.data });
+                }).catch(e => {
+                    console.log('=====>CONFIRM ERROR', e);
+                    return resolve({ status: 0, message: e });
+                })
+            } else {
+                // console.log('=====> CHECK MMONEY NOT PAID', res.data);
+                return resolve({ status: 0, message: EMessage.LaoQRNotPaid });
+            }
+        } catch (error) {
+            console.log('=====> CHECK MMONEY PAID ERROR', error);
+            return resolve({ status: 0, message: error });
+        }
+    });
+}

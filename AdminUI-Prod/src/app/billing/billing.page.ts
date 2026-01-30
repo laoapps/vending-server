@@ -37,6 +37,82 @@ export class BillingPage implements OnInit {
     this.token = localStorage.getItem('lva_token');
   }
 
+
+  testSave() {
+    this.exportBillingExcel();
+  }
+
+  exportBillingExcel() {
+
+    const wsData: any[][] = [
+      ['ບໍລິສັດ ດອກບົວຄຳ ການຄ້າ ຂາເຂົ້າ-ຂາອອກ ຈຳກັດ'],
+      ['ຮ່ອມ 1/3 ຖະຫນົນສີທອງ ບ້ານປາກທ້າງ, ເມືອງ ສີໂຄດຕະບອງ ນະຄອນຫຼວງ ວຽງຈັນ'],
+      ['ໂທ: 020 55516321 / 02077868868 / 02056924465'],
+      ['Email: DorkBouaKham@gmail.com , touya.ra@gmail.com'],
+      [],
+      ['', '', '', '', '', 'ວັນທີ', '8/12/2025'],
+      ['', '', '', '', '', 'ເລກທີ', '45999-716'],
+      [],
+      ['ໃບເກັບເງິນ'],
+      [],
+      ['ລູກຄ້າ:', 'ກະຊວງ 77722001', '', '', '', '', 'ເດືອນ 10'],
+      [],
+      ['ລຳດັບ', 'ລາຍການ', 'ຈ/ນ', '', '', '', 'ລາຄາ'],
+      [1, 'ລາຍງານລາຍເດືອນທັງໝົດ', 328, '', '', '', 6640000],
+      [2, 'ລວມ', '', '', '', '', 6640000],
+      [3, 'HM Franchise rate', '4,50%', '', '', '', 298800],
+      [],
+      ['ກະລຸນາໂອນເງິນເຂົ້າ ບັນຊີຂ້າງລຸ່ມນີ້'],
+      ['Anousone Rabounthunh Mr'],
+      ['LAK 010-12-11505525'],
+      ['USD 090-12-0100409709-001'],
+      ['M-Money: 55516321'],
+      [],
+      ['ລາຍເຊັນລູກຄ້າ', '', '', 'ຜູ້ຮັບເງິນ', '', '', 'ຫົວໜ້າ'],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: 6 } },
+      { s: { r: 3, c: 0 }, e: { r: 3, c: 6 } },
+
+      { s: { r: 8, c: 0 }, e: { r: 8, c: 6 } },
+
+      { s: { r: 10, c: 1 }, e: { r: 10, c: 4 } },
+
+      { s: { r: 12, c: 2 }, e: { r: 12, c: 5 } },
+      { s: { r: 13, c: 1 }, e: { r: 13, c: 5 } },
+      { s: { r: 14, c: 1 }, e: { r: 14, c: 5 } },
+    ];
+
+    ws['!cols'] = [
+      { wch: 10 },
+      { wch: 35 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 18 },
+    ];
+
+    const wb: XLSX.WorkBook = {
+      Sheets: { 'Billing': ws },
+      SheetNames: ['Billing'],
+    };
+
+    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    saveAs(
+      new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }),
+      'ໃບເກັບເງິນ.xlsx'
+    );
+  }
+
   // mapBankInMy(data: any[]) {
   //   return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
   //     .map(item => ({
@@ -1163,26 +1239,6 @@ export class BillingPage implements OnInit {
     this.dataExcel = [];
   }
 
-  // ✅ อ่านไฟล์ Excel
-  // private readExcelFile(file: File): Promise<any[]> {
-  //   return new Promise((resolve, reject) => {
-  //     const reader = new FileReader();
-  //     reader.onload = (e: any) => {
-  //       try {
-  //         const data = new Uint8Array(e.target.result);
-  //         const workbook = XLSX.read(data, { type: 'array' });
-  //         const firstSheet = workbook.SheetNames[0];
-  //         const worksheet = workbook.Sheets[firstSheet];
-  //         const json = XLSX.utils.sheet_to_json(worksheet);
-  //         resolve(json);
-  //       } catch (err) {
-  //         reject(err);
-  //       }
-  //     };
-  //     reader.onerror = reject;
-  //     reader.readAsArrayBuffer(file);
-  //   });
-  // }
 
   private readExcelFile(file: File): Promise<any[]> {
     return new Promise((resolve, reject) => {

@@ -280,33 +280,33 @@ export class ApiService {
     console.log('Set last action time to now');
   }
   private getSecondsSinceLastAction(): number {
-  try {
-    const lastAction = localStorage.getItem('lastAction');
-    if (!lastAction) return Infinity; // Never set → treat as very old
+    try {
+      const lastAction = localStorage.getItem('lastAction');
+      if (!lastAction) return Infinity; // Never set → treat as very old
 
-    const lastTime = parseInt(lastAction, 10);
-    if (isNaN(lastTime)) {
-      // Corrupted data → treat as expired
-      return Infinity;
+      const lastTime = parseInt(lastAction, 10);
+      if (isNaN(lastTime)) {
+        // Corrupted data → treat as expired
+        return Infinity;
+      }
+
+      return (Date.now() - lastTime) / 1000;
+    } catch (error) {
+      console.error('Error reading lastAction:', error);
+      return Infinity; // On error, assume expired → safer to restart
     }
-
-    return (Date.now() - lastTime) / 1000;
-  } catch (error) {
-    console.error('Error reading lastAction:', error);
-    return Infinity; // On error, assume expired → safer to restart
   }
-}
-checkOverLastSerialAction(t = 60): boolean {
-  const secondsElapsed = this.getSecondsSinceLastAction();
+  checkOverLastSerialAction(t = 60): boolean {
+    const secondsElapsed = this.getSecondsSinceLastAction();
 
-  if (secondsElapsed === Infinity || secondsElapsed > t) {
-    console.log(`Idle timeout! ${secondsElapsed === Infinity ? 'No record' : secondsElapsed.toFixed(1) + 's'} > ${t}s → Restarting app...`);
-    return true; // Yes, restart the app
-  } else {
-    console.log(`Still alive — ${secondsElapsed.toFixed(1)}s since last action (limit: ${t}s)`);
-    return false; // No restart needed
+    if (secondsElapsed === Infinity || secondsElapsed > t) {
+      console.log(`Idle timeout! ${secondsElapsed === Infinity ? 'No record' : secondsElapsed.toFixed(1) + 's'} > ${t}s → Restarting app...`);
+      return true; // Yes, restart the app
+    } else {
+      console.log(`Still alive — ${secondsElapsed.toFixed(1)}s since last action (limit: ${t}s)`);
+      return false; // No restart needed
+    }
   }
-}
 
   getReplacements(a1: string[], a2: string[]) {
     a1 = Array.isArray(a1) ? a1 : [];

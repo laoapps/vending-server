@@ -257,7 +257,7 @@ CreateDatabase("")
     server.on("upgrade", function upgrade(request, socket, head) {
       try {
         const { pathname } = parse(request.url || "");
-        console.log("pathname", pathname);
+        // console.log("pathname", pathname);
 
         if (pathname === "/zdm8") {
           wss1.handleUpgrade(request, socket, head, function done(ws) {
@@ -318,7 +318,7 @@ CreateDatabase("")
     });
 
     process.on('unhandledRejection', (reason, promise) => {
-      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      // console.error('Unhandled Rejection at:', promise, 'reason:', reason);
       logIncident('Unhandled Rejection', reason);
       // Do not exit process
     });
