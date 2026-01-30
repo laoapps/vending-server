@@ -154,7 +154,7 @@ import { uploadExcelMemory } from "../middlewares/upload.middleware";
 import { checkQRPaidMmoneyResponse, reportAllBill, reportAllBillNotPaid, uploadExcelFile, uploadExcelFileAndCheckBillNotPaid } from "../controllers/excel.controller";
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
 import { apiQueue } from "./queue.services";
-import { getTransactionsLaoQRFromRedis, saveTransactionLaoQrToRedis } from "../services/laoqrredis";
+import { getTransactionsLaoQRFromRedis, removeTransactionLaoQRFromRedis, saveTransactionLaoQrToRedis } from "../services/laoqrredis";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -7382,6 +7382,8 @@ export class InventoryZDM8 implements IBaseClass {
                     redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
 
                     await DeleteTransactionToCheck(bill.machineId)
+                    await removeTransactionLaoQRFromRedis(bill.machineId, bill.transactionID);
+
                     this.sendWSToMachine(bill?.machineId + "", res);
 
 
