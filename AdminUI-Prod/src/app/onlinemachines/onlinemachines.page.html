@@ -28,8 +28,8 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines">
-        <ion-card class="machine-card"
+<ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines; trackBy: trackByMachine">
+          <ion-card class="machine-card"
           [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
@@ -162,7 +162,7 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines; trackBy: trackByMachine">
         <ion-card class="machine-card"
           [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>

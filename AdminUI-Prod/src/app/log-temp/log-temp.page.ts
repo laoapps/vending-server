@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input, ChangeDetectionStrategy } from '@angular/core';
 import axios from 'axios';
 import { LoadingController, ToastController } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
@@ -39,11 +39,12 @@ interface ParsedMotorData {
 @Component({
   selector: 'app-log-temp',
   templateUrl: './log-temp.page.html',
-  styleUrls: ['./log-temp.page.scss']
+  styleUrls: ['./log-temp.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush   // ← recommended
 })
 export class LogTempPage implements OnInit {
 
- @Input() machineId: string = '';
+  @Input() machineId: string = '';
 
   fromDate!: string;
   toDate!: string;
@@ -53,6 +54,45 @@ export class LogTempPage implements OnInit {
   parsedRows: ParsedMotorData[] = [];
   showRawData = false;
 
+  readonly DEVICE_TYPE_COLOR: Record<string, string> = {
+    'ADH814': 'primary',
+    'VMC': 'tertiary',
+    'OTHER': 'medium'
+  };
+
+  readonly STATUS_COLOR: Record<number, string> = {
+    0: 'medium',
+    1: 'warning',
+    2: 'success',
+    3: 'primary',
+    4: 'secondary',
+    10: 'tertiary',
+    99: 'medium',
+    // fallback
+    // default: 'dark'
+  };
+
+  readonly HEALTH_COLOR: Record<string, string> = {
+    'OK': 'success',
+    'NO_SPIKE': 'danger',
+    'OVERCURRENT': 'warning',
+    'DROP_FAILED': 'danger',
+    'UNKNOWN': 'medium'
+  };
+
+  readonly HEALTH_LABEL: Record<string, string> = {
+    'OK': 'OK',
+    'NO_SPIKE': 'NO POWER',
+    'OVERCURRENT': 'OVERCURRENT',
+    'DROP_FAILED': 'DROP FAILED',
+    'UNKNOWN': 'UNKNOWN'
+  };
+
+  readonly TEMPERATURE_DISPLAY: Record<number, { text: string; class?: string }> = {
+    [-40]: { text: 'DISCONNECTED', class: 'text-danger font-bold' },
+    120: { text: 'SHORTED', class: 'text-warning font-bold' }
+    // others use normal {{ row.temperature }}°C
+  };
   constructor(
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
@@ -91,11 +131,11 @@ export class LogTempPage implements OnInit {
       const parsed = JSON.parse(match[0]);
 
       const date = new Date(log.createdAt);
-      date.setHours(date.getHours() );
+      date.setHours(date.getHours());
       const timeDisplay = date.toLocaleTimeString('en-GB', {
         hour12: false,
         month: '2-digit',
-        day:'2-digit',
+        day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
@@ -185,7 +225,7 @@ export class LogTempPage implements OnInit {
       return null;
     }
   }
-  
+
 
   // FULL VMC STATUS PARSER (from your original code)
   private machineVMCStatus(hexString: string): any {
@@ -251,8 +291,8 @@ export class LogTempPage implements OnInit {
       date.setHours(date.getHours());
       const timeDisplay = date.toLocaleTimeString('en-GB', {
         hour12: false,
-         month: '2-digit',
-        day:'2-digit',
+        month: '2-digit',
+        day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
@@ -285,15 +325,17 @@ export class LogTempPage implements OnInit {
   }
 
   // Main parser — detects device type
- // MAIN PARSER — Handles ALL devices
+  // MAIN PARSER — Handles ALL devices
   private parseLog(log: MotorRunLog): ParsedMotorData | null {
     if (!log.mstatus) {
       const date = new Date(log.createdAt);
       date.setHours(date.getHours());
       return {
         createdAt: log.createdAt,
-        timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false,  month: '2-digit',
-        day:'2-digit',hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        timeDisplay: date.toLocaleTimeString('en-GB', {
+          hour12: false, month: '2-digit',
+          day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }),
         status: 99,
         statusText: 'Device Online',
         temperature: 0,
@@ -313,11 +355,13 @@ export class LogTempPage implements OnInit {
     }
 
     const date = new Date(log.createdAt);
-    date.setHours(date.getHours() );
+    date.setHours(date.getHours());
     return {
       createdAt: log.createdAt,
-      timeDisplay: date.toLocaleTimeString('en-GB', { hour12: false, month: '2-digit',
-        day:'2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timeDisplay: date.toLocaleTimeString('en-GB', {
+        hour12: false, month: '2-digit',
+        day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+      }),
       status: 99,
       statusText: 'Device Online',
       temperature: log.mstatus.temperature || 0,
@@ -339,6 +383,7 @@ export class LogTempPage implements OnInit {
       spinner: 'crescent'
     });
     await loading.present();
+
     this.loading = true;
 
     try {
@@ -359,15 +404,35 @@ export class LogTempPage implements OnInit {
       if (response.data?.data?.rows?.length) {
         this.rows = response.data.data.rows;
 
-        this.parsedRows = this.rows
+        // Parse and sort — this part stays the same
+        const parsed = this.rows
           .map(log => this.parseLog(log))
           .filter((item): item is ParsedMotorData => item !== null)
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        this.parsedRows = parsed;
+
+        // ────────────────────────────────────────────────
+        // Compute summaries ONCE — right after parsing
+        // ────────────────────────────────────────────────
+        this._finishedRuns = this.parsedRows.filter(
+          r => r.deviceType === 'ADH814' && r.status === 2
+        );
+
+        this._healthyRunsCount = this._finishedRuns.filter(r => r.isHealthy === true).length;
+
+        const total = this._finishedRuns.length;
+        this._successRate = total > 0
+          ? Math.round((this._healthyRunsCount / total) * 100)
+          : 0;
 
         this.showToast(`Loaded ${this.parsedRows.length} events`, 'success');
       } else {
         this.rows = [];
         this.parsedRows = [];
+        this._finishedRuns = [];
+        this._healthyRunsCount = 0;
+        this._successRate = 0;
         this.showToast('No data found', 'medium');
       }
     } catch (error: any) {
@@ -375,17 +440,84 @@ export class LogTempPage implements OnInit {
       this.showToast('Failed to load data', 'danger');
     } finally {
       this.loading = false;
-      loading.dismiss();
-      this.cdr.detectChanges();
+      await loading.dismiss();
+      this.cdr.markForCheck();  // Important with OnPush
     }
   }
+  // async fetchReport() {
+  //   if (!this.fromDate || !this.toDate) {
+  //     this.showToast('Please select both dates', 'warning');
+  //     return;
+  //   }
+
+  //   const loading = await this.loadingCtrl.create({
+  //     message: 'Loading device logs...',
+  //     spinner: 'crescent'
+  //   });
+  //   await loading.present();
+  //   this.loading = true;
+
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     const url = `${environment.url}/reportLogsTemp`;
+
+  //     const payload = {
+  //       machineId: this.machineId,
+  //       fromDate: this.fromDate.split('T')[0],
+  //       toDate: this.toDate.split('T')[0],
+  //       token
+  //     };
+
+  //     const response = await axios.post(url, payload, {
+  //       headers: { 'Content-Type': 'application/json' }
+  //     });
+
+  //     if (response.data?.data?.rows?.length) {
+  //       this.rows = response.data.data.rows;
+
+  //       this.parsedRows = this.rows
+  //         .map(log => this.parseLog(log))
+  //         .filter((item): item is ParsedMotorData => item !== null)
+  //         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  //       this.showToast(`Loaded ${this.parsedRows.length} events`, 'success');
+  //     } else {
+  //       this.rows = [];
+  //       this.parsedRows = [];
+  //       this.showToast('No data found', 'medium');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('API Error:', error);
+  //     this.showToast('Failed to load data', 'danger');
+  //   } finally {
+  //     this.loading = false;
+  //     loading.dismiss();
+  //     // this.cdr.detectChanges();
+  //     this.cdr.markForCheck();   // ← important with OnPush
+  //   }
+  // }
 
   // Keep your existing getters and methods...
-  get finishedRuns() { return this.parsedRows.filter(r => r.deviceType === 'ADH814' && r.status === 2); }
-  get totalFinishedRuns() { return this.finishedRuns.length; }
-  get healthyRuns() { return this.finishedRuns.filter(r => r.isHealthy).length; }
+  // get finishedRuns() { return this.parsedRows.filter(r => r.deviceType === 'ADH814' && r.status === 2); }
+  // get totalFinishedRuns() { return this.finishedRuns.length; }
+  // get healthyRuns() { return this.finishedRuns.filter(r => r.isHealthy).length; }
+  // get failedRuns() { return this.totalFinishedRuns - this.healthyRuns; }
+  // get successRate() { return this.totalFinishedRuns > 0 ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100) : 0; }
+  private _finishedRuns: ParsedMotorData[] = [];
+  private _healthyRunsCount: number = 0;
+  private _successRate: number = 0;
+
+  // Then update the getters to just return the cached values
+
+  get finishedRuns() { return this._finishedRuns; }
+  get totalFinishedRuns() { return this._finishedRuns.length; }
+  get healthyRuns() { return this._healthyRunsCount; }
   get failedRuns() { return this.totalFinishedRuns - this.healthyRuns; }
-  get successRate() { return this.totalFinishedRuns > 0 ? Math.round((this.healthyRuns / this.totalFinishedRuns) * 100) : 0; }
+  get successRate() { return this._successRate; }
+
+
+
+
 
   getStatusColor(status: number): string {
     if (status === 99) return 'medium';
@@ -410,11 +542,16 @@ export class LogTempPage implements OnInit {
     }
   }
 
-  getMotorDisplay(num: number): string {
-    return `#${num.toString().padStart(2, '0')}`;
+  getMotorDisplay(num: number | undefined): string {
+    return num && num > 0 ? `#${num.toString().padStart(2, '0')}` : '-';
+  }
+
+  trackByCreatedAt(_: number, row: ParsedMotorData): string {
+    return row.createdAt;
   }
 
   toggleRawData() {
     this.showRawData = !this.showRawData;
+    this.cdr.markForCheck();
   }
 }
