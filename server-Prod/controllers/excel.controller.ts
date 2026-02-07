@@ -485,7 +485,6 @@ export function checkQRPaidMmoneyAndConfirmServer(transactionID: string): Promis
                     }
                 }).then(async r => {
                     // console.log('=====>CONFIRM PAID', r.data);
-
                     return resolve({ status: 1, message: r.data });
                 }).catch(e => {
                     console.log('=====>CONFIRM ERROR', e);

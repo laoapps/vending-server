@@ -377,7 +377,7 @@ export class ApiService {
 
 
     getReportClientLogs(data: any) {
-        return this.http.post<IResModel>(this.url + '/reportClientLog', data, { headers: this.headerBase() });
+        return this.http.post<IResModel>(this.url + '/reportClientLog?t=' + new Date(), data, { headers: this.headerBase() });
     }
 
 
@@ -541,6 +541,13 @@ export class ApiService {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');
         return this.http.post<IResModel>(this.url + `/disableSale?isActive=${isActive ? 'yes' : 'no'}&id=${id}`, { token, shopPhonenumber, secret }, { headers: this.headerBase() });
+    }
+
+    getProductCredit(machineId: string, productUuid: string) {
+        const token = localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + `/getProductCredit`, { token, shopPhonenumber, secret, productUuid, machineId }, { headers: this.headerBase() });
     }
     deleteSale(id: number) {
         const token = localStorage.getItem('lva_token');

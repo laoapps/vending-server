@@ -1144,6 +1144,17 @@ export interface IStock extends IBase, IBC {
     price: number;
     qtty: number;
 }
+
+export interface IProductCredit extends IBase {
+    machineId: string;
+    ownerUuid: string;
+    productUuid: string;
+    creditType: string;
+    creditValue: number;
+    creditAt: Date;
+    creditBy: string;
+    description: any;
+}
 export interface IMMoneyQRRes {
     uuid: string;
     qr: string;
@@ -1175,6 +1186,10 @@ export enum EClientCommand {
     ADH814_STATUS = "ADH814_STATUS",
     buyLAABX = "buyLAABX"
 
+}
+
+export enum ECreditType {
+    hotWater = "hotWater",
 }
 export interface IVendingMachineSale extends IBase, IBC {
     machineId: string;
@@ -2426,7 +2441,8 @@ export enum EEntity {
     LogsTemp = "LogsTemp",
     ProductImage = "ProductImage",
     vendingevents = "vendingevents",
-    RecordBilling = "RecordBilling"
+    RecordBilling = "RecordBilling",
+    ProductCredit = "ProductCredit"
 }
 
 export interface ISaveMachineSaleReport {

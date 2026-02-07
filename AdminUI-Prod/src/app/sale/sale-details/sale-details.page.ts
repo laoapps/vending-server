@@ -19,7 +19,25 @@ export class SaleDetailsPage implements OnInit {
   }
 
   ngOnInit() {
+    // console.log('-----> INIT SaleDetailsPage');
+    this.getProductCredit();
 
+  }
+
+  getProductCredit() {
+    try {
+      const productUuid = this.s.stock.id + '';
+      const machineId = this.machineId + '';
+
+      this.apiService.getProductCredit(machineId, productUuid).subscribe(rx => {
+        // console.log('-----> getProductCredit ', rx.data);
+        if (rx.data) {
+          this.s.stock.hotWaterCredit = rx?.data?.creditValue;
+        }
+      });
+    } catch (error) {
+
+    }
   }
   close() {
     this.apiService.closeModal()

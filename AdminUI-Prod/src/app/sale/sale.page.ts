@@ -252,6 +252,8 @@ export class SalePage implements OnInit {
       ro?.onDidDismiss().then(r => {
         if (r?.data?.s) {
           const sData: IVendingMachineSale = r?.data?.s as IVendingMachineSale;
+          // console.log('-----> DATA L :', JSON.stringify(sData?.stock?.hotWaterCredit));
+
 
           let newParam = {
             machineId: sData?.machineId,
@@ -263,9 +265,14 @@ export class SalePage implements OnInit {
             max: sData.max,
             id: s.id,
           };
+
           const stockData = r?.data?.s?.stock;
           stockData.image = r?.data?.s?.stock?.imageUrl;
           newParam['stock'] = stockData;
+
+          if (sData?.stock?.hotWaterCredit) {
+            newParam['hotWaterCredit'] = sData?.stock?.hotWaterCredit;
+          }
 
           this.apiService.editProductDetail(newParam)?.subscribe(rx => {
             if (rx.status) {

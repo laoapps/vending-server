@@ -90,6 +90,8 @@ import {
     EVendingEvent,
     IVendingEventLog,
     ILAABXGenerateQRRes,
+    IProductCredit,
+    ECreditType,
 } from "../entities/system.model";
 import moment, { now } from "moment";
 import momenttz from "moment-timezone";
@@ -155,6 +157,7 @@ import { checkQRPaidMmoneyResponse, reportAllBill, reportAllBillNotPaid, uploadE
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
 import { apiQueue } from "./queue.services";
 import { getTransactionsLaoQRFromRedis, removeTransactionLaoQRFromRedis, saveTransactionLaoQrToRedis } from "../services/laoqrredis";
+import { ProductCreditFactory } from "../entities/productcredit.entity";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -2784,6 +2787,10 @@ export class InventoryZDM8 implements IBaseClass {
                         const max = Number(req.body.max);
                         const id = Number(req.body.id);
 
+                        const hotWaterCredit = req.body.hotWaterCredit;
+                        // console.log('-----> hotWaterCredit :', hotWaterCredit);
+
+
                         const transaction = await dbConnection.transaction();
 
                         try {
@@ -2803,21 +2810,42 @@ export class InventoryZDM8 implements IBaseClass {
                                 dbConnection
                             );
                             await sEntStock.sync();
-                            const o = {
+                            let o = {
                                 price,
                                 image,
                                 name,
                                 isActive: true,
-
                                 qtty: 1000,
                             } as IStock;
+
                             let newData: IStock = await sEntStock
                                 .create(o, { transaction });
+
+                            if (hotWaterCredit) {
+                                const oCredit = {
+                                    machineId,
+                                    ownerUuid,
+                                    productUuid: newData.id + '',
+                                    creditType: ECreditType.hotWater,
+                                    creditValue: Number(hotWaterCredit),
+                                    creditAt: new Date(),
+                                    creditBy: res.locals['superadmin']
+                                } as IProductCredit;
+                                // console.log('-----> oCredit :', oCredit);
+
+                                const sEntCredit = ProductCreditFactory(
+                                    EEntity.ProductCredit, dbConnection,
+                                );
+                                await sEntCredit.sync();
+                                await sEntCredit.create(oCredit, { transaction });
+                            }
 
                             const listSale = await sEnt.findAll({
                                 where: { machineId },
                                 attributes: ['position'],
                             });
+
+                            // console.log('-----> NEW :', JSON.parse(JSON.stringify(newData)));
 
                             const usedPositions = new Set(listSale.map(i => i.position));
 
@@ -2852,6 +2880,35 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+
+            router.post(
+                this.path + "/getProductCredit",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+                // this.checkToken,
+                // this.checkMachineDisabled,
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId ?? "";
+                        const productUuid = req.body.productUuid ?? "";
+
+                        const sEntCredit = ProductCreditFactory(
+                            EEntity.ProductCredit, dbConnection,
+                        );
+                        await sEntCredit.sync();
+                        const result = await sEntCredit.findOne({
+                            where: { machineId: machineId, productUuid: productUuid },
+                        })
+
+                        return res.send(PrintSucceeded("getProductCredit", result, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("editProductDetail", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
 
             router.post(
                 this.path + "/updateSale",

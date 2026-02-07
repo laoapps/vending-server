@@ -30,6 +30,11 @@
           <ion-label position="stacked">Product Price</ion-label>
           <ion-input [(ngModel)]="s.stock.price" placeholder="Enter product price" type="number"></ion-input>
         </ion-item>
+
+        <ion-item *ngIf="s.stock">
+          <ion-label position="stacked">ເຄດິດຊື້ນ້ຳຮ້ອນ</ion-label>
+          <ion-input [(ngModel)]="s.stock.hotWaterCredit" placeholder="Enter product price" type="number"></ion-input>
+        </ion-item>
       </ion-item>
     </ion-item>
     <ion-item>

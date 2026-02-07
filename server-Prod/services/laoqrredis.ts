@@ -168,7 +168,7 @@ export async function getTransactionsLaoQRFromRedis(
             // console.log('-----> ELEMENT :', element.transactionID);
             await delayTime(500);
             const result = await checkQRPaidMmoneyAndConfirmServer(element.transactionID);
-            // console.log('-----> MMONEY :', result.message);
+            console.log('-----> MMONEY :', result);
 
             if (result.status == 1) {
                 await removeTransactionLaoQRFromRedis(machineId, element.transactionID);

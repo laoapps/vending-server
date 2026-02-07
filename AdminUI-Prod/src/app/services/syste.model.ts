@@ -758,6 +758,7 @@ export interface IStock extends IBase, IBC {
     qtty: number;
 
     // formData?: FormData;
+    hotWaterCredit?: number;
     file?: File;
     filename?: string;
     fileuuid?: string;

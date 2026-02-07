@@ -388,7 +388,7 @@ export class LogTempPage implements OnInit {
 
     try {
       const token = localStorage.getItem('token');
-      const url = `${environment.url}/reportLogsTemp`;
+      const url = `${environment.url}/reportLogsTemp?t=${new Date()}`;
 
       const payload = {
         machineId: this.machineId,

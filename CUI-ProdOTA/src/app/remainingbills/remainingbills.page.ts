@@ -188,7 +188,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   // processing: boolean = false;
 
-  
+
 
 
 
@@ -224,10 +224,6 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
         };
 
 
-
-
-
-
         if (localStorage.getItem('device') != 'ZDM8') {
           const lastClick = this.apiService.checkOverLastSerialAction();
           if (lastClick) {
@@ -249,7 +245,6 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       } catch (error) {
         err = await this.handleError(error, transactionID, position, ownerUuid, transID);
         // this.processing = false;
-
       } finally {
         // this.processing = false;
         if (reloadTimer) {
