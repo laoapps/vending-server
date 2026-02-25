@@ -446,7 +446,7 @@ export class ApiService {
               // this.apiService.removeAds(result.remove);
               for (let index = 0; index < result.remove.length; index++) {
                 const element = result.remove[index];
-                await this.videoCacheService.deleteCachedVideo(element);
+                await this.videoCacheService.deleteVideo(element);
                 // console.log('remove ads', element);
 
               }
@@ -455,7 +455,7 @@ export class ApiService {
               // this.apiService.addAds(result.add);
               for (let index = 0; index < result.add.length; index++) {
                 const element = result.add[index];
-                await this.videoCacheService.getCachedVideoBase64(element);
+                await this.videoCacheService.downloadIfNotExist(element);
                 // console.log('add ads', element);
               }
             }

@@ -1,84 +1,80 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
+import { HttpClient, HttpEventType } from '@angular/common/http'; // Import this
+import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VideoCacheService {
-
-  constructor() { }
-
-  async getCachedVideoBase64(videoUrl: string): Promise<string> {
-    const fileName = this.generateSafeFileName(videoUrl);
-
-    try {
-      // ลองอ่านไฟล์จาก local storage
-      const result = await Filesystem.readFile({
-        path: fileName,
-        directory: Directory.Data,
+  public downloadProgress = 0;
+  constructor(private ngZone: NgZone) {
+    // Listen for global download progress events
+    Filesystem.addListener('progress', (status) => {
+      this.ngZone.run(() => {
+        this.downloadProgress = Math.round((status.bytes / status.contentLength) * 100);
+        console.log(`Download progress: ${this.downloadProgress}%`);
       });
-
-      console.log('[VideoCacheService] ✅ Loaded from cache:', videoUrl);
-      return `data:video/mp4;base64,${result.data}`;
-    } catch (error) {
-      console.log('[VideoCacheService] ⬇️ Downloading:', videoUrl);
-
-      // ดึงวิดีโอจาก network
-      const response = await fetch(videoUrl);
-      const blob = await response.blob();
-      const base64Data = await this.blobToBase64(blob);
-
-      // เขียนไฟล์ลง local storage
-      await Filesystem.writeFile({
-        path: fileName,
-        data: base64Data,
-        directory: Directory.Data,
-      });
-
-      console.log('[VideoCacheService] ✅ Saved to cache:', fileName);
-      return `data:video/mp4;base64,${base64Data}`;
-    }
-  }
-
-  /**
-   * แปลง blob เป็น base64 string
-   */
-  private blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
-      };
-      reader.readAsDataURL(blob);
     });
   }
 
-  /**
-   * แปลง URL ให้เป็นชื่อไฟล์ที่ปลอดภัย
-   */
-  private generateSafeFileName(url: string): string {
-    const encoded = encodeURIComponent(url);
-    return encoded.endsWith('.mp4') ? encoded : `${encoded}.mp4`;
+  private getFileName(url: string): string {
+    // Using a simple split, but btoa is a good fallback for messy URLs
+    return url.split('/').pop() || btoa(url);
   }
 
-
-  /**
-   * (Optional) ลบ cache video ทีละไฟล์
-   */
-  async deleteCachedVideo(videoUrl: string): Promise<void> {
-    const fileName = this.generateSafeFileName(videoUrl);
-
+  async getLocalPath(url: string): Promise<string | null> {
+    const fileName = this.getFileName(url);
     try {
-      await Filesystem.deleteFile({
+      const stat = await Filesystem.stat({
         path: fileName,
-        directory: Directory.Data,
+        directory: Directory.Data
       });
-      console.log('[VideoCacheService] 🗑️ Deleted:', fileName);
-    } catch (error) {
-      console.warn('[VideoCacheService] ❌ File not found to delete');
+      return stat.uri;
+    } catch {
+      return null;
     }
   }
 
+
+
+  async downloadIfNotExist(url: string): Promise<string> {
+    const fileName = this.getFileName(url);
+    const existing = await this.getLocalPath(url);
+
+    if (existing) return existing;
+
+    try {
+      const result = await Filesystem.downloadFile({
+        url: url,
+        path: fileName,
+        directory: Directory.Data,
+        progress: true, // This enables the 'progress' listener above
+      });
+
+      return result.path || '';
+    } catch (error) {
+      console.error('Native download failed', error);
+      throw error;
+    }
+  }
+
+
+
+
+  getPlayableUrl(path: string): string {
+    return Capacitor.convertFileSrc(path);
+  }
+
+  async deleteVideo(url: string): Promise<void> {
+    const fileName = this.getFileName(url);
+    try {
+      await Filesystem.deleteFile({
+        path: fileName,
+        directory: Directory.Data
+      });
+    } catch (e) {
+      console.error("File already deleted or not found");
+    }
+  }
 }

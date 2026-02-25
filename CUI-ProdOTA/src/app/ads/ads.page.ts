@@ -1,170 +1,159 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ApiService } from '../services/api.service';
-import { ModalController } from '@ionic/angular';
-import { IAdsMedia } from '../services/syste.model';
-import { IENMessage } from '../models/base.model';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  OnInit
+} from '@angular/core';
+
 import { VideoCacheService } from '../video-cache.service';
+import { NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-ads',
   templateUrl: './ads.page.html',
   styleUrls: ['./ads.page.scss'],
 })
-export class AdsPage implements OnInit, OnDestroy {
-  playList = new Array<IAdsMedia>();
-  constructor(public apiService: ApiService, public modalCtrl: ModalController, private videoCacheService: VideoCacheService) { }
-  introductionMedia = { name: 'Introduction', description: 'Introduction how to use and change', type: 'video', url: '' };
+export class AdsPage implements OnInit {
 
-  videoPlayer: HTMLVideoElement = {} as any;
+  @ViewChild('videoPlayer')
+  videoPlayer!: ElementRef<HTMLVideoElement>;
 
-  activeAdsList: any = {} as any;
-  adsList: Array<any> = [
-    // { id: 1, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howtouseepin.webm' },
-    // { id: 2, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto1.webm' },
-    // { id: 3, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto2.webm' },
-    // { id: 4, name: 'test', description: 'test', type: 'video', url: '../../assets/ads/howto3.webm' },
-  ];
+  playlist: string[] = [];
 
-  loop: any = {} as any;
-  // currentType: string;
-  // currentUrl: string;
+  currentIndex = 0;
 
-  currentIndex: number = 0;
-  currentType: string = 'video';
-  currentUrl: string = '';
+  currentSrc: string | null = null;
+
+  constructor(
+    private videoService: VideoCacheService,
+    private navCtrl: NavController
+
+  ) { }
 
 
-  // TODO: HERE
-  ngOnInit() {
-    this.loadInitialAds();
+  async ngOnInit() {
 
-    // this.videoPlayer = document.createElement('video');
-
-    this.playCurrentAd();
-
-    // this.loadAds();
+    this.initLoadLocal();
   }
 
-  loadInitialAds() {
-    const adsLocal = JSON.parse(localStorage.getItem('adsList') || '[]');
-    for (let index = 0; index < adsLocal.length; index++) {
-      const element = adsLocal[index];
-      this.adsList.push(
-        { id: index + 1, name: 'test', description: 'test', type: 'video', url: element }
-      );
-    }
-    console.log('adsList', this.adsList);
+  initLoadLocal() {
+    try {
+      const adsLocal = JSON.parse(localStorage.getItem('adsList') || '[]');
+      this.playlist = adsLocal;
+      if (adsLocal.length > 0) {
+        this.playVideo(0);
 
-  }
-  ngOnDestroy(): void {
-    this.clearListeners();
-    if (this.loop) {
-      clearInterval(this.loop);
-    }
-  }
-
-  clearListeners() {
-    const video = document.querySelector('.ads-video') as HTMLVideoElement;
-    if (video) video.onended = null;
-  }
-
-  async playCurrentAd() {
-    if (this.currentIndex >= this.adsList.length) {
-      this.modalCtrl.dismiss();
-      return;
-    }
-
-    const currentAd = this.adsList[this.currentIndex];
-    this.currentType = currentAd.type;
-
-    if (currentAd.type === 'video') {
-      try {
-        const base64 = await this.videoCacheService.getCachedVideoBase64(currentAd.url);
-        this.currentUrl = base64;
-
-        setTimeout(() => {
-          const video = document.querySelector('.ads-video') as HTMLVideoElement;
-          if (video) {
-            video.volume = this.apiService.musicVolume / 100;
-            video.play();
-            video.onended = () => {
-              this.currentIndex++;
-              this.playCurrentAd();
-            };
-          }
-        }, 500);
-      } catch (err) {
-        console.error('Failed to load video:', err);
-        this.currentIndex++;
-        this.playCurrentAd(); // skip to next
       }
+
+    } catch (error) {
+
     }
   }
 
-  exit() {
-    this.clearListeners();
-    this.modalCtrl.dismiss();
+  /**
+   * เล่น video
+   */
+  async playVideo(index: number) {
+
+    this.currentIndex = index;
+
+    const url = this.playlist[index];
+
+    this.cleanup();
+
+    const localPath =
+      await this.videoService.downloadIfNotExist(url);
+
+    this.currentSrc =
+      this.videoService.getPlayableUrl(localPath);
+
+
+    setTimeout(() => {
+
+      const video = this.videoPlayer.nativeElement;
+
+      video.load();
+
+      video.play();
+
+    }, 100);
+
   }
 
-  // loadAds(): Promise<any> {
-  //   return new Promise<any>(async (resolve, reject) => {
-  //     try {
 
-  //       this.currentType = this.adsList[0].type;
-  //       this.currentUrl = this.adsList[0].url;
-  //       if (this.currentType == 'video') {
-  //         let reload = setInterval(() => {
-  //           clearInterval(reload);
-  //           (document.querySelector('.ads-video') as HTMLVideoElement).volume = this.apiService.musicVolume / 100;
-  //           (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
-  //         });
-  //       }
-  //       let count: number = 0;
+  /**
+   * auto play next
+   */
+  // async next() {
 
-  //       this.loop = setInterval(() => {
-  //         if (count == this.adsList.length - 1) {
-  //           clearInterval(this.loop);
-  //           this.modal.dismiss();
-  //           count = -1;
-  //         } else {
+  //   this.currentIndex++;
 
-  //           if (this.currentType == 'video') {
-  //             let reload = setInterval(() => {
-  //               clearInterval(reload);
-  //               (document.querySelector('.ads-video') as HTMLVideoElement)?.pause();
-  //             });
-  //           }
+  //   if (this.currentIndex >= this.playlist.length)
+  //     this.currentIndex = 0;
 
-  //           if (count == -1) count = 0;
-  //           else count++;
+  //   await this.playVideo(this.currentIndex);
 
-  //           this.currentType = this.adsList[count].type;
-  //           this.currentUrl = this.adsList[count].url;
-  //           if (this.currentType == 'video') {
-  //             let reload = setInterval(() => {
-  //               clearInterval(reload);
-  //               (document.querySelector('.ads-video') as HTMLVideoElement).volume = this.apiService.musicVolume / 100;
-  //               (document.querySelector('.ads-video') as HTMLVideoElement)?.play();
-  //             });
-  //           }
-  //         }
-
-
-  //       }, 30000);
-
-  //       resolve(IENMessage.success);
-
-  //     } catch (error) {
-  //       this.apiService.simpleMessage(error.message);
-  //       resolve(error.message);
-  //     }
-  //   });
   // }
 
-  // exit() {
-  //   if (this.loop) {
-  //     clearInterval(this.loop);
-  //   }
-  //   this.modal.dismiss();
-  // }
+  async next() {
+
+    this.currentIndex++;
+
+    // เล่นครบแล้ว
+    if (this.currentIndex >= this.playlist.length) {
+
+      this.closePage();
+
+      return;
+
+    }
+
+    await this.playVideo(this.currentIndex);
+
+  }
+
+  closePage() {
+
+    this.cleanup();
+
+    this.navCtrl.back();
+  }
+
+
+
+
+  onEnded() {
+
+    this.next();
+
+  }
+
+
+  /**
+   * clear memory ป้องกัน crash
+   */
+  cleanup() {
+
+    const video = this.videoPlayer?.nativeElement;
+
+    if (!video) return;
+
+    video.pause();
+
+    video.removeAttribute('src');
+
+    video.load();
+
+  }
+
+
+  /**
+   * delete
+   */
+  async delete(url: string) {
+
+    await this.videoService.deleteVideo(url);
+
+  }
+
 }

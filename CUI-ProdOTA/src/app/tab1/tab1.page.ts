@@ -2761,9 +2761,21 @@ export class Tab1Page implements OnDestroy {
       if (!x) return alert('not found');
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
-        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
-      console.log('ID', x);
-      console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
+        if (ord.length >= x?.stock.qtty) {
+          if (this.apiService.allowTopUp) {
+            this.showMyOrdersTopUpModal();
+          } else {
+            this.showMyOrdersModal();
+          }
+          return this.apiService.toast.create({
+            message: 'Out of Stock',
+            duration: 2000,
+            position: 'middle'
+          }).then((r) => r.present());
+        }
+      //  return alert('Out of Stock');
+      // console.log('ID', x);
+      // console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 
 
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
@@ -2795,7 +2807,20 @@ export class Tab1Page implements OnDestroy {
       if (!x) return alert('not found');
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
-        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
+        if (ord.length >= x?.stock.qtty)
+        // return alert('Out of Stock');
+        {
+          if (this.apiService.allowTopUp) {
+            this.showMyOrdersTopUpModal();
+          } else {
+            this.showMyOrdersModal();
+          }
+          return this.apiService.toast.create({
+            message: 'Out of Stock',
+            duration: 2000,
+            position: 'middle'
+          }).then((r) => r.present());
+        }
       console.log('ID', x);
       console.log(`getTotalSale`, this.getTotalSale.q, this.getTotalSale.t);
 
@@ -2852,7 +2877,22 @@ export class Tab1Page implements OnDestroy {
 
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
-        if (ord.length >= x?.stock.qtty) return alert('Out of Stock');
+        if (ord.length >= x?.stock.qtty)
+        //  return alert('Out of Stock');
+        {
+          if (this.apiService.allowTopUp) {
+            this.showMyOrdersTopUpModal();
+          } else {
+            this.showMyOrdersModal();
+          }
+          return this.apiService.toast.create({
+            message: 'Out of Stock',
+            duration: 2000,
+            position: 'middle'
+          }).then((r) => r.present());
+
+        }
+
 
 
       console.log('ID', x);

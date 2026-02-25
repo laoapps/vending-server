@@ -9275,12 +9275,6 @@ export class InventoryZDM8 implements IBaseClass {
                 order: [['id', 'DESC']]
             }
         }
-
-        // const ent = VendingMachineBillFactory(
-        //     EEntity.vendingmachinebill + "_" + ownerUuid,
-        //     dbConnection
-        // );
-        // await ent.sync();
         const bill = await ClientlogEntity.findAndCountAll(condition);
         return bill;
     }
