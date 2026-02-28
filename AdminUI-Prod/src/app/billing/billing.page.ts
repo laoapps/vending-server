@@ -934,15 +934,45 @@ export class BillingPage implements OnInit {
   }
 
   // ✅ เมื่อเลือกไฟล์ Excel
+  // async onFileSelected(event: any) {
+  //   try {
+  //     const file = event.target.files[0];
+  //     if (!file) return;
+
+  //     this.selectedFile = file;
+  //     this.dataExcel = await this.readExcelFile(file);
+
+  //     console.log('📘 อ่านไฟล์สำเร็จ:', this.dataExcel.length, 'แถว');
+  //   } catch (error) {
+  //     console.error('Error onFileSelected:', error);
+  //   }
+  // }
+
+
   async onFileSelected(event: any) {
     try {
       const file = event.target.files[0];
       if (!file) return;
 
       this.selectedFile = file;
-      this.dataExcel = await this.readExcelFile(file);
 
-      console.log('📘 อ่านไฟล์สำเร็จ:', this.dataExcel.length, 'แถว');
+      const rawData = await this.readExcelFile(file);
+
+      // ✅ filter เลขทูลະກຳซ้ำ
+      const uniqueMap = new Map<string, any>();
+
+      for (const row of rawData) {
+        const transactionNo = row['ເລກທູລະກຳ'];
+
+        if (transactionNo && !uniqueMap.has(transactionNo)) {
+          uniqueMap.set(transactionNo, row);
+        }
+      }
+
+      this.dataExcel = Array.from(uniqueMap.values());
+
+      console.log('📘 หลังตัดข้อมูลซ้ำ เหลือ:', this.dataExcel.length, 'แถว');
+
     } catch (error) {
       console.error('Error onFileSelected:', error);
     }
