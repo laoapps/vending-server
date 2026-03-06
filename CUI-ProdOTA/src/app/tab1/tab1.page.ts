@@ -95,6 +95,7 @@ import { Router } from '@angular/router';
 import { AutoPaymentTopUpPage } from '../auto-payment-top-up/auto-payment-top-up.page';
 import { interval, Subscription } from 'rxjs';
 import { CustomNumberPadPage } from '../custom-number-pad/custom-number-pad.page';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab1',
@@ -467,6 +468,7 @@ export class Tab1Page implements OnDestroy {
     public loading: LoadingController,
     private vendingIndex: VendingIndexServiceService,
     private dbService: DatabaseService,
+    private alertController: AlertController,
     // private videoCacheService: VideoCacheService,
     // public router: Router
   ) {
@@ -695,7 +697,10 @@ export class Tab1Page implements OnDestroy {
       this.startTestMotor();
       return;
     }
+    // setTimeout(() => {
+    //  this.startTestMotor();
 
+    // },15000);
     // try {
     //   await ScreenBrightness.setBrightness({ brightness: 1 });
     // } catch (error) {
@@ -744,6 +749,77 @@ export class Tab1Page implements OnDestroy {
       console.log('-----> 4');
 
       try {
+        if (!localStorage.getItem('baudRate') && !localStorage.getItem('portName')) {
+          // Show UI prompt only on first time (no saved values)
+          const alert = await this.alertController.create({
+            header: 'Serial Connection Setup',
+            subHeader: 'First time setup - please confirm or change defaults',
+            message: `Default settings:\n\nPort: /dev/ttyS1\nBaud Rate: 38400\n\nUse these values?`,
+            buttons: [
+              {
+                text: 'Change',
+                role: 'cancel',
+                handler: async () => {
+                  // User wants to change → show input prompt
+                  const changeAlert = await this.alertController.create({
+                    header: 'Custom Serial Settings',
+                    inputs: [
+                      {
+                        name: 'portName',
+                        type: 'text',
+                        label: 'Port Name',
+                        value: '/dev/ttyS1',
+                        placeholder: 'e.g. /dev/ttyUSB0 or /dev/ttyS0'
+                      },
+                      {
+                        name: 'baudRate',
+                        type: 'number',
+                        label: 'Baud Rate',
+                        value: 38400,
+                        min: 9600,
+                        max: 115200
+                      }
+                    ],
+                    buttons: [
+                      {
+                        text: 'Cancel',
+                        role: 'cancel'
+                      },
+                      {
+                        text: 'Save & Connect',
+                        handler: (data: any) => {
+                          const port = data.portName?.trim() || '/dev/ttyS1';
+                          const baud = parseInt(data.baudRate, 10) || 38400;
+
+                          localStorage.setItem('portName', port);
+                          localStorage.setItem('baudRate', baud.toString());
+
+                          console.log(`Saved custom: ${port} @ ${baud} baud`);
+                        }
+                      }
+                    ]
+                  });
+
+                  await changeAlert.present();
+                }
+              },
+              {
+                text: 'Use Defaults',
+                handler: () => {
+                  localStorage.setItem('portName', '/dev/ttyS1');
+                  localStorage.setItem('baudRate', '38400');
+                  console.log('Using defaults: /dev/ttyS1 @ 38400');
+                }
+              }
+            ]
+          });
+
+          await alert.present();
+
+          // Optional: wait for alert to be dismissed before continuing
+          await alert.onDidDismiss();
+          await new Promise(resolve => setTimeout(resolve, 15000)); // Small delay to ensure localStorage is updated  
+        }
         await this.connect();
       } catch (errorSerial) {
         console.log('errorSerial', errorSerial);
