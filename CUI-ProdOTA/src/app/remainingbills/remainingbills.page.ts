@@ -34,6 +34,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   isAllowClick = false;
 
   timer: any = {} as any;
+  watchdogIntervalRef: any; // Add this
+  watchdogTimeoutRef: any;  // Add this
   counter: number = localStorage.getItem('product_fall') ? Number(localStorage.getItem('product_fall')) : 0;
   countClick = 10;
   // counterLimit: number = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
@@ -72,14 +74,68 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
     try {
       await this.loadBillLocal();
+      // Requirement 1: Auto-close after 5 seconds if no bills loaded
+      if (!this.r || this.r.length === 0) {
+        console.log('No pending bills loaded → auto-closing modal in 5 seconds');
+        setTimeout(() => {
+          this.clearTimer(); // Clean up any potential timer
+          this.modalCtrl.dismiss({ reason: 'no_pending_bills' });
+        }, 5000);
+        return; // Prevent further logic (e.g., no need for timer)
+      }
+
+      // Requirement 2: Watchdog for hangs (starts after bills are confirmed present)
+      this.startWatchdogTimer();
       this.loadAutoFall();
       // console.log('R', this.r);
       // console.log(`here`);
       await this.apiService.soundPleaseSelect();
     } catch (error) {
+      console.log('Error in ngOnInit', error);
       this.loadAutoFall();
+
+      // Fallback for Requirement 1 in error path
+      if (!this.r || this.r.length === 0) {
+        setTimeout(() => {
+          this.clearTimer();
+          this.modalCtrl.dismiss({ reason: 'no_pending_bills_error' });
+        }, 5000);
+      }
     }
 
+  }
+  // New method for Requirement 2 (add this to the class)
+  private startWatchdogTimer() {
+    const MAX_MODAL_LIFETIME_MS = 120000;
+    const CHECK_INTERVAL_MS = 15000;
+
+    // 1. Assign to class variable
+    this.watchdogIntervalRef = setInterval(() => {
+      if (!this.r || this.r.length === 0) {
+        console.log('Watchdog detected potential hang (no bills) → closing modal');
+        this.forceCloseModal('watchdog_hang_detected');
+      }
+    }, CHECK_INTERVAL_MS);
+
+    // 2. Assign to class variable
+    this.watchdogTimeoutRef = setTimeout(() => {
+      console.log('Watchdog max lifetime reached → force closing modal');
+      this.forceCloseModal('watchdog_max_lifetime');
+    }, MAX_MODAL_LIFETIME_MS);
+  }
+  clearWatchdogs() {
+    if (this.watchdogIntervalRef) {
+      clearInterval(this.watchdogIntervalRef);
+    }
+    if (this.watchdogTimeoutRef) {
+      clearTimeout(this.watchdogTimeoutRef);
+    }
+  }
+  // Create a helper method to handle cleanup and closing cleanly
+  private forceCloseModal(reason: string) {
+    this.clearTimer();
+    this.clearWatchdogs();
+    this.modalCtrl.dismiss({ reason: reason });
   }
 
 
@@ -116,6 +172,15 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   loadAutoFall() {
     console.log(`counter`, this.counter, `counterLimit`, this.counterLimit);
+    // Fallback for Requirement 1: Double-check for empty bills here too
+    if (!this.r || this.r.length === 0) {
+      console.log('loadAutoFall detected no bills → auto-closing in 5 seconds');
+      setTimeout(() => {
+        this.clearTimer();
+        this.modalCtrl.dismiss({ reason: 'no_pending_bills' });
+      }, 5000);
+      return;
+    }
     if (this.r != undefined && Object.entries(this.r).length > 0) {
       if (this.counter > this.counterLimit || this.counter < this.counterLimit) {
         this.counter = this.counterLimit;
@@ -175,6 +240,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearTimer();
+    this.clearWatchdogs(); // Add this
   }
   findImage(id: number) {
     return ApiService.vendingOnSale.find(vy => vy.stock.id == id)?.stock?.image;
