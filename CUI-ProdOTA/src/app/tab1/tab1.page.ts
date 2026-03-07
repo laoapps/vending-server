@@ -1450,8 +1450,10 @@ export class Tab1Page implements OnDestroy {
             // this.addLogMessage(`Received: ${event.data}`);
             // this.processVMCResponse(event.data);
             this.processVMCResponse(event.data);
+            this.apiService.setLastSerialAction();
           } else if (event.event === 'commandAcknowledged') {
             console.log('Command acknowledged by VMC:', event.data);
+            this.apiService.setLastSerialAction();
           } else if (event.event === 'error') {
             console.error('Serial error:', event);
             // this.addLogMessage(`Serial error: ${JSON.stringify(event)}`);
