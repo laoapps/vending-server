@@ -93,6 +93,7 @@ export class SalesReportPage implements OnInit {
     }
 
     const token = localStorage.getItem('token');
+    
     if (!token) {
       const toast = await this.toastCtrl.create({
         message: 'No authentication token found. Please login.',

@@ -39,13 +39,14 @@ export class PublicAdminManagePage implements OnInit {
 
     try {
       const token = localStorage.getItem('token');
+      const secret = localStorage.getItem('secretLocal');
       if (!token) {
         throw new Error('Authentication token not found. Please login again.');
       }
 
       const res: any = await this.http.post(
         `${this.url}/getPublicAdmin`,
-        { token }
+        { token, secret }
       ).toPromise();
 
       if (res?.data && Array.isArray(res.data)) {

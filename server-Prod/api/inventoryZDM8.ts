@@ -3813,6 +3813,18 @@ export class InventoryZDM8 implements IBaseClass {
 
             // public REPORT
             router.post(
+                this.path+"/getPublicAdmin" ,
+                this.checkSuperAdmin,this.getPublicAdmin.bind(this)
+            )
+            router.post(
+                this.path+"/setPublicAdmin" ,
+                this.checkSuperAdmin,this.setPublicAdmin.bind(this)
+            )
+             router.post(
+                this.path+"/delPublicAdmin" ,
+                this.checkSuperAdmin,this.delPublicAdmin.bind(this)
+            )
+            router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
                 // this.checkSuperAdmin,
                 this.checkAdmin,
@@ -5603,6 +5615,7 @@ export class InventoryZDM8 implements IBaseClass {
             return res.status(500).json({ message: "Internal server error" });
         }
     }
+
     setPublicAdmin(req: Request, res: Response) {
         try {
             if (res.locals["superadmin"]) {
