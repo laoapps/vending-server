@@ -117,7 +117,7 @@ export class SalesReportPage implements OnInit {
       };
 
       const res: any = await this.http.post(
-        `${this.url}/loadVendingMachineSaleBillReport`,
+        `${this.url}/loadPublicVendingMachineSaleBillReport`,
         payload
       ).toPromise();
 

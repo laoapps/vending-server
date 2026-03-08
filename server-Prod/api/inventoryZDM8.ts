@@ -3828,7 +3828,7 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkSuperAdmin, this.delPublicAdmin.bind(this)
             )
             router.post(
-                this.path + "/loadVendingMachineSaleBillReport",
+                this.path + "/loadPublicVendingMachineSaleBillReport",
                 // this.checkSuperAdmin,
                 this.checkAdmin,
                 this.checkPublicAdmin,
