@@ -1065,6 +1065,37 @@ export interface IBillProcess {
 }
 
 
+export interface SaleReportResponse {
+  rows: VendingBill[];
+  count: number;
+  message: string;
+}
+
+export interface VendingBill {
+  id: number;
+  uuid: string;
+  createdAt: string;           // ISO string
+  vendingsales: VendingSale[];
+  totalvalue: number;
+  paymentmethod: string;
+  paymentstatus: string;
+  paymenttime: string;
+  machineId: string;
+  transactionID: string;
+  // ... other fields you need
+}
+
+export interface VendingSale {
+  stock: {
+    name: string;
+    qtty: number;
+    price: number;
+    image?: string;
+  };
+  qtty?: number;               // sometimes people add derived field
+  position: number;
+}
+
 
 
 

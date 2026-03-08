@@ -33,6 +33,7 @@
     "@types/moment-timezone": "^0.5.30",
     "angular-notifier": "^13.0.0",
     "axios": "^1.4.0",
+    "chart.js": "^4.5.1",
     "crypto-js": "^4.1.1",
     "cryptojs": "^2.5.3",
     "exceljs": "^4.4.0",

@@ -255,6 +255,14 @@ const routes: Routes = [
   {
     path: 'new-report-sale',
     loadChildren: () => import('./new-report-sale/new-report-sale.module').then( m => m.NewReportSalePageModule)
+  },
+  {
+    path: 'public-sales-report',
+    loadChildren: () => import('./sales-report/sales-report.module').then( m => m.SalesReportPageModule)
+  },
+  {
+    path: 'public-admin-manage',
+    loadChildren: () => import('./public-admin-manage/public-admin-manage.module').then( m => m.PublicAdminManagePageModule)
   }
 ];
 @NgModule({

@@ -3811,7 +3811,44 @@ export class InventoryZDM8 implements IBaseClass {
 
 
 
+            // public REPORT
+            router.post(
+                this.path + "/loadVendingMachineSaleBillReport",
+                // this.checkSuperAdmin,
+                this.checkAdmin,
+                this.checkPublicAdmin,
+                // this.checkAdmin,
 
+                async (req, res) => {
+                    try {
+
+                        const data = req.body;
+                        const ownerUuid = await findUuidByPhoneNumberOnUserManager(data.phoneNumber);
+                        const machineId = data.machineId;
+
+                        const fromDate = momenttz
+                            .tz(data.fromDate, SERVER_TIME_ZONE)
+                            .startOf('day')
+                            .toDate();
+
+                        const toDate = momenttz
+                            .tz(data.toDate, SERVER_TIME_ZONE)
+                            .endOf('day')
+                            .toDate();
+
+                        const run = await this.getReportSale(machineId, fromDate, toDate, ownerUuid);
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
 
             // REPORT
             router.post(
@@ -5530,6 +5567,79 @@ export class InventoryZDM8 implements IBaseClass {
         } catch (error) {
             console.log(error);
 
+            res.status(400).end();
+        }
+    }
+    async checkPublicAdmin(req: Request, res: Response, next: NextFunction) {
+        try {
+            const ownerUuid = res.locals.ownerUuid;
+            if (!ownerUuid) {
+                return res.status(403).json({ message: "Missing owner context" });
+            }
+
+            if (!req.body?.machineId) {
+                return res.status(400).json({ message: "machineId is required" });
+            }
+
+            const raw = await redisClient.get("publicAdmin");
+            const publicAdmins = JSON.parse(raw || "[]") as Array<{ phoneNumber: string; machineId: string }>;
+
+            const phone = await findPhoneNumberByUuidOnUserManager(ownerUuid);
+            if (!phone) {
+                return res.status(403).json({ message: "User not found" });
+            }
+
+            const isAllowed = publicAdmins.some(
+                v => v.phoneNumber === phone && v.machineId === req.body.machineId
+            );
+
+            if (!isAllowed) {
+                return res.status(403).json({ message: "You are not a public admin for this machine" });
+            }
+
+            next();
+        } catch (err) {
+            console.error("[checkPublicAdmin]", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
+    setPublicAdmin(req: Request, res: Response) {
+        try {
+            if (res.locals["superadmin"]) {
+                redisClient.set("publicAdmin", req.body?.publicAdmin || []).then(r => {
+                    res.send(PrintSucceeded("setPublicAdmin", r, EMessage.succeeded, returnLog(req, res, true)));
+                });
+            }
+        } catch (error) {
+            console.log(error);
+
+            res.status(400).end();
+        }
+    }
+    getPublicAdmin(req: Request, res: Response) {
+        try {
+            if (res.locals['superadmin']) {
+                redisClient.get("publicAdmin").then(r => {
+                    res.send(PrintSucceeded("getPublicAdmin", JSON.parse(r || '[]'), EMessage.succeeded, returnLog(req, res, true)));
+                });
+
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(400).end();
+        }
+    }
+    delPublicAdmin(req: Request, res: Response) {
+        try {
+            if (res.locals['superadmin']) {
+                // decide by client to delete or update the public admin list, if delete just send empty array, if update send the new list without the deleted one
+                redisClient.set("publicAdmin", req.body?.publicAdmin || []).then(r => {
+                    res.send(PrintSucceeded("delPublicAdmin", r, EMessage.succeeded, returnLog(req, res, true)));
+                });
+
+            }
+        } catch (error) {
+            console.log(error);
             res.status(400).end();
         }
     }
