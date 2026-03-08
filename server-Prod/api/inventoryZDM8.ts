@@ -1933,16 +1933,17 @@ export class InventoryZDM8 implements IBaseClass {
                                 year: momenttz().tz(SERVER_TIME_ZONE).year()
                             };
                             await setVendingEvent(EVendingEvent.selling, event);
+                            return res.send(
+                                PrintSucceeded(
+                                    "confirmPaidBill",
+                                    {},
+                                    EMessage.succeeded, returnLog(req, res)
+                                )
+                            );
 
                         });
 
-                        return res.send(
-                            PrintSucceeded(
-                                "confirmPaidBill",
-                                {},
-                                EMessage.succeeded, returnLog(req, res)
-                            )
-                        );
+
                     } catch (error) {
                         console.log('confirmPaidBill', error);
                         writeErrorLogs(error.message, error);
@@ -1952,6 +1953,8 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+
+            
 
 
             router.post(
@@ -3813,16 +3816,16 @@ export class InventoryZDM8 implements IBaseClass {
 
             // public REPORT
             router.post(
-                this.path+"/getPublicAdmin" ,
-                this.checkSuperAdmin,this.getPublicAdmin.bind(this)
+                this.path + "/getPublicAdmin",
+                this.checkSuperAdmin, this.getPublicAdmin.bind(this)
             )
             router.post(
-                this.path+"/setPublicAdmin" ,
-                this.checkSuperAdmin,this.setPublicAdmin.bind(this)
+                this.path + "/setPublicAdmin",
+                this.checkSuperAdmin, this.setPublicAdmin.bind(this)
             )
-             router.post(
-                this.path+"/delPublicAdmin" ,
-                this.checkSuperAdmin,this.delPublicAdmin.bind(this)
+            router.post(
+                this.path + "/delPublicAdmin",
+                this.checkSuperAdmin, this.delPublicAdmin.bind(this)
             )
             router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
