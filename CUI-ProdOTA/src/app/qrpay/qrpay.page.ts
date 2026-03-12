@@ -11,9 +11,9 @@ import { IENMessage } from '../models/base.model';
   styleUrls: ['./qrpay.page.scss'],
 })
 export class QrpayPage implements OnInit, OnDestroy {
-  @Input() encodedData: string;
-  @Input() amount: number;
-  @Input() ref: string;
+  @Input() encodedData: string = '';
+  @Input() amount: number=-1;
+  @Input() ref: string='';
   contact = localStorage.getItem('contact') || '55516321';
   _T: any
   constructor(public apiService: ApiService, public modalCtrl: ModalController) { }

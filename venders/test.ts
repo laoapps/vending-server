@@ -8,7 +8,7 @@ var eSSP = new sspLib({
     fixedKey: '0123456701234567'
 });
 init();
-eSSP.open('/dev/tty.usbserial-A10LOXD6').then(r => {
+eSSP.open('/dev/tty.usbserial-AG0KJZVC').then(r => {
     console.log('OPEN', r);
 
 }).catch(e => {

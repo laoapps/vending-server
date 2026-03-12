@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { VendingIndexServiceService } from '../vending-index-service.service'
-import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ICreditData, addLogMessage } from '../services/syste.model'
+import { ISerialService, EMACHINE_COMMAND, ESerialPortType, IlogSerial, ICreditData, addLogMessage, EVMC_COMMAND } from '../services/syste.model'
 import { Toast } from '@capacitor/toast';
 // import {SerialConnectionCapacitor} from 'SerialConnectionCapacitor';
 import { SerialServiceService } from '../services/serialservice.service';
-import  moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import cryptojs, { mode } from 'crypto-js';
 
 @Component({
@@ -15,7 +15,7 @@ import cryptojs, { mode } from 'crypto-js';
 
 export class TestmotorPage implements OnInit, OnDestroy {
   vlog = { log: { data: '', limit: 50 } as IlogSerial };
-  @Input() serial: ISerialService;
+  @Input() serial: ISerialService = undefined as unknown as ISerialService;
 
   slot = 1;
   //val='011020010002040A010000';//011000010002040A010094F8'
@@ -34,6 +34,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   baudRate = 9600;
   platforms: { label: string; value: ESerialPortType }[] = [];
   isSerial: ESerialPortType = ESerialPortType.Serial; // Default selected value
+  temp: number = 5;
   constructor(private vendingIndex: VendingIndexServiceService, private serialService: SerialServiceService) {
   }
 
@@ -51,7 +52,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       console.log('serial close');
     }
   }
-  selectPlatform(event) {
+  selectPlatform(event:any) {
     this.isSerial = event.detail.value;
     console.log('Selected platform:', this.isSerial);
 
@@ -128,7 +129,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
       Toast.show({ text: 'serial not init' })
     }
   }
-  selectDevice(event) {
+  selectDevice(event:any) {
     console.log('selected device', event.detail.value);
     Toast.show({ text: 'selected device' + event.detail.value })
   }
@@ -136,10 +137,10 @@ export class TestmotorPage implements OnInit, OnDestroy {
   async startVMC() {
     if (this.serial) {
       await this.serial.close();
-      this.serial = null;
+      this.serial = undefined as unknown as ISerialService;
     }
     this.serial = await this.vendingIndex.initVMC(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
-    this.serial.getSerialEvents().subscribe(event => {
+    this.serial.getSerialEvents().subscribe((event: any) => {
       try {
         console.log('vmc service event received: ' + JSON.stringify(event));
         if (event.event === 'dataReceived') {
@@ -253,7 +254,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   async startZDM8() {
     if (this.serial) {
       await this.serial.close();
-      this.serial = null;
+      this.serial = undefined as unknown as ISerialService;
     }
     this.serial = await this.vendingIndex.initZDM8(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
     if (!this.serial) {
@@ -311,7 +312,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   async startAHD814() {
     if (this.serial) {
       await this.serial.close();
-      this.serial = null;
+      this.serial = undefined as unknown as ISerialService;
       Toast.show({ text: 'serial close' });
     }
     this.serial = await this.vendingIndex.initADH814(this.portName, Number(this.baudRate), this.machineId, this.machineId, this.isSerial);
@@ -325,7 +326,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   async startM102() {
     if (this.serial) {
       await this.serial.close();
-      this.serial = null;
+      this.serial = undefined as unknown as ISerialService;
     }
     this.serial = await this.vendingIndex.initM102(this.portName, Number(this.baudRate), this.machineId, this.otp, this.isSerial);
     if (!this.serial) {
@@ -362,10 +363,44 @@ export class TestmotorPage implements OnInit, OnDestroy {
       Toast.show({ text: 'serial not init' })
     }
   }
+  setTemp() {
+    if (this.serial) {
+      if (this.selectedDevice == 'adh814') {
+        const param = {
+          address: 0x01,
+          mode: 0x01,
+          lowTemp: this.temp
+        };
+        this.serial.command(EMACHINE_COMMAND.SET_TEMP, param, 1).then(async (r) => {
+          console.log('setTemp', r);
+          this.val = r?.data?.x;
+          await Toast.show({ text: 'setTemp' + JSON.stringify(r) })
+        });
+      }
+      if (this.selectedDevice == 'VMC') {
+        const param = {
+          lowTemp: this.temp,
+          highTemp: this.temp + 5
+        };
+        this.serial.command(EMACHINE_COMMAND.SET_TEMP, param, 1).then(async (r) => {
+          console.log('setTemp', r);
+          this.val = r?.data?.x;
+          await Toast.show({ text: 'setTemp' + JSON.stringify(r) })
+        }).catch(async e => {
+          console.error('setTemp error', e);
+          await Toast.show({ text: 'setTemp error' + JSON.stringify(e) })
+        });
+      }
+
+    } else {
+      console.log('serial not init');
+      Toast.show({ text: 'serial not init' })
+    }
+  }
   scanTestMotor() {
     try {
       const test = prompt('Scan Test motor every 5 seconds 1,2,3 or 1-60', '1-60');
-      const arr = this.parseMotorInput(test);
+      const arr = this.parseMotorInput(test||'1');
       const t = 10; // ******** too fast it would have an error
       Toast.show({ text: 'scanTestMotor ' + JSON.stringify(arr) });
       arr.forEach(async (slot, i) => {
@@ -409,7 +444,7 @@ export class TestmotorPage implements OnInit, OnDestroy {
   close() {
     if (this.serial) {
       this.serial.close();
-      this.serial = null;
+      this.serial = undefined as unknown as ISerialService;
       // this.log={data:''};
       // this.readingData={data:'',len:100};
       Toast.show({ text: 'serial close' });

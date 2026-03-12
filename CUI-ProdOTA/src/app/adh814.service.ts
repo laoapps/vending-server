@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
-import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, IlogSerial } from './services/syste.model';
+import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, IlogSerial, PrintError } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
 import { Toast } from '@capacitor/toast';
 import dayjs from 'dayjs';
@@ -282,11 +282,11 @@ export class ADH814Service implements ISerialService {
             };
             if (data.mode < 0 || data.mode > 2) {
               this.addLogMessage(`Invalid mode: ${data.mode}. Must be 0-2`);
-              return resolve(  { command, data: params, status: 0, message: `Invalid mode: ${data.mode}`, transactionID });
+              return resolve({ command, data: params, status: 0, message: `Invalid mode: ${data.mode}`, transactionID });
             }
             if (data.tempValue < -127 || data.tempValue > 127) {
               this.addLogMessage(`Invalid temperature value: ${data.tempValue}. Must be -127 to 127`);
-              return resolve(  { command, data: params, status: 0, message: `Invalid temperature value: ${data.tempValue}`, transactionID });
+              return resolve({ command, data: params, status: 0, message: `Invalid temperature value: ${data.tempValue}`, transactionID });
             }
             break;
           case EMACHINE_COMMAND.shippingcontrol:
@@ -294,7 +294,7 @@ export class ADH814Service implements ISerialService {
             data = { motorNumber: params?.slot ? params.slot - 1 : 0 };
             if (data.motorNumber < 0 || data.motorNumber > 0xFE) {
               this.addLogMessage(`Invalid motor number: ${data.motorNumber}. Must be 0-254`);
-              return resolve(  { command, data: params, status: 0, message: `Invalid motor number: ${data.motorNumber}`, transactionID });
+              return resolve({ command, data: params, status: 0, message: `Invalid motor number: ${data.motorNumber}`, transactionID });
             }
             break;
           case EMACHINE_COMMAND.CLEAR_RESULT:
@@ -308,7 +308,7 @@ export class ADH814Service implements ISerialService {
             };
             if (data.motorNumber1 < 0 || data.motorNumber1 > 0xFE || data.motorNumber2 < 0 || data.motorNumber2 > 0xFE) {
               this.addLogMessage(`Invalid motor numbers: ${data.motorNumber1}, ${data.motorNumber2}. Must be 0-254`);
-              return resolve(  { command, data: params, status: 0, message: `Invalid motor numbers`, transactionID });
+              return resolve({ command, data: params, status: 0, message: `Invalid motor numbers`, transactionID });
             }
             break;
           case EMACHINE_COMMAND.SET_SWAP:
@@ -321,12 +321,12 @@ export class ADH814Service implements ISerialService {
             break;
           default:
             this.addLogMessage(`Unsupported command: ${command}`);
-            return resolve( { command, data: params, status: 0, message: `Unsupported command`, transactionID });
+            return resolve({ command, data: params, status: 0, message: `Unsupported command`, transactionID });
         }
 
         const request = { command: cmd, params: { address, ...data } };
         await this.serialService.writeADH814(JSON.stringify(request));
-        resolve( { command, data: params, status: 1, message: 'Command sent successfully', transactionID });
+        resolve({ command, data: params, status: 1, message: 'Command sent successfully', transactionID });
       } catch (error: any) {
         this.addLogMessage(`Command failed: ${error.message}`);
         reject({ command, data: params, status: 0, message: `Command failed: ${error.message}`, transactionID });
@@ -465,8 +465,18 @@ export class ADH814Service implements ISerialService {
   getCurrentInterval(): number {
     return this.currentInterval;
   }
-  checkSum(data?: any[]) {
+  checkSum(data: any[] = []) {
     data[data.length - 1] = this.serialService.chk8xor(data);
     return data.join('');
+  }
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+    return new Promise<IResModel>(async (resolve, reject) => {
+      this.nv9Command(command, params, transactionID).then(result => {
+        resolve(result);
+      }).catch(error => {
+        console.error('NV9 command error:', error);
+        reject(PrintError(command, params, error.message));
+      });
+    });
   }
 }

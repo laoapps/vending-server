@@ -5,7 +5,7 @@
     "build": "tsc && cp -R public dist"
   },
   "dependencies": {
-    "@kybarg/ssp": "^1.2.1",
+    "@kybarg/ssp": "^2.0.0",
     "@types/buffer-xor": "^2.0.2",
     "@types/cors": "^2.8.17",
     "@types/crypto-js": "^4.2.2",

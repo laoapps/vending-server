@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core/types/definitions';
 import { Toast } from '@capacitor/toast';
 import { SerialConnectionCapacitor, SerialPortListResult, SerialPortEventTypes } from 'SerialConnectionCapacitor';
-import { addLogMessage, ESerialPortType, IlogSerial } from '../services/syste.model';
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, PrintError } from '../services/syste.model';
 import { Subject } from 'rxjs';
 import { App } from '@capacitor/app';
 
@@ -352,6 +352,125 @@ export class SerialServiceService  {
       .map(byte => byte.toString(16).padStart(2, '0'))
       .join('');
   }
+
+
+
+// NV9 Command method
+async nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+  return new Promise<IResModel>(async (resolve, reject) => {
+    try {
+      if (!this.initialized) {
+        reject(PrintError(command, params, 'Serial port not initialized'));
+        return;
+      }
+
+      let nv9Command: string;
+      let nv9Args: any = {};
+
+      // Map your EMACHINE_COMMAND to NV9 SSP commands
+      switch (command) {
+        case EMACHINE_COMMAND.NV9_ENABLE:
+          nv9Command = 'ENABLE';
+          break;
+          
+        case EMACHINE_COMMAND.NV9_DISABLE:
+          nv9Command = 'DISABLE';
+          break;
+          
+        case EMACHINE_COMMAND.NV9_POLL:
+          nv9Command = 'POLL';
+          break;
+          
+        case EMACHINE_COMMAND.NV9_GET_SERIAL:
+          nv9Command = 'GET_SERIAL_NUMBER';
+          break;
+          
+        case EMACHINE_COMMAND.NV9_SETUP_REQUEST:
+          nv9Command = 'SETUP_REQUEST';
+          break;
+          
+        case EMACHINE_COMMAND.NV9_SET_CHANNEL_INHIBITS:
+          nv9Command = 'SET_CHANNEL_INHIBITS';
+          nv9Args = { channels: params.channels || [1,1,1,1,1,1,1] };
+          break;
+          
+        case EMACHINE_COMMAND.NV9_LAST_REJECT_CODE:
+          nv9Command = 'LAST_REJECT_CODE';
+          break;
+          
+        case EMACHINE_COMMAND.NV9_RESET:
+          nv9Command = 'RESET';
+          break;
+          
+        case EMACHINE_COMMAND.NV9_STATUS:
+          // You might want to check USB status
+          const status = await SerialConnectionCapacitor.checkUSBStatus();
+          resolve({ 
+            command, 
+            data: status, 
+            message: 'NV9 Status retrieved', 
+            status: 1, 
+            transactionID 
+          });
+          return;
+          
+        default:
+          reject(PrintError(command, params, 'Unknown NV9 command'));
+          return;
+      }
+
+      console.log(`Sending NV9 command: ${nv9Command}`, nv9Args);
+      
+      // Send the NV9 command
+      const result = await SerialConnectionCapacitor.sendNV9Command({
+        command: nv9Command,
+        args: JSON.stringify(nv9Args)
+      });
+
+      console.log('NV9 command result:', result);
+      
+      // Parse the response
+      let responseData = result.data ? JSON.parse(result.data) : null;
+      
+      resolve({ 
+        command, 
+        data: responseData || result, 
+        message: result.message || 'NV9 command executed', 
+        status: result.success ? 1 : 0, 
+        transactionID 
+      });
+
+    } catch (error:any) {
+      console.error('NV9 command error:', error);
+      reject(PrintError(command, params, error.message));
+    }
+  });
+}
+
+// Helper method to enable all channels
+async nv9EnableAllChannels(transactionID: number): Promise<IResModel> {
+  return this.nv9Command(
+    EMACHINE_COMMAND.NV9_SET_CHANNEL_INHIBITS, 
+    { channels: [1,1,1,1,1,1,1] }, 
+    transactionID
+  );
+}
+
+// Helper method to get device info
+async nv9GetDeviceInfo(transactionID: number): Promise<IResModel> {
+  return this.nv9Command(EMACHINE_COMMAND.NV9_SETUP_REQUEST, {}, transactionID);
+}
+
+// Stop NV9 polling
+async nv9StopPolling(): Promise<boolean> {
+  try {
+    const result = await SerialConnectionCapacitor.stopNV9Polling();
+    return result.success;
+  } catch (error) {
+    console.error('Error stopping NV9 polling:', error);
+    return false;
+  }
+}
 }
 
 export enum SerialPortEvent {

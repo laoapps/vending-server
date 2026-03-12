@@ -516,7 +516,7 @@ export enum EZDM8_COMMAND {
     temp = "temp",
     restart = "restart"
 }
-export interface ICreditData { id: number, name: string, transactionID, data: ICreditDataDetails, description: string };
+export interface ICreditData { id: number, name: string, transactionID:any, data: ICreditDataDetails, description: string };
 export interface ICreditDataDetails { raw: string, data: string, t: number, transactionID: string, command: EMACHINE_COMMAND }
 export enum EMACHINE_COMMAND {
     LIGHTSOFF = 'LIGHTSOFF',
@@ -601,8 +601,35 @@ export enum EMACHINE_COMMAND {
     SET_SWAP = "SET_SWAP",
     SET_TWO_WIRE_MODE = "SET_TWO_WIRE_MODE",
     READ_ID = "READ_ID",
-    ADH814_STATUS = "ADH814_STATUS"
+    ADH814_STATUS = "ADH814_STATUS",
 
+     NV9_ENABLE = 'NV9_ENABLE',
+  NV9_DISABLE = 'NV9_DISABLE',
+  NV9_POLL = 'NV9_POLL',
+  NV9_GET_SERIAL = 'NV9_GET_SERIAL',
+  NV9_SETUP_REQUEST = 'NV9_SETUP_REQUEST',
+  NV9_SET_CHANNEL_INHIBITS = 'NV9_SET_CHANNEL_INHIBITS',
+  NV9_LAST_REJECT_CODE = 'NV9_LAST_REJECT_CODE',
+  NV9_RESET = 'NV9_RESET',
+  NV9_STATUS = 'NV9_STATUS',
+  NV9_CREDIT_NOTE = 'NV9_CREDIT_NOTE', // Event received from device
+  NV9_READ_NOTE = 'NV9_READ_NOTE',     // Event received from device
+
+}
+export enum NV9Event {
+  Ready = 'nv9Ready',
+  Error = 'nv9Error',
+  ReadNote = 'READ_NOTE',
+  CreditNote = 'CREDIT_NOTE',
+  NoteStacked = 'NOTE_STACKED',
+  NoteRejected = 'NOTE_REJECTED',
+  Disabled = 'DISABLED',
+  Enabled = 'ENABLED',
+  StackerFull = 'STACKER_FULL',
+  FraudAttempt = 'FRAUD_ATTEMPT',
+  CashboxRemoved = 'CASHBOX_REMOVED',
+  CashboxReplaced = 'CASHBOX_REPLACED',
+  USBEvent = 'usbDeviceEvent'
 }
 export enum ESerialPortType {
     Serial = 1,
@@ -611,28 +638,35 @@ export enum ESerialPortType {
 
 
 export enum EVMC_COMMAND {
-    _41 = '41',
-    _03 = '03',
-    _28 = '28',
-    _06 = "06",
-    disable = "disable",
-    ENABLE = "ENABLE",
-    _51 = "51",
-    _61 = "61",
-    _7017 = "7017",
-    _7001 = "7001",
-    _7018 = "0718",
-    _7019 = "0719",
-    _7020 = "0720",
-    _7023 = "0723",
-    sync = "sync",
-    setpoll = "setpoll",
-    acceptnote = "acceptnote",
-    _7036 = "7036",
-    _7016 = "7016",
-    _7028 = "7028",
-    _7037 = "7037",
-    temp = "temp"
+  POLL = '41',
+  ACK = '42',
+  SLOT_TEST = '01',
+  VEND = '03',
+  RESET = '04',
+  SHIPPING_CONTROL = '06',
+  SLOT_STATUS = '11',
+  SET_POLL_INTERVAL = '16',
+  MONEY_RECEIVED = '21',
+  REPORT_CURRENT_AMOUNT = '23',
+  COIN_REPORT = '25',
+  REPORT_MONEY = '27',
+  ENABLE_BILL_ACCEPTOR = '28',
+  MACHINE_STATUS = '51',
+  READ_COUNTERS = '61',
+  TEMP_CONTROLLER = '7037',
+  SYNC = '31',
+  ENABLE = '7018',
+  DISABLE = '7018',
+  SET_POLL = '16',
+  COIN_SYSTEM_READ = '7001',
+  UNIONPAY_POS = '7017',
+  BILL_ACCEPT_MODE = '7019',
+  BILL_LOW_CHANGE = '7020',    // Bill low-change settings = '7020',
+  CREDIT_MODE = '7023',
+  TEMP_MODE = "7028",
+  ENABLE_SELECTION = "12",
+  LIGHT_CONTROL = "7016"
+    
 }
 export function addLogMessage(log: IlogSerial, message: string, consoleMessage?: string) {
     if (!log) return; // Skip if no log object
@@ -665,6 +699,7 @@ export interface ISerialService {
     initializeSerialPort(portName: string, baudRate: number, log: IlogSerial, machineId: string, otp: string, isNative: ESerialPortType): Promise<string>;
     getSerialEvents(): any;
     command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
+    nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel>;
     close(): Promise<void>;
     listPorts(): Promise<SerialPortListResult>;
     checkSum(data?: any[]): string;

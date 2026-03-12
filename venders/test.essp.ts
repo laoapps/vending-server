@@ -2,9 +2,9 @@ const sspLib = require('@kybarg/ssp')
 // import { SerialPort } from 'serialport';
 
 export class KiosServer {
-     eSSP = new sspLib({
+    eSSP = new sspLib({
         id: 0x00,
-        debug: false,
+        debug: true,
         timeout: 3000,
         fixedKey: '0123456701234567'
     });
@@ -13,18 +13,18 @@ export class KiosServer {
         let buffer = '';
         const that = this;
         this.initSSP();
-         
-      
 
-        
+
+
+
         this.eSSP.on('NOTE_REJECTED', result => {
             console.log('NOTE_REJECTED', result);
-        
+
             this.eSSP.command('LAST_REJECT_CODE')
-            .then(result => {
-                console.log(result)
-                // //this.send(sock, EMessage.all,'LAST_REJECT_CODE', result);
-            })
+                .then(result => {
+                    console.log(result)
+                    // //this.send(sock, EMessage.all,'LAST_REJECT_CODE', result);
+                })
         })
         this.eSSP.on('DISABLED', result => {
             try {
@@ -78,7 +78,7 @@ export class KiosServer {
             console.log(result)
             //this.send(sock, EMessage.all,'EMPTYING', result);
         })
-       
+
         this.eSSP.on('COIN_MECH_JAMMED', result => {
             console.log(result)
             //this.send(sock, EMessage.all,'COIN_MECH_JAMMED', result);
@@ -252,94 +252,121 @@ export class KiosServer {
         })
         this.eSSP.on('CASHBOX_REPLACED', result => {
             console.log(result)
-             //this.send(sock, EMessage.all,'CASHBOX_REPLACED', result);
+            //this.send(sock, EMessage.all,'CASHBOX_REPLACED', result);
         })
         // this.eSSP.open('/dev/ttyS0')
-         this.eSSP.open('/dev/ttyS1');
+        this.eSSP.open('/dev/tty.usbserial-AG0KJZVC');
 
 
     }
-        initSSP() {
-            try {
-                // this.eSSP.close();
-                this.eSSP.on('OPEN', () => {
-                    console.log('OPEN');
-                    try {
-                        this.eSSP.command('SYNC')
+    initSSP() {
+        try {
+            // this.eSSP.close();
+            this.eSSP.on('OPEN', () => {
+                console.log('OPEN');
+                try {
+                    this.eSSP.command('SYNC')
+                        .then((r) => this.eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
+                        // .then(() => eSSP.initEncryption())
+                        .then(() => this.eSSP.command('GET_SERIAL_NUMBER'))
+                        .then(result => {
+                            console.log('SERIAL NUMBER:', result)
+
+                        })
+                        .then(() => this.eSSP.command('DISPLAY_ON'))
+                        .then(result => {
+
+                                console.log('DISPLAY_ON', result)
+
+                        })
+
+                        .then(() => this.eSSP.command('SETUP_REQUEST'))
+                        .then(result => {
+
+
+                                console.log('SETUP_REQUEST request', result)
+
+
+                        })
+                        .then(() => this.eSSP.command('SET_CHANNEL_INHIBITS',
+                            { channels: [1, 1, 1, 1, 1, 1, 1] }
+                            // { channels: [0, 0, 0, 0, 0, 0, 0] }
+                        )
                             .then(result => {
-                                console.log('SYNC:', result)
+
+                                    console.log('SET_CHANNEL_INHIBITS', result)
+
                             })
-                            .then(() => this.eSSP.command('HOST_PROTOCOL_VERSION', { version: 6 }))
-                            .then(() => this.eSSP.initEncryption())
-                            .then(() => this.eSSP.command('GET_SERIAL_NUMBER'))
+                        )
+                        .then(() => this.eSSP.enable()
                             .then(result => {
-                                console.log('SERIAL NUMBER:', result.info.serial_number)
-                                return;
+
+                                    console.log('Device is active', result)
+
+                            })).then(() => {
+                                console.log('Device enabled → starting poll loop');
+
+                                // const pollInterval = setInterval(() => {
+                                //     this.eSSP.command('POLL')
+                                //         .then((result) => {
+                                //             // The library usually emits events automatically from poll responses
+                                //             // But you can also inspect result manually if needed
+                                //             if (result && result.events && result.events.length > 0) {
+                                //                 console.log('Poll events:', result.events);
+                                //             }
+                                //         })
+                                //         .catch((err) => {
+                                //             console.log('Poll failed:', err);
+                                //         });
+                                // }, 600);   // 200–500 ms is typical; don't go below ~150 ms
+
+                                // Optional: store interval so you can clear it later if closing
+                                // this.pollInterval = pollInterval;
                             })
 
-                            .then(() => this.eSSP.command('RESET_COUNTERS').then(result => {
-                                if (result) if (result.status == 'OK') {
-                                    console.log('RESET_COUNTERS', result)
-                                }
-                                return;
-                            }))
-                            .then(() => this.eSSP.enable())
-                            .then(result => {
-                                if (result) if (result.status == 'OK') {
-                                    console.log('enable request', result.info)
-                                }
-                                return;
-                            })
-                            .then(() => this.eSSP.command('SETUP_REQUEST'))
-                            .then(result => {
-                                if (result) if (result.status == 'OK') {
-                                    console.log('SETUP_REQUEST request', result.info)
-                                }
-                                return;
-                            })
-    
-                            .then(() => this.eSSP.command('SET_CHANNEL_INHIBITS', { channels: process.env.channels || [1, 1, 1, 1, 1, 1, 1] })
-                                .then(result => {
-                                    if (result) if (result.status == 'OK') {
-                                        console.log('SET_CHANNEL_INHIBITS', result.info)
-                                    }
-                                }));
-                        
-                    } catch (error) {
-                        console.log('error'+error);
-    
-                    }
-    
-                })
-    
-  
-    
-    
-    
-    
-    
-    
-                process.on("exit", () => {
-                    try {
-                        this.eSSP.close();
-                    } catch (error) {
-                        console.log(error, 'error');
-    
-                    }
-    
-                })
-            } catch (error) {
-                console.log(error, 'error');
-    
-            }
-    
+
+                } catch (error) {
+                    console.log('error' + error);
+
+                }
+
+            })
+            let isEnable=true;
+            setInterval(() => {
+               if(isEnable) this.eSSP.enable();
+                if(!isEnable)this.eSSP.disable();
+                isEnable=!isEnable;
+            console.log('toggle enable/disable',isEnable);
+            }, 10000);
+
+
+
+
+
+
+
+
+            process.on("exit", () => {
+                try {
+                    this.eSSP.close();
+                } catch (error) {
+                    console.log(error, 'error');
+
+                }
+
+            })
+        } catch (error) {
+            console.log(error, 'error');
+
         }
-    
+
+    }
+
     //  checkSum(buff: any) {
     //     try {
     //         const x = crc.crc16modbus(Buffer.from(buff as any, 'hex')).toString(16);
     //         console.log(x);
-    
+
     //         return x.substring(2) + x.substring(0, 2);
     //     }
     //     catch (e) {
@@ -354,8 +381,10 @@ export class KiosServer {
 
 
 
-   
 
-    
+
+
 
 }
+
+new KiosServer()

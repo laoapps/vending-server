@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import crc from 'crc';
 import { SerialServiceService, } from './services/serialservice.service';
 
-import { IResModel, ESerialPortType, ISerialService, EZDM8_COMMAND, EMACHINE_COMMAND, IlogSerial, addLogMessage } from './services/syste.model';
+import { IResModel, ESerialPortType, ISerialService, EZDM8_COMMAND, EMACHINE_COMMAND, IlogSerial, addLogMessage, PrintError } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor';
 import { Buffer } from 'buffer';
 import { App } from '@capacitor/app';
@@ -19,9 +19,19 @@ export class Zdm8Service implements ISerialService {
   otp = '111111';
   portName = '/dev/ttyS1';
   baudRate = 9600;
-  log: IlogSerial;
+  log!: IlogSerial;
   machinestatus = {data:''};
   constructor(private serialService: SerialServiceService) { }
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+      return new Promise<IResModel>(async (resolve, reject) => {
+        this.nv9Command(command, params, transactionID).then(result => {
+          resolve(result);
+        }).catch(error => {
+          console.error('NV9 command error:', error);
+          reject(PrintError(command, params, error.message));
+        });
+      });
+    }
   initZDM8() {
     const that = this;
     // that.getSerialEvents().subscribe((event) => {
@@ -80,7 +90,7 @@ export class Zdm8Service implements ISerialService {
           this.addLogMessage(this.log, `Unsupported function code: ${functionCode}`);
           return null;
       }
-    } catch (error) {
+    } catch (error:any) {
       this.addLogMessage(this.log, `Error processing response: ${error.message}`);
       return null;
     }

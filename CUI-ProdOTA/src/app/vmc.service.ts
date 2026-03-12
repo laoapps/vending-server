@@ -117,6 +117,7 @@ export class VmcService implements ISerialService {
     if (consoleMessage) console.log(consoleMessage);
   }
 
+
   command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
       try {
@@ -388,7 +389,7 @@ export class VmcService implements ISerialService {
     }
 
   }
-  checkSum(data?: any[]) {
+  checkSum(data: any[]=[]) {
     data[data.length - 1] = this.serialService.chk8xor(data);
     return data.join('');
   }
@@ -596,6 +597,16 @@ export class VmcService implements ISerialService {
       bytes.push(parseInt(hex.substring(i, i + 2), 16));
     }
     return bytes;
+  }
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+    return new Promise<IResModel>(async (resolve, reject) => {
+      this.nv9Command(command, params, transactionID).then(result => {
+        resolve(result);
+      }).catch(error => {
+        console.error('NV9 command error:', error);
+        reject(PrintError(command, params, error.message));
+      });
+    });
   }
 }
 export interface IBankNote {

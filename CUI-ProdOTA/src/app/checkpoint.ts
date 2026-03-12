@@ -10,8 +10,8 @@ export class Checkpoint {
   url = localStorage.getItem('url') || environment.url;
   constructor() { }
   private getCheckpointKey(): string {
-    const machineId = localStorage.getItem('machineId');
-    const otp = localStorage.getItem('otp');
+    const machineId = localStorage.getItem('machineId') || '';
+    const otp = localStorage.getItem('otp') || '';
     const token = cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex);
     return token;
   }

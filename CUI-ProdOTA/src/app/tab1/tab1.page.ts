@@ -109,7 +109,7 @@ export class Tab1Page implements OnDestroy {
   menus = [];
 
 
-  serial: ISerialService;
+  serial: ISerialService = undefined as unknown as ISerialService;
   open = false;
 
   vlog = { log: { data: '', limit: 50 } as IlogSerial };
@@ -145,12 +145,12 @@ export class Tab1Page implements OnDestroy {
   private loadStockListProcess: LoadStockListProcess;
 
   private CONTROL_MENUList: Array<{ name: string; status: boolean }> = [];
-  private links: NodeListOf<HTMLLinkElement>;
+  private links: NodeListOf<HTMLLinkElement> | undefined;
 
-  private ownerUuid: string;
+  private ownerUuid: string | undefined;
   filemanagerURL: string = environment.filemanagerurl;
 
-  acceptcash: number;
+  acceptcash: number =0;
   _machineStatus = { status: {} as IMachineStatus };
 
   machinestatus = { data: '' };
@@ -184,7 +184,7 @@ export class Tab1Page implements OnDestroy {
   _checkHowTo_Duration = 1000 * 60 * 10;
   _checkHowTo_Time = 1000 * 60 * 10; // 10 minutes
   _howToT: any;
-  _howToPage: HTMLIonModalElement;
+  _howToPage: HTMLIonModalElement | undefined;
   isFirstLoad = true;
   autopilot = { auto: 0 };
 
@@ -422,7 +422,7 @@ export class Tab1Page implements OnDestroy {
     this.selectMode = data + '';
   }
 
-  onClickSmartCB(item) {
+  onClickSmartCB(item:any) {
     if (item.title == 'Scan QR Code') {
 
     } else if (item.title == 'Register owner') {
@@ -522,7 +522,7 @@ export class Tab1Page implements OnDestroy {
 
       // this.toggleTabServicesSegment();
 
-      this.ownerUuid = localStorage.getItem('machineId');
+      this.ownerUuid = localStorage.getItem('machineId')||'';
       this.apiService.audioElement = document.createElement('audio');
       this.apiService.backGroundMusicElement = document.createElement('audio');
       console.log('Width: ' + (this.swidth = platform.width()));
@@ -903,7 +903,7 @@ export class Tab1Page implements OnDestroy {
             } else {
               if (!currentRoute) {
                 this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
-                  .then(modal => modal.present());
+                  .then(modal => modal?.present());
               }
 
               await this.apiService.toast.create({
@@ -1191,7 +1191,7 @@ export class Tab1Page implements OnDestroy {
       }
       setTimeout(() => {
         this.loadPaidBills();
-        localStorage.setItem('lastClickCheck', null);
+        localStorage.setItem('lastClickCheck', '');
       }, 30000);
 
     } catch (error) {
@@ -1484,7 +1484,7 @@ export class Tab1Page implements OnDestroy {
     }
     this.vlog.log = this.serial.log;
   }
-
+  
 
   testDrop(slot: number) {
     // console.log('=====> testDrop', slot);
@@ -1593,7 +1593,7 @@ export class Tab1Page implements OnDestroy {
   async startAHD814() {
     if (this.serial) {
       await this.serial?.close();
-      this.serial = null;
+      this.serial = undefined as unknown as ISerialService;
     }
     // Toast.show({ text: `Starting ADH814 ${this.baudRate} ${this.portName}  ${this.machineId.machineId} ${this.machineId.otp} ` });
     console.log('Starting ADH814');
@@ -1628,7 +1628,7 @@ export class Tab1Page implements OnDestroy {
 
       }
 
-      this.serial.getSerialEvents().subscribe(async (event) => {
+      this.serial.getSerialEvents().subscribe(async (event:any) => {
         try {
           if (event?.event === 'dataReceived') {
             const rawData = event?.data;
@@ -2180,7 +2180,7 @@ export class Tab1Page implements OnDestroy {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -2200,7 +2200,7 @@ export class Tab1Page implements OnDestroy {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -2288,7 +2288,7 @@ export class Tab1Page implements OnDestroy {
               });
           });
         }
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -2313,9 +2313,9 @@ export class Tab1Page implements OnDestroy {
 
   async showQrAlert() {
     const m = await this.apiService.showModal(QrOpenStockPage);
-    m.present();
+    m?.present();
     this.isOpenStock = true;
-    m.onDidDismiss().then((r) => {
+    m?.onDidDismiss().then((r) => {
       this.isOpenStock = false;
     });
 
@@ -2344,12 +2344,12 @@ export class Tab1Page implements OnDestroy {
 
     // if (environment.production)
     if (
-      !this.getPassword().endsWith(x?.substring(6)) ||
+      !this.getPassword().endsWith(x?.substring(6)||'') ||
       !x?.startsWith(this.machineId?.otp) ||
       x?.length < 12
     )
       return;
-    const m = await this.apiService.showModal(StocksalePage);
+    const m = await this.apiService.showModal(StocksalePage)||{} as HTMLIonModalElement;
     this.checkActiveModal(m);
 
     m.onDidDismiss().then((r) => {
@@ -2394,7 +2394,7 @@ export class Tab1Page implements OnDestroy {
     const m = await this.apiService.showModal(StocksalePage, {}, true, 'customModalQRStock');
     this.checkActiveModal(m);
 
-    m.onDidDismiss().then((r) => {
+    m?.onDidDismiss().then((r) => {
       r.data;
       console.log('manageStock', r.data);
       // if (r.data) {
@@ -2591,7 +2591,7 @@ export class Tab1Page implements OnDestroy {
     // if (x.stock.qtty <= 0) alert('Out Of order');
     // this.apiService.showLoading(null, 5000);
     if (x.stock.price == 0) {
-      this.apiService.getFreeProduct(x.position, x.stock.id).then((rx) => {
+      this.apiService.getFreeProduct(x.position, x?.stock?.id).then((rx) => {
         const r = rx.data;
         console.log(r);
         if (r.status) {
@@ -2831,7 +2831,7 @@ export class Tab1Page implements OnDestroy {
       this.autopilot.auto = 0;
       if (!this.allowVending) {
         this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
-          .then(modal => modal.present());
+          .then(modal => modal?.present());
         return;
       }
 
@@ -2877,7 +2877,7 @@ export class Tab1Page implements OnDestroy {
       this.autopilot.auto = 0;
       if (!this.allowVending) {
         this.apiService.showModal(CloseStytemPage, {}, false, 'full-modal')
-          .then(modal => modal.present());
+          .then(modal => modal?.present());
         return;
       }
 
@@ -3155,7 +3155,7 @@ export class Tab1Page implements OnDestroy {
   // }
   getPassword() {
     let x = '';
-    this.apiService.machineuuid.split('').forEach((v) => {
+    this.apiService.machineuuid.split('').forEach((v:any) => {
       !Number.isNaN(Number.parseInt(v)) ? (x += v) : '';
     });
     return x;
@@ -3228,7 +3228,7 @@ export class Tab1Page implements OnDestroy {
         this.apiService.cash.amount = Number(this.apiService.cash.amount) + Number(cashList);
 
         resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error:any) {
         await this.apiService.soundSystemError();
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
@@ -3308,7 +3308,7 @@ export class Tab1Page implements OnDestroy {
           inputs: inputs,
         });
         message.present();
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -3372,7 +3372,7 @@ export class Tab1Page implements OnDestroy {
             this.openAnotherModal(r);
 
           });
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3396,7 +3396,7 @@ export class Tab1Page implements OnDestroy {
             this.openAnotherModal(r);
 
           });
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -3457,7 +3457,7 @@ export class Tab1Page implements OnDestroy {
 
             });
         });
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3491,7 +3491,7 @@ export class Tab1Page implements OnDestroy {
 
             this.checkActiveModal(r);
           });
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         this.apiService.soundPleaseTopUpValue();
         resolve(error.message);
@@ -3521,7 +3521,7 @@ export class Tab1Page implements OnDestroy {
                 }
                 this.apiService
                   .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
-                  .then((r) => {
+                  .then((r:any) => {
                     this.apiService.isRemainingBillsModalOpen = true;
                     this.apiService.IndexedLogDB.addBillProcess({ errorData: `RemainingbillsPage Open In Tab1` })
                     r.present();
@@ -3552,7 +3552,7 @@ export class Tab1Page implements OnDestroy {
               r.present();
             });
         }
-      } catch (error) {
+      } catch (error:any) {
         console.log(`error`, error);
         this.apiService.toast.create({ message: error.message, duration: 5000 }).then(r => { r.present(); });
 
@@ -3616,7 +3616,7 @@ export class Tab1Page implements OnDestroy {
           });
 
         resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3662,7 +3662,7 @@ export class Tab1Page implements OnDestroy {
       this.animateControlMenu(this.links);
 
       this.apiService.controlMenuService.CONTROL_MENU.subscribe((r) => {
-        if (r) this.animateControlMenu(this.links, r);
+        if (r&&this.links) this.animateControlMenu(this.links, r);
       });
       clearInterval(i);
     });
@@ -3671,7 +3671,7 @@ export class Tab1Page implements OnDestroy {
     links.forEach((item) => {
       const name = item.className.split(' ')[2];
       if (res) {
-        res.forEach((menu) => {
+        res.forEach((menu:any) => {
           if (name == menu.name) {
             if (menu.status == true) {
               item.classList.add('active');
@@ -3716,7 +3716,7 @@ export class Tab1Page implements OnDestroy {
           });
 
         resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3739,7 +3739,7 @@ export class Tab1Page implements OnDestroy {
           });
 
         resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3780,7 +3780,7 @@ export class Tab1Page implements OnDestroy {
         //   });
 
         // resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3840,7 +3840,7 @@ export class Tab1Page implements OnDestroy {
   openTestFuture() {
 
     this.apiService.showModal(RemainingbillsPage).then(r => {
-      r.present();
+      r?.present();
     });
   }
 

@@ -26,7 +26,7 @@ export class VendingIndexServiceService {
   portName = '/dev/ttyS3';
   baudRate = 9600;
 
-  task: ISerialService;
+  task: ISerialService | undefined;
 
 
   constructor(
@@ -65,8 +65,8 @@ export class VendingIndexServiceService {
         reject(null);
       }
       console.log('vendingindex service  zdm8 Serial port initialized');
-      this.task = this.zdm8;
-      return resolve(this.zdm8);
+      this.task = this.zdm8 as unknown as ISerialService;
+      return resolve(this.task);
     });
 
   }
@@ -150,8 +150,8 @@ export class VendingIndexServiceService {
         return reject(null);
       }
       console.log('vendingindex service  initM102 Serial port initialized');
-      this.task = this.m102;
-      return resolve(this.m102);
+      this.task = this.m102 as unknown as ISerialService;
+      return resolve(this.task);
     });
   }
   // async initADH815(portName: string = '/dev/ttyS0', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
@@ -182,8 +182,8 @@ export class VendingIndexServiceService {
       }
       console.log('vendingindex service  initADH814 Serial port initialized');
       // Toast.show({ text: 'vendingindex service  initADH814 Serial port initialized' });
-      this.task = this.adh814;
-      return resolve(this.adh814);
+      this.task = this.adh814 as unknown as ISerialService;
+      return resolve(this.task);
     });
   }
 

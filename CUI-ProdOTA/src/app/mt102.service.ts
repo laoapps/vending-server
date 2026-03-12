@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
-import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintError, PrintSucceeded } from './services/syste.model';
 import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
 import { interval, Subscription } from 'rxjs';
 
@@ -8,7 +8,7 @@ import { interval, Subscription } from 'rxjs';
   providedIn: 'root'
 })
 export class MT102Service implements ISerialService {
-  private m102: M102Protocol;
+  private m102!: M102Protocol;
   private machineId = '11111111';
   private portName = '/dev/ttyS1';
   private baudRate = 9600;
@@ -30,6 +30,16 @@ export class MT102Service implements ISerialService {
 
   constructor(private serialService: SerialServiceService) { }
 
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+    return new Promise<IResModel>(async (resolve, reject) => {
+      this.nv9Command(command, params, transactionID).then(result => {
+        resolve(result);
+      }).catch(error => {
+        console.error('NV9 command error:', error);
+        reject(PrintError(command, params, error.message));
+      });
+    });
+  }
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
   }
@@ -44,7 +54,7 @@ export class MT102Service implements ISerialService {
           '07',
           { address: this.m102.getSlaveAddress() }
         );
-      } catch (error) {
+      } catch (error:any) {
         this.addLogMessage(this.log, `Temperature polling error: ${error.message}`);
       }
     });
@@ -66,7 +76,7 @@ export class MT102Service implements ISerialService {
         // Reset timeout counter on successful send
         this.consecutiveTimeouts = 0;
 
-      } catch (error) {
+      } catch (error:any) {
         this.addLogMessage(this.log, `Polling error: ${error.message}`);
         this.consecutiveTimeouts++;
 
@@ -98,7 +108,7 @@ export class MT102Service implements ISerialService {
         this.addLogMessage(this.log, `Raw data: ${hexData}`);
         try {
           this.m102.parseResponse(hexData);
-        } catch (error) {
+        } catch (error:any) {
           this.addLogMessage(this.log, `Parse error: ${error.message}`);
         }
       } else if (event.event === 'mt102Response') {
@@ -128,7 +138,7 @@ export class MT102Service implements ISerialService {
 
     // Setup M102 protocol listeners
     this.m102.on('SERIAL_NUMBER', ({ details }) => {
-      this.addLogMessage(this.log, `Serial Number: ${this.formatHexArray(details)}`);
+      this.addLogMessage(this.log, `Serial Number: ${this.formatHexArray(details||[])}`);
     });
 
     this.m102.on('MOTOR_POLL', ({ details }) => {
@@ -171,7 +181,7 @@ export class MT102Service implements ISerialService {
     });
 
     this.m102.on('SWITCH_INPUT', ({ details }) => {
-      this.addLogMessage(this.log, `Switch Input (0-7): ${this.formatHexArray(details.slice(0, 8))}`);
+      this.addLogMessage(this.log, `Switch Input (0-7): ${this.formatHexArray(details?.slice(0, 8)||[])}`);
     });
 
     this.m102.on('ADDRESS_SET', ({ details }) => {
@@ -264,7 +274,7 @@ export class MT102Service implements ISerialService {
 
         this.addLogMessage(this.log, 'MT102 setup command sent');
         resolve();
-      } catch (err) {
+      } catch (err:any) {
         this.addLogMessage(this.log, `Setup error: ${err.message}`);
         reject(err);
       }
@@ -305,7 +315,7 @@ export class MT102Service implements ISerialService {
         this.startPolling();
         this.addLogMessage(this.log, `Serial port initialized: ${this.portName}`);
         resolve(init);
-      } catch (error) {
+      } catch (error:any) {
         this.addLogMessage(this.log, `Serial port initialization failed: ${error.message}`);
         reject(error);
       }
@@ -422,7 +432,7 @@ export class MT102Service implements ISerialService {
           resolve(PrintSucceeded(command, params, 'Command sent successfully'));
           return;
 
-        } catch (error) {
+        } catch (error:any) {
           this.addLogMessage(this.log, `Attempt ${attempt} failed: ${error.message}`);
           if (attempt === retries) {
             reject(new Error(`Command failed after ${retries} attempts: ${error.message}`));
@@ -473,7 +483,7 @@ export class MT102Service implements ISerialService {
         await this.serialService.close();
         this.addLogMessage(this.log, 'MT102 service closed');
         resolve();
-      } catch (error) {
+      } catch (error:any) {
         this.addLogMessage(this.log, `Close error: ${error.message}`);
         reject(error);
       }
@@ -696,4 +706,15 @@ class M102Protocol {
     const address = Math.max(1, Math.min(8, newAddress || 1));
     return this.buildPacket(0xFF, [address], 255);
   }
+
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+      return new Promise<IResModel>(async (resolve, reject) => {
+        this.nv9Command(command, params, transactionID).then(result => {
+          resolve(result);
+        }).catch(error => {
+          console.error('NV9 command error:', error);
+          reject(PrintError(command, params, error.message));
+        });
+      });
+    }
 }
