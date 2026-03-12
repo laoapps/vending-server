@@ -234,31 +234,39 @@ const routes: Routes = [
   },
   {
     path: 'onlinemachines',
-    loadChildren: () => import('./onlinemachines/onlinemachines.module').then( m => m.OnlinemachinesPageModule)
+    loadChildren: () => import('./onlinemachines/onlinemachines.module').then(m => m.OnlinemachinesPageModule)
   },
   {
     path: 'log-temp',
-    loadChildren: () => import('./log-temp/log-temp.module').then( m => m.LogTempPageModule)
+    loadChildren: () => import('./log-temp/log-temp.module').then(m => m.LogTempPageModule)
   },
   {
     path: 'settings-modal',
-    loadChildren: () => import('./settings-modal/settings-modal/settings-modal.module').then( m => m.SettingsModalPageModule)
+    loadChildren: () => import('./settings-modal/settings-modal/settings-modal.module').then(m => m.SettingsModalPageModule)
   },
   {
     path: 'billing',
-    loadChildren: () => import('./billing/billing.module').then( m => m.BillingPageModule)
+    loadChildren: () => import('./billing/billing.module').then(m => m.BillingPageModule)
   },
   {
     path: 'report-client',
-    loadChildren: () => import('./report-client/report-client.module').then( m => m.ReportClientPageModule)
+    loadChildren: () => import('./report-client/report-client.module').then(m => m.ReportClientPageModule)
   },
   {
     path: 'new-report-sale',
-    loadChildren: () => import('./new-report-sale/new-report-sale.module').then( m => m.NewReportSalePageModule)
+    loadChildren: () => import('./new-report-sale/new-report-sale.module').then(m => m.NewReportSalePageModule)
   },
   {
     path: 'print-receipt',
-    loadChildren: () => import('./print-receipt/print-receipt.module').then( m => m.PrintReceiptPageModule)
+    loadChildren: () => import('./print-receipt/print-receipt.module').then(m => m.PrintReceiptPageModule)
+  },
+  {
+    path: 'public-sales-report',
+    loadChildren: () => import('./sales-report/sales-report.module').then(m => m.SalesReportPageModule)
+  },
+  {
+    path: 'public-admin-manage',
+    loadChildren: () => import('./public-admin-manage/public-admin-manage.module').then(m => m.PublicAdminManagePageModule)
   }
 ];
 @NgModule({

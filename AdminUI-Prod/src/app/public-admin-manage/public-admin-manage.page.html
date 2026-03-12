@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Manage Public Admins</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Add New Public Admin</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="floating">Phone Number</ion-label>
+        <ion-input 
+          [(ngModel)]="newPhone" 
+          type="tel" 
+          placeholder="+85620..." 
+          clearInput
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="ion-margin-top">
+        <ion-label position="floating">Machine ID</ion-label>
+        <ion-input 
+          [(ngModel)]="newMachineId" 
+          placeholder="e.g. 96643001"
+          clearInput
+        ></ion-input>
+      </ion-item>
+
+      <ion-button 
+        expand="block" 
+        color="success" 
+        class="ion-margin-top"
+        (click)="addAdmin()"
+      >
+        Add Admin
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list class="ion-margin-top" *ngIf="admins.length > 0; else noAdmins">
+    <ion-item *ngFor="let admin of admins; let i = index">
+      <ion-label>
+        <h2>{{ admin.phoneNumber }}</h2>
+        <p>Machine: <strong>{{ admin.machineId }}</strong></p>
+      </ion-label>
+      <ion-button 
+        slot="end" 
+        color="danger" 
+        fill="clear" 
+        (click)="removeAdmin(i)"
+      >
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #noAdmins>
+    <ion-card class="ion-margin-top">
+      <ion-card-content class="ion-text-center">
+        No public admins configured yet.
+      </ion-card-content>
+    </ion-card>
+  </ng-template>
+
+</ion-content>
