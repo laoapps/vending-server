@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ApiService } from '../services/api.service';
 import *as moment from "moment-timezone";
+import { PrintReceiptPage } from '../print-receipt/print-receipt.page';
 
 @Component({
   selector: 'app-billing',
@@ -12,6 +13,9 @@ import *as moment from "moment-timezone";
 export class BillingPage implements OnInit {
   private token: string;
   _l: any[] = [];
+
+  customer: string;
+  month: string;
 
   _lServer: any[] = [];
   bankInMyData: any = null;
@@ -31,12 +35,34 @@ export class BillingPage implements OnInit {
   selectedFile: File | null = null;      // ✅ เก็บไฟล์ที่เลือกไว้
   dataExcel: any[] = [];                 // ✅ ข้อมูลจากไฟล์ Excel
 
+  rate: number = 4.5;
+
+  isManyMachine: boolean = false;
+
+  totalSaleCount: number = 0;
+  totalSalePrice: number = 0;
+  totalFranchiseCount: number = 0;
+
   constructor(private apiService: ApiService) { }
 
   ngOnInit() {
     this.token = localStorage.getItem('lva_token');
+    this.month = localStorage.getItem('monthReceipt');
   }
 
+  savedata() {
+    if (this.month) {
+      localStorage.setItem('monthReceipt', this.month);
+    }
+  }
+
+
+  async storeOpen(type) {
+
+
+    this.isManyMachine = type;
+
+  }
 
   testSave() {
     this.exportBillingExcel();
@@ -149,10 +175,10 @@ export class BillingPage implements OnInit {
     }, 0);
 
     // 3) อัตรา 4.5%
-    const rate = 4.5;
+    // const rate = 4.5;
 
     // 4) ค่าบริการ Franchise fee
-    const franchiseFee = (totalMoney * rate) / 100;
+    const franchiseFee = (totalMoney * this.rate) / 100;
 
     // -------- เพิ่ม 4 records ต่อท้าย --------
 
@@ -167,7 +193,7 @@ export class BillingPage implements OnInit {
       },
       {
         "ລາຍການສະຫຼຸບ": "HM Franchase rate",
-        "ຄ່າ": "4.5%"
+        "ຄ່າ": `${this.rate}%`
       },
       {
         "ລາຍການສະຫຼຸບ": "HM Franchase fee",
@@ -183,12 +209,18 @@ export class BillingPage implements OnInit {
         "ເງິນທັງໝົດ": totalMoney
       },
       {
-        "HMFranchaseRate": "4.5%"
+        "HMFranchaseRate": `${this.rate}%`
       },
       {
         "HMFranchaseFee": franchiseFee
       }
     ];
+
+    if (this.isManyMachine) {
+      this.totalSaleCount = totalCount;
+      this.totalSalePrice = totalMoney;
+      this.totalFranchiseCount = franchiseFee;
+    }
 
     // return = ข้อมูลเดิม + 4 แถวสรุป
     return [...filtered, ...summaryRows];
@@ -289,8 +321,8 @@ export class BillingPage implements OnInit {
       0
     );
 
-    const rate = 4.5;
-    const fee = totalMoney * (rate / 100);
+    // const rate = 4.5;
+    const fee = totalMoney * (this.rate / 100);
 
     // ⭐ 3) เพิ่ม 1 แถวว่าง + summary 4 แถว
     // const emptyRow = { "": "" };
@@ -341,10 +373,10 @@ export class BillingPage implements OnInit {
     }, 0);
 
     // 3) อัตรา 4.5%
-    const rate = 4.5;
+    // const rate = 4.5;
 
     // 4) ค่าบริการ Franchise fee
-    const franchiseFee = (totalMoney * rate) / 100;
+    const franchiseFee = (totalMoney * this.rate) / 100;
 
     // -------- เพิ่ม 4 records ต่อท้าย --------
     const summaryRows = [
@@ -444,10 +476,10 @@ export class BillingPage implements OnInit {
     }, 0);
 
     // 3) อัตรา 4.5%
-    const rate = 4.5;
+    // const rate = 4.5;
 
     // 4) ค่าบริการ Franchise fee
-    const franchiseFee = (totalMoney * rate) / 100;
+    const franchiseFee = (totalMoney * this.rate) / 100;
 
     // -------- เพิ่ม 4 records ต่อท้าย --------
     const summaryRows = [
@@ -461,13 +493,18 @@ export class BillingPage implements OnInit {
       },
       {
         "ລາຍການສະຫຼຸບ": "HM Franchase rate",
-        "ຄ່າ": "4.5%"
+        "ຄ່າ": `${this.rate}%`
       },
       {
         "ລາຍການສະຫຼຸບ": "HM Franchase fee",
         "ຄ່າ": franchiseFee
       }
     ];
+    if (!this.isManyMachine) {
+      this.totalSaleCount = totalCount;
+      this.totalSalePrice = totalMoney;
+      this.totalFranchiseCount = franchiseFee;
+    }
     this.allMMoneyData = summaryRows;
 
     // return = ข้อมูลเดิม + 4 แถวสรุป
@@ -778,7 +815,7 @@ export class BillingPage implements OnInit {
     const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
 
     // 5) ชื่อไฟล์
-    const filename = `ລາຍງານທັງໝົດ-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+    const filename = `${this.customer} ເດືອນ(${this.month})-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
     saveAs(blob, filename);
   }
 
@@ -911,10 +948,10 @@ export class BillingPage implements OnInit {
     }, 0);
 
     // 3) อัตรา 4.5%
-    const rate = 4.5;
+    // const rate = 4.5;
 
     // 4) ค่าบริการ Franchise fee
-    const franchiseFee = (totalMoney * rate) / 100;
+    const franchiseFee = (totalMoney * this.rate) / 100;
 
     // -------- เพิ่ม 4 records ต่อท้าย --------
     const summaryRows = [
@@ -1155,109 +1192,39 @@ export class BillingPage implements OnInit {
 
 
 
-  async onProcessBillingManyMachine() {
+  async showPrintReceipt() {
     try {
-      if (!this.selectedFile) {
-        alert('กรุณาเลือกไฟล์ Excel ก่อน');
-        return;
-      }
+      const customerPhone = localStorage.getItem('phoneNumberLocal');
 
-      const data = {
-        machineId: ['55555002', '55555003'],
-        fromDate: this.fromDate,
-        toDate: this.toDate,
-        token: this.token,
-      };
+      const now = new Date();
 
-      const paramsData = {
-        fromDate: this.fromDate,
-        toDate: this.toDate,
-        machineId: this.machineId,
-        // ownerUuid: this.ownerUuid,
-        token: this.token
-      }
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
 
-      const billNotPaid = await this.apiService.loadVendingMachineBillNotPaidManyMachine(paramsData).toPromise();
+      const date = `${day}/${month}/${year}`;
+      const random = Math.floor(100 + Math.random() * 900);
 
-      const billNotPaidData = JSON.parse(JSON.stringify(billNotPaid['data']?.rows ?? []));
-
-
-      const dataServer = await this.apiService
-        .loadVendingMachineSaleBillReportManyMachine(data)
-        .toPromise();
-
-      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
-      this._lServer = run;
-
-      // console.log('-----> billPaid :', run);
-
-
-      const bankIds = new Set(this.dataExcel.map(b => b["ເລກທູລະກຳ"]));
-      const myIds = new Set(run.map(m => m.transactionID));
-
-      // 1. bankTrand ที่มีใน mytrand
-      const bankInMy = this.dataExcel.filter(b => myIds.has(b["ເລກທູລະກຳ"]));
-      // console.log('-----> 1. bankTrand ที่มีใน mytrand :', bankInMy);
-      // this.exportBankExcel(bankInMy);
-
-
-      // 2. bankTrand ที่ไม่มีใน mytrand
-      const bankNotInMy = this.dataExcel.filter(b => !myIds.has(b["ເລກທູລະກຳ"]));
-      // console.log('-----> 2. bankTrand ที่ไม่มีใน mytrand :', bankNotInMy);
-      let myBankNoServer = [];
-      let myBankServer = [];
-      for (let index = 0; index < bankNotInMy.length; index++) {
-        const transactionID = bankNotInMy[index]['ເລກທູລະກຳ'];
-        const data = {
-          machineId: this.machineId,
-          fromDate: this.fromDate,
-          toDate: this.toDate,
-          token: this.token,
-          transactionID: transactionID
-        };
-
-        const responseServer = await this.apiService
-          .checkDBTransactionMulti(data)
-          .toPromise();
-        if (responseServer['status'] == 1) {
-          myBankServer.push(responseServer['data']?.data);
-        } else {
-          myBankNoServer.push(bankNotInMy[index])
-        }
-      }
-
-
-
-      // 3. mytrand ที่มีใน bankTrand
-      const myInBank = run.filter(m => bankIds.has(m.transactionID));
-      // console.log('-----> 3. mytrand ที่มีใน bankTrand :', myInBank);
-
-
-      // 4. mytrand ที่ไม่มีใน bankTrand
-      const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
-      let myNotInBankNotPaid = [];
-      let myNotInBankPaid = [];
-
-      // console.log('-----> 4. mytrand ที่ไม่มีใน bankTrand :', myNotInBank);
-      for (let index = 0; index < myNotInBank.length; index++) {
-        const element = myNotInBank[index];
-        const responseCheck = await this.apiService
-          .checkLaoQRTransaction(element?.transactionID)
-          .toPromise();
-
-        if (responseCheck['status'] == 1) {
-          myNotInBankPaid.push(responseCheck['data']?.data);
-        } else {
-          myNotInBankNotPaid.push(element)
-        }
-      }
-
-
-      this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer, billNotPaidData, run, myInBank, this.dataExcel);
-
-
-      // 4. mytrand ที่ไม่มีใน bankTrand
-      // const myNotInBank = run.filter(m => !bankIds.has(m.transactionID));
+      const docNumber = `${year.toString().slice(-2)}${month}${day}-${random}`;
+      // console.log(date);
+      this.apiService.modal
+        .create({
+          component: PrintReceiptPage,
+          componentProps: {
+            dateData: date,
+            customerPhone: customerPhone,
+            customerName: this.customer,
+            month: this.month,
+            totalSaleCount: this.totalSaleCount,
+            totalSalePrice: this.totalSalePrice,
+            totalFranchiseCount: this.totalFranchiseCount,
+            rate: this.rate,
+            docNumber: docNumber
+          },
+          cssClass: 'custom-modal-full',
+          backdropDismiss: true,
+        })
+        .then((modal) => modal.present());
     } catch (error) {
       console.error('Error onProcessBilling:', error);
     }

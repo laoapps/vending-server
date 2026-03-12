@@ -255,6 +255,10 @@ const routes: Routes = [
   {
     path: 'new-report-sale',
     loadChildren: () => import('./new-report-sale/new-report-sale.module').then( m => m.NewReportSalePageModule)
+  },
+  {
+    path: 'print-receipt',
+    loadChildren: () => import('./print-receipt/print-receipt.module').then( m => m.PrintReceiptPageModule)
   }
 ];
 @NgModule({

@@ -1,0 +1,239 @@
+ion-toolbar {
+  --background: #1a5276;
+  --color: white;
+}
+
+ion-content {
+  --background: #f0f2f5;
+}
+
+// ─── Receipt Card ─────────────────────────────────────────────────────────────
+.receipt-card {
+  background: white;
+  margin: 16px auto;
+  max-width: 720px;
+  padding: 24px 28px;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  font-family: 'Noto Sans Lao', 'Sarabun', Arial, sans-serif;
+}
+
+// ─── Company Header ───────────────────────────────────────────────────────────
+.company-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.company-left {
+  flex: 1;
+}
+
+.company-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+}
+
+.company-info {
+  font-size: 12px;
+  color: #444;
+  margin: 2px 0;
+  line-height: 1.5;
+}
+
+.company-right {
+  text-align: right;
+  min-width: 140px;
+  padding-left: 16px;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.meta-label {
+  color: #555;
+}
+
+.meta-value {
+  font-weight: 600;
+  color: #111;
+}
+
+// ─── Receipt Title ────────────────────────────────────────────────────────────
+.receipt-title {
+  text-align: center;
+  margin: 20px 0 16px;
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    text-decoration: underline;
+    color: #111;
+    letter-spacing: 1px;
+  }
+}
+
+// ─── Table ────────────────────────────────────────────────────────────────────
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    border: 1px solid #999;
+    padding: 8px 10px;
+    color: #111;
+  }
+
+  .customer-row td {
+    background: white;
+    font-size: 13px;
+  }
+
+  .label-text {
+    font-weight: 700;
+  }
+
+  .installment-cell {
+    text-align: center;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  .header-row th {
+    background: #e8e8e8;
+    font-weight: 700;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .col-no {
+    text-align: center;
+    width: 48px;
+  }
+
+  .col-desc {
+    text-align: left;
+  }
+
+  .col-qty {
+    text-align: center;
+    width: 80px;
+  }
+
+  .col-amount {
+    text-align: right;
+    width: 110px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .total-row {
+    background: #cce5ff;
+
+    td {
+      font-weight: 700;
+    }
+  }
+}
+
+// ─── Bank Section ─────────────────────────────────────────────────────────────
+.bank-section {
+  margin: 16px 0 24px;
+  font-size: 12.5px;
+  line-height: 1.9;
+
+  .bank-title {
+    text-decoration: underline;
+    color: #222;
+    margin-bottom: 4px;
+  }
+
+  .bank-account {
+    font-weight: 700;
+    color: #111;
+    letter-spacing: 0.3px;
+  }
+}
+
+// ─── Signature Section ────────────────────────────────────────────────────────
+.signature-section {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-top: 40px;
+  gap: 48px;
+}
+
+.sig-block {
+  text-align: center;
+  min-width: 150px;
+}
+
+.sig-label {
+  font-size: 13px;
+  color: #222;
+}
+
+.sig-spacer {
+  height: 60px;
+}
+
+.sig-name {
+  font-size: 12px;
+  color: #333;
+  line-height: 1.6;
+  margin-top: 6px;
+
+  p {
+    margin: 0;
+  }
+}
+
+// ─── Action Buttons ───────────────────────────────────────────────────────────
+.action-buttons {
+  max-width: 720px;
+  margin: 0 auto 32px;
+  display: flex;
+  gap: 12px;
+
+  ion-button {
+    flex: 1;
+    --border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    height: 48px;
+  }
+}
+
+// ─── Print Styles ─────────────────────────────────────────────────────────────
+@media print {
+  ion-header,
+  .action-buttons {
+    display: none !important;
+  }
+
+  ion-content {
+    --background: white;
+  }
+
+  .receipt-card {
+    box-shadow: none;
+    margin: 0;
+    padding: 10px;
+  }
+}

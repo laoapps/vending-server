@@ -3,10 +3,44 @@
     <ion-icon slot="start"></ion-icon>
     ກວດບິນທີ່ຍັງບໍ່ໄດ້ຈ່າຍ
   </ion-button>
-  <ion-button expand="block" (click)="testSave()">
+  <!-- <ion-button expand="block" (click)="testSave()">
     <ion-icon slot="start"></ion-icon>
     ທົດສອບ
-  </ion-button>
+  </ion-button> -->
+
+  <ion-row>
+    <ion-col size="4">
+      <ion-label>ຊື່ລູກຄ້າ</ion-label>
+      <ion-input style="border: 1px solid gray; border-radius: 10px;" [(ngModel)]="customer" type="text"
+        placeholder="ລູກຄ້າ"></ion-input>
+    </ion-col>
+    <ion-col size="3">
+      <ion-label>ຄ່າທຳນຽມ(%)</ion-label>
+      <ion-input style="border: 1px solid gray; border-radius: 10px;" [(ngModel)]="rate" type="text"
+        placeholder="ຄ່າທຳນຽມ"></ion-input>
+    </ion-col>
+    <ion-col size="3">
+      <ion-label>ເດືອນທີ່ເກັບເງິນ</ion-label>
+      <ion-input style="border: 1px solid gray; border-radius: 10px;" [(ngModel)]="month" type="text"
+        placeholder="ເດືອນ"></ion-input>
+    </ion-col>
+    <ion-col size="2">
+      <ion-button (click)="savedata()" expand="block" fill="clear" shape="round">
+        Save
+      </ion-button>
+    </ion-col>
+
+    <ion-col size="2">
+      <ion-item lines="none">
+        <ion-label> ມີຫຼາຍຕູ້ </ion-label>
+        <ion-toggle color="success" *ngIf="isManyMachine" checked (ionChange)="storeOpen(0)"></ion-toggle>
+        <ion-toggle color="success" *ngIf="!isManyMachine" (ionChange)="storeOpen(1)"></ion-toggle>
+      </ion-item>
+    </ion-col>
+
+
+  </ion-row>
+
   <ion-card class="filter-card">
     <ion-card-header>
       <ion-card-title>ເລືອກຊ່ວງວັນທີ</ion-card-title>
@@ -44,50 +78,25 @@
           </ion-item>
         </div>
 
-        <ion-button expand="block" color="success" (click)="onProcess()" [disabled]="!selectedFile">
+        <!-- <ion-button expand="block" color="success" (click)="onProcess()" [disabled]="!selectedFile">
           <ion-icon name="play-outline" slot="start"></ion-icon>
           ນຳເງິນ
-        </ion-button>
+        </ion-button> -->
 
         <ion-button expand="block" color="success" (click)="onProcessBilling()" [disabled]="!selectedFile">
           <ion-icon name="play-outline" slot="start"></ion-icon>
           Process Billing
         </ion-button>
 
-        <ion-button expand="block" color="success" (click)="onProcessBillingManyMachine()" [disabled]="!selectedFile">
+        <ion-button expand="block" color="success" (click)="showPrintReceipt()">
           <ion-icon name="play-outline" slot="start"></ion-icon>
-          Process Multi Billing
+          ສະແດງໃບບິນ
         </ion-button>
       </div>
     </ion-card-content>
   </ion-card>
 
   <!-- ✅ ตารางแสดงผล -->
-  <ion-card class="table-card" *ngIf="bankInMyData == null false : true > 0">
-    <ion-card-header>
-      <ion-card-title>1.ສັງລວມ</ion-card-title>
-    </ion-card-header>
-
-    <ion-card-content>
-      <ion-grid class="custom-grid">
-        <ion-row class="table-header">
-          <ion-col>ຈຳນວນທັງໝົດ</ion-col>
-          <ion-col>ເງິນທັງໝົດ</ion-col>
-          <ion-col>HMFranchaseRate</ion-col>
-          <ion-col>HMFranchaseFee</ion-col>
-          <!-- <ion-col>ເລກອ້າງອີງ</ion-col> -->
-        </ion-row>
-
-        <ion-row *ngFor="let p of bankInMyData" class="table-row">
-          <ion-col>{{ p['ຈຳນວນທັງໝົດ'] }}</ion-col>
-          <ion-col>{{ p['ເງິນທັງໝົດ'] }}</ion-col>
-          <ion-col>{{ p['HMFranchaseRate'] }}</ion-col>
-          <ion-col>{{ p['HMFranchaseFee'] }}</ion-col>
-          <!-- <ion-col>{{ p.memo }}</ion-col> -->
-        </ion-row>
-      </ion-grid>
-    </ion-card-content>
-  </ion-card>
 
   <!-- <ion-card class="table-card" *ngIf="allMMoneyData.length > 0">
     <ion-card-header>

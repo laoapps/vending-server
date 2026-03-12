@@ -1,0 +1,116 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>ໃບເກັບເງິນ</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="printReceipt()">
+        <ion-icon name="print-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Receipt Card -->
+  <div class="receipt-card" id="receipt-content">
+
+    <!-- Company Header -->
+    <div class="company-header">
+      <div class="company-left">
+        <h2 class="company-name">{{ receipt.companyName }}</h2>
+        <p class="company-info">{{ receipt.address }}</p>
+        <p class="company-info">ໂທ: {{ receipt.phones }}</p>
+        <p class="company-info">Email: {{ receipt.emails }}</p>
+      </div>
+      <div class="company-right">
+        <div class="meta-row">
+          <span class="meta-label">ວັນທີ</span>
+          <span class="meta-value">{{ receipt.date }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">ເລກທີ</span>
+          <span class="meta-value">{{ receipt.receiptNo }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="receipt-title">
+      <h1>ໃບເກັບເງິນ</h1>
+    </div>
+
+    <!-- Receipt Table -->
+    <div class="table-container">
+      <table class="receipt-table">
+        <thead>
+          <tr class="customer-row">
+            <td colspan="3">
+              <span class="label-text">ລູກຄ້າ:</span>
+              {{ receipt.customerName }} {{ receipt.customerCode }}
+            </td>
+            <td class="installment-cell">{{ receipt.installment }}</td>
+          </tr>
+          <tr class="header-row">
+            <th>ລຳດັບ</th>
+            <th>ລາຍລະອຽດ</th>
+            <th>ຈ/ນ</th>
+            <th>ລາຄາ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of receipt.items" [class.total-row]="item.isTotal">
+            <td class="col-no">{{ item.isTotal ? '' : item.no }}</td>
+            <td class="col-desc">{{ item.description }}</td>
+            <td class="col-qty">{{ item.qty }}</td>
+            <td class="col-amount">{{ formatNumber(item.amount) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Bank Info -->
+    <div class="bank-section">
+      <p class="bank-title">ກໍລະນີບໍ່ເອົາບິນອາກອນ ໂອນໃຫ້ບັນຊີເຈົ້າຂອງ ບໍລິສັດເລີຍ</p>
+      <p>{{ receipt.bankInfo.accountName }}</p>
+      <p class="bank-account">{{ receipt.bankInfo.lakAccount }}</p>
+      <p class="bank-account">{{ receipt.bankInfo.usdAccount }}</p>
+      <p class="bank-account">{{ receipt.bankInfo.mMoney }}</p>
+    </div>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+      <div class="sig-block">
+        <div class="sig-label">ລາຍເຊັນລູກຄ້າ</div>
+        <div class="sig-spacer"></div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-label">ຜູ້ສັງລວມ</div>
+        <div class="sig-spacer"></div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-label">ການເງິນ</div>
+        <div class="sig-name">
+          <p>{{ receipt.signedBy }}</p>
+          <p>{{ receipt.signedByEn }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <ion-button expand="block" color="primary" (click)="printReceipt()">
+      <ion-icon name="print-outline" slot="start"></ion-icon>
+      ພິມ / Print
+    </ion-button>
+    <ion-button expand="block" color="success" (click)="exportPDF()" [disabled]="isExporting">
+      <ion-icon name="document-outline" slot="start"></ion-icon>
+      {{ isExporting ? 'ກຳລັງສ້າງ...' : 'Export PDF' }}
+    </ion-button>
+  </div>
+
+</ion-content>
