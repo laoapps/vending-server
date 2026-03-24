@@ -698,10 +698,6 @@ export class Tab1Page implements OnDestroy {
       this.startTestMotor();
       return;
     }
-    // setTimeout(() => {
-    //   this.startTestMotor();
-
-    // }, 15000);
     try {
       await ScreenBrightness.setBrightness({ brightness: 1 });
     } catch (error) {
@@ -712,6 +708,21 @@ export class Tab1Page implements OnDestroy {
 
     // this.startTestMotor();
     // return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
     //   await this.serial.close();
@@ -1669,14 +1680,13 @@ export class Tab1Page implements OnDestroy {
   }
   private handleFatalError() {
     console.error('CRITICAL COMMUNICATION ERROR - EXITING APPLICATION');
-    // Replace with your actual exit method
-    if (typeof App !== 'undefined') {
-      this.apiService.exitApp();
+    //Replace with your actual exit method
+    // if (typeof App !== 'undefined') {
+    //   this.apiService.exitApp();
 
-    } else if (typeof process !== 'undefined') {
-      this.apiService.exitApp();
-
-    }
+    // } else if (typeof process !== 'undefined') {
+    //   this.apiService.exitApp();
+    // }
   }
   private processResponseADH814(rawData: string): IResModel {
     try {
