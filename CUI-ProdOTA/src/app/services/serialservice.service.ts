@@ -108,7 +108,7 @@ export class SerialServiceService  {
         this.initialized = true;
         resolve(portName);
       } catch (err) {
-        console.log('serial service Error initializing serial port:', err);
+        console.log('serial service Error initializing serial port:', JSON.stringify({err:err}));
         reject(err);
       }
     });
