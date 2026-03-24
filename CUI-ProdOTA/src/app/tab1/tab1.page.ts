@@ -698,10 +698,6 @@ export class Tab1Page implements OnDestroy {
       this.startTestMotor();
       return;
     }
-    setTimeout(() => {
-      this.startTestMotor();
-
-    }, 15000);
     try {
       await ScreenBrightness.setBrightness({ brightness: 1 });
     } catch (error) {
