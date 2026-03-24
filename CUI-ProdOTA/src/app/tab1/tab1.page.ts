@@ -698,10 +698,10 @@ export class Tab1Page implements OnDestroy {
       this.startTestMotor();
       return;
     }
-    setTimeout(() => {
-      this.startTestMotor();
+    // setTimeout(() => {
+    //   this.startTestMotor();
 
-    }, 15000);
+    // }, 15000);
     try {
       await ScreenBrightness.setBrightness({ brightness: 1 });
     } catch (error) {
@@ -712,21 +712,6 @@ export class Tab1Page implements OnDestroy {
 
     // this.startTestMotor();
     // return;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    \
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
     //   await this.serial.close();
