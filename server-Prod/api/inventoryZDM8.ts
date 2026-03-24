@@ -1954,7 +1954,7 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
 
-            
+
 
 
             router.post(
@@ -3865,6 +3865,180 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+            // cash-In
+            // In-memory storage for demo (replace with real DB in production)
+            interface MachineState {
+                balance: number;
+                lastHash: string;
+                secret: string; // TOTP secret (store encrypted in real DB)
+            }
+
+
+
+            const machines = new Map<string, MachineState>();
+
+
+
+            // POST /api/blockchain/sync   (or adjust path to match your apiBase.post(''))
+            router.post('/blockchain/sync', async (req: Request, res: Response) => {
+                try {
+                    const { command, data, token } = req.body as {
+                        command: string;
+                        data: {
+                            machineId: string;
+                            otp: string;
+                            blocks: any[];
+                            LaabXWallet: string;
+                        };
+                        token: string;
+                    };
+
+                    if (command !== 'blockChainSync') {
+                        return res.status(400).json({ status: 0, message: 'Invalid command' });
+                    }
+
+                    const { machineId, otp, blocks, LaabXWallet } = data;
+
+                    if (
+                        !machineId ||
+                        !otp ||
+                        !Array.isArray(blocks) ||
+                        blocks.length === 0 ||
+                        !LaabXWallet
+                    ) {
+                        return res.status(400).json({
+                            status: 0,
+                            message: 'Missing required fields: machineId, otp, blocks, LaabXWallet',
+                        });
+                    }
+
+                    // 1. Verify token = SHA256(machineId + otp)
+                    const expectedToken = crypto
+                        .createHash('sha256')
+                        .update(machineId + otp)
+                        .digest('hex');
+
+                    if (token !== expectedToken) {
+                        return res.status(401).json({
+                            status: 0,
+                            message: 'Invalid token',
+                        });
+                    }
+
+                    // 2. Validate TOTP (otp)
+                    const expectedOtp = this.getExpectedTOTP(machineId);
+                    if (otp !== expectedOtp) {
+                        return res.status(401).json({
+                            status: 0,
+                            message: 'Invalid OTP/TOTP',
+                        });
+                    }
+
+                    // 3. Get or initialize machine state
+                    if (!machines.has(machineId)) {
+                        machines.set(machineId, {
+                            balance: 0,
+                            lastHash: '0000000000000000000000000000000000000000000000000000000000000000',
+                            secret: `secret-key-for-machine-${machineId}`,
+                        });
+                    }
+
+                    const machine = machines.get(machineId)!;
+                    let delta = 0;
+                    let currentPrevHash = machine.lastHash;
+
+                    // 4. Validate and process each block
+                    for (const block of blocks) {
+                        // a. Check chain continuity
+                        if (block.prevHash !== currentPrevHash) {
+                            return res.status(400).json({
+                                status: 0,
+                                message: `Chain broken: prev_hash mismatch at index ${block.block_index}`,
+                            });
+                        }
+
+                        // b. Verify hash
+                        const computedHash = this.computeBlockHash(block);
+                        if (computedHash !== block.hash) {
+                            return res.status(400).json({
+                                status: 0,
+                                message: `Invalid hash at index ${block.block_index}`,
+                            });
+                        }
+
+                        // c. Parse data (handle string or object)
+                        let txData = block.data;
+                        if (typeof txData === 'string') {
+                            try {
+                                txData = JSON.parse(txData);
+                            } catch {
+                                return res.status(400).json({
+                                    status: 0,
+                                    message: 'Invalid block data JSON at index ' + block.block_index,
+                                });
+                            }
+                        }
+
+                        // d. Apply amount changes
+                        const amount = Number(txData.amount) || 0;
+
+                        if (txData.type === 'insert') {
+                            delta += amount;
+                        } else if (txData.type === 'withdrawal' || txData.type === 'reset') {
+                            delta -= amount;
+                        }
+
+                        // e. Move forward in chain
+                        currentPrevHash = block.hash;
+                    }
+
+                    // 5. Apply balance change (in real app: use DB transaction!)
+                    const oldBalance = machine.balance;
+                    machine.balance += delta;
+                    machine.lastHash = currentPrevHash;
+
+                    // 6. Simulate transfer to LaabXWallet
+                    // Replace this with real wallet integration (e.g. crypto API, bank transfer, etc.)
+                    console.log(
+                        `Transferring ${Math.abs(delta)} LAK from machine ${machineId} to LaabXWallet: ${LaabXWallet}`
+                    );
+                    // Example: await walletService.transfer(LaabXWallet, Math.abs(delta));
+
+                    // 7. Success response (matches what client expects)
+                    return res.json({
+                        status: 1,
+                        message: 'Blockchain synced successfully',
+                        processedBlocks: blocks.length,
+                        oldBalance,
+                        newBalance: machine.balance,
+                        transferredTo: LaabXWallet,
+                        transferredAmount: Math.abs(delta),
+                    });
+                } catch (err) {
+                    console.error('Sync error:', err);
+                    return res.status(500).json({
+                        status: 0,
+                        message: 'Server error during sync',
+                    });
+                }
+            });
+
+            // Optional: GET current balance (for testing/debug)
+            router.get('/balance/:machineId', (req: Request, res: Response) => {
+                const { machineId } = req.params;
+                const machine = machines.get(machineId);
+
+                if (!machine) {
+                    return res.status(404).json({ status: 0, message: 'Machine not found' });
+                }
+
+                res.json({
+                    status: 1,
+                    balance: machine.balance,
+                    lastHash: machine.lastHash,
+                });
+            });
+
             // REPORT
             router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
@@ -5410,6 +5584,34 @@ export class InventoryZDM8 implements IBaseClass {
             console.log(error);
         }
     }
+
+    // CASH IN FUNCTIONS
+    // Helper: compute block hash (must match client-side exactly)
+    computeBlockHash(block: any): string {
+        const payload = {
+            prevHash: block.prevHash,
+            index: block.block_index,
+            data: block.data,
+            timestamp: block.timestamp,
+        };
+        const str = JSON.stringify(payload);
+        return crypto.createHash('sha256').update(str).digest('hex');
+    }
+
+    // Helper: generate expected TOTP (replace with real secret from DB)
+    getExpectedTOTP(machineId: string): string {
+        // In production: fetch secret from secure DB
+        const secret = `secret-key-for-machine-${machineId}`; // ← REPLACE THIS
+
+        const time = Math.floor(Date.now() / 30000); // 30-second window
+        return crypto
+            .createHmac('sha1', secret)
+            .update(time.toString())
+            .digest('hex')
+            .slice(0, 6);
+    }
+
+    ///
     async listOnlineMachines(): Promise<Array<{ machine: any, status: any }>> {
         const m = new Array<{ machine: any, status: any }>();
         for (let index = 0; index < this.wsClient.length; index++) { m.push({ machine: this.findMachineId(this.wsClient[index]['machineId']), status: await readMachineStatus(this.wsClient[index]['machineId']) }); }

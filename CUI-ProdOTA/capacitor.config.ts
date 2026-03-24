@@ -24,10 +24,11 @@ const config: CapacitorConfig = {
       enabled: true,
       resetOnUpdate: true
     },
-    CapacitorSQLite: {
-      iosDatabaseLocation: 'Library',
+   CapacitorSQLite: {
+      iosDatabaseLocation: 'Library/CapacitorDatabase',
+      androidIsEncryption: false,     // set true later if needed
       iosIsEncryption: false,
-      androidIsEncryption: false
+      // electronIsEncryption: false,
     },
     CapacitorUpdater: {
       autoUpdate: false, // Disable auto-updates to control manually

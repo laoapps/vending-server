@@ -1,10 +1,11 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { PluginListenerHandle } from '@capacitor/core/types/definitions';
 import { Toast } from '@capacitor/toast';
-import { SerialConnectionCapacitor, SerialPortListResult, SerialPortEventTypes } from 'SerialConnectionCapacitor';
+import { SerialConnectionCapacitor, SerialPortEventTypes } from 'SerialConnectionCapacitor';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, PrintError } from '../services/syste.model';
 import { Subject } from 'rxjs';
 import { App } from '@capacitor/app';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
 
 @Injectable({
   providedIn: 'root'
@@ -80,7 +81,17 @@ export class SerialServiceService  {
             addLogMessage(log, JSON.stringify(data), data?.ports);
             console.log('serial service List ports:', data?.ports);
             this.serialEventSubject.next({ event: SerialPortEvent.PortsListed, data: data?.ports });
-          })
+          }),
+          SerialConnectionCapacitor.addListener('nv9Event', (data) => {
+            addLogMessage(log, JSON.stringify(data), data);
+            console.log('serial service nv9Event:', data);
+            this.serialEventSubject.next({ event: SerialPortEvent.nv9Event, data: data });
+          }),
+          SerialConnectionCapacitor.addListener('usbDeviceEvent', (data) => {
+            addLogMessage(log, JSON.stringify(data), data);
+            console.log('serial service usbDeviceEvent:', data);
+            this.serialEventSubject.next({ event: SerialPortEvent.usbDeviceEvent, data: data });
+          }),
         );
 
         const result = await SerialConnectionCapacitor.listPorts();
@@ -363,9 +374,11 @@ async nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number):
         reject(PrintError(command, params, 'Serial port not initialized'));
         return;
       }
+      
 
       let nv9Command: string;
       let nv9Args: any = {};
+      
 
       // Map your EMACHINE_COMMAND to NV9 SSP commands
       switch (command) {
@@ -413,7 +426,9 @@ async nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number):
             transactionID 
           });
           return;
-          
+        case EMACHINE_COMMAND.NV9_REINIT:
+          nv9Command = 'reinit';
+          break;
         default:
           reject(PrintError(command, params, 'Unknown NV9 command'));
           return;
@@ -435,13 +450,13 @@ async nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number):
       resolve({ 
         command, 
         data: responseData || result, 
-        message: result.message || 'NV9 command executed', 
+        message: result.error || 'NV9 command executed', 
         status: result.success ? 1 : 0, 
         transactionID 
       });
 
     } catch (error:any) {
-      console.error('NV9 command error:', error);
+        console.error('NV9 command error:', JSON.stringify(error||{}));
       reject(PrintError(command, params, error.message));
     }
   });
@@ -484,5 +499,7 @@ export enum SerialPortEvent {
   ReadingStopped = 'readingStopped',
   SerialWriteSuccess = 'serialWriteSuccess',
   CommandAcknowledged = 'commandAcknowledged',
-  CommandQueued = 'commandQueued'
+  CommandQueued = 'commandQueued',
+  nv9Event='nv9Event',
+  usbDeviceEvent='usbDeviceEvent'
 }

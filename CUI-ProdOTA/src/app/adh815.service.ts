@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
-import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
+
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IlogSerial, IResModel, ISerialService, PrintError, PrintSucceeded } from './services/syste.model';
 import { SerialServiceService } from './services/serialservice.service';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
+
 /// FOR RS485 only 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +17,7 @@ export class ADH815Service implements ISerialService {
   parity: 'none' = 'none';
   dataBits: 8 = 8;
   stopBits: 1 = 1;
-  private adh815: ADH815Protocol;
+  private adh815: ADH815Protocol | undefined;
   private totalValue = 0; // Optional: track value if bill validator functionality is intended
   machinestatus = { data: '' };
   constructor(private serialService: SerialServiceService) { }
@@ -23,7 +25,16 @@ export class ADH815Service implements ISerialService {
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
   }
-
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+    return new Promise<IResModel>(async (resolve, reject) => {
+      this.serialService.nv9Command(command, params, transactionID).then(result => {
+        resolve(result);
+      }).catch(error => {
+        console.error('NV9 command error:', JSON.stringify(error||{}));
+        reject(PrintError(command, params, error.message));
+      });
+    });
+  }
   private initADH815(): void {
     const portAdapter: CommunicationPort = {
       send: async (data: string) => {
@@ -61,6 +72,9 @@ export class ADH815Service implements ISerialService {
 
   private async setupDevice(): Promise<void> {
     try {
+      if (!this.adh815) {
+        return alert('ADH815 protocol not initialized');
+      }
       const idResponse = await this.adh815.requestID(0x02); // Example slave address 2
       this.addLogMessage(this.log, `Device ID response: ${JSON.stringify(idResponse)}`);
       // Additional setup (e.g., enable bill acceptance) can be added if specified
@@ -68,7 +82,7 @@ export class ADH815Service implements ISerialService {
       return new Promise((resolve) => {
         resolve();
       });
-    } catch (err) {
+    } catch (err:any) {
       this.addLogMessage(this.log, `Setup error: ${err.message}`);
       return new Promise((resolve, reject) => {
         reject(err);

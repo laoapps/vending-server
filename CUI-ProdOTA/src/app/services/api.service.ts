@@ -49,7 +49,7 @@ import { VideoCacheService } from '../video-cache.service';
 import { Indexsavesale } from '../indexsavesale';
 import { App } from '@capacitor/app';
 
-var REQUEST_TIME_OUT = 10000;
+var REQUEST_TIME_OUT = 10000; 
 
 @Injectable({
   providedIn: 'root',
@@ -2254,6 +2254,49 @@ export class ApiService {
       });
     }) as Promise<AxiosResponse<IResModel>>;
   }
+  blockChainSync(unsynced: Array<any>,LaabXWallet: string) {
+    const req = {} as IReqModel;
+    req.command = EClientCommand.blockChainSync;
+    
+    req.data = {
+      machineId: this.machineId.machineId,
+      otp: this.machineId.otp,
+      blocks: unsynced,  // Send the chain (server verifies hashes, etc.)
+      LaabXWallet
+    };
+
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>('/blockchain/sync', req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+    blockChainSyncLog(logs: any) {
+    const req = {} as IReqModel;
+    req.command = EClientCommand.blockChainSync;
+    
+    req.data = {
+      machineId: this.machineId.machineId,
+      otp: this.machineId.otp,
+      logs
+    };
+
+    req.token = cryptojs
+      .SHA256(this.machineId.machineId + this.machineId.otp)
+      .toString(cryptojs.enc.Hex);
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>('/blockchain/logs', req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
 
 
 
@@ -2753,7 +2796,7 @@ export class ApiService {
         this.audioElement.play();
 
         resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
@@ -2770,7 +2813,7 @@ export class ApiService {
         this.audioElement.play();
 
         resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
@@ -2781,12 +2824,12 @@ export class ApiService {
       try {
         let base64: string = '';
         const reader = new FileReader();
-        reader.addEventListener('load', (event) => {
+        reader.addEventListener('load', (event: any) => {
           resolve(event.target.result as string);
         });
         reader.readAsDataURL(blob);
         console.log(`base64 der`, base64);
-      } catch (error) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
@@ -2812,13 +2855,13 @@ export class ApiService {
         // });
 
         // resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
   }
   displayImage(name: string) {
-    return this.imageList[name].filter((item) => item.name == name)[0]?.file;
+    return this.imageList[name].filter((item: any) => item.name == name)[0]?.file;
   }
 
   formatMoney(s: number) {

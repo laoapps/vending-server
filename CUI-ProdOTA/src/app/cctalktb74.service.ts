@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
-import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
-import { SerialPortListResult } from 'SerialConnectionCapacitor';
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintError, PrintSucceeded } from './services/syste.model';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
+
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,16 @@ export class CCTALKTb74Service implements ISerialService {
     console.log(message);
     addLogMessage(log, message, consoleMessage);
   }
-
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+    return new Promise<IResModel>(async (resolve, reject) => {
+      this.serialService.nv9Command(command, params, transactionID).then(result => {
+        resolve(result);
+      }).catch(error => {
+        console.error('NV9 command error:', JSON.stringify(error||{}));
+        reject(PrintError(command, params, error.message));
+      });
+    });
+  }
   private initCctalk(): void {
     this.addLogMessage(this.log, 'Initializing ccTalk...');
     const sendData = (data: string) => {

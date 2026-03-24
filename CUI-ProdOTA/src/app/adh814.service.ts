@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { IResModel, ESerialPortType, ISerialService, EMACHINE_COMMAND, IlogSerial, PrintError } from './services/syste.model';
-import { SerialPortListResult } from 'SerialConnectionCapacitor';
+
 import { Toast } from '@capacitor/toast';
 import dayjs from 'dayjs';
 import { App } from '@capacitor/app';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
 
 export enum EADH814_COMMAND {
   REQUEST_ID = 'A1',
@@ -471,10 +472,10 @@ export class ADH814Service implements ISerialService {
   }
   nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
-      this.nv9Command(command, params, transactionID).then(result => {
+      this.serialService.nv9Command(command, params, transactionID).then(result => {
         resolve(result);
       }).catch(error => {
-        console.error('NV9 command error:', error);
+        console.error('NV9 command error:', JSON.stringify(error||{}));
         reject(PrintError(command, params, error.message));
       });
     });

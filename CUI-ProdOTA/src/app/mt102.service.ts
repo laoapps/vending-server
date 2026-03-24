@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
 import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintError, PrintSucceeded } from './services/syste.model';
-import { SerialPortListResult } from 'SerialConnectionCapacitor/dist/esm/definitions';
+
 import { interval, Subscription } from 'rxjs';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
 
 @Injectable({
   providedIn: 'root'
@@ -32,10 +33,10 @@ export class MT102Service implements ISerialService {
 
   nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
     return new Promise<IResModel>(async (resolve, reject) => {
-      this.nv9Command(command, params, transactionID).then(result => {
+      this.serialService.nv9Command(command, params, transactionID).then(result => {
         resolve(result);
       }).catch(error => {
-        console.error('NV9 command error:', error);
+        console.error('NV9 command error:', JSON.stringify(error||{}));
         reject(PrintError(command, params, error.message));
       });
     });
@@ -707,14 +708,5 @@ class M102Protocol {
     return this.buildPacket(0xFF, [address], 255);
   }
 
-  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
-      return new Promise<IResModel>(async (resolve, reject) => {
-        this.nv9Command(command, params, transactionID).then(result => {
-          resolve(result);
-        }).catch(error => {
-          console.error('NV9 command error:', error);
-          reject(PrintError(command, params, error.message));
-        });
-      });
-    }
+  
 }

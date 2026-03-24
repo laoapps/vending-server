@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SerialServiceService } from './services/serialservice.service';
-import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IBankNote, IlogSerial, IResModel, ISerialService } from './services/syste.model';
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, hexToUint8Array, IBankNote, IlogSerial, IResModel, ISerialService, PrintError } from './services/syste.model';
 import { Subject } from 'rxjs';
 
 // BigInt polyfill for older browsers
@@ -139,6 +139,16 @@ export class EsspService implements ISerialService {
       console.log('COMMING DATA: ' + `name: ${event.name}, data: ${event.data}, description: ${event.description}`);
     })
   }
+    nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+      return new Promise<IResModel>(async (resolve, reject) => {
+        this.serialService.nv9Command(command, params, transactionID).then(result => {
+          resolve(result);
+        }).catch(error => {
+        console.error('NV9 command error:', JSON.stringify(error||{}));
+          reject(PrintError(command, params, error.message));
+        });
+      });
+    }
 
   // Simplified prime check using number instead of BigInt
   isPrime(n: number): boolean {

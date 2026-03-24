@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintSucceeded } from './services/syste.model';
+import { addLogMessage, EMACHINE_COMMAND, ESerialPortType, IlogSerial, IResModel, ISerialService, PrintError, PrintSucceeded } from './services/syste.model';
 import { SerialServiceService } from './services/serialservice.service';
-import { SerialPortListResult } from 'SerialConnectionCapacitor';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
+
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +33,16 @@ export class Tp77PulseService implements ISerialService {
   private pulseTimer: NodeJS.Timeout | null = null;
 
   constructor(private serialService: SerialServiceService) {}
-
+  nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
+    return new Promise<IResModel>(async (resolve, reject) => {
+      this.serialService.nv9Command(command, params, transactionID).then(result => {
+        resolve(result);
+      }).catch(error => {
+        console.error('NV9 command error:', JSON.stringify(error||{}));
+        reject(PrintError(command, params, error.message));
+      });
+    });
+  }
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
   }

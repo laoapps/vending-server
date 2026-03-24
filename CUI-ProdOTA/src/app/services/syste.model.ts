@@ -614,6 +614,7 @@ export enum EMACHINE_COMMAND {
   NV9_STATUS = 'NV9_STATUS',
   NV9_CREDIT_NOTE = 'NV9_CREDIT_NOTE', // Event received from device
   NV9_READ_NOTE = 'NV9_READ_NOTE',     // Event received from device
+  NV9_REINIT = 'reinit' 
 
 }
 export enum NV9Event {
@@ -691,7 +692,8 @@ export function hexToUint8Array(hexString: string): Uint8Array {
     return new Uint8Array(bytes);
 }
 
-import { SerialPortListResult } from 'SerialConnectionCapacitor';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
+
 
 export interface ISerialService {
     log: IlogSerial;
@@ -1048,7 +1050,8 @@ export enum EClientCommand {
     buyTopUp = "buyTopUp",
     MACHINE_STATAUS = "MACHINE_STATAUS",
     SaveSaleAndDrop = "SaveSaleAndDrop",
-    buyLAABX = "buyLAABX"
+    buyLAABX = "buyLAABX",
+    blockChainSync = "blockChainSync"
 
 }
 export interface IMachineId {

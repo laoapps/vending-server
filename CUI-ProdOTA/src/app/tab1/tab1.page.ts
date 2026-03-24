@@ -693,10 +693,10 @@ export class Tab1Page implements OnDestroy {
   }
 
   async ngOnInit() {
-    if (localStorage.getItem('startTestMotor')) {
-      this.startTestMotor();
-      return;
-    }
+    // if (localStorage.getItem('startTestMotor')) {
+    //   this.startTestMotor();
+    //   return;
+    // }
     // setTimeout(() => {
     //  this.startTestMotor();
 
@@ -708,8 +708,8 @@ export class Tab1Page implements OnDestroy {
     // }
 
 
-    // this.startTestMotor();
-    // return;
+    this.startTestMotor();
+    return;
 
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
@@ -1443,7 +1443,7 @@ export class Tab1Page implements OnDestroy {
     if (!this.serial) {
       Toast.show({ text: 'serial not init for start VMC' });
     } else {
-      this.serial.getSerialEvents().subscribe(event => {
+      this.serial.getSerialEvents().subscribe((event:any) => {
         try {
           console.log('vmc service event received: ' + JSON.stringify(event));
           if (event.event === 'dataReceived') {
@@ -1457,6 +1457,9 @@ export class Tab1Page implements OnDestroy {
           } else if (event.event === 'error') {
             console.error('Serial error:', event);
             // this.addLogMessage(`Serial error: ${JSON.stringify(event)}`);
+          }else{
+            console.error('Serial event:', event);
+            
           }
         } catch (error: any) {
           console.error('Error processing event:', error);
@@ -1514,7 +1517,7 @@ export class Tab1Page implements OnDestroy {
       if (!this.serial) {
         Toast.show({ text: 'serial not init ' + this.selectedDevice });
       } else {
-        this.serial.getSerialEvents().subscribe(event => {
+        this.serial.getSerialEvents().subscribe((event:any) => {
           try {
             console.log('zdm8 service event received: ' + JSON.stringify(event));
             // if (event.event === 'dataReceived') {
@@ -1530,6 +1533,9 @@ export class Tab1Page implements OnDestroy {
             // }
             // Toast.show({ text: 'Processed Modbus response: ' + JSON.stringify(response), duration: 'long' });
             // }
+
+            console.error('Serial event:', event);
+            
           } catch (error: any) {
             console.error('Error processing event:', error);
             Toast.show({ text: 'Error processing event: ' + error.message });
@@ -1539,7 +1545,7 @@ export class Tab1Page implements OnDestroy {
         Toast.show({ text: 'serial initialized succeeded ' + this.selectedDevice });
       }
       this.vlog.log = this.serial.log;
-    } catch (error) {
+    } catch (error:any) {
       Toast.show({ text: 'Error initializing serial: ' + error.message });
     }
 
@@ -1646,6 +1652,10 @@ export class Tab1Page implements OnDestroy {
                 this.apiService.setLastSerialAction();
               }
             }
+            else{
+            console.error('Serial event:', event);
+            
+          }
 
           }
         } catch (error) {
@@ -2412,7 +2422,7 @@ export class Tab1Page implements OnDestroy {
 
 
     });
-    m.present();
+    m?.present();
     this.otherModalAreOpening = true;
     this.openAnotherModal(m);
 
@@ -3978,7 +3988,7 @@ export class Tab1Page implements OnDestroy {
       });
   }
 
-  openAnotherModal(r) {
+  openAnotherModal(r:any) {
     r.onDidDismiss().then(() => {
       this.otherModalAreOpening = false;
     });
@@ -4078,7 +4088,7 @@ export class Tab1Page implements OnDestroy {
   //   });
   // }
 
-  repairText: string;
+  repairText: string='';
   displayRepaireAppVersion: boolean = false;
   checkAppVersion: boolean = false;
 
@@ -4184,7 +4194,7 @@ export class Tab1Page implements OnDestroy {
           resolve(error.message);
         });
 
-      } catch (error) {
+      } catch (error:any) {
         this.otherModalAreOpening = false;
         this.displayRepaireAppVersion = false;
         this.apiService.alertError(error.message);
@@ -4209,7 +4219,7 @@ export class Tab1Page implements OnDestroy {
         }
 
         resolve(IENMessage.success);
-      } catch (error) {
+      } catch (error:any) {
         this.apiService.alertError(error.message);
         resolve(error.message);
       }
@@ -4233,12 +4243,12 @@ export class Tab1Page implements OnDestroy {
     }
     if (--this.count <= 0) {
       this.count = 6;
-      const x = prompt('password');
+      const x = prompt('password')||'';
       console.log(x, this.getPassword());
 
       if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
       this.apiService.showModal(SettingPage).then(r => {
-        r.present();
+        r?.present();
       })
 
       if (this.t) {

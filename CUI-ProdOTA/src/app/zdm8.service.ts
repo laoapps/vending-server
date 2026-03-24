@@ -4,9 +4,10 @@ import crc from 'crc';
 import { SerialServiceService, } from './services/serialservice.service';
 
 import { IResModel, ESerialPortType, ISerialService, EZDM8_COMMAND, EMACHINE_COMMAND, IlogSerial, addLogMessage, PrintError } from './services/syste.model';
-import { SerialPortListResult } from 'SerialConnectionCapacitor';
+
 import { Buffer } from 'buffer';
 import { App } from '@capacitor/app';
+export interface SerialPortListResult{ ports: { [key: string]: number } }
 
 
 
@@ -24,10 +25,10 @@ export class Zdm8Service implements ISerialService {
   constructor(private serialService: SerialServiceService) { }
   nv9Command(command: EMACHINE_COMMAND, params: any, transactionID: number): Promise<IResModel> {
       return new Promise<IResModel>(async (resolve, reject) => {
-        this.nv9Command(command, params, transactionID).then(result => {
+        this.serialService.nv9Command(command, params, transactionID).then(result => {
           resolve(result);
         }).catch(error => {
-          console.error('NV9 command error:', error);
+        console.error('NV9 command error:', JSON.stringify(error||{}));
           reject(PrintError(command, params, error.message));
         });
       });
