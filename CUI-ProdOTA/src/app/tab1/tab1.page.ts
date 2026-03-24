@@ -150,7 +150,7 @@ export class Tab1Page implements OnDestroy {
   private ownerUuid: string | undefined;
   filemanagerURL: string = environment.filemanagerurl;
 
-  acceptcash: number =0;
+  acceptcash: number = 0;
   _machineStatus = { status: {} as IMachineStatus };
 
   machinestatus = { data: '' };
@@ -422,7 +422,7 @@ export class Tab1Page implements OnDestroy {
     this.selectMode = data + '';
   }
 
-  onClickSmartCB(item:any) {
+  onClickSmartCB(item: any) {
     if (item.title == 'Scan QR Code') {
 
     } else if (item.title == 'Register owner') {
@@ -522,7 +522,7 @@ export class Tab1Page implements OnDestroy {
 
       // this.toggleTabServicesSegment();
 
-      this.ownerUuid = localStorage.getItem('machineId')||'';
+      this.ownerUuid = localStorage.getItem('machineId') || '';
       this.apiService.audioElement = document.createElement('audio');
       this.apiService.backGroundMusicElement = document.createElement('audio');
       console.log('Width: ' + (this.swidth = platform.width()));
@@ -1443,7 +1443,7 @@ export class Tab1Page implements OnDestroy {
     if (!this.serial) {
       Toast.show({ text: 'serial not init for start VMC' });
     } else {
-      this.serial.getSerialEvents().subscribe((event:any) => {
+      this.serial.getSerialEvents().subscribe((event: any) => {
         try {
           console.log('vmc service event received: ' + JSON.stringify(event));
           if (event.event === 'dataReceived') {
@@ -1457,9 +1457,9 @@ export class Tab1Page implements OnDestroy {
           } else if (event.event === 'error') {
             console.error('Serial error:', event);
             // this.addLogMessage(`Serial error: ${JSON.stringify(event)}`);
-          }else{
+          } else {
             console.error('Serial event:', event);
-            
+
           }
         } catch (error: any) {
           console.error('Error processing event:', error);
@@ -1487,7 +1487,7 @@ export class Tab1Page implements OnDestroy {
     }
     this.vlog.log = this.serial.log;
   }
-  
+
 
   testDrop(slot: number) {
     // console.log('=====> testDrop', slot);
@@ -1517,7 +1517,7 @@ export class Tab1Page implements OnDestroy {
       if (!this.serial) {
         Toast.show({ text: 'serial not init ' + this.selectedDevice });
       } else {
-        this.serial.getSerialEvents().subscribe((event:any) => {
+        this.serial.getSerialEvents().subscribe((event: any) => {
           try {
             console.log('zdm8 service event received: ' + JSON.stringify(event));
             // if (event.event === 'dataReceived') {
@@ -1535,7 +1535,7 @@ export class Tab1Page implements OnDestroy {
             // }
 
             console.error('Serial event:', event);
-            
+
           } catch (error: any) {
             console.error('Error processing event:', error);
             Toast.show({ text: 'Error processing event: ' + error.message });
@@ -1545,7 +1545,7 @@ export class Tab1Page implements OnDestroy {
         Toast.show({ text: 'serial initialized succeeded ' + this.selectedDevice });
       }
       this.vlog.log = this.serial.log;
-    } catch (error:any) {
+    } catch (error: any) {
       Toast.show({ text: 'Error initializing serial: ' + error.message });
     }
 
@@ -1634,7 +1634,7 @@ export class Tab1Page implements OnDestroy {
 
       }
 
-      this.serial.getSerialEvents().subscribe(async (event:any) => {
+      this.serial.getSerialEvents().subscribe(async (event: any) => {
         try {
           if (event?.event === 'dataReceived') {
             const rawData = event?.data;
@@ -1652,10 +1652,10 @@ export class Tab1Page implements OnDestroy {
                 this.apiService.setLastSerialAction();
               }
             }
-            else{
-            console.error('Serial event:', event);
-            
-          }
+            else {
+              console.error('Serial event:', event);
+
+            }
 
           }
         } catch (error) {
@@ -2190,7 +2190,7 @@ export class Tab1Page implements OnDestroy {
 
         resolve(IENMessage.success);
 
-      } catch (error:any) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
@@ -2210,7 +2210,7 @@ export class Tab1Page implements OnDestroy {
 
         resolve(IENMessage.success);
 
-      } catch (error:any) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
@@ -2298,7 +2298,7 @@ export class Tab1Page implements OnDestroy {
               });
           });
         }
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -2354,12 +2354,12 @@ export class Tab1Page implements OnDestroy {
 
     // if (environment.production)
     if (
-      !this.getPassword().endsWith(x?.substring(6)||'') ||
+      !this.getPassword().endsWith(x?.substring(6) || '') ||
       !x?.startsWith(this.machineId?.otp) ||
       x?.length < 12
     )
       return;
-    const m = await this.apiService.showModal(StocksalePage)||{} as HTMLIonModalElement;
+    const m = await this.apiService.showModal(StocksalePage, {}, false) || {} as HTMLIonModalElement;
     this.checkActiveModal(m);
 
     m.onDidDismiss().then((r) => {
@@ -3165,7 +3165,7 @@ export class Tab1Page implements OnDestroy {
   // }
   getPassword() {
     let x = '';
-    this.apiService.machineuuid.split('').forEach((v:any) => {
+    this.apiService.machineuuid.split('').forEach((v: any) => {
       !Number.isNaN(Number.parseInt(v)) ? (x += v) : '';
     });
     return x;
@@ -3238,7 +3238,7 @@ export class Tab1Page implements OnDestroy {
         this.apiService.cash.amount = Number(this.apiService.cash.amount) + Number(cashList);
 
         resolve(IENMessage.success);
-      } catch (error:any) {
+      } catch (error: any) {
         await this.apiService.soundSystemError();
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
@@ -3318,7 +3318,7 @@ export class Tab1Page implements OnDestroy {
           inputs: inputs,
         });
         message.present();
-      } catch (error:any) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
@@ -3382,7 +3382,7 @@ export class Tab1Page implements OnDestroy {
             this.openAnotherModal(r);
 
           });
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3406,7 +3406,7 @@ export class Tab1Page implements OnDestroy {
             this.openAnotherModal(r);
 
           });
-      } catch (error:any) {
+      } catch (error: any) {
         resolve(error.message);
       }
     });
@@ -3467,7 +3467,7 @@ export class Tab1Page implements OnDestroy {
 
             });
         });
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3501,7 +3501,7 @@ export class Tab1Page implements OnDestroy {
 
             this.checkActiveModal(r);
           });
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         this.apiService.soundPleaseTopUpValue();
         resolve(error.message);
@@ -3531,7 +3531,7 @@ export class Tab1Page implements OnDestroy {
                 }
                 this.apiService
                   .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
-                  .then((r:any) => {
+                  .then((r: any) => {
                     this.apiService.isRemainingBillsModalOpen = true;
                     this.apiService.IndexedLogDB.addBillProcess({ errorData: `RemainingbillsPage Open In Tab1` })
                     r.present();
@@ -3562,7 +3562,7 @@ export class Tab1Page implements OnDestroy {
               r.present();
             });
         }
-      } catch (error:any) {
+      } catch (error: any) {
         console.log(`error`, error);
         this.apiService.toast.create({ message: error.message, duration: 5000 }).then(r => { r.present(); });
 
@@ -3626,7 +3626,7 @@ export class Tab1Page implements OnDestroy {
           });
 
         resolve(IENMessage.success);
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3672,7 +3672,7 @@ export class Tab1Page implements OnDestroy {
       this.animateControlMenu(this.links);
 
       this.apiService.controlMenuService.CONTROL_MENU.subscribe((r) => {
-        if (r&&this.links) this.animateControlMenu(this.links, r);
+        if (r && this.links) this.animateControlMenu(this.links, r);
       });
       clearInterval(i);
     });
@@ -3681,7 +3681,7 @@ export class Tab1Page implements OnDestroy {
     links.forEach((item) => {
       const name = item.className.split(' ')[2];
       if (res) {
-        res.forEach((menu:any) => {
+        res.forEach((menu: any) => {
           if (name == menu.name) {
             if (menu.status == true) {
               item.classList.add('active');
@@ -3726,7 +3726,7 @@ export class Tab1Page implements OnDestroy {
           });
 
         resolve(IENMessage.success);
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3749,7 +3749,7 @@ export class Tab1Page implements OnDestroy {
           });
 
         resolve(IENMessage.success);
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3790,7 +3790,7 @@ export class Tab1Page implements OnDestroy {
         //   });
 
         // resolve(IENMessage.success);
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.simpleMessage(error.message);
         resolve(error.message);
       }
@@ -3988,7 +3988,7 @@ export class Tab1Page implements OnDestroy {
       });
   }
 
-  openAnotherModal(r:any) {
+  openAnotherModal(r: any) {
     r.onDidDismiss().then(() => {
       this.otherModalAreOpening = false;
     });
@@ -4088,7 +4088,7 @@ export class Tab1Page implements OnDestroy {
   //   });
   // }
 
-  repairText: string='';
+  repairText: string = '';
   displayRepaireAppVersion: boolean = false;
   checkAppVersion: boolean = false;
 
@@ -4194,7 +4194,7 @@ export class Tab1Page implements OnDestroy {
           resolve(error.message);
         });
 
-      } catch (error:any) {
+      } catch (error: any) {
         this.otherModalAreOpening = false;
         this.displayRepaireAppVersion = false;
         this.apiService.alertError(error.message);
@@ -4219,7 +4219,7 @@ export class Tab1Page implements OnDestroy {
         }
 
         resolve(IENMessage.success);
-      } catch (error:any) {
+      } catch (error: any) {
         this.apiService.alertError(error.message);
         resolve(error.message);
       }
@@ -4243,7 +4243,7 @@ export class Tab1Page implements OnDestroy {
     }
     if (--this.count <= 0) {
       this.count = 6;
-      const x = prompt('password')||'';
+      const x = prompt('password') || '';
       console.log(x, this.getPassword());
 
       if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;

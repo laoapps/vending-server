@@ -49,7 +49,7 @@ import { VideoCacheService } from '../video-cache.service';
 import { Indexsavesale } from '../indexsavesale';
 import { App } from '@capacitor/app';
 
-var REQUEST_TIME_OUT = 10000; 
+var REQUEST_TIME_OUT = 10000;
 
 @Injectable({
   providedIn: 'root',
@@ -2254,10 +2254,10 @@ export class ApiService {
       });
     }) as Promise<AxiosResponse<IResModel>>;
   }
-  blockChainSync(unsynced: Array<any>,LaabXWallet: string) {
+  blockChainSync(unsynced: Array<any>, LaabXWallet: string) {
     const req = {} as IReqModel;
     req.command = EClientCommand.blockChainSync;
-    
+
     req.data = {
       machineId: this.machineId.machineId,
       otp: this.machineId.otp,
@@ -2276,10 +2276,10 @@ export class ApiService {
       });
     }) as Promise<AxiosResponse<IResModel>>;
   }
-    blockChainSyncLog(logs: any) {
+  blockChainSyncLog(logs: any) {
     const req = {} as IReqModel;
     req.command = EClientCommand.blockChainSync;
-    
+
     req.data = {
       machineId: this.machineId.machineId,
       otp: this.machineId.otp,

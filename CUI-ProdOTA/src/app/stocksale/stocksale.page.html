@@ -1,11 +1,11 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      <ion-icon name="close-circle-outline"(click)="cancel()"></ion-icon>
+      <ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>
     </ion-title>
     <!-- <ion-icon name="refresh-circle-sharp" color="danger" (click)="reset()"></ion-icon> -->
-    <ion-button  color="danger" (click)="reset()">RESET</ion-button>
-    
+    <ion-button color="danger" (click)="saveStock()">Save Stock</ion-button>
+
     <!-- <ion-button  color="danger" (click)="newSale()">New</ion-button> -->
   </ion-toolbar>
 </ion-header>
@@ -45,15 +45,16 @@
       <ion-label>{{s.position+compensation|number}}</ion-label>
       <!-- <img style="width: 100px;height:240px" [src]="s.stock.image.includes(';base64,')?s.stock.image:this.url+'/public/'+s.stock.image"
         (click)="changeStock(s.position)"> -->
-        <!-- <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)" > -->
-        <img style="width: 100px;height:240px" [src]="apiService?.imageList[s?.stock?.image]" (click)="changeStock(s?.position)" >
+      <!-- <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)" > -->
+      <img style="width: 100px;height:240px" [src]="apiService?.imageList[s?.stock?.image]"
+        (click)="changeStock(s?.position)">
 
-        
 
-        <!-- <img *ngIf="!s.stock.image" style="width: 100px;height:240px" src="../../assets/empty-box.png" (click)="changeStock(s.position)" class="position-img"> -->
-        <!-- <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)"> -->
+
+      <!-- <img *ngIf="!s.stock.image" style="width: 100px;height:240px" src="../../assets/empty-box.png" (click)="changeStock(s.position)" class="position-img"> -->
+      <!-- <img style="width: 100px;height:240px" src="{{s.stock.image}}" (click)="changeStock(s.position)"> -->
     </ion-card>
-    <ion-card >
+    <ion-card>
       <div>
         <ion-label>Price:</ion-label>
         <ion-label>{{s.stock.price|number}}</ion-label>
@@ -61,11 +62,11 @@
       <div>
         <ion-label>Qtty:{{s.stock.qtty}}</ion-label>
         <ion-button (click)="setMax(s.position)">SET MAX</ion-button>
-        <ion-range [disabled]="isDisabled!=s.position+''" [ticks]="true" [snaps]="true" [min]="0" [max]="s.max" [(ngModel)]="s.stock.qtty"
-          (ionChange)="save()"></ion-range>
+        <ion-range [disabled]="isDisabled!=s.position+''" [ticks]="true" [snaps]="true" [min]="0" [max]="s.max"
+          [(ngModel)]="s.stock.qtty" (ionChange)="save()"></ion-range>
       </div>
     </ion-card>
     <ion-item-divider></ion-item-divider>
-    
+
   </div>
 </ion-content>

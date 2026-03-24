@@ -42,6 +42,14 @@ export class StocksalePage implements OnInit, OnDestroy {
       })
     })
   }
+
+  saveStock() {
+    try {
+      this.apiService.closeModal();
+    } catch (error) {
+
+    }
+  }
   refillAll() {
     const conf = confirm('Are you sure ?');
     if (!conf) return;
