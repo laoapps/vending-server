@@ -69,7 +69,7 @@ import { HangmiFoodSegmentPage } from './VendingSegment/hangmi-food-segment/hang
 import { TopupAndServiceSegmentPage } from './VendingSegment/topup-and-service-segment/topup-and-service-segment.page';
 import { PlayGamesPage } from './Vending/play-games/play-games.page';
 import { OrderCartPage } from './Vending/order-cart/order-cart.page';
-// import { ScreenBrightness } from '@capacitor-community/screen-brightness';
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 var host = window.location.protocol + '//' + window.location.host;
 // import { CapacitorUpdater } from '@capgo/capacitor-updater'
@@ -693,24 +693,40 @@ export class Tab1Page implements OnDestroy {
   }
 
   async ngOnInit() {
-    // if (localStorage.getItem('startTestMotor')) {
-    //   this.startTestMotor();
-    //   return;
-    // }
-    // setTimeout(() => {
-    //  this.startTestMotor();
+    /// TESTING MODE OR REAL MODE
+    if (localStorage.getItem('startTestMotor')) {
+      this.startTestMotor();
+      return;
+    }
+    setTimeout(() => {
+      this.startTestMotor();
 
-    // },15000);
-    // try {
-    //   await ScreenBrightness.setBrightness({ brightness: 1 });
-    // } catch (error) {
-    //   console.error('Failed to set brightness', error);
-    // }
+    }, 15000);
+    try {
+      await ScreenBrightness.setBrightness({ brightness: 1 });
+    } catch (error) {
+      console.error('Failed to set brightness', error);
+    }
+    /// END TESTING MODE OR REAL MODE
 
 
-    this.startTestMotor();
-    return;
+    // this.startTestMotor();
+    // return;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    \
     // window.addEventListener('beforeunload', async (event) => {
     //   Toast.show({ text: 'Before reload', duration: 'long' });
     //   await this.serial.close();
