@@ -30,20 +30,48 @@ export class StocksalePage implements OnInit, OnDestroy {
     // this.stock=apiService.stock;
   }
   ngOnDestroy(): void {
-    this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
-      const r = rx.data;
-      console.log(r);
+    // this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
+    //   const r = rx.data;
+    //   console.log(r);
 
-      if (r.status) {
+    //   if (r.status) {
 
-      }
-      this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
-        r.present();
-      })
-    })
+    //   }
+    //   this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
+    //     r.present();
+    //   })
+    // })
   }
 
-  saveStock() {
+  saveSaveStock() {
+    try {
+      this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
+        const r = rx.data;
+        // console.log('-----> saveSaveStock :', JSON.stringify(r));
+        // if (r.status) {
+
+        // }
+        if (r.status === 1) {
+          this.apiService.closeModal();
+          this.apiService.toast.create({ message: 'ສຳເຫຼັດແລ້ວ', duration: 2000 }).then(r => {
+            r.present();
+          })
+        } else {
+          this.apiService.closeModal();
+          this.apiService.toast.create({ message: 'ອິນເຕີເນັດຊ້າ ກະລຸນາລໍຖ້າແລ້ວລອງໃໝ່ອີກຄັ້ງ', duration: 2000 }).then(r => {
+            r.present();
+          })
+        }
+
+      })
+    } catch (error) {
+      this.apiService.toast.create({ message: `ເກີດຂໍ້ຜິດພາດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ`, duration: 2000 }).then(r => {
+        r.present();
+      })
+    }
+  }
+
+  closePage() {
     try {
       this.apiService.closeModal();
     } catch (error) {
