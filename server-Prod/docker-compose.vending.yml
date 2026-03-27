@@ -136,6 +136,8 @@ services:
 
       - NOCNOC_SERVER=
       - SERVER_URL=https://vending-service-api5.laoapps.com
+      - DEFAULT_MERCHANGE_PHONE=2055516321
+      - DEFAULT_MERCHANGE_ID=OPFJ8Z15PW09VQG1HLVIYYJRA
 
     ports:
       # - 51231:31231

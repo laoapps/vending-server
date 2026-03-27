@@ -1352,6 +1352,24 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
+
+            router.post(this.path + "/testGenerateQR",
+                // this.checkSuperAdmin,
+                // this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const mId = process.env.DEFAULT_MERCHANGE_PHONE;
+                        const ownerPhone = process.env.DEFAULT_MERCHANGE_PHONE;
+                        const owner = process.env.DEFAULT_MERCHANGE_ID;
+                        const qr = await this.generateBillLaoQRPro(1000, mId, owner, ownerPhone);
+                        res.send(PrintSucceeded("testGenerateQR", qr, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("testGenerateQR", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
             router.post(this.path + '/wsalert',
                 async (req, res) => {
                     try {
@@ -7273,15 +7291,13 @@ export class InventoryZDM8 implements IBaseClass {
 
             const qr = {
                 "requestId": "",
-                "merchantId": mechantId, //DBK :25ATP48M8RD1MKJ4W8FGLGXYC
+                "merchantId": mechantId,
                 "txnAmount": value,
-                // "billNumber": "LQR123213131280004925277",
-                "terminalId": ownerPhone, //Device Number ເບີຄົນຮັບເງິນ
-                "terminalLabel": "laabxserver", // Device Name
-                "mobileNo": ownerPhone, // CashIn to Wallet Number (Merchant)  ເບີຄົນຮັບເງິນ
-                "channel": `VENDING_` + channel, // Vending Machine 
-                "owner": "LAABX", // Merchant Name  LAABX
-                // "callbackurl": "https://tvending.khamvong.com"
+                "terminalId": ownerPhone,
+                "terminalLabel": "laabxserver",
+                "mobileNo": ownerPhone,
+                "channel": `VENDING_` + channel,
+                "owner": "LAABX",
                 "callbackurl": process.env.SERVER_URL
             }
             // console.log("LAOQR", qr);
