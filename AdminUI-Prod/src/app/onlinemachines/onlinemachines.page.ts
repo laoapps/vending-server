@@ -78,7 +78,13 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
   async testGenerateQR() {
     try {
+      const token = localStorage.getItem('token');
+      const shopPhonenumber = '';
+      const secret = localStorage.getItem('secretLocal');
       await axios.post(`${environment.url}/testGenerateQR`, {
+        secret,
+        shopPhonenumber,
+        token,
       }).then(r => {
         if (r?.data?.status === 1) {
           this.apiService.alertSuccess('ສ້າງ QR ສຳເຫຼັດ');
