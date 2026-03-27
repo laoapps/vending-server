@@ -1354,7 +1354,6 @@ export class InventoryZDM8 implements IBaseClass {
 
 
             router.post(this.path + "/testGenerateQR",
-                // this.checkMachineIdToken,
                 this.checkSuperAdmin,
                 this.validateSuperAdmin,
                 async (req, res) => {
@@ -1368,6 +1367,27 @@ export class InventoryZDM8 implements IBaseClass {
                     } catch (error) {
                         console.log(error);
                         res.send(PrintError("testGenerateQR", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
+            router.post(this.path + "/testGenerateQRLaabx",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineToken = req.body?.machineToken;
+                        const machineId = this.findMachineIdToken(machineToken);
+
+                        const a = machineId?.data?.find(v => v.settingName == 'setting');
+                        const mId = a?.imei + '';
+                        const ownerPhone = a?.ownerPhone + '';
+                        const owner = (a?.owner + '').trim();
+
+                        const qr = await this.generateBillLaoQRPro(1000, mId, owner, ownerPhone);
+                        res.send(PrintSucceeded("testGenerateQRLaabx", qr, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("testGenerateQRLaabx", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
 
