@@ -1354,8 +1354,9 @@ export class InventoryZDM8 implements IBaseClass {
 
 
             router.post(this.path + "/testGenerateQR",
-                // this.checkSuperAdmin,
-                // this.validateSuperAdmin,
+                // this.checkMachineIdToken,
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
                 async (req, res) => {
                     try {
                         const mId = process.env.DEFAULT_MERCHANGE_PHONE;
