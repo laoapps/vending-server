@@ -75,6 +75,24 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     setTimeout(() => this.isRefreshing = false, 600);
   }
 
+
+  async testGenerateQR() {
+    try {
+      await axios.post(`${environment.url}/testGenerateQR`, {
+      }).then(r => {
+        if (r?.data?.status === 1) {
+          this.apiService.alertSuccess('ສ້າງ QR ສຳເຫຼັດ');
+        } else {
+          this.apiService.alertError(`ສ້າງ QR ບໍ່ສຳເຫຼັດ :${JSON.stringify(r?.data?.data)}`);
+        }
+      }).catch(err => {
+        this.apiService.alertError(err);
+      });
+    } catch (error) {
+
+    }
+  }
+
   private async loadData() {
     const previousCount = this.onlineMachines.length + this.brokenMachines.length;
 

@@ -10,11 +10,15 @@
       <ion-button color="light" (click)="toggleAllSecrets()">
         <ion-icon slot="icon-only" [name]="showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
       </ion-button>
+      <ion-button color="light" (click)="testGenerateQR()">
+        <ion-icon slot="icon-only" name="qr-code"></ion-icon>
+      </ion-button>
     </ion-buttons>
+
   </ion-toolbar>
 </ion-header>
 
-<ion-content #content [ngClass]="flashClass">  <!-- Online Machines Section -->
+<ion-content #content [ngClass]="flashClass"> <!-- Online Machines Section -->
   <ion-grid>
     <div class="flash-overlay" [ngClass]="flashClass"></div>
     <ion-row>
@@ -28,8 +32,9 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-<ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of onlineMachines; trackBy: trackByMachine">
-          <ion-card class="machine-card"
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
+        *ngFor="let machine of onlineMachines; trackBy: trackByMachine">
+        <ion-card class="machine-card"
           [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
             <ion-card-title>
@@ -162,7 +167,8 @@
       </ion-col>
     </ion-row>
     <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3" *ngFor="let machine of brokenMachines; trackBy: trackByMachine">
+      <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
+        *ngFor="let machine of brokenMachines; trackBy: trackByMachine">
         <ion-card class="machine-card"
           [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
           <ion-card-header>
@@ -216,18 +222,18 @@
                   Logs
                 </ion-button>
               </ion-item>
-               <ion-item>
-                  <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
-                    <ion-icon slot="start" name="thermometer-outline"></ion-icon>
-                    Client Logs
-                  </ion-button>
-                 </ion-item>
-                <ion-item>
-                  <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
-                    <ion-icon slot="start" name="laptop-outline"></ion-icon>
-                    My Account
-                  </ion-button>
-                </ion-item>
+              <ion-item>
+                <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
+                  <ion-icon slot="start" name="thermometer-outline"></ion-icon>
+                  Client Logs
+                </ion-button>
+              </ion-item>
+              <ion-item>
+                <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
+                  <ion-icon slot="start" name="laptop-outline"></ion-icon>
+                  My Account
+                </ion-button>
+              </ion-item>
               <ion-item>
                 <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
                   <ion-icon slot="start" name="settings-outline"></ion-icon>
