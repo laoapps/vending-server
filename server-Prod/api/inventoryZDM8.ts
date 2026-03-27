@@ -1372,7 +1372,7 @@ export class InventoryZDM8 implements IBaseClass {
 
             router.post(this.path + "/testGenerateQRLaabx",
                 this.checkSuperAdmin,
-                this.validateSuperAdmin,
+                this.checkAdmin,
                 async (req, res) => {
                     try {
                         const machineToken = req.body?.machineToken;
