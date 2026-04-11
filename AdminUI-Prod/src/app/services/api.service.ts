@@ -381,6 +381,11 @@ export class ApiService {
     }
 
 
+    getReportCallbackLogs(data: any) {
+        return this.http.post<IResModel>(this.url + '/reportCallbackLog?t=' + new Date(), data, { headers: this.headerBase() });
+    }
+
+
 
     super_listMachine() {
         const token = localStorage.getItem('lva_token');

@@ -19,6 +19,7 @@ import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
 import { SaleReportPage } from '../sale/sale-report/sale-report.page';
 import { StockReportPage } from '../sale/stock-report/stock-report.page';
 import { IonContent } from '@ionic/angular'; // <-- ADD THIS
+import { ReportCallbacklogPage } from '../report-callbacklog/report-callbacklog.page';
 interface MachineData {
   machineId: string;
   owner: string;
@@ -238,6 +239,24 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     }
   }
 
+
+  async clearCallbackLogs() {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${environment.url}/clearCallbackLogs`, {
+        token,
+      }).then(r => {
+        this.apiService.alertSuccess('ລົບຂໍ້ມູນສຳເຫຼັດ');
+      }).catch(err => {
+        this.apiService.alertError(err);
+      });
+
+    } catch (error) {
+      console.error('Error clearLogTemp:', error);
+      alert(`Error clearLogTemp: ${error.message}`);
+    }
+  }
+
   async refreshMachine(machineId: string) {
     try {
       const token = localStorage.getItem('token');
@@ -279,6 +298,18 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       .create({
         component: ReportClientPage,
         componentProps: { machineId },
+        cssClass: 'custom-modal',
+        backdropDismiss: true,
+      })
+      .then((modal) => modal.present());
+  }
+
+
+  showCallbackLogs() {
+    this.apiService.modal
+      .create({
+        component: ReportCallbacklogPage,
+        componentProps: {},
         cssClass: 'custom-modal',
         backdropDismiss: true,
       })

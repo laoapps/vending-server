@@ -267,6 +267,10 @@ const routes: Routes = [
   {
     path: 'public-admin-manage',
     loadChildren: () => import('./public-admin-manage/public-admin-manage.module').then(m => m.PublicAdminManagePageModule)
+  },
+  {
+    path: 'report-callbacklog',
+    loadChildren: () => import('./report-callbacklog/report-callbacklog.module').then( m => m.ReportCallbacklogPageModule)
   }
 ];
 @NgModule({

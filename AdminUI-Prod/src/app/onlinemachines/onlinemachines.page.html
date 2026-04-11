@@ -2,6 +2,8 @@
   <ion-toolbar color="primary">
     <ion-title>Vending Machine Dashboard</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="clearCallbackLogs()">Clear Callback</ion-button>
+      <ion-button (click)="showCallbackLogs()">Report Callback</ion-button>
       <ion-button (click)="clearClientLogs()">Clear Client</ion-button>
       <ion-button (click)="clearLogTemp()">Clear Temp</ion-button>
       <ion-button color="light" (click)="refreshData()">
