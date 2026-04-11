@@ -7,6 +7,15 @@ export interface IClientlog extends IBase {
 }
 
 
+export interface ICallbacklog extends IBase {
+    createdAt: Date;
+    machineId: string;
+    transactionId: string;
+    part: string;
+    errorLog: any;
+    description: any;
+}
+
 export interface ILogsTemp {
     id?: number;
     uuid?: string;

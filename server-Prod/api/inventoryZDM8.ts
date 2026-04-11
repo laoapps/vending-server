@@ -104,6 +104,7 @@ import {
 } from "../entities/machineid.entity";
 import {
     adsEntity,
+    CallbacklogEntity,
     ClientlogEntity,
     dbConnection,
     dropLogEntity,
@@ -229,6 +230,22 @@ export class InventoryZDM8 implements IBaseClass {
     pathMMoneyConfirm = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/confirm-cash-in.service';
     pathMMoneyInquiry = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/inquiry-cash-in.service';
     pathMMoneyRequest = 'https://api.mmoney.la/ewallet-ltc-api/cash-management/request-cash-in.service';
+
+
+    async SaveCallbackLogMMoney(machineId: string, transactionId: string, part: string, errorLog?: any) {
+        try {
+            await CallbacklogEntity.create({
+                machineId,
+                transactionId,
+                part,
+                errorLog
+            }).then(r => {
+            }).catch(e => {
+            });;
+        } catch (error) {
+
+        }
+    }
 
 
     checkMachineIdToken(req: Request, res: Response, next: NextFunction) {
@@ -4821,6 +4838,47 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("reportClientLog", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
+            );
+
+
+
+            router.post(this.path + '/reportCallbackLog',
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId;
+                        const data = req.body;
+
+                        if (!machineId) {
+                            res.send(PrintError("reportClientLog", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        // console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const cksum = generateChecksum(machineId + fromDate.toString() + toDate.toString());
+                        const resp = await redisClient.get(cksum);
+                        if (resp) {
+                            return res.send(PrintSucceeded("report", JSON.parse(resp), EMessage.succeeded, returnLog(req, res)));
+                        }
+                        const run = await this.getReportCallbackLog(machineId, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        redisClient.setex(cksum, 60 * 1, JSON.stringify(response));
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportClientLog :', error);
+                        res.send(PrintError("reportClientLog", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
             )
 
 
@@ -5181,6 +5239,22 @@ export class InventoryZDM8 implements IBaseClass {
                     } catch (error) {
                         console.log('clearLogsTemp :', error);
                         res.send(PrintError("clearLogsTemp", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
+            router.post(this.path + '/clearCallbackLogs',
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const q = `DELETE FROM "Callbacklog" WHERE "createdAt" < NOW() - INTERVAL '72 hours';`
+                        const clientLogs = await ClientlogEntity.sequelize.query(q)
+                        return res.send(PrintSucceeded("clearCallbackLogs", clientLogs, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        // console.log('clearLogsTemp :', error);
+                        res.send(PrintError("clearCallbackLogs", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
 
@@ -7715,6 +7789,7 @@ export class InventoryZDM8 implements IBaseClass {
                 // Early exit if ownerUuid is not found in production mode
                 if (!ownerUuid && this.production) {
                     console.log(EMessage.TransactionTimeOut);
+                    await this.SaveCallbackLogMMoney('', transactionID, EMessage.TransactionTimeOut);
                     return resolve(null); // Add return to stop execution
                 }
                 // console.log('=====>ownerUuid', ownerUuid);
@@ -7731,11 +7806,13 @@ export class InventoryZDM8 implements IBaseClass {
 
                 // Early exit if bill is not found
                 if (!bill) {
+                    await this.SaveCallbackLogMMoney('', transactionID, EMessage.billnotfound);
                     return resolve(null); // Add return to stop execution
                 }
 
                 // Early exit if payment status is not pending
                 if (bill.paymentstatus !== EPaymentStatus.pending) {
+                    await this.SaveCallbackLogMMoney(bill.machineId, transactionID, 'Payment status is not pending');
                     return resolve(null); // Add return to stop execution
                 }
 
@@ -7862,10 +7939,16 @@ export class InventoryZDM8 implements IBaseClass {
                         year: momenttz().tz(SERVER_TIME_ZONE).year()
                     };
                     await setVendingEvent(EVendingEvent.sold, event);
+                    await this.SaveCallbackLogMMoney(bill.machineId, transactionID, EMessage.succeeded);
                     return resolve(bill); // Add return to stop callback execution
                 });
 
             } catch (error) {
+                try {
+                    await this.SaveCallbackLogMMoney('', transactionID, 'CATCH', error);
+                } catch (errC) {
+
+                }
                 console.log(error);
                 reject(error);
             }
@@ -9641,6 +9724,32 @@ export class InventoryZDM8 implements IBaseClass {
             }
         }
         const bill = await ClientlogEntity.findAndCountAll(condition);
+        return bill;
+    }
+
+
+
+    private async getReportCallbackLog(machineId: string, fromDate: string, toDate: string) {
+        let condition: any = {};
+        if (machineId == 'all') {
+
+            condition = {
+                where: {
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        else {
+            condition = {
+                where: {
+                    machineId: machineId,
+                    createdAt: { [Op.between]: [fromDate, toDate] }
+                },
+                order: [['id', 'DESC']]
+            }
+        }
+        const bill = await CallbacklogEntity.findAndCountAll(condition);
         return bill;
     }
 
