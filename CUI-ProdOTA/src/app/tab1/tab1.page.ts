@@ -96,6 +96,8 @@ import { AutoPaymentTopUpPage } from '../auto-payment-top-up/auto-payment-top-up
 import { interval, Subscription } from 'rxjs';
 import { CustomNumberPadPage } from '../custom-number-pad/custom-number-pad.page';
 import { AlertController } from '@ionic/angular';
+import { BlockchainDbService } from '../blockchain-db';
+import { NumpadModalComponent } from '../components/numpad-modal/numpad-modal.component';
 
 @Component({
   selector: 'app-tab1',
@@ -109,7 +111,7 @@ export class Tab1Page implements OnDestroy {
   menus = [];
 
 
-  serial: ISerialService = undefined as unknown as ISerialService;
+  serial: ISerialService = null as any;
   open = false;
 
   vlog = { log: { data: '', limit: 50 } as IlogSerial };
@@ -118,6 +120,7 @@ export class Tab1Page implements OnDestroy {
   devices = ['VMC', 'ZDM8', 'Tp77p', 'essp', 'cctalk', 'm102', 'adh815', 'adh814'];
 
   selectedDevice = localStorage.getItem('device') || 'adh814';
+  NV9USB = localStorage.getItem('NV9USB') || 'false';
 
   portName = localStorage.getItem('portName') || '/dev/ttyS1';
   baudRate = localStorage.getItem('baudRate') || 38400;
@@ -292,6 +295,9 @@ export class Tab1Page implements OnDestroy {
 
   // Variable to track the last time sendStatus was called
   lastCallTime: number | null = null
+
+
+
   sendStatus(b: string, t: number, c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS) {
     this.lastCallTime = Date.now();
 
@@ -471,6 +477,9 @@ export class Tab1Page implements OnDestroy {
     private alertController: AlertController,
     // private videoCacheService: VideoCacheService,
     // public router: Router
+    public blockchainDbService: BlockchainDbService,
+    private alertCtrl: AlertController,
+    private modalCtrl: ModalController
   ) {
 
     // this.refreshAllEveryHour();
@@ -693,6 +702,10 @@ export class Tab1Page implements OnDestroy {
   }
 
   async ngOnInit() {
+
+
+
+
     /// TESTING MODE OR REAL MODE
     if (localStorage.getItem('startTestMotor')) {
       this.startTestMotor();
@@ -992,6 +1005,11 @@ export class Tab1Page implements OnDestroy {
               this.apiService.playBackGroundMusic();
             }
           }
+          if (this.offlineMode != r.offlineMode) {
+            this.offlineMode = r.offlineMode;
+            localStorage.setItem('offlineMode', this.offlineMode ? 'true' : 'false');
+            console.log('Update offlineMode to', this.offlineMode);
+          }
 
           if (this.isRobotMuted != r.isRobotMuted) {
             this.isRobotMuted = r.isRobotMuted;
@@ -1132,6 +1150,21 @@ export class Tab1Page implements OnDestroy {
             console.log('Nothing to do for other devices');
           }
 
+          if (this.NV9USB) {
+            if (this.allowCashIn != r.allowCashIn) {
+              this.allowCashIn = r.allowCashIn;
+              if (this.allowCashIn) {
+
+                this.enableCash();
+                Toast.show({ text: 'CashIn enabled', duration: 'long' });
+              } else {
+                this.disableCash();
+                Toast.show({ text: 'CashIn disabled', duration: 'long' });
+              }
+            }
+          }
+
+
 
 
 
@@ -1146,42 +1179,63 @@ export class Tab1Page implements OnDestroy {
 
 
     });
-    if (this.dbService.getReady()) {
-      this.loadCredits().then(r => {
-        this.creditPending.push(...r);
-        this.creditPending.forEach((v, index) => {
-          if (v.transactionID) {
-            setTimeout(() => {
-              this.sendStatus(v.data.data, Number(v.data.transactionID), v.data.command);
-            }, 1000 * index);
-          }
-        });
-        console.log('CREDIT PENDING', this.creditPending);
-      });
-    } else {
-      this.dbService.initializeDatabase().then(r => {
-        console.log('Database initialized', r);
-        // id: item.id,
-        // name: item.name,
-        // data: JSON.parse(item.data), // Parse JSON back to object
-        // transactionID: item.transactionID,
-        // description: item.description,
-        this.loadCredits().then(r => {
-          this.creditPending.push(...r);
-          this.creditPending.forEach((v, index) => {
-            if (v.transactionID) {
-              setTimeout(() => {
-                this.sendStatus(v.data.data, Number(v.data.transactionID), v.data.command);
-              }, 1000 * index);
-            }
-          });
-          console.log('CREDIT PENDING', this.creditPending);
-        });
+
+    try {
+      this.blockchainDbService.initialize(this.machineId.machineId).then(() => {
+        console.log('Blockchain DB initialized successfully');
+        console.log('SQLite initialized for machine:', this.machineId.machineId);
+        this.loadBalance();
       }).catch(e => {
-        console.log('Error init database', e);
+        console.error('SQLite init failed at app start:', e);
       })
+
+    } catch (err) {
+      console.error('SQLite init failed at app start:', err);
+      // Optional: show toast or fallback to in-memory mode
     }
+
+
+    /// CASHIN VM CASHIN
+    // if (this.dbService.getReady()) {
+    //   this.loadCredits().then(r => {
+    //     this.creditPending.push(...r);
+    //     this.creditPending.forEach((v, index) => {
+    //       if (v.transactionID) {
+    //         setTimeout(() => {
+    //           this.sendStatus(v.data.data, Number(v.data.transactionID), v.data.command);
+    //         }, 1000 * index);
+    //       }
+    //     });
+    //     console.log('CREDIT PENDING', this.creditPending);
+    //   });
+    // } else {
+    //   this.dbService.initializeDatabase().then(r => {
+    //     console.log('Database initialized', r);
+    //     // id: item.id,
+    //     // name: item.name,
+    //     // data: JSON.parse(item.data), // Parse JSON back to object
+    //     // transactionID: item.transactionID,
+    //     // description: item.description,
+    //     this.loadCredits().then(r => {
+    //       this.creditPending.push(...r);
+    //       this.creditPending.forEach((v, index) => {
+    //         if (v.transactionID) {
+    //           setTimeout(() => {
+    //             this.sendStatus(v.data.data, Number(v.data.transactionID), v.data.command);
+    //           }, 1000 * index);
+    //         }
+    //       });
+    //       console.log('CREDIT PENDING', this.creditPending);
+    //     });
+    //   }).catch(e => {
+    //     console.log('Error init database', e);
+    //   })
+    // }
+
+    // END CASHIN VMC
     this.checkLastClick();
+
+
 
   }
 
@@ -1473,6 +1527,9 @@ export class Tab1Page implements OnDestroy {
             console.error('Serial event:', event);
 
           }
+          if (event?.event === 'nv9Event') {
+            this.handleNV9Event(event?.data);
+          }
         } catch (error: any) {
           console.error('Error processing event:', error);
           // this.addLogMessage(`Error processing event: ${error.message}`);
@@ -1480,22 +1537,22 @@ export class Tab1Page implements OnDestroy {
       });
 
 
-      Toast.show({ text: 'VMC Cashin', duration: 'long' });
-      console.log('VMC Cashin');
-      this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
+      // Toast.show({ text: 'VMC Cashin', duration: 'long' });
+      // console.log('VMC Cashin');
+      // this.offlineMode = Boolean(localStorage.getItem('offlineMode') ?? 'true');
 
-      // // FIX FIRMWARE bugs when reconnect to VMC
-      setTimeout(async () => {
-        this.isFirstLoad = false;
-        if (!this.offlineMode) {
-          await this.vendingIndex.vmc.enableCashIn();
-          Toast.show({ text: 'CashIn enabled', duration: 'long' });
-        }
-        else {
-          await this.vendingIndex.vmc.disableCashIn();
-          Toast.show({ text: 'CashIn disabled', duration: 'long' });
-        }
-      }, 20000);
+      // // // FIX FIRMWARE bugs when reconnect to VMC
+      // setTimeout(async () => {
+      //   this.isFirstLoad = false;
+      //   if (!this.offlineMode) {
+      //     await this.vendingIndex.vmc.enableCashIn();
+      //     Toast.show({ text: 'CashIn enabled', duration: 'long' });
+      //   }
+      //   else {
+      //     await this.vendingIndex.vmc.disableCashIn();
+      //     Toast.show({ text: 'CashIn disabled', duration: 'long' });
+      //   }
+      // }, 20000);
     }
     this.vlog.log = this.serial.log;
   }
@@ -1547,6 +1604,9 @@ export class Tab1Page implements OnDestroy {
             // }
 
             console.error('Serial event:', event);
+            if (event?.event === 'nv9Event') {
+              this.handleNV9Event(event?.data);
+            }
 
           } catch (error: any) {
             console.error('Error processing event:', error);
@@ -1667,6 +1727,9 @@ export class Tab1Page implements OnDestroy {
             else {
               console.error('Serial event:', event);
 
+            }
+            if (event?.event === 'nv9Event') {
+              this.handleNV9Event(event?.data);
             }
 
           }
@@ -2353,6 +2416,22 @@ export class Tab1Page implements OnDestroy {
     // }
 
   }
+  private async promptPassword(length = 12): Promise<string | null> {
+    const modal = await this.modalCtrl.create({
+      component: NumpadModalComponent,
+      initialBreakpoint: 1,
+      breakpoints: [0, 1],
+      componentProps: {
+        title: 'Password Required',
+        subtitle: 'Enter your 12-digit Password',
+        length,
+      },
+    });
+
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+    return role === 'confirm' ? data : null;
+  }
   async manageStock() {
     if (this.qrMode) {
       if (this.apiService.secret) {
@@ -2360,7 +2439,7 @@ export class Tab1Page implements OnDestroy {
       }
       return;
     }
-    const x = prompt('password');
+    const x = await this.promptPassword();
     console.log(x, this.getPassword());
 
     // if (environment.production)
@@ -2374,7 +2453,7 @@ export class Tab1Page implements OnDestroy {
     this.checkActiveModal(m);
 
     m.onDidDismiss().then((r) => {
-      r.data;
+      const d = r?.data as { resetCashCount: boolean };
       console.log('manageStock', r.data);
       // if (r.data) {
       const k = 'refillSaleStock';
@@ -2397,12 +2476,12 @@ export class Tab1Page implements OnDestroy {
         //   });
         // }, 500);
       });
+      if (d?.resetCashCount) {
+        this.resetCashAcceptor();
+      }
 
-      // } else {
-      //   console.log('Canceled');
 
-      // }
-      // window.location.reload();
+
     });
     m.present();
     this.otherModalAreOpening = true;
@@ -3484,11 +3563,11 @@ export class Tab1Page implements OnDestroy {
       }
     });
   }
-  checkActiveModal(rx: HTMLIonModalElement) {
+  checkActiveModal(rx: HTMLIonModalElement | undefined) {
     const t = setInterval(() => {
       this.autopilot.auto = 0;
     }, 1000);
-    rx.onDidDismiss().then(rx => {
+    rx?.onDidDismiss().then(rx => {
       clearInterval(t);
       this.reloadAutoPayment();
       // this.loadAutoShowMyOrders();
@@ -4218,29 +4297,29 @@ export class Tab1Page implements OnDestroy {
     this.apiService.cash.amount = balance;
   }
 
-  resetCashing(): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
-      try {
-        const ownerUuid = localStorage.getItem('machineId');
-        if (ownerUuid) {
-          await this.cashingService.remove(ownerUuid);
-          // window.location.reload();
-          this.refresh();
+  // resetCashing(): Promise<any> {
+  //   return new Promise<any>(async (resolve, reject) => {
+  //     try {
+  //       const ownerUuid = localStorage.getItem('machineId');
+  //       if (ownerUuid) {
+  //         await this.cashingService.remove(ownerUuid);
+  //         // window.location.reload();
+  //         this.refresh();
 
-        }
+  //       }
 
-        resolve(IENMessage.success);
-      } catch (error: any) {
-        this.apiService.alertError(error.message);
-        resolve(error.message);
-      }
-    });
-  }
+  //       resolve(IENMessage.success);
+  //     } catch (error: any) {
+  //       this.apiService.alertError(error.message);
+  //       resolve(error.message);
+  //     }
+  //   });
+  // }
   private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
     addLogMessage(log, message, consoleMessage);
   }
 
-  showSetting() {
+  async showSetting() {
 
     if (!this.t) {
       this.t = setTimeout(() => {
@@ -4254,10 +4333,10 @@ export class Tab1Page implements OnDestroy {
     }
     if (--this.count <= 0) {
       this.count = 6;
-      const x = prompt('password') || '';
+      const x = (await this.promptPassword()) || '';
       console.log(x, this.getPassword());
 
-      if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+      if (!this.getPassword().endsWith(x?.substring(6)) || !x?.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
       this.apiService.showModal(SettingPage).then(r => {
         r?.present();
       })
@@ -4318,5 +4397,735 @@ export class Tab1Page implements OnDestroy {
   findMenu(m: string): boolean {
     return localStorage.getItem('menu-' + m) == 'true' ? true : false;
   }
+
+
+
+
+
+
+
+  /**
+ * Handle all NV9 events
+ */
+  private handleNV9Event(nv9Event: any) {
+    console.log('🎯 NV9 Event Type:', nv9Event.event);
+    console.log('📦 NV9 Event Data:', nv9Event);
+
+    switch (nv9Event.event) {
+
+      // ============ NOTE ACCEPTANCE EVENTS ============
+      case 'READ_NOTE':
+        // Note is being read/validated
+        const readData = JSON.parse(nv9Event.data);
+        console.log(`📖 Note being read on channel ${readData.channel}`);
+
+        // Update UI to show note detection
+        this.showToast(`Reading note on channel ${readData.channel}`, 'primary');
+
+        // You might want to show a loading indicator
+        this.isReadingNote = true;
+        this.currentReadingChannel = readData.channel;
+        break;
+
+      case 'CREDIT_NOTE':
+        // Note accepted - CREDIT ISSUED!
+        const creditData = JSON.parse(nv9Event.data);
+        console.log(`💰 CREDIT ISSUED on channel ${creditData.channel}`);
+
+        // Map channel to actual money value
+        const channelValues: { [key: number]: number } = {
+          0: 500,
+          1: 1000,   // 1000 LAK
+          2: 2000,   // 2000 LAK
+          3: 5000,   // 5000 LAK
+          4: 10000,  // 10000 LAK
+          5: 20000,  // 20000 LAK
+          6: 50000,  // 50000 LAK
+          7: 100000, // 100000 LAK
+          8: 200000  // 200000 LAK (if available)
+        };
+
+        const amount = channelValues[creditData.channel] || 0;
+
+        // Show success message
+        this.showToast(`💰 +${amount} LAK credited!`, 'success');
+
+        // Update your app's balance
+        this.updateBalance(amount);
+
+        // Track transaction
+        this.addTransaction({
+          type: 'CASH_IN',
+          amount: amount,
+          channel: creditData.channel,
+          timestamp: new Date()
+        });
+
+        // Reset reading flag
+        this.isReadingNote = false;
+        break;
+
+      case 'NOTE_STACKED':
+        // Note moved to cashbox
+        console.log('📦 Note stacked in cashbox');
+        this.showToast('Note stored in cashbox', 'secondary');
+        break;
+
+      // ============ REJECTION EVENTS ============
+      case 'NOTE_REJECTING':
+        console.log('⚠️ Note is being rejected');
+        this.showToast('Note rejected - please remove', 'warning');
+        break;
+
+      case 'NOTE_REJECTED':
+        const rejectData = JSON.parse(nv9Event.data);
+        console.log('❌ Note rejected:', rejectData);
+
+        // Map reject codes to messages
+        const rejectMessages: { [key: number]: string } = {
+          0x01: 'Note length incorrect',
+          0x06: 'Channel inhibited',
+          0x07: 'Second note inserted',
+          0x0B: 'Note too long',
+          0x0D: 'Mechanism slow/stalled',
+          0x0F: 'Fraud channel reject',
+          0x11: 'Peak detect fail',
+          0x12: 'Twisted note detected',
+          0x13: 'Escrow timeout',
+          0x14: 'Bar code scan fail'
+        };
+
+        const rejectMessage = rejectMessages[rejectData.code] || 'Unknown reject reason';
+        this.showToast(`❌ Note rejected: ${rejectMessage}`, 'danger');
+
+        this.isReadingNote = false;
+        break;
+
+      // ============ STATUS EVENTS ============
+      case 'ENABLED':
+        console.log('🟢 NV9 Enabled');
+        this.isNV9Enabled = true;
+        this.showToast('Cash acceptor ready', 'success');
+        break;
+
+      case 'DISABLED':
+        console.log('🔴 NV9 Disabled');
+        this.isNV9Enabled = false;
+        // this.showToast('Cash acceptor disabled', 'warning');
+        break;
+
+      case 'STACKER_FULL':
+        console.log('📊 Cashbox is full');
+        this.showToast('⚠️ Cashbox full - please empty', 'danger');
+
+        // You might want to disable cash-in when full
+        // this.disableCashIn();
+        break;
+
+      // ============ CASHBOX EVENTS ============
+      case 'CASHBOX_REMOVED':
+        console.log('📭 Cashbox removed');
+        this.isCashboxPresent = false;
+        this.showToast('Cashbox removed', 'warning');
+
+        // Automatically disable when cashbox removed
+        // this.disableCashIn();
+        break;
+
+      case 'CASHBOX_REPLACED':
+        console.log('📬 Cashbox replaced');
+        this.isCashboxPresent = true;
+        this.showToast('Cashbox replaced', 'success');
+
+        // Re-enable if appropriate
+        if (this.shouldAutoEnable) {
+          // this.enableCashIn();
+        }
+        break;
+
+      // ============ JAM/FRAUD EVENTS ============
+      case 'FRAUD_ATTEMPT':
+        console.log('🚫 Fraud attempt detected');
+        this.showToast('🚫 Fraud attempt detected', 'danger');
+
+        // Log for security
+        // this.logSecurityEvent('FRAUD_ATTEMPT', nv9Event.data);
+        break;
+
+      case 'SAFE_NOTE_JAM':
+        console.log('🔧 Safe note jam');
+        this.showToast('Paper jam - please clear', 'danger');
+        break;
+
+      case 'UNSAFE_NOTE_JAM':
+        console.log('🔧 Unsafe note jam');
+        this.showToast('Critical jam - service required', 'danger');
+        break;
+
+      // ============ NOTE HANDLING EVENTS ============
+      case 'NOTE_HELD_IN_BEZEL':
+        const bezelData = JSON.parse(nv9Event.data);
+        console.log(`🔄 Note held in bezel: ${bezelData.value} ${bezelData.country_code}`);
+
+        // Show take note prompt
+        this.showTakeNotePrompt(bezelData.value);
+        break;
+
+      case 'NOTE_CLEARED_FROM_FRONT':
+        console.log('⬅️ User took note back');
+        this.showToast('Note returned to user', 'secondary');
+        break;
+
+      case 'NOTE_CLEARED_TO_CASHBOX':
+        console.log('➡️ Note cleared to cashbox');
+        break;
+
+      // ============ CHANNEL EVENTS ============
+      case 'CHANNEL_DISABLE':
+        const channelData = JSON.parse(nv9Event.data);
+        console.log(`🚫 Channel ${channelData.channel} disabled`);
+        break;
+
+      // ============ NV9 READY EVENT ============
+      case 'nv9Ready':
+        console.log('✅ NV9 initialized and ready:', nv9Event.message);
+        this.isNV9Ready = true;
+        this.showToast('NV9 cash acceptor ready', 'success');
+
+        // Get device info
+        this.getNV9DeviceInfo();
+        break;
+
+      case 'nv9Error':
+        console.error('❌ NV9 Error:', nv9Event.error);
+        this.showToast(`NV9 Error: ${nv9Event.error}`, 'danger');
+
+        // Try to reinitialize after error
+        if (nv9Event.error.includes('timed out') || nv9Event.error.includes('communication')) {
+          setTimeout(() => {
+            console.log('Attempting to reinitialize NV9...');
+            // this.reinitializeNV9();
+          }, 5000);
+        }
+        break;
+
+      case 'nv9Retrying':
+        console.log(`🔄 NV9 retrying (${nv9Event.retryCount}/${nv9Event.maxRetries})`);
+        this.showToast(`Connecting to NV9... (${nv9Event.retryCount}/${nv9Event.maxRetries})`, 'secondary');
+        break;
+
+      // ============ USB DEVICE EVENTS ============
+      case 'usbDeviceEvent':
+        this.handleUSBEvent(nv9Event.data);
+        break;
+
+      default:
+        console.log('Unknown NV9 event:', nv9Event);
+    }
+  }
+
+  /**
+   * Handle USB device events
+   */
+  private handleUSBEvent(usbEvent: any) {
+    console.log('🔌 USB Event:', usbEvent);
+
+    switch (usbEvent.event) {
+      case 'usbAttached':
+        console.log(`USB device attached: ${usbEvent.deviceName}`);
+        this.showToast('USB device detected', 'secondary');
+        break;
+
+      case 'usbDetached':
+        console.log(`USB device detached: ${usbEvent.deviceName}`);
+        this.isNV9Ready = false;
+        this.showToast('USB device disconnected', 'warning');
+        break;
+
+      case 'usbPermissionGranted':
+        console.log(`USB permission granted for ${usbEvent.deviceName}`);
+        break;
+
+      case 'usbScanComplete':
+        if (usbEvent.found) {
+          console.log(`Found ${usbEvent.count} USB devices`);
+        } else {
+          console.log('No USB devices found');
+        }
+        break;
+
+      case 'usbAutoConnected':
+        console.log('✅ USB NV9 auto-connected successfully');
+        break;
+
+      case 'usbAutoConnectFailed':
+        console.log('❌ USB NV9 auto-connect failed:', usbEvent.reason);
+        break;
+    }
+  }
+
+  // ============ HELPER METHODS ============
+
+  private showToast(message: string, color: string = 'primary') {
+    // Use your preferred toast service
+    Toast.show({ text: message, duration: 'long' });
+    this.saveLogs(message);
+    // Or if using Ionic
+    // const toast = await this.toastController.create({
+    //   message: message,
+    //   duration: 2000,
+    //   color: color
+    // });
+    // toast.present();
+  }
+  // 1. Save log (safe JSON handling)
+  saveLogs(message: string) {
+    try {
+      let logs: Array<{ message: string; timestamp: string }> = [];
+      const stored = localStorage.getItem('nv9Logs');
+
+      if (stored) {
+        logs = JSON.parse(stored);
+      }
+
+      logs.push({
+        message,
+        timestamp: new Date().toISOString(),
+      });
+
+      localStorage.setItem('nv9Logs', JSON.stringify(logs));
+    } catch (err) {
+      console.error('Failed to save log:', err);
+      // Fallback: don't lose the message
+      console.log('Lost log:', message);
+    }
+  }
+
+  /**
+  * Updates balance and logs the transaction to blockchain
+  * @param amount Positive = cash inserted, Negative = cash removed/reset/transferred out
+  */
+  private async updateBalance(amount: number) {
+    if (amount === 0) return;
+
+    try {
+      const isInsert = amount > 0;
+      const absAmount = Math.abs(amount);
+
+      // 1. Get previous block
+      const latest = await this.blockchainDbService.getLatestBlock(this.machineId.machineId);
+      const prevHash = latest?.hash || '0000000000000000000000000000000000000000000000000000000000000000';
+      const nextIndex = (latest?.block_index ?? 0) + 1;
+
+      // 2. Create transaction data
+      const txData = {
+        type: isInsert ? 'insert' : 'withdrawal',  // or 'reset' if it's a full clear
+        amount: absAmount,                         // always positive number
+        timestamp: new Date().toISOString(),
+        // Optional: add note or reason
+        note: isInsert ? 'Banknote accepted' : 'Cash reset / transferred to e-wallet',
+      };
+
+      // 3. Compute block hash (consistent with client)
+      const blockString = JSON.stringify({
+        prevHash,
+        index: nextIndex,
+        data: txData,
+        timestamp: txData.timestamp,
+      });
+      const newHash = CryptoJS.SHA256(blockString).toString();
+
+      // 4. Log to blockchain
+      await this.blockchainDbService.addBlock({
+        machineId: this.machineId.machineId,
+        prevHash,
+        hash: newHash,
+        data: txData,
+        isReset: !isInsert,               // flag reset/withdrawal
+        signature: '',                    // add later if needed
+        needsSync: true,
+      });
+
+      // 5. Update UI balance (optimistic)
+      this.currentBalance.value += amount;  // + for insert, - for withdrawal
+
+
+      console.log(
+        `${isInsert ? 'Inserted' : 'Withdrew'} ${absAmount} → New balance: ${this.currentBalance.value}`
+      );
+    } catch (err) {
+      console.error('Failed to update balance / log transaction:', err);
+      // Optional: revert UI balance if critical
+    }
+  }
+  // Add this method
+  async loadOnlineBalance(): Promise<number> {
+    try {
+      const machineId = this.machineId?.machineId;
+      if (!machineId) return 0;
+
+      let localBalance = await this.blockchainDbService.getLocalBalance(machineId);
+
+      const offlineMode = localStorage.getItem('offlineMode') === 'true';
+
+      if (!offlineMode) {
+        try {
+          const res = await this.apiService.getBlockChainBalance(machineId);
+
+          if (res?.status === 1 && res.data) {
+            const serverBalance = Number(res.data.data.currentBalance ?? 0);
+
+            if (Math.abs(serverBalance - localBalance) > 0.01) {
+              console.warn(`Balance mismatch - Local: ${localBalance}, Server: ${serverBalance}`);
+              localBalance = serverBalance;
+            }
+          }
+        } catch (err) {
+          console.warn('Server balance fetch failed, using local balance', err);
+        }
+      }
+
+      this.currentBalance.value = localBalance;
+      return localBalance;
+
+    } catch (err) {
+      console.error('Failed to load balance:', err);
+      return 0;
+    }
+  }
+  private async syncToServer(LaabXWallet: string = ''): Promise<void> {
+    const offlineMode = localStorage.getItem('offlineMode') === 'true';
+    if (offlineMode) {
+      console.log('Offline mode - skipping server sync');
+      return;
+    }
+
+    try {
+      const unsynced = await this.blockchainDbService.getUnsyncedBlocks(this.machineId.machineId, 200);
+
+      if (!unsynced.length) {
+        console.log('No blocks need syncing');
+        return;
+      }
+
+      console.log(`Syncing ${unsynced.length} blocks to server...`);
+
+      const res = await this.apiService.blockChainSync(unsynced, LaabXWallet);
+
+      if (res?.status === 1) {
+        const blockIds = unsynced.map(b => b.id);
+        await this.blockchainDbService.markAsSynced(blockIds);
+        console.log(`Successfully synced ${blockIds.length} blocks`);
+
+        // Continue syncing if there are more batches
+        if (unsynced.length === 200) {
+          setTimeout(() => this.syncToServer(LaabXWallet), 1500);
+        }
+      } else {
+        console.warn('Server rejected sync:', res);
+        throw new Error('Server returned non-success status');
+      }
+    } catch (err) {
+      console.error('Sync failed:', err);
+      // Re-throw so topUpEwallet knows it failed
+      throw err;
+    }
+  }
+  // 2. Sync with retry & error handling
+  private async syncLogsToServer() {
+    console.log('Syncing logs to server...');
+
+    let logs: Array<{ message: string; timestamp: string }> = [];
+    const stored = localStorage.getItem('nv9Logs');
+
+    if (!stored || stored === '[]') {
+      console.log('No logs to sync');
+      return;
+    }
+
+    try {
+      logs = JSON.parse(stored);
+      if (!Array.isArray(logs) || logs.length === 0) return;
+    } catch (err) {
+      console.error('Invalid logs in storage:', err);
+      localStorage.setItem('nv9Logs', '[]'); // clear corrupt data
+      return;
+    }
+
+    try {
+      // Send to server (your existing API call)
+      await this.apiService.blockChainSyncLog(logs);
+
+      // Success → clear logs
+      localStorage.setItem('nv9Logs', '[]');
+      console.log(`Synced ${logs.length} logs successfully`);
+
+      // Optional: show success toast
+      this.showToast(`Synced ${logs.length} logs`, 'success');
+    } catch (err) {
+      console.error('Log sync failed:', err);
+
+      // Do NOT clear logs on failure → retry next interval
+      // Optional: limit retries or add exponential backoff
+      this.showToast('Log sync failed – will retry', 'warning');
+    }
+  }
+
+
+  private addTransaction(transaction: any) {
+    // Store transaction in your database
+    this.transactions.unshift(transaction);
+
+    // Keep only last 50 transactions
+    if (this.transactions.length > 50) {
+      this.transactions.pop();
+    }
+  }
+
+  private showTakeNotePrompt(value: number) {
+    // Show a prompt asking user to take the note
+    console.log(`Please take your ${value} LAK note`);
+
+    // You might want to show a modal or alert
+    // this.alertController.create({
+    //   header: 'Take Your Note',
+    //   message: `Please take your ${value} LAK note from the bezel`,
+    //   buttons: ['OK']
+    // }).then(alert => alert.present());
+  }
+
+  private async getNV9DeviceInfo() {
+    try {
+      // Get serial number
+      const serialResult = await this.serial.nv9Command(
+        EMACHINE_COMMAND.NV9_GET_SERIAL,
+        {},
+        Date.now()
+      );
+
+      if (serialResult.data?.serial_number) {
+        console.log('NV9 Serial Number:', serialResult.data.serial_number);
+        this.nv9SerialNumber = serialResult.data.serial_number;
+      }
+
+      // Get setup info (channel values)
+      const setupResult = await this.serial.nv9Command(
+        EMACHINE_COMMAND.NV9_SETUP_REQUEST,
+        {},
+        Date.now()
+      );
+
+      if (setupResult.data) {
+        console.log('NV9 Setup Info:', setupResult.data);
+        this.nv9ChannelValues = setupResult.data.channel_values;
+      }
+
+    } catch (error) {
+      console.error('Failed to get NV9 device info:', error);
+    }
+  }
+  public async resetCashAcceptor() {
+    try {
+      // Reset NV9 hardware
+      const serialResult = await this.serial.nv9Command(
+        EMACHINE_COMMAND.NV9_RESET,
+        {},
+        Date.now()
+      );
+
+      // Log full cash removal (negative = withdraw all)
+      await this.updateBalance(-this.currentBalance.value);
+      await this.syncToServer(); // Ensure this critical transaction is synced immediately
+      console.log('Cash acceptor reset and balance cleared');
+    } catch (error) {
+      console.error('Failed to reset NV9:', error);
+    }
+  }
+  private async promptWalletId(): Promise<string | null> {
+    return new Promise(async (resolve) => {
+      const alert = await this.alertCtrl.create({
+        cssClass: 'wallet-prompt-alert',
+        header: 'Top up e-wallet',
+        subHeader: 'Enter your LaabX wallet ID',
+        message: 'Enter your 8-digit LaabX wallet number to receive the transfer.',
+        inputs: [
+          {
+            name: 'walletId',
+            type: 'tel',
+            placeholder: '00000000',
+            attributes: {
+              maxlength: 8,
+              inputmode: 'numeric',
+              pattern: '[0-9]*',
+              autofocus: true,
+            },
+          },
+        ],
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            cssClass: 'wallet-prompt-cancel',
+            handler: () => resolve(null),
+          },
+          {
+            text: 'Confirm',
+            cssClass: 'wallet-prompt-confirm',
+            handler: (data) => {
+              const val = data.walletId?.replace(/\D/g, '');
+              if (!val || val.length !== 8) {
+                // Keep alert open and show error
+                const inputEl = document.querySelector('.wallet-prompt-alert input') as HTMLInputElement;
+                if (inputEl) {
+                  inputEl.style.borderColor = 'var(--ion-color-danger)';
+                  inputEl.placeholder = 'Must be exactly 8 digits';
+                }
+                return false; // prevent dismiss
+              }
+              resolve(val);
+            },
+          },
+        ],
+      });
+
+      await alert.present();
+
+      // Live validation — enable/disable Confirm button
+      const inputEl = document.querySelector('.wallet-prompt-alert input') as HTMLInputElement;
+      const confirmBtn = document.querySelector('.wallet-prompt-confirm') as HTMLButtonElement;
+      if (inputEl && confirmBtn) {
+        confirmBtn.disabled = true;
+        inputEl.addEventListener('input', () => {
+          const digits = inputEl.value.replace(/\D/g, '');
+          inputEl.value = digits.slice(0, 8);
+          confirmBtn.disabled = digits.length !== 8;
+        });
+      }
+    });
+  }
+
+  public async topUpEwallet() {
+    try {
+      const walletId = await this.promptWalletId();
+      if (!walletId) {
+        console.log('User cancelled wallet prompt');
+        return;
+      }
+
+      const LaabXWallet = walletId;
+
+      const currentDbBalance = await this.blockchainDbService.getLocalBalance(
+        this.machineId?.machineId
+      );
+
+      if (currentDbBalance <= 0) {
+        console.log('No balance to transfer');
+        return;
+      }
+
+      const offlineMode = localStorage.getItem('offlineMode') === 'true';
+
+      // 1. Always create the withdrawal block locally first (source of truth)
+      const transferAmount = -currentDbBalance;
+      await this.updateBalance(transferAmount);   // This now only does local DB + optimistic UI
+
+      console.log(`Local withdrawal block created for ${currentDbBalance} LAK to wallet: ${LaabXWallet}`);
+
+      // 2. Try to sync immediately (only if online)
+      let syncSuccess = false;
+
+      if (!offlineMode) {
+        try {
+          await this.syncToServer(LaabXWallet);   // Pass walletId only for this sync
+          syncSuccess = true;
+          console.log('Sync to server succeeded - balance transferred safely');
+        } catch (syncErr) {
+          console.error('Sync to server failed after local withdrawal:', syncErr);
+          syncSuccess = false;
+          // Do NOT reset NV9 yet - money is still physically in the machine
+          // The unsynced block remains in DB and will be retried automatically
+        }
+      } else {
+        console.log('Offline mode - withdrawal logged locally, will sync later');
+        syncSuccess = true; // treat as "ok" for offline
+      }
+
+      // 3. Only reset the cash acceptor if sync succeeded (or offline)
+      if (syncSuccess) {
+        this.currentBalance.value = 0;
+        console.log(`Successfully transferred ${currentDbBalance} LAK to e-wallet: ${LaabXWallet}`);
+
+        // await this.serial?.nv9Command(EMACHINE_COMMAND.NV9_RESET, {}, Date.now());
+        console.log('Cash acceptor reset after successful transfer');
+      } else {
+        // Critical: Do NOT reset if sync failed!
+        console.warn('Sync failed - keeping cash in acceptor. Will retry sync later.');
+        // Optional: Show user a message "Transfer queued. Please try again later or check internet."
+      }
+
+    } catch (error) {
+      console.error('Failed to top up e-wallet:', error);
+      // Optional: rollback the last block if it was a critical error (rare)
+    }
+  }
+  private async loadBalance() {
+    try {
+      this.currentBalance.value = await this.blockchainDbService.getLocalBalance(this.machineId.machineId);
+      this.currentBalance.currency = localStorage.getItem('currency') || 'LAK';
+
+      console.log('Current local balance:', this.currentBalance.value);
+    } catch (e) {
+      console.error('Failed to load balance:', e);
+      this.currentBalance.value = 0;
+    }
+  }
+  async reinitializeNV9(): Promise<boolean> {
+    try {
+      console.log('🔄 Sending NV9 reinit command...');
+
+      const result = await this.serial.nv9Command(EMACHINE_COMMAND.NV9_REINIT, {}, 1);
+
+      if (result.status) {
+        console.log('✅ NV9 reinit successful:', result.message);
+        return true;
+      } else {
+        console.error('❌ NV9 reinit failed:', result.message);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error sending reinit command:', error);
+      return false;
+    }
+  }
+  enableCash() {
+    this.serial.nv9Command(EMACHINE_COMMAND.NV9_ENABLE, { enable: true }, 1).then(async (r) => {
+      console.log('enableCash', r);
+      await Toast.show({ text: 'enableCash' + JSON.stringify(r) })
+    }).catch(e => {
+      console.error('enableCash error', e);
+      Toast.show({ text: 'enableCash error' + JSON.stringify(e) })
+    });
+  }
+  disableCash() {
+    this.serial.nv9Command(EMACHINE_COMMAND.NV9_DISABLE, { enable: false }, 1).then(async (r) => {
+      console.log('disableCash', r);
+    }).catch(e => {
+      console.error('disableCash error', e);
+    });
+  }
+  // ============ UI State Variables ============
+  isNV9Ready: boolean = false;
+  isNV9Enabled: boolean = false;
+  isCashboxPresent: boolean = true;
+  isReadingNote: boolean = false;
+  currentReadingChannel: number = -1;
+  currentBalance = { value: 0, currency: 'LAK' };
+  nv9SerialNumber: string = '';
+  nv9ChannelValues: number[] = [];
+  transactions: any[] = [];
+  shouldAutoEnable: boolean = true;
+
+
+
 
 }

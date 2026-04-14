@@ -319,7 +319,7 @@ export class InventoryVMC implements IBaseClass {
                         hashP: '',
                         hashM: '',
                         max: 5
-                    })
+                    } as any)
             });
         } catch (error) {
             console.log(error);

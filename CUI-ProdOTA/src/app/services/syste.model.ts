@@ -1202,4 +1202,20 @@ export interface IDropPositionData {
     transactionID: string,
     position: number
 }
+
+export type TicketStatus = 'pending' | 'solving' | 'finished';
+
+export interface ITicket {
+  id: number;
+  ticketNo: string;
+  machineId: string;
+  issueType: string;
+  title: string;
+  description?: string;
+  status: TicketStatus;
+  photos: string[];           // URLs of uploaded photos
+  resolvedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
 // Example usage

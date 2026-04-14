@@ -2254,6 +2254,14 @@ export class ApiService {
       });
     }) as Promise<AxiosResponse<IResModel>>;
   }
+  getBlockChainBalance(machineId: string) {
+    return apiQueue.add(() =>
+      this.apiBase.get<IResModel>(`/balance/${machineId}`, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      })
+    ) as Promise<AxiosResponse<IResModel>>;
+  }
   blockChainSync(unsynced: Array<any>, LaabXWallet: string) {
     const req = {} as IReqModel;
     req.command = EClientCommand.blockChainSync;
@@ -2275,6 +2283,67 @@ export class ApiService {
         timeout: REQUEST_TIME_OUT,
       });
     }) as Promise<AxiosResponse<IResModel>>;
+  }
+  // Create new ticket
+  createTicket(data: {
+    machineId: string;
+    issueType: string;
+    title: string;
+    description?: string;
+    photos?: string[];           // array of image URLs (after upload)
+  }) {
+    const req = {} as IReqModel;
+    req.command = 'createTicket';
+    req.data = data;
+
+    return apiQueue.add(() =>
+      this.apiBase.post<IResModel>('/tickets', req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      })
+    ) as Promise<AxiosResponse<IResModel>>;
+  }
+  // Get tickets filtered by status (with pagination)
+  getTicketsByStatus(
+    status: 'pending' | 'solving' | 'finished',
+    machineId?: string,
+    page: number = 1,
+    limit: number = 20
+  ) {
+    let url = `/tickets/status/${status}?page=${page}&limit=${limit}`;
+
+    if (machineId) {
+      url += `&machineId=${machineId}`;
+    }
+
+    return apiQueue.add(() =>
+      this.apiBase.get<IResModel>(url, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      })
+    ) as Promise<AxiosResponse<IResModel>>;
+  }
+  // Update ticket status
+  updateTicketStatus(ticketId: number, status: 'pending' | 'solving' | 'finished') {
+    return apiQueue.add(() =>
+      this.apiBase.patch<IResModel>(`/tickets/${ticketId}/status`, { status }, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      })
+    ) as Promise<AxiosResponse<IResModel>>;
+  }
+
+  // Get tickets for current machine
+  getTicketsByMachine() {
+    const machineId = this.machineId?.machineId;
+    if (!machineId) throw new Error('Machine ID not available');
+
+    return apiQueue.add(() =>
+      this.apiBase.get<IResModel>(`/tickets/machine/${machineId}`, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      })
+    ) as Promise<AxiosResponse<IResModel>>;
   }
   blockChainSyncLog(logs: any) {
     const req = {} as IReqModel;

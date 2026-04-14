@@ -6,7 +6,7 @@ import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
 import { AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { NotifierService } from 'angular-notifier';
-import * as moment from 'moment';
+import moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from './ionic-storage.service';
 import { EventEmitter } from 'events';
@@ -17,11 +17,14 @@ import { BehaviorSubject } from 'rxjs';
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { Capacitor } from '@capacitor/core';
+import axios, { AxiosHeaders, AxiosResponse } from 'axios';
+var REQUEST_TIME_OUT = 10000;
 
 @Injectable({
     providedIn: 'root'
 })
 export class ApiService {
+
     offsettz = 420;
     dateformat = 'yy-MM-dd HH:mm:ss';
     passkeys: string;
@@ -282,12 +285,18 @@ export class ApiService {
     public deductOrderUpdate(position: number) {
         this.eventEmitter.emit('deductOrderUpdate', position);
     }
-    public checkOnlineStatus() {
-        if (this.wsAlive) {
-            return (moment().get('milliseconds') - moment(this.wsAlive.time).get('milliseconds')) < 10 * 1000;
-        } else {
+    public checkOnlineStatus(): boolean {
+        if (!this.wsAlive?.time) {
             return false;
         }
+
+        const now = moment();
+        const lastAlive = moment(this.wsAlive.time);
+
+        // diff() returns milliseconds by default
+        const diffMs = now.diff(lastAlive);
+
+        return diffMs < 10 * 1000;   // less than 10 seconds
     }
     public dismissModal(data: any = null) {
         this.modal.getTop().then(r => {
@@ -1014,6 +1023,84 @@ export class ApiService {
         const dataBlob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
         saveAs(dataBlob, `VendingMachineSales_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    }
+
+
+
+
+    // Get tickets filtered by status (with pagination)
+    getTicketsByStatus(
+        status: 'pending' | 'solving' | 'finished',
+        machineId?: string,
+        page: number = 1,
+        limit: number = 20
+    ) {
+        let url = `/tickets/status/${status}?page=${page}&limit=${limit}`;
+
+        if (machineId) {
+            url += `&machineId=${machineId}`;
+        }
+
+        return this.apiBase.get<IResModel>(url, {
+            headers: this.headerBaseAxios(),
+            timeout: REQUEST_TIME_OUT,
+        }) as Promise<AxiosResponse<IResModel>>;
+    }
+    // Create new ticket
+    createTicket(data: {
+        machineId: string;
+        issueType: string;
+        title: string;
+        description?: string;
+        photos?: string[];           // array of image URLs (after upload)
+    }) {
+        const req = {} as IReqModel;
+        req.command = 'createTicket';
+        req.data = data;
+
+        return this.apiBase.post<IResModel>('/tickets', req, {
+            headers: this.headerBaseAxios(),
+            timeout: REQUEST_TIME_OUT,
+        }) as Promise<AxiosResponse<IResModel>>;
+    }
+
+    // Update ticket status
+    updateTicketStatus(ticketId: number, status: 'pending' | 'solving' | 'finished') {
+        return this.apiBase.patch<IResModel>(`/tickets/${ticketId}/status`, { status }, {
+            headers: this.headerBaseAxios(),
+            timeout: REQUEST_TIME_OUT,
+        }) as Promise<AxiosResponse<IResModel>>;
+    }
+
+    // Get tickets for current machine
+    getTicketsByMachine() {
+        const machineId = this.machineId?.machineId;
+        if (!machineId) throw new Error('Machine ID not available');
+
+        return this.apiBase.get<IResModel>(`/tickets/machine/${machineId}`, {
+            headers: this.headerBaseAxios(),
+            timeout: REQUEST_TIME_OUT,
+        }) as Promise<AxiosResponse<IResModel>>;
+    }
+    apiBase = axios.create({
+        baseURL: this.url,
+        timeout: 25000,    // mobile networks are slower
+        // NO httpAgent/httpsAgent needed in Capacitor/Browser
+    });
+    private headerBaseAxios(): any {
+        const token = localStorage.getItem('token');
+        //const headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'});
+        // var headers = new HttpHeaders();
+        // headers.append('Access-Control-Allow-Origin', '*');
+        // headers.append('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
+        // headers.append('Accept', 'application/json');
+        // headers.append('content-type', 'application/json');
+        //let options = new RequestOptions({ headers:headers})
+        const headers = new AxiosHeaders({
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        });
+        return headers;
     }
 }
 

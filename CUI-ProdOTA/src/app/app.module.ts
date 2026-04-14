@@ -19,12 +19,13 @@ import { JsonPipe } from '@angular/common';
 import { GlobalErrorHandler } from './global-error-handler';
 import { HttpErrorInterceptor } from './http-error.interceptor';
 import { CustomloadingPage } from './customloading/customloading.page';
+import { NumpadModalComponent } from './components/numpad-modal/numpad-modal.component';
 
 // today
 // import { VideoPlayer } from '@ionic-native/video-player/ngx';
 
 @NgModule({
-  declarations: [AppComponent, CustomloadingPage],
+  declarations: [AppComponent, CustomloadingPage,NumpadModalComponent],
   imports: [BrowserModule, IonicModule.forRoot({ innerHTMLTemplatesEnabled: true }), AppRoutingModule, HttpClientModule, QrCodeModule, JsonPipe,
     // NotifierModule,
     OrderModule,

@@ -30,6 +30,9 @@ import { VendingEventLogFactory, VendingEventLogStatic } from "./vendingevents.e
 import { RecordBillingFactory, RecordBillingStatic } from "./recordbilling.entity";
 import { ProductCreditFactory, ProductCreditStatic } from "./productcredit.entity";
 import { CallbacklogFactory, CallbacklogStatic } from "./callbacklogs.entity";
+import { MachineBlockFactory, MachineBlockStatic } from "./machineblock.entity";
+import { MachineFactory, MachineStatic } from "./machine.entity";
+import { TicketFactory, TicketStatic } from "./tickete.entity";
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -75,9 +78,24 @@ export let ProductCreditEntity: ProductCreditStatic;
 //
 
 export let BundleEntity: BundleStatic;
+export let MachineBlockEntity: MachineBlockStatic;
+export let MachineEntity: MachineStatic;
+export let TicketEntity: TicketStatic;
 
 export const initDB = async () => {
+    TicketEntity = TicketFactory(dbConnection);
+    TicketEntity.sync().then(r => {
+        console.log('TicketEntity synced', r);
+    });
 
+    MachineEntity = MachineFactory(dbConnection);
+    MachineEntity.sync().then(r => {
+        console.log('MachineEntity synced', r);
+    });
+    MachineBlockEntity = MachineBlockFactory(dbConnection);
+    MachineBlockEntity.sync().then(r => {
+        console.log('MachineBlock synced', r);
+    });
     vendingMachineEntity = VendingEventLogFactory(EEntity.vendingevents, dbConnection);
     vendingMachineEntity.sync().then(r => {
         console.log('vendingMachineEntity synced', r);

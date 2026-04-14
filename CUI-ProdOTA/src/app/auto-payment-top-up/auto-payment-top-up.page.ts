@@ -202,6 +202,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
       value: 'LAABX'
     }
   ]
+
   paymentList: Array<any> = [...this.cashesList, ...this.bankList];
   paymentOptions: Array<any> = [...this.ewalletOptionList];
 
@@ -225,6 +226,17 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    if (localStorage.getItem('NV9USB')) {
+      this.bankList.unshift(
+        {
+          image: `../../../../assets/logo/localbalance.png`,
+          name: 'Cash',
+          title: 'Cash (optional)',
+          detail: 'Pay your orders by using Cash',
+          value: 'cash'
+        })
+    }
+
     const player = this.videoPlayer?.nativeElement;
 
     // set first video
@@ -1143,6 +1155,11 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           resolve(await this._processLoopDestroyLAABX());
           resolve(IENMessage.success);
         }
+        else if (this.paymentmethod == IPaymentMethod.cash) {
+          this.paymentText = 'Cash';
+          // resolve(await this._processLoopDestroyCash());
+          resolve(IENMessage.success);
+        }
         else {
 
         }
@@ -1328,6 +1345,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
 
 enum IPaymentMethod {
+  cash = 'cash',
   laab = 'LAABX',
   mmoney = 'mmoney',
   LaoQR = 'LaoQR',

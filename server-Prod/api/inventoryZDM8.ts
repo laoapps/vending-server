@@ -111,12 +111,15 @@ import {
     laabHashService,
     logEntity,
     LogsTempEntity,
+    MachineBlockEntity,
     machineCashoutMMoneyEntity,
     machineClientIDEntity,
+    MachineEntity,
     machineIDEntity,
     ProductImageEntity,
     stockEntity,
     subadminEntity,
+    TicketEntity,
     vendingMachineSaleReportEntity,
     vendingVersionEntity,
     vendingWallet,
@@ -133,7 +136,7 @@ import {
     VendingMachineBillModel,
     VendingMachineBillStatic,
 } from "../entities/vendingmachinebill.entity";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import fs from "fs";
 import { getNanoSecTime } from "../services/service";
 import { APIAdminAccess, IENMessage, IFranchiseStockSignature, IStatus, LAAB_CoinTransfer, message } from "../services/laab.service";
@@ -3935,164 +3938,308 @@ export class InventoryZDM8 implements IBaseClass {
 
 
 
-            // POST /api/blockchain/sync   (or adjust path to match your apiBase.post(''))
+            // POST /blockchain/sync
             router.post('/blockchain/sync', async (req: Request, res: Response) => {
+                const transaction = await dbConnection.transaction();
+
                 try {
-                    const { command, data, token } = req.body as {
-                        command: string;
-                        data: {
-                            machineId: string;
-                            otp: string;
-                            blocks: any[];
-                            LaabXWallet: string;
-                        };
-                        token: string;
-                    };
+                    const { command, data, token } = req.body;
 
                     if (command !== 'blockChainSync') {
-                        return res.status(400).json({ status: 0, message: 'Invalid command' });
+                        throw new Error('Invalid command');
                     }
 
-                    const { machineId, otp, blocks, LaabXWallet } = data;
+                    const { machineId, otp, blocks, LaabXWallet } = data || {};
 
-                    if (
-                        !machineId ||
-                        !otp ||
-                        !Array.isArray(blocks) ||
-                        blocks.length === 0 ||
-                        !LaabXWallet
-                    ) {
-                        return res.status(400).json({
-                            status: 0,
-                            message: 'Missing required fields: machineId, otp, blocks, LaabXWallet',
-                        });
+                    if (!machineId || !otp || !Array.isArray(blocks) || blocks.length === 0) {
+                        throw new Error('Missing required fields: machineId, otp, blocks');
                     }
 
-                    // 1. Verify token = SHA256(machineId + otp)
-                    const expectedToken = crypto
-                        .createHash('sha256')
-                        .update(machineId + otp)
-                        .digest('hex');
-
+                    // Token validation
+                    const expectedToken = crypto.createHash('sha256').update(machineId + otp).digest('hex');
                     if (token !== expectedToken) {
-                        return res.status(401).json({
-                            status: 0,
-                            message: 'Invalid token',
-                        });
+                        throw new Error('Invalid token');
                     }
 
-                    // 2. Validate TOTP (otp)
-                    const expectedOtp = this.getExpectedTOTP(machineId);
-                    if (otp !== expectedOtp) {
-                        return res.status(401).json({
-                            status: 0,
-                            message: 'Invalid OTP/TOTP',
-                        });
+                    if (!this.findMachineId(machineId)) {
+                        throw new Error('Machine not found');
                     }
 
-                    // 3. Get or initialize machine state
-                    if (!machines.has(machineId)) {
-                        machines.set(machineId, {
+                    // Get or create Machine record
+                    let machine = await MachineEntity.findByPk(machineId, { transaction });
+                    if (!machine) {
+                        machine = await MachineEntity.create({
+                            machineId,
                             balance: 0,
                             lastHash: '0000000000000000000000000000000000000000000000000000000000000000',
-                            secret: `secret-key-for-machine-${machineId}`,
-                        });
+                            lastBlockIndex: 0,
+                        }, { transaction });
                     }
 
-                    const machine = machines.get(machineId)!;
-                    let delta = 0;
                     let currentPrevHash = machine.lastHash;
+                    let totalDelta = 0;
+                    const blocksToSave: any[] = [];
 
-                    // 4. Validate and process each block
                     for (const block of blocks) {
-                        // a. Check chain continuity
                         if (block.prevHash !== currentPrevHash) {
-                            return res.status(400).json({
-                                status: 0,
-                                message: `Chain broken: prev_hash mismatch at index ${block.block_index}`,
-                            });
+                            throw new Error(`Chain broken at index ${block.block_index || 'unknown'}`);
                         }
 
-                        // b. Verify hash
                         const computedHash = this.computeBlockHash(block);
                         if (computedHash !== block.hash) {
-                            return res.status(400).json({
-                                status: 0,
-                                message: `Invalid hash at index ${block.block_index}`,
-                            });
+                            throw new Error(`Invalid hash at index ${block.block_index || 'unknown'}`);
                         }
 
-                        // c. Parse data (handle string or object)
-                        let txData = block.data;
-                        if (typeof txData === 'string') {
-                            try {
-                                txData = JSON.parse(txData);
-                            } catch {
-                                return res.status(400).json({
-                                    status: 0,
-                                    message: 'Invalid block data JSON at index ' + block.block_index,
-                                });
-                            }
-                        }
-
-                        // d. Apply amount changes
+                        let txData = typeof block.data === 'string' ? JSON.parse(block.data) : block.data;
                         const amount = Number(txData.amount) || 0;
 
-                        if (txData.type === 'insert') {
-                            delta += amount;
-                        } else if (txData.type === 'withdrawal' || txData.type === 'reset') {
-                            delta -= amount;
-                        }
+                        if (txData.type === 'insert') totalDelta += amount;
+                        else if (txData.type === 'withdrawal' || txData.type === 'reset') totalDelta -= amount;
 
-                        // e. Move forward in chain
+                        blocksToSave.push({
+                            machineId,
+                            blockIndex: block.block_index,
+                            prevHash: block.prevHash,
+                            hash: block.hash,
+                            data: txData,
+                            timestamp: new Date(block.timestamp || Date.now()),
+                            signature: block.signature || null,
+                            isReset: block.isReset || txData.type === 'reset' || txData.type === 'withdrawal',
+                            laabXWallet: (txData.type === 'withdrawal' && LaabXWallet) ? LaabXWallet : null,
+                            transferredAmount: (txData.type === 'withdrawal' && LaabXWallet) ? Math.abs(amount) : null,
+                        });
+
                         currentPrevHash = block.hash;
                     }
 
-                    // 5. Apply balance change (in real app: use DB transaction!)
-                    const oldBalance = machine.balance;
-                    machine.balance += delta;
-                    machine.lastHash = currentPrevHash;
+                    await MachineBlockEntity.bulkCreate(blocksToSave, { transaction });
 
-                    // 6. Simulate transfer to LaabXWallet
-                    // Replace this with real wallet integration (e.g. crypto API, bank transfer, etc.)
-                    console.log(
-                        `Transferring ${Math.abs(delta)} LAK from machine ${machineId} to LaabXWallet: ${LaabXWallet}`
-                    );
-                    // Example: await walletService.transfer(LaabXWallet, Math.abs(delta));
+                    // Update cached machine balance
+                    const newBalance = Number(machine.balance) + totalDelta;
+                    const newLastBlockIndex = blocks[blocks.length - 1].block_index;
 
-                    // 7. Success response (matches what client expects)
-                    return res.json({
+                    await machine.update({
+                        balance: newBalance,
+                        lastHash: currentPrevHash,
+                        lastBlockIndex: newLastBlockIndex,
+                    }, { transaction });
+
+                    await transaction.commit();
+
+                    // TODO: Implement real LaabX transfer here later
+                    if (LaabXWallet && totalDelta < 0) {
+                        const transferAmount = Math.abs(totalDelta);
+                        console.log(`[TODO] Transfer ${transferAmount} LAK to LaabXWallet ${LaabXWallet} from machine ${machineId}`);
+                    }
+
+                    return res.send(PrintSucceeded('blockchain sync', {
                         status: 1,
                         message: 'Blockchain synced successfully',
                         processedBlocks: blocks.length,
-                        oldBalance,
-                        newBalance: machine.balance,
                         transferredTo: LaabXWallet,
-                        transferredAmount: Math.abs(delta),
-                    });
-                } catch (err) {
+                        transferredAmount: Math.abs(totalDelta),
+                        newBalance: newBalance,
+                    }, EMessage.succeeded, returnLog(req, res)));
+
+                } catch (err: any) {
+                    await transaction.rollback().catch(() => { }); // prevent unhandled rejection
                     console.error('Sync error:', err);
-                    return res.status(500).json({
-                        status: 0,
-                        message: 'Server error during sync',
-                    });
+
+                    return res.send(PrintError(
+                        "blockchain sync",
+                        err.message || 'Server error during sync',
+                        EMessage.error,
+                        returnLog(req, res, true)
+                    ));
                 }
             });
 
-            // Optional: GET current balance (for testing/debug)
-            router.get('/balance/:machineId', (req: Request, res: Response) => {
-                const { machineId } = req.params;
-                const machine = machines.get(machineId);
+            // GET /balance/:machineId
+            router.get('/balance/:machineId', async (req: Request, res: Response) => {
+                try {
+                    const { machineId } = req.params;
 
-                if (!machine) {
-                    return res.status(404).json({ status: 0, message: 'Machine not found' });
+                    if (!machineId) {
+                        return res.status(400).json({ status: 0, message: 'Machine ID is required' });
+                    }
+
+                    if (!this.findMachineId(machineId)) {
+                        return res.send(PrintError("get balance", "Machine not found", EMessage.notexist, returnLog(req, res, true)));
+                    }
+
+                    const machine = await MachineEntity.findByPk(machineId, {
+                        attributes: ['machineId', 'balance', 'lastHash', 'lastBlockIndex', 'updatedAt']
+                    });
+
+                    if (!machine) {
+                        return res.send(PrintError("get balance", "Machine not found", EMessage.notexist, returnLog(req, res, true)));
+                    }
+
+                    return res.send(PrintSucceeded('get balance', {
+                        status: 1,
+                        message: 'Balance retrieved successfully',
+                        machineId: machine.machineId,
+                        currentBalance: Number(machine.balance),
+                        lastHash: machine.lastHash,
+                        lastBlockIndex: machine.lastBlockIndex,
+                        lastUpdated: machine.updatedAt,
+                    }, EMessage.succeeded, returnLog(req, res)));
+
+                } catch (err: any) {
+                    console.error('Get balance error:', err);
+                    return res.send(PrintError(
+                        "get balance",
+                        err.message || 'Failed to retrieve balance',
+                        EMessage.error,
+                        returnLog(req, res, true)
+                    ));
                 }
+            });
 
-                res.json({
-                    status: 1,
-                    balance: machine.balance,
-                    lastHash: machine.lastHash,
-                });
+
+            // GET /tickets/status/:status   →  List tickets by specific status (pending / solving / finished)
+            // Supports optional machineId filter + pagination
+            router.get('/tickets/status/:status', async (req: Request, res: Response) => {
+                try {
+                    const { status } = req.params;
+                    const { machineId, page = 1, limit = 20 } = req.query;
+
+                    // Validate status
+                    if (!['pending', 'solving', 'finished'].includes(status as string)) {
+                        return res.send(PrintError("get tickets by status", {}, "Invalid status. Allowed: pending, solving, finished", returnLog(req, res, true)));
+                    }
+
+                    const pageNum = Math.max(1, parseInt(page as string));
+                    const limitNum = Math.min(100, parseInt(limit as string));   // max 100 per page for safety
+                    const offset = (pageNum - 1) * limitNum;
+
+                    const whereClause: any = { status };
+
+                    // Optional: filter by machine
+                    if (machineId) {
+                        whereClause.machineId = machineId;
+                    }
+
+                    const { rows: tickets, count } = await TicketEntity.findAndCountAll({
+                        where: whereClause,
+                        order: [['createdAt', 'DESC']],        // newest first
+                        limit: limitNum,
+                        offset: offset,
+                        attributes: [
+                            'id', 'ticketNo', 'machineId', 'issueType', 'title',
+                            'status', 'photos', 'createdAt', 'resolvedAt'
+                        ],   // don't load full description if not needed
+                    });
+
+                    return res.send(PrintSucceeded('get tickets by status', {
+                        tickets,
+                        pagination: {
+                            total: count,
+                            page: pageNum,
+                            limit: limitNum,
+                            totalPages: Math.ceil(count / limitNum),
+                        },
+                        status
+                    }, `Tickets with status '${status}' retrieved successfully`, returnLog(req, res)));
+
+                } catch (err: any) {
+                    console.error('Get tickets by status error:', err);
+                    return res.send(PrintError(
+                        "get tickets by status",
+                        {},
+                        err.message || 'Failed to fetch tickets',
+                        returnLog(req, res, true)
+                    ));
+                }
+            });
+            // POST /tickets - Create new ticket
+            router.post('/tickets', async (req: Request, res: Response) => {
+                try {
+                    const { machineId, issueType, title, description, photos = [] } = req.body;
+
+                    if (!machineId || !issueType || !title) {
+                        return res.send(PrintError("create ticket", {}, "Missing required fields", returnLog(req, res, true)));
+                    }
+
+                    if (!this.findMachineId(machineId)) {
+                        return res.send(PrintError("create ticket", {}, "Machine not found", returnLog(req, res, true)));
+                    }
+
+                    // Generate ticket number: TKT-YYYYMMDD-XXXX
+                    const date = new Date();
+                    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+                    const count = await TicketEntity.count({ where: { createdAt: { [Op.gte]: date.toISOString().slice(0, 10) } } }) + 1;
+                    const ticketNo = `TKT-${dateStr}-${count.toString().padStart(4, '0')}`;
+
+                    const ticket = await TicketEntity.create({
+                        ticketNo,
+                        machineId,
+                        issueType,
+                        title,
+                        description: description || null,
+                        status: 'pending',
+                        photos: photos || [],
+                    });
+
+                    return res.send(PrintSucceeded('create ticket', {
+                        ticketId: ticket.id,
+                        ticketNo: ticket.ticketNo,
+                        status: ticket.status,
+                    }, 'Ticket created successfully', returnLog(req, res)));
+
+                } catch (err: any) {
+                    console.error('Create ticket error:', err);
+                    return res.send(PrintError("create ticket", {}, err.message || 'Failed to create ticket', returnLog(req, res, true)));
+                }
+            });
+
+            // PATCH /tickets/:id/status - Update status
+            router.patch('/tickets/:id/status', async (req: Request, res: Response) => {
+                try {
+                    const { id } = req.params;
+                    const { status } = req.body;   // pending | solving | finished
+
+                    if (!['pending', 'solving', 'finished'].includes(status)) {
+                        return res.send(PrintError("update ticket status", {}, "Invalid status", returnLog(req, res, true)));
+                    }
+
+                    const ticket = await TicketEntity.findByPk(id);
+                    if (!ticket) {
+                        return res.send(PrintError("update ticket status", {}, "Ticket not found", returnLog(req, res, true)));
+                    }
+
+                    const updateData: any = { status };
+                    if (status === 'finished') updateData.resolvedAt = new Date();
+
+                    await ticket.update(updateData);
+
+                    return res.send(PrintSucceeded('update ticket status', {
+                        ticketId: ticket.id,
+                        ticketNo: ticket.ticketNo,
+                        status: ticket.status,
+                        resolvedAt: ticket.resolvedAt,
+                    }, 'Ticket status updated', returnLog(req, res)));
+
+                } catch (err: any) {
+                    return res.send(PrintError("update ticket status", {}, err.message, returnLog(req, res, true)));
+                }
+            });
+
+            // GET /tickets/machine/:machineId - Get all tickets for a machine
+            router.get('/tickets/machine/:machineId', async (req: Request, res: Response) => {
+                try {
+                    const { machineId } = req.params;
+
+                    const tickets = await TicketEntity.findAll({
+                        where: { machineId },
+                        order: [['createdAt', 'DESC']],
+                    });
+
+                    return res.send(PrintSucceeded('get tickets', { tickets }, 'Tickets retrieved', returnLog(req, res)));
+
+                } catch (err: any) {
+                    return res.send(PrintError("get tickets", {}, err.message, returnLog(req, res, true)));
+                }
             });
 
             // REPORT
@@ -5711,18 +5858,7 @@ export class InventoryZDM8 implements IBaseClass {
         return crypto.createHash('sha256').update(str).digest('hex');
     }
 
-    // Helper: generate expected TOTP (replace with real secret from DB)
-    getExpectedTOTP(machineId: string): string {
-        // In production: fetch secret from secure DB
-        const secret = `secret-key-for-machine-${machineId}`; // ← REPLACE THIS
 
-        const time = Math.floor(Date.now() / 30000); // 30-second window
-        return crypto
-            .createHmac('sha1', secret)
-            .update(time.toString())
-            .digest('hex')
-            .slice(0, 6);
-    }
 
     ///
     async listOnlineMachines(): Promise<Array<{ machine: any, status: any }>> {

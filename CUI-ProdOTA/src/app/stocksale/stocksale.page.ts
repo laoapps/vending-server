@@ -21,6 +21,7 @@ export class StocksalePage implements OnInit, OnDestroy {
   isDisabled = '';
   search = '';
   jsonText = ';'
+  isResetCash = false;
   constructor(public apiService: ApiService,
     public alertController: AlertController,
     public storage: IonicStorageService) {
@@ -52,12 +53,12 @@ export class StocksalePage implements OnInit, OnDestroy {
 
         // }
         if (r.status === 1) {
-          this.apiService.closeModal();
+          this.apiService.closeModal({resetCashCount: this.isResetCash});
           this.apiService.toast.create({ message: 'ສຳເຫຼັດແລ້ວ', duration: 2000 }).then(r => {
             r.present();
           })
         } else {
-          this.apiService.closeModal();
+          this.apiService.closeModal({resetCashCount: this.isResetCash});
           this.apiService.toast.create({ message: 'ອິນເຕີເນັດຊ້າ ກະລຸນາລໍຖ້າແລ້ວລອງໃໝ່ອີກຄັ້ງ', duration: 2000 }).then(r => {
             r.present();
           })
@@ -73,7 +74,7 @@ export class StocksalePage implements OnInit, OnDestroy {
 
   closePage() {
     try {
-      this.apiService.closeModal();
+          this.apiService.closeModal({resetCashCount: this.isResetCash});
     } catch (error) {
 
     }

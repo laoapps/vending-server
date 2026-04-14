@@ -45,7 +45,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   private deliveryBills: DeliveryBills[] = []; // Replace `this.r` with typed property
   private readonly SUPPORTED_DEVICES = ['VMC', 'ZDM8', 'MT102', 'adh814'];
   @Input() r = new Array<IBillProcess>();
-  @Input() serial: ISerialService;
+  @Input() serial: ISerialService =null as any;
   url = this.apiService.url;
   lists: Array<any> = [];
 
@@ -450,7 +450,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       try {
         await this.apiService.reconfirmStockAndDrop(bills, dropPositionData);
         resolve();
-      } catch (error) {
+      } catch (error:any) {
         try {
           const billData: IBillSaveSale = {
             transactionID: Number(bills[0].transactionID),

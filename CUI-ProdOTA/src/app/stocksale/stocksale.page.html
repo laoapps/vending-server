@@ -4,8 +4,9 @@
       <ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>
     </ion-title>
     <!-- <ion-icon name="refresh-circle-sharp" color="danger" (click)="reset()"></ion-icon> -->
-    <ion-button color="success" (click)="saveSaveStock()">ບັນທຶກການປ່ຽນແປງ</ion-button>
+    <ion-checkbox [(ngModel)]="isResetCash" >Reset Cash</ion-checkbox>
 
+    <ion-button color="success" (click)="saveSaveStock()">ບັນທຶກການປ່ຽນແປງ</ion-button>
     <ion-button color="danger" (click)="closePage()">ປິດໜ້ານິ້</ion-button>
   </ion-toolbar>
 </ion-header>

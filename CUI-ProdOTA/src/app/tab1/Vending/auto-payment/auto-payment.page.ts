@@ -1079,7 +1079,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   choosePaymentMethod(list: any): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-
+        
         this.paymentmethod = list.value;
         this.isPayment = false;
         // this.isLoading = true;
@@ -1296,6 +1296,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 }
 
 enum IPaymentMethod {
+  cash='cash',
   laab = 'laab',
   mmoney = 'mmoney',
   LaoQR = 'LaoQR',
@@ -1348,6 +1349,7 @@ class PaymentStation {
         if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
         // const LAABPayment = await this.LAABPayment();
+        
         // if (LAABPayment != IENMessage.success) throw new Error(LAABPayment);
 
         const LaoQRPayment = await this.LaoQRPayment();

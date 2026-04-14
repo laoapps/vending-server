@@ -170,8 +170,8 @@ async getLocalBalance(machineId: string): Promise<number> {
     // Include machineId (override if provided) and TOTP in data
     const enhancedData = {
       ...blockData.data,
-      machineId: blockData.machineId || storedMachineId,
-      totp,  // Add TOTP to data for verification
+      // machineId: blockData.machineId || storedMachineId,
+      // totp,  // Add TOTP to data for verification
     };
 
     const dataJson = JSON.stringify(enhancedData);

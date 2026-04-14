@@ -40,6 +40,7 @@ export class SettingPage implements OnInit, OnDestroy {
   dropSensor = localStorage.getItem('dropSensor') ? Number(localStorage.getItem('dropSensor')) : 1;
 
   offlineMode = localStorage.getItem('offlineMode') ? true : false;
+  NV9USB = localStorage.getItem('NV9USB') ? (localStorage.getItem('NV9USB') === 'true' ? true : false) : false;
 
   startM: number = 1;
   endM = 60;
@@ -108,7 +109,7 @@ export class SettingPage implements OnInit, OnDestroy {
 
     localStorage.setItem('offlineMode', this.offlineMode + '');
     localStorage.setItem('dropSensor', this.dropSensor + '');
-
+    localStorage.setItem('NV9USB', this.NV9USB ? 'true' : 'false');
 
 
     // product fall limit
