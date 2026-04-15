@@ -3936,7 +3936,15 @@ export class InventoryZDM8 implements IBaseClass {
 
             const machines = new Map<string, MachineState>();
 
-
+            // POST /machine/paid-orders-reports
+            router.get('/machine/paid-orders-reports', this.checkAdmin, async (req: Request, res: Response) => {
+                try {
+                    return res.send(PrintSucceeded('fetch paid orders', await this.getAllPaidOrders(), EMessage.succeeded, returnLog(req, res)));
+                }catch (error) {
+                    console.error('Error fetching paid orders:', error);
+                    return res.send(PrintError('fetch paid orders', 'Server error', EMessage.error, returnLog(req, res, true)));
+                }
+            });
 
             // POST /blockchain/sync
             router.post('/blockchain/sync', async (req: Request, res: Response) => {
@@ -9307,6 +9315,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             PrintSucceeded(
                                                 "ping",
                                                 {
+                                                    datapaidreports:this.getAllPaidOrders(),
                                                     command: "ping",
                                                     production: this.production, // no versioning
                                                     balance: r,// no versioning
@@ -9528,7 +9537,7 @@ export class InventoryZDM8 implements IBaseClass {
     // });
     // }
     confirmMMoneyOder(c: IMMoneyConfirm) {
-        return new Promise<any>((resolve, reject) => {
+        return new Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }>((resolve, reject) => {
             // c.wallet_ids
             this.callBackConfirmMmoney(c?.qrcode)
                 .then((r) => {
@@ -9567,6 +9576,45 @@ export class InventoryZDM8 implements IBaseClass {
                 });
         });
     }
+    async getAllPaidOrders() {
+        const allPaidOrders: any[] = [];
+
+        try {
+            const stream = redisClient.scanStream({
+                match: 'paid_orders_*',
+                count: 1000,
+            });
+
+            for await (const keys of stream) {
+                if (keys.length === 0) continue;
+
+                const pipeline = redisClient.pipeline();
+
+                keys.forEach((key) => pipeline.lrange(key, 0, -1));
+
+                const results = await pipeline.exec();
+
+                keys.forEach((key, index) => {
+                    const listData = results?.[index]?.[1] as string[] | null;
+
+                    if (Array.isArray(listData)) {
+                        listData.forEach((itemStr) => {
+                            try {
+                                allPaidOrders.push(JSON.parse(itemStr));
+                            } catch (e) {
+                                console.error(`Parse error for key ${key}`, e);
+                            }
+                        });
+                    }
+                });
+            }
+
+            return allPaidOrders;
+        } catch (error) {
+            console.error('Error fetching paid orders:', error);
+            throw error;
+        }
+    }
 
 
     confirmLAABXOrder(c: IMMoneyConfirm): Promise<{ bill: IVendingMachineBill | null, transactionID: string | null }> {
@@ -9591,7 +9639,22 @@ export class InventoryZDM8 implements IBaseClass {
                 });
         });
     }
-
+    confirmLAABOder(c: IMMoneyConfirm) {
+        return new Promise<{
+            bill: IVendingMachineBill | null;
+            transactionID: string | null;
+        }>((resolve, reject) => {
+            // c.wallet_ids
+            this.callBackConfirmLAAB(c.qrcode)
+                .then((r) => {
+                    resolve({ bill: r, transactionID: c?.tranid_client });
+                })
+                .catch((e) => {
+                    console.log("error confirmLAABOder", e.message);
+                    reject(e);
+                });
+        });
+    }
     findLaoQROrderPaid(c: any) {
         return new Promise<any>((resolve, reject) => {
             // console.log('C findLaoQROrderPaid is :', c);
@@ -9610,19 +9673,8 @@ export class InventoryZDM8 implements IBaseClass {
                 });
         });
     }
-    confirmLAABOder(c: IMMoneyConfirm) {
-        return new Promise<any>((resolve, reject) => {
-            // c.wallet_ids
-            this.callBackConfirmLAAB(c.qrcode)
-                .then((r) => {
-                    resolve({ bill: r });
-                })
-                .catch((e) => {
-                    console.log("error confirmLAABOder", e.message);
-                    reject(e);
-                });
-        });
-    }
+
+
     sendWSToMachine(machineId: string, resx: IResModel) {
         // console.log("wsclient", this.wsClient.length);
 

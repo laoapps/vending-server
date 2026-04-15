@@ -1,0 +1,82 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Live Paid Orders (Last 24 Hours)</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="loading" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Loading live data...</p>
+  </div>
+
+  <ion-card *ngIf="!loading && machines.length === 0">
+    <ion-card-content>
+      <p>No paid orders in the last 24 hours.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Main Table -->
+  <ion-card *ngFor="let machine of machines">
+    <ion-card-header>
+      <ion-card-title>
+        Machine ID: <strong>{{ machine.machineId }}</strong>
+      </ion-card-title>
+      <ion-card-subtitle>
+        Total Sales: <strong>{{ machine.totalSales | number:'1.0-0' }}</strong> items | 
+        Total Value: <strong>{{ machine.totalValue | currency:'LAK':'symbol':'1.0-0' }}</strong>
+      </ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <table class="paid-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Transaction ID</th>
+            <th>Payment Method</th>
+            <th>Status</th>
+            <th>Total Value</th>
+            <th>Items</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of machine.orders">
+            <td>{{ order.bill?.paymenttime | date:'short' }}</td>
+            <td>{{ order.bill?.transactionID || order.transactionID }}</td>
+            <td>
+              <ion-badge color="success" *ngIf="order.bill?.paymentmethod">
+                {{ order.bill.paymentmethod }}
+              </ion-badge>
+            </td>
+            <td>
+              <ion-badge [color]="order.bill?.paymentstatus === 'paid' ? 'success' : 'warning'">
+                {{ order.bill?.paymentstatus || 'PAID' }}
+              </ion-badge>
+            </td>
+            <td>{{ order.bill?.totalvalue | currency:'LAK':'symbol':'1.0-0' }}</td>
+            <td>{{ order.bill?.vendingsales?.length || 0 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-note slot="start">Auto-refresh every 60 seconds • Data expires after 24h</ion-note>
+    <ion-button slot="end" (click)="refreshNow()" fill="clear">
+      Refresh Now
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

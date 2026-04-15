@@ -1,8 +1,8 @@
 import { Sequelize, DataTypes } from 'sequelize';
-import { createClient } from 'redis';
 import axios from 'axios';
 import { NextFunction, Response, Request } from 'express';
 import { OwnerEntity, UserEntity } from '../models/ topup.model';
+import { redisClient } from './service';
 
 
 const sequelize = new Sequelize(process.env.DATABASE_URL!, {
@@ -10,8 +10,9 @@ const sequelize = new Sequelize(process.env.DATABASE_URL!, {
     logging: false
 });
 
-export const redisClient = createClient({ url: process.env.REDIS_HOST });
-redisClient.connect().catch(console.error);
+// export const redisClient = createClient({ url: process.env.REDIS_HOST });
+// redisClient.connect().catch(console.error);
+
 
 export function initialize() {
     OwnerEntity.init({

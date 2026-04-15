@@ -6,7 +6,7 @@ import * as cryptojs from 'crypto-js';
 import { environment } from 'src/environments/environment';
 import { AlertController, LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { NotifierService } from 'angular-notifier';
-import moment from 'moment';
+import * as moment from 'moment';
 import * as uuid from 'uuid';
 import { IonicStorageService } from './ionic-storage.service';
 import { EventEmitter } from 'events';
@@ -1081,6 +1081,14 @@ export class ApiService {
             headers: this.headerBaseAxios(),
             timeout: REQUEST_TIME_OUT,
         }) as Promise<AxiosResponse<IResModel>>;
+    }
+    async getAllPaidOrders() {
+        // Call your backend API that uses the getAllPaidOrders() function you have
+        return this.apiBase.get<IResModel>(`/api/paid-orders/`, {
+            headers: this.headerBaseAxios(),
+            timeout: REQUEST_TIME_OUT,
+        }) as Promise<AxiosResponse<IResModel>>;
+
     }
     apiBase = axios.create({
         baseURL: this.url,

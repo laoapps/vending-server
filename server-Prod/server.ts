@@ -15,8 +15,9 @@ import {
   IMMoneyConfirm,
   IReqModel,
   IResModel,
+  IVendingMachineBill,
 } from "./entities/system.model";
-import { PrintError, PrintSucceeded } from "./services/service";
+import { PrintError, PrintSucceeded, redisClient } from "./services/service";
 import { parse } from "url";
 import { CreateDatabase } from "./entities";
 import { LaabVendingAPI } from "./api/laab.vending";
@@ -179,80 +180,67 @@ CreateDatabase("")
 
 
 
-    app.post("/", (req, res) => {
-      const http = req.protocol; // http
-      const host = req.get("Host"); // localhost:4000
-      const server = http + host;
+    app.post("/", async (req, res) => {
       const d = req.body as IReqModel;
-      console.log("debug HOST", server, d);
+
+      console.log("POST Data", d);
+      // console.log("debug HOST", `${req.protocol}://${req.get("Host")}`, d); // if you still need it
+
+      const c = d.data as IMMoneyConfirm;
 
       try {
-        console.log("POST Data", d);
-        const c = d.data as IMMoneyConfirm;
-        if (d.command == EClientCommand.confirmMMoney) {
-          console.log("confirmMMoney");
-          invZDM8.confirmMMoneyOder(c).then((r) => {
-            // console.log(r.data);
-            // res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
-            if (r) {
-              res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
-            } else {
-              res.send(PrintError(d.command, r, EMessage.error));
-            }
-          });
-        } else if (d.command == EClientCommand.confirmLAAB) {
-          console.log("confirmLAAB");
-          invZDM8.confirmLAABOder(c).then((r) => {
-            // console.log(r.data);
-            res.send(PrintSucceeded(d.command, r.data, EMessage.succeeded));
-          });
-        } else if (d.command == EClientCommand.confirmLAOQR) {
-          // console.log('confirmLAOQR');
-          invZDM8.confirmLaoQROrder(c).then((r) => {
-            // console.log(r.data);
-            if (r) {
-              res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
-            } else {
-              res.send(PrintError(d.command, r, EMessage.error));
-            }
-          }).catch(e => {
-            console.log(e);
-            res.send(PrintError(d.command, e, EMessage.error));
-          });
-        } else if (d.command == EClientCommand.confirmLAABX) {
-          // console.log('confirmLAOQR');
-          invZDM8.confirmLAABXOrder(c).then((r) => {
-            // console.log(r.data);
-            if (r) {
-              res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
-            } else {
-              res.send(PrintError(d.command, r, EMessage.error));
-            }
-          }).catch(e => {
-            console.log(e);
-            res.send(PrintError(d.command, e, EMessage.error));
-          });
-        } else if (d.command == EClientCommand.findLaoQRPaid) {
-          // console.log('findLaoQRPaid');
-          invZDM8.findLaoQROrderPaid(c).then((r) => {
-            // console.log(r.data);
-            if (r) {
-              res.send(PrintSucceeded(d.command, r, EMessage.succeeded));
-            } else {
-              res.send(PrintError(d.command, r, EMessage.error));
-            }
-          }).catch(e => {
-            console.log(e);
-            res.send(PrintError(d.command, e, EMessage.error));
-          });
+        let result: {
+          bill: IVendingMachineBill | null;
+          transactionID: string | null;
+        };
+
+        switch (d.command) {
+          case EClientCommand.confirmMMoney:
+            console.log("confirmMMoney");
+            result = await invZDM8.confirmMMoneyOder(c);
+            break;
+
+          case EClientCommand.confirmLAAB:
+            console.log("confirmLAAB");
+            result = await invZDM8.confirmLAABOder(c);
+            break;
+
+          case EClientCommand.confirmLAOQR:
+            console.log("confirmLAOQR");
+            result = await invZDM8.confirmLaoQROrder(c);
+            break;
+
+          case EClientCommand.confirmLAABX:
+            console.log("confirmLAABX");
+            result = await invZDM8.confirmLAABXOrder(c);
+            break;
+
+          case EClientCommand.findLaoQRPaid:
+            console.log("findLaoQRPaid");
+            result = await invZDM8.findLaoQROrderPaid(c);
+            break;
+
+          default:
+            return res.send(PrintError(d?.command, [], EMessage.error));
         }
-        else {
-          return res.send(PrintError(d?.command, [], EMessage.error));
+
+        // Success case
+        if (result) {
+          if (result?.bill?.machineId) {
+            setPaidOrder(result);
+          }
+          res.send(PrintSucceeded(d.command, result, EMessage.succeeded));
+        } else {
+          res.send(PrintError(d.command, result, EMessage.error));
         }
+
       } catch (error) {
-        return res.send(PrintError(d.command, error, EMessage.error));
+        console.error(`Error in command ${d.command}:`, error);
+        res.send(PrintError(d.command, error, EMessage.error));
       }
     });
+
+
     const server = http.createServer(app);
     server.on("upgrade", function upgrade(request, socket, head) {
       try {
@@ -358,4 +346,23 @@ function logIncident(type: string, data: any) {
     timestamp: new Date().toISOString(),
     details: data
   });
+}
+function setPaidOrder(result: any) {
+  if (result && result?.bill?.machineId) {
+    const key = `paid_orders_${result.bill.machineId}`;
+    const orderJson = JSON.stringify(result);
+
+    redisClient
+      .multi()                    // Use transaction for atomicity
+      .rpush(key, orderJson)      // Push the order
+      .expire(key, 86400)         // 24 hours = 86400 seconds
+      .exec()
+      .then(() => {
+        console.log(`Paid order saved to ${key} with 24h TTL`);
+      })
+      .catch((e) => {
+        console.error('Error pushing to Redis:', e);
+        logIncident('Redis Push Error', e);
+      });
+  }
 }

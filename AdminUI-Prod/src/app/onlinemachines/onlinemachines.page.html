@@ -2,6 +2,10 @@
   <ion-toolbar color="primary">
     <ion-title>Vending Machine Dashboard</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="openPaidOrdersModal()">
+        <ion-icon name="person-circle-outline"></ion-icon>
+        Dashboard
+      </ion-button>
       <ion-button (click)="clearCallbackLogs()">Clear Callback</ion-button>
       <ion-button (click)="showCallbackLogs()">Report Callback</ion-button>
       <ion-button (click)="clearClientLogs()">Clear Client</ion-button>

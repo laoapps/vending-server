@@ -18,8 +18,9 @@ import { ReportClientPage } from '../report-client/report-client.page';
 import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
 import { SaleReportPage } from '../sale/sale-report/sale-report.page';
 import { StockReportPage } from '../sale/stock-report/stock-report.page';
-import { IonContent } from '@ionic/angular'; // <-- ADD THIS
+import { IonContent, ModalController } from '@ionic/angular'; // <-- ADD THIS
 import { ReportCallbacklogPage } from '../report-callbacklog/report-callbacklog.page';
+import { PaidOrdersModalComponent } from '../modals/paid-orders-modal/paid-orders-modal.component';
 interface MachineData {
   machineId: string;
   owner: string;
@@ -53,7 +54,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   isRefreshing = false;        // For flash effect
   flashClass = '';             // 'flash' class trigger
 
-  constructor(public apiService: ApiService) { }
+  constructor(public apiService: ApiService, private modalCtrl: ModalController) { }
 
   ngOnInit() {
     this.loadData();
@@ -437,5 +438,19 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
   toggleMachineSecrets(machine: MachineData) {
     machine.showSecrets = !machine.showSecrets;
+  }
+
+  async openPaidOrdersModal() {
+    const modal = await this.modalCtrl.create({
+      component: PaidOrdersModalComponent,
+      cssClass: 'full-screen-modal',     // ← Important
+      backdropDismiss: true,
+      showBackdrop: true,
+      breakpoints: [0.95],              // Makes it almost full screen (95%)
+      initialBreakpoint: 0.95,
+      handle: false,                    // Hide the drag handle
+    });
+
+    await modal.present();
   }
 }
