@@ -259,7 +259,7 @@ export class ADH814Service implements ISerialService {
         // if(this.serialService.initialized==false){        this.apiService.exitApp(); return;}
 
         if (command !== EMACHINE_COMMAND.READ_EVENTS) {
-          this.addLogMessage(`Command: ${EMACHINE_COMMAND[command]}, Params: ${JSON.stringify(params)}, Transaction ID: ${transactionID}`);
+          this.addLogMessage(`Command: ${command}, Params: ${JSON.stringify(params)}, Transaction ID: ${transactionID}`);
         }
         const address = params?.address || 0x01;
         let cmd: string;

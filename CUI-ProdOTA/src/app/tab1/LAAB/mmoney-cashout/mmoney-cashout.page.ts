@@ -114,12 +114,12 @@ export class MmoneyCashoutPage implements OnInit {
       try {
 
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
-        let moneyFormat = this.apiService.formatMoney(this.apiService.cash.amount).toString();
+        let moneyFormat = this.apiService.formatMoney(this.apiService.cash.value).toString();
         moneyFormat = moneyFormat.split('.00')[0];
 
         const params = {
           phonenumber: this.phonenumber,
-          cash: this.apiService.cash.amount // debug here
+          cash: this.apiService.cash.value // debug here
         }
         const run = await this.mmoneyCashoutValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
@@ -134,7 +134,6 @@ export class MmoneyCashoutPage implements OnInit {
         // });
 
         this.apiService.alertSuccess(`MMoney account ${this.phonenumber} receive about ${moneyFormat}`);
-        // this.apiService.cash.amount = Number(this.apiService.cash.amount);
         this.stackCashoutPage.dismiss();
         this.apiService.modalCtrl.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);

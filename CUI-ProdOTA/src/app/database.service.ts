@@ -111,7 +111,7 @@ export class DatabaseService {
   }
 
   // Update an item by ID
-  async updateItem(id: number, name: string, data: object, transactionID, description: string): Promise<boolean> {
+  async updateItem(id: number, name: string, data: object, transactionID:string, description: string): Promise<boolean> {
     try {
       const jsonData = JSON.stringify(data); // Convert object to JSON string
       const query = `UPDATE items SET name = ?, data = ?,transactionID = ?, description = ? WHERE id = ?;`;

@@ -189,25 +189,40 @@
         <div *ngIf="true" class="payment-list-right">
 
           <div class="bill-container">
-            <div *ngIf="isPayment == true" class="bill-wave-top">
-              <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
-            </div>
-            <!-- <div class="bill-header">
-              <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
-                class="qr-img">
-              <div *ngIf="isPayment == false" class="loader"></div>
-
-              <div class="total"
-                style="margin-top: 15px;font-size: 40px;font-weight: bold;color: black;background-color: white; padding: 8px;">
-                {{ parseGetTotalSale.t | number }}</div>
-              <div *ngIf="isPayment == true"
-                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
-                ໜ້ານີ້ຈະປິດພາຍໃນ {{
-                countdownDestroy }} ວິນາທີ </div>
-            </div> -->
 
             <div class="bill-header">
-              <div class="qr-container" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }">
+
+              <!-- ==================== CASH PAYMENT UI ==================== -->
+              <div *ngIf="paymentmethod === 'cash'" class="cash-balance-section">
+
+                <div class="balance-box" [class.enough]="isEnoughCash" [class.not-enough]="!isEnoughCash">
+
+                  <div class="balance-label">Cash Inserted</div>
+                  <div class="balance-amount">
+                    {{ this.currentBalance.value | number }}
+                    <span class="currency">{{ this.currentBalance.currency }}</span>
+                  </div>
+
+                  <div class="balance-status">
+                    <span *ngIf="!isEnoughCash" class="need-more">
+                      Need {{ (parseGetTotalSale.t - currentBalance.value) | number }} more
+                    </span>
+                    <span *ngIf="isEnoughCash" class="ready">
+                      ✓ Enough Cash - Ready to Pay
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Big Confirm Button -->
+                <button class="confirm-cash-btn" [disabled]="!isEnoughCash || isProcessing"
+                  (click)="confirmCashPayment()">
+                  {{ isProcessing ? 'PROCESSING...' : 'CONFIRM PAYMENT' }}
+                </button>
+              </div>
+
+              <!-- ==================== QR PAYMENT UI (UNCHANGED) ==================== -->
+              <div class="qr-container"
+                [ngStyle]="{ 'display': (isPayment && paymentmethod !== 'cash') ? 'block' : 'none' }">
                 <div class="fire-aura"></div>
                 <div class="fire-aura fire-aura-2"></div>
                 <div class="fire-aura fire-aura-3"></div>
@@ -215,55 +230,56 @@
                 <img src="" alt="" id="qr-img" class="qr-img">
               </div>
 
-              <div *ngIf="isPayment == false" class="loader"></div>
+              <!-- Loader for QR modes when still generating -->
+              <div *ngIf="!isPayment && paymentmethod !== 'cash'" class="loader"></div>
 
+              <!-- Total Amount - Always visible -->
               <div class="total"
-                style="margin-top: 15px;font-size: 40px;font-weight: bold;color: black;background-color: white; padding: 8px;">
-                {{ parseGetTotalSale.t | number }}</div>
-              <div *ngIf="isPayment == true"
-                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
-                ໜ້ານີ້ຈະປິດພາຍໃນ {{
-                countdownDestroy }} ວິນາທີ </div>
-            </div>
-            <div *ngIf="isPayment == false" class="bill-body">
+                style="margin-top: 15px; font-size: 40px; font-weight: bold; color: black; background-color: white; padding: 8px;">
+                {{ parseGetTotalSale.t | number }}
+              </div>
 
-              <div class="line"></div>
-
-              <div class="group">
-                <div class="text"
-                  style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
-                  SubQTTY</div>
-                <div class="value"
-                  style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;color: black;background-color: white; padding: 8px;">
-                  {{ parseGetTotalSale.q | number }}</div>
+              <!-- Countdown for QR payments only -->
+              <div *ngIf="isPayment && paymentmethod !== 'cash'"
+                style="margin-top: 15px; font-size: 25px; margin-bottom: -10px; font-weight: bold; color: black; background-color: white; padding: 8px;">
+                ໜ້ານີ້ຈະປິດພາຍໃນ {{ countdownDestroy }} ວິນາທີ
               </div>
 
             </div>
-            <div *ngIf="isPayment == true" class="bill-body">
+
+            <!-- ==================== BILL BODY ==================== -->
+            <div class="bill-body">
 
               <div class="line"></div>
-              <div class="group">
+
+              <!-- Show payment method and date when paid (for both QR and Cash) -->
+              <div *ngIf="isPayment" class="group">
                 <div class="text">{{ paymentText }}</div>
-                <div class="value">{{ billDate | date: 'yyyy-MM-dd HH:MM:SS':'+7' }}</div>
+                <div class="value">{{ billDate | date: 'yyyy-MM-dd HH:mm:ss' : '+7' }}</div>
               </div>
+
               <div class="line"></div>
 
               <div class="group">
                 <div class="text">SubQTTY</div>
                 <div class="value">{{ parseGetTotalSale.q | number }}</div>
               </div>
+
               <div class="group">
                 <div class="text">Subtotal</div>
                 <div class="value">{{ parseGetTotalSale.t | number }}</div>
               </div>
 
             </div>
+
             <div class="bill-footer">
               <div class="text">Found any problem call {{contact}}</div>
             </div>
-            <div *ngIf="isPayment == true" class="bill-wave-bottom">
+
+            <div *ngIf="isPayment" class="bill-wave-bottom">
               <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
             </div>
+
           </div>
 
         </div>

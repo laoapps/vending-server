@@ -105,7 +105,7 @@ export class ApiService {
           this.soundCheckTicketsExist();
         }, 15000);
         setTimeout(() => {
-          if (this.cash.amount > 0) this.soundMachineHasSomeChanges();
+          if (this.cash.value > 0) this.soundMachineHasSomeChanges();
         }, 20000);
       }
 
@@ -200,7 +200,7 @@ export class ApiService {
 
   myTab1: Tab1Page;
 
-  cash = { amount: 0 };
+  cash = { value: 0,currency: 'LAK' };
   coinListId: string;
   coinCode: string;
   coinName: string;
@@ -468,7 +468,7 @@ export class ApiService {
 
         this.checkIsDropStock();
 
-        that.cash.amount = r.balance;
+        that.cash.value = r.balance;
         that.wsAlive.time = new Date();
         that.wsAlive.isAlive = that.checkOnlineStatus();
         that.test.test = r?.test;
@@ -495,8 +495,8 @@ export class ApiService {
         //   this.validateDB();
         // }
         if (r.balance) {
-          if (that.cash.amount < r.balance) that.soundLaabIncreased();
-          that.cash.amount = r.balance;
+          if (that.cash.value < r.balance) that.soundLaabIncreased();
+          that.cash.value = r.balance;
         }
 
         // that._machineStatus.status = r.data.mstatus;

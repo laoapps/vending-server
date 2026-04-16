@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { IENMessage } from 'src/app/models/base.model';
 import { ApiService } from 'src/app/services/api.service';
-import { EClientCommand, EMessage, IVendingMachineSale } from 'src/app/services/syste.model';
+import { EClientCommand, EMessage, IMachineId, IVendingMachineSale } from 'src/app/services/syste.model';
 import { VendingAPIService } from 'src/app/services/vending-api.service';
 import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
 import { GenerateLaoQRCodeProcess } from '../../LaoQR_processes/generateLaoQRCode.process';
@@ -13,6 +13,7 @@ import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVe
 // import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
 import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
 import { RemainingbilllocalPage } from 'src/app/remainingbilllocal/remainingbilllocal.page';
+import { BlockchainDbService } from 'src/app/blockchain-db';
 
 @Component({
   selector: 'app-auto-payment',
@@ -174,16 +175,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   ]
 
 
-  bankList: Array<any> = [
-    {
-      image: `../../../../assets/logo/laoqr.png`,
-      name: 'Lao QR',
-      title: 'Lao QR (optional)',
-      detail: 'Pay your orders by using Lao QR One QRCode',
-      value: 'LaoQR'
-    }
-  ]
-  paymentList: Array<any> = [...this.cashesList, ...this.bankList];
+  bankList: Array<any> = []
+  paymentList: Array<any> = [];
   paymentOptions: Array<any> = [...this.ewalletOptionList];
 
   paymentCheck: Array<any> = [...this.ewalletCheckList];
@@ -191,7 +184,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
 
   private workload: any = {} as any;
-
+  currentBalance = { value: 0, currency: 'LAK' };
+  machineId = {} as IMachineId;
 
 
   // processes
@@ -203,7 +197,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     public apiService: ApiService,
     public modalCtrl: ModalController,
     public vendingAPIService: VendingAPIService,
-    public WSAPIService: WsapiService
+    public WSAPIService: WsapiService,
+    public blockchainDbService: BlockchainDbService,
+
   ) {
     this.apiService.___AutoPaymentPage = this.modalCtrl;
 
@@ -211,8 +207,50 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
 
   }
+  private async loadBalance() {
+    try {
+      this.currentBalance.value = await this.blockchainDbService.getLocalBalance(this.machineId.machineId);
+      this.currentBalance.currency = localStorage.getItem('currency') || 'LAK';
 
+      console.log('Current local balance:', this.currentBalance.value);
+    } catch (e) {
+      console.error('Failed to load balance:', e);
+      this.currentBalance.value = 0;
+    }
+  }
   async ngOnInit() {
+    this.machineId = this.apiService.machineId;
+
+    this.bankList.push(...[
+      {
+        image: `../../../../assets/logo/laoqr.png`,
+        name: 'Lao QR',
+        title: 'Lao QR (optional)',
+        detail: 'Pay your orders by using Lao QR One QRCode',
+        value: 'LaoQR'
+      },
+      {
+        image: `../../../../assets/logo/LAAB-logo.png`,
+        name: 'LAABX',
+        title: 'LAABX (optional)',
+        detail: 'Pay your orders by using LAABX QRCode',
+        value: 'LAABX'
+      }
+    ]);
+    console.log('NV9USB', localStorage.getItem('NV9USB'));
+    if (localStorage.getItem('NV9USB')) {
+      this.bankList.unshift(
+        {
+          image: `../../../../assets/logo/lak-cash.png`,
+          name: 'Cash',
+          title: 'Cash (optional)',
+          detail: 'Pay your orders by using Cash',
+          value: 'cash'
+        })
+    }
+    console.log('bankList', this.bankList);
+    this.paymentList.push(...[...this.cashesList, ...this.bankList]);
+    this.loadBalance();
     this.refreshOrder();
 
     // this.parseorders = JSON.parse(JSON.stringify(this.orders));
@@ -347,37 +385,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       try {
 
         this.countdownBillTimer = setTimeout(async () => {
-          // this.countdownBill--;
-          // if (this.countdownBill <= 0) {
-          //   clearInterval(this.countdownBillTimer);
-          //   this.countdownBill = 1;
-
-          //   if (this.apiService.cash.amount < this.getTotalSale.t) {
 
 
-          //   } else {
-          //     // AutoPaymentPage.laabqrimgElement.classList.remove('active');
-          //     AutoPaymentPage.btnLAABGo.classList.add('active');
-          //   }
 
-          //   const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method' }).getCanvas();
-          //   if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
-
-          //   this.checkOrders(AutoPaymentPage.orderlistElement);
-          //   AutoPaymentPage.orderlistElement.className = 'order-list fit';
-          //   AutoPaymentPage.laabCardFooter.classList.add('active');
-          //   this.loadBillWave();
-
-          //   if (!list) return resolve(await this._processLoopPayment());
-
-          //   this.paymentmethod = list.value;
-          //   this.paymentText = list.name;
-          //   this.paymentLogo = list.image;
-          //   resolve(await this._processLoopDestroyLastest());
-          // }
-
-
-          if (this.apiService.cash.amount < this.getTotalSale.t) {
+          if (this.apiService.cash.value < this.getTotalSale.t) {
 
 
           } else {
@@ -424,7 +435,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           // }
 
-          if (this.apiService.cash.amount >= this.getTotalSale.t) {
+          if (this.apiService.cash.value >= this.getTotalSale.t) {
             this.paymentmethod = IPaymentMethod.laab;
             await this.laabAutoCashin();
           }
@@ -864,7 +875,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         // alert('TEST')
 
         // let checkLAAB: number = 55;
-        // const previousAmount: number = this.apiService.cash.amount;
+
 
         // loop destroy
         this.countdownDestroyTimer = setInterval(async () => {
@@ -940,7 +951,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       try {
 
         let checkLAAB: number = 55;
-        const previousAmount: number = this.apiService.cash.amount;
+        const previousAmount: number = this.apiService.cash.value;
 
         this.countdownCheckLAABTimer = setInterval(async () => {
           this.countdownCheckLAAB--;
@@ -953,20 +964,20 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
             const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
             if (run.message != IENMessage.success) throw new Error(run);
-            this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
+            this.apiService.cash.value = run.data[0].vendingWalletCoinBalance;
 
-            if (previousAmount != this.apiService.cash.amount) {
+            if (previousAmount != this.apiService.cash.value) {
               // everytime when balance change stop loop and stop find laab
               clearInterval(this.countdownCheckLAABTimer);
               checkLAAB - 1;
-              console.log(`LAAB CASHIN balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
+              console.log(`LAAB CASHIN balance ${this.apiService.cash.value} amount ${this.parseGetTotalSale.t}`);
               this.apiService.soundLaabIncreased();
               // AutoPaymentPage.laabqrimgElement.classList.remove('active');
               AutoPaymentPage.btnLAABGo.classList.add('active');
               await this.laabAutoCashin();
 
             } else {
-              console.log(`LAAB CASH NOT ENOUGHT balance ${this.apiService.cash.amount} amount ${this.parseGetTotalSale.t}`);
+              console.log(`LAAB CASH NOT ENOUGHT balance ${this.apiService.cash.value} amount ${this.parseGetTotalSale.t}`);
             }
           }
           if (this.countdownCheckLAAB <= 0) {
@@ -1024,7 +1035,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         const run = await new PaymentStation(this.apiService, this.vendingAPIService).Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
-        this.apiService.myTab1.refreshBalanceFromAnotherModal(Number(this.apiService.cash.amount) - Number(this.getTotalSale.t));
+        this.apiService.myTab1.refreshBalanceFromAnotherModal(Number(this.apiService.cash.value) - Number(this.getTotalSale.t));
         this.apiService.myTab1.clearCart();
         this.close();
 
@@ -1079,7 +1090,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   choosePaymentMethod(list: any): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        
+
         this.paymentmethod = list.value;
         this.isPayment = false;
         // this.isLoading = true;
@@ -1108,6 +1119,11 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         } else if (this.paymentmethod == IPaymentMethod.popupQR) {
           this.paymentText = 'Popup QR';
           resolve(await this._processLoopDestroyPopupQR());
+          resolve(IENMessage.success);
+        }
+        else if (this.paymentmethod == IPaymentMethod.cash) {
+          this.paymentText = 'Cash';
+          // resolve(await this._processLoopDestroyCash());
           resolve(IENMessage.success);
         }
         else {
@@ -1296,7 +1312,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 }
 
 enum IPaymentMethod {
-  cash='cash',
+  cash = 'cash',
   laab = 'laab',
   mmoney = 'mmoney',
   LaoQR = 'LaoQR',
@@ -1349,7 +1365,7 @@ class PaymentStation {
         if (ValidateParams != IENMessage.success) throw new Error(ValidateParams);
 
         // const LAABPayment = await this.LAABPayment();
-        
+
         // if (LAABPayment != IENMessage.success) throw new Error(LAABPayment);
 
         const LaoQRPayment = await this.LaoQRPayment();
@@ -1419,7 +1435,7 @@ class PaymentStation {
         const params: ILAABPayment = {
           orders: this.orders,
           getTotalSale: this.getTotalSale,
-          amount: this.apiService.cash.amount
+          amount: this.apiService.cash.value
         }
         const run = await new LAABPayment(this.apiService, this.vendingAPIService).Init(params);
         console.log(`LAABPayment`, run);

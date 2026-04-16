@@ -73,12 +73,12 @@ export class LaabCashoutPage implements OnInit {
       try {
 
         if (this.phonenumber == this.placeholder) throw new Error(IENMessage.parametersEmpty);
-        let moneyFormat = this.apiService.formatMoney(this.apiService.cash.amount).toString();
+        let moneyFormat = this.apiService.formatMoney(this.apiService.cash.value).toString();
         moneyFormat = moneyFormat.split('.00')[0];
         const params = {
           machineId: localStorage.getItem('machineId'),
           receiver: this.phonenumber,
-          cash: this.apiService.cash.amount,
+          cash: this.apiService.cash.value,
           description: 'VENDING CASH OUT TO ANOTHER LAAB ACCOUNT'
         }
 
@@ -96,7 +96,7 @@ export class LaabCashoutPage implements OnInit {
         // });
 
         this.apiService.alertSuccess(`LAAB account ${this.phonenumber} receive about ${moneyFormat}`);
-        this.apiService.cash.amount = 0;
+        this.apiService.cash.value = 0;
         this.stackCashoutPage.dismiss();
         this.apiService.modalCtrl.dismiss();
         // this.apiService.simpleMessage(IENMessage.cashoutToAnotherLAABAccountSuccess);

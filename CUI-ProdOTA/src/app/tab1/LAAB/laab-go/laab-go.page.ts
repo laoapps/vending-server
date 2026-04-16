@@ -54,7 +54,7 @@ export class LaabGoPage implements OnInit {
 
         //
 
-        this.apiService.cash.amount = this.balance;
+        this.apiService.cash.value = this.balance;
         this.apiService.myTab1.clearStockAfterLAABGo();
         this.vendingGoPage.dismiss();
         this.apiService.modalCtrl.dismiss();

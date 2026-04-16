@@ -111,7 +111,7 @@ export class Tab1Page implements OnDestroy {
   menus = [];
 
 
-  serial: ISerialService = null as any;
+  serial: ISerialService|null = null;
   open = false;
 
   vlog = { log: { data: '', limit: 50 } as IlogSerial };
@@ -760,7 +760,7 @@ export class Tab1Page implements OnDestroy {
     console.log('-----> 2');
 
 
-    this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)).find(x => x.name == 'menu-showlaabtab').status ?? false;
+    this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)||'{}').find((x:any) => x.name == 'menu-showlaabtab').status ?? false;
 
     console.log('-----> 3');
 
@@ -2704,7 +2704,7 @@ export class Tab1Page implements OnDestroy {
 
               const y = ApiService.vendingOnSale.find(
                 (v) => v.position == x.position
-              );
+              )|| { stock: { qtty: 0 } };
               y.stock.qtty--;
               console.log('yyyyy', y, x);
 
@@ -3106,8 +3106,11 @@ export class Tab1Page implements OnDestroy {
       // const component = OrderCartPage;
       const props_data = {
         orders: this.orders,
-        getTotalSale: this.getTotalSale
-      }
+        getTotalSale: this.getTotalSale,
+        currentBalance:this.currentBalance
+      };
+      const currentValue = this.currentBalance.value||0;
+
       console.log('props_data', props_data);
       const that = this;
       this.apiService.modalCtrl.create({ component: AutoPaymentPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
@@ -3126,7 +3129,9 @@ export class Tab1Page implements OnDestroy {
           }
           // await this._processLoopCheckLaoQRPaid();
 
-
+          if(currentValue != this.currentBalance.value){
+            this.updateBalance(this.currentBalance.value-currentValue);
+          }
 
         });
         //5s
@@ -3148,11 +3153,13 @@ export class Tab1Page implements OnDestroy {
       this.autoShowMyOrdersCounter = 15;
 
       // const component = OrderCartPage;
-      const component = AutoPaymentTopUpPage;
+
       const props_data = {
         orders: this.orders,
-        getTotalSale: this.getTotalSale
+        getTotalSale: this.getTotalSale,
+        currentBalance:this.currentBalance,
       }
+      const currentValue = this.currentBalance.value||0;
       console.log('props_data', props_data);
       const that = this;
       this.apiService.modalCtrl.create({ component: AutoPaymentTopUpPage, componentProps: props_data, cssClass: 'dialog-fullscreenQR' }).then(r => {
@@ -3170,7 +3177,9 @@ export class Tab1Page implements OnDestroy {
           // await this._processLoopCheckLaoQRPaid();
 
           console.log('-----> CLOSE AUTO TOPUP');
-
+           if(currentValue != this.currentBalance.value){
+            this.updateBalance(this.currentBalance.value-currentValue);
+          }
 
         });
         //5s
@@ -3277,38 +3286,7 @@ export class Tab1Page implements OnDestroy {
     // }
   }
 
-  // refreshVendingWalletCoinBalance(): Promise<any> {
-  //   return new Promise<any>(async (resolve, reject) => {
-  //     try {
-  //       // const machineId: string = localStorage.getItem('machineId');
-  //       const params = {};
-  //       const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-  //       if (run.message != IENMessage.success) throw new Error(run);
-  //       this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
-  //       resolve(IENMessage.success);
-  //     } catch (error) {
-  //       this.apiService.simpleMessage(error.message);
-  //       resolve(error.message);
-  //     }
-  //   });
-  // }
-  // initVendingWalletCoinBalance(): Promise<any> {
-  //   return new Promise<any>(async (resolve, reject) => {
-  //     try {
-  //       // const machineId: string = localStorage.getItem('machineId');
-  //       const params = {};
-  //       const run = await this.loadVendingWalletCoinBalanceProcess.Init(params);
-  //       if (run.message != IENMessage.success) throw new Error(run);
-  //       this.apiService.cash.amount = run.data[0].vendingWalletCoinBalance;
-  //       if (this.apiService.cash.amount > 0)
-  //         this.apiService.soundMachineHasSomeChanges();
-  //       resolve(IENMessage.success);
-  //     } catch (error) {
-  //       this.apiService.simpleMessage(error.message);
-  //       resolve(error.message);
-  //     }
-  //   });
-  // }
+
   cashin(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
@@ -3325,7 +3303,7 @@ export class Tab1Page implements OnDestroy {
         };
         run = await this.cashinValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
-        this.apiService.cash.amount = Number(this.apiService.cash.amount) + Number(cashList);
+        this.apiService.cash.value = Number(this.apiService.cash.value) + Number(cashList);
 
         resolve(IENMessage.success);
       } catch (error: any) {
@@ -3430,11 +3408,11 @@ export class Tab1Page implements OnDestroy {
             this.summarizeOrder[i].stock.price;
         }
         console.log(`sum total`, sum_total);
-        if (this.apiService.cash.amount < sum_total) {
+        if (this.apiService.cash.value < sum_total) {
           await this.apiService.soundPleaseTopUpValue();
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
-        const sum_refund = this.apiService.cash.amount - sum_total;
+        const sum_refund = this.apiService.cash.value - sum_total;
 
         const paidLAAB = {
           command: EClientCommand.paidLAAB,
@@ -3455,7 +3433,7 @@ export class Tab1Page implements OnDestroy {
 
         const props = {
           machineId: localStorage.getItem('machineId'),
-          cash: this.apiService.cash.amount,
+          cash: this.apiService.cash.value,
           quantity: sum_quantity,
           total: sum_total,
           balance: sum_refund,
@@ -3576,7 +3554,7 @@ export class Tab1Page implements OnDestroy {
   laabCashout(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if (this.apiService.cash.amount == 0)
+        if (this.apiService.cash.value == 0)
           throw new Error(IENMessage.thereIsNotBalance);
 
         const props = {};
@@ -3699,7 +3677,7 @@ export class Tab1Page implements OnDestroy {
   public openStackCashOutPage(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if (this.apiService.cash.amount == 0)
+        if (this.apiService.cash.value == 0)
           throw new Error(IENMessage.thereIsNotBalance);
 
         // ##here
@@ -3854,7 +3832,7 @@ export class Tab1Page implements OnDestroy {
         console.log('xp', xp);
         const param = { slot: Number(xp), dropSensor: 1 };
 
-        this.serial.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
+        this.serial?.command(EMACHINE_COMMAND.shippingcontrol, param, 1).then(async (r) => {
           console.log('shippingcontrol', r);
           Toast.show({ text: 'shippingcontrol' + JSON.stringify(r) })
           try {
@@ -4294,7 +4272,7 @@ export class Tab1Page implements OnDestroy {
     });
   }
   refreshBalanceFromAnotherModal(balance: number) {
-    this.apiService.cash.amount = balance;
+    this.apiService.cash.value = balance;
   }
 
   // resetCashing(): Promise<any> {
@@ -4897,25 +4875,25 @@ export class Tab1Page implements OnDestroy {
   private async getNV9DeviceInfo() {
     try {
       // Get serial number
-      const serialResult = await this.serial.nv9Command(
+      const serialResult = await this.serial?.nv9Command(
         EMACHINE_COMMAND.NV9_GET_SERIAL,
         {},
         Date.now()
       );
 
-      if (serialResult.data?.serial_number) {
+      if (serialResult?.data?.serial_number) {
         console.log('NV9 Serial Number:', serialResult.data.serial_number);
         this.nv9SerialNumber = serialResult.data.serial_number;
       }
 
       // Get setup info (channel values)
-      const setupResult = await this.serial.nv9Command(
+      const setupResult = await this.serial?.nv9Command(
         EMACHINE_COMMAND.NV9_SETUP_REQUEST,
         {},
         Date.now()
       );
 
-      if (setupResult.data) {
+      if (setupResult?.data) {
         console.log('NV9 Setup Info:', setupResult.data);
         this.nv9ChannelValues = setupResult.data.channel_values;
       }
@@ -4927,7 +4905,7 @@ export class Tab1Page implements OnDestroy {
   public async resetCashAcceptor() {
     try {
       // Reset NV9 hardware
-      const serialResult = await this.serial.nv9Command(
+      const serialResult = await this.serial?.nv9Command(
         EMACHINE_COMMAND.NV9_RESET,
         {},
         Date.now()
@@ -5083,13 +5061,13 @@ export class Tab1Page implements OnDestroy {
     try {
       console.log('🔄 Sending NV9 reinit command...');
 
-      const result = await this.serial.nv9Command(EMACHINE_COMMAND.NV9_REINIT, {}, 1);
+      const result = await this.serial?.nv9Command(EMACHINE_COMMAND.NV9_REINIT, {}, 1);
 
-      if (result.status) {
+      if (result?.status) {
         console.log('✅ NV9 reinit successful:', result.message);
         return true;
       } else {
-        console.error('❌ NV9 reinit failed:', result.message);
+        console.error('❌ NV9 reinit failed:', result?.message);
         return false;
       }
     } catch (error) {
@@ -5098,7 +5076,7 @@ export class Tab1Page implements OnDestroy {
     }
   }
   enableCash() {
-    this.serial.nv9Command(EMACHINE_COMMAND.NV9_ENABLE, { enable: true }, 1).then(async (r) => {
+    this.serial?.nv9Command(EMACHINE_COMMAND.NV9_ENABLE, { enable: true }, 1).then(async (r) => {
       console.log('enableCash', r);
       await Toast.show({ text: 'enableCash' + JSON.stringify(r) })
     }).catch(e => {
@@ -5107,7 +5085,7 @@ export class Tab1Page implements OnDestroy {
     });
   }
   disableCash() {
-    this.serial.nv9Command(EMACHINE_COMMAND.NV9_DISABLE, { enable: false }, 1).then(async (r) => {
+    this.serial?.nv9Command(EMACHINE_COMMAND.NV9_DISABLE, { enable: false }, 1).then(async (r) => {
       console.log('disableCash', r);
     }).catch(e => {
       console.error('disableCash error', e);

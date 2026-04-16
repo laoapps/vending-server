@@ -290,7 +290,7 @@ export class OrderPaidPage implements OnInit, OnDestroy {
         summarizeOrder[i].stock.qtty *
         summarizeOrder[i].stock.price;
     }
-    const sum_refund = this.apiService.cash.amount - total;
+    const sum_refund = this.apiService.cash.value - total;
 
     return {
       message: IENMessage.success,

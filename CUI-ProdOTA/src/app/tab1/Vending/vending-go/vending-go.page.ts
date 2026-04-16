@@ -168,10 +168,10 @@ export class VendingGoPage implements OnInit {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        if (this.apiService.cash.amount < this.total) {
+        if (this.apiService.cash.value < this.total) {
           throw new Error(IENMessage.notEnoughtCashBalance);
         }
-        const sum_refund = this.apiService.cash.amount - this.total;
+        const sum_refund = this.apiService.cash.value - this.total;
 
         const paidLAAB = {
           command: EClientCommand.paidLAAB,
@@ -192,7 +192,7 @@ export class VendingGoPage implements OnInit {
 
         const props = {
           machineId: localStorage.getItem('machineId'),
-          cash: this.apiService.cash.amount,
+          cash: this.apiService.cash.value,
           quantity: this.quantity,
           total: this.total,
           balance: sum_refund,

@@ -38,7 +38,7 @@ export class StackCashoutPage implements OnInit {
   mmoneyCashout(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if (this.apiService.cash.amount == 0)
+        if (this.apiService.cash.value == 0)
           throw new Error(IENMessage.thereIsNotBalance);
 
         const props = {
@@ -60,7 +60,7 @@ export class StackCashoutPage implements OnInit {
   laabCashout(): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
-        if (this.apiService.cash.amount == 0)
+        if (this.apiService.cash.value == 0)
           throw new Error(IENMessage.thereIsNotBalance);
 
         const props = {

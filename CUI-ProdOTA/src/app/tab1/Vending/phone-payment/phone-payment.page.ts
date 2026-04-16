@@ -175,7 +175,7 @@ export class PhonePaymentPage implements OnInit {
         const amount = Number(this.customAmount);
         if (amount < 1000)throw new Error(IENMessage.minimumOfAmountIs1000);
 
-        if (amount > Number(this.apiService.cash.amount)) throw new Error(IENMessage.balanceIsNotEnought);
+        if (amount > Number(this.apiService.cash.value)) throw new Error(IENMessage.balanceIsNotEnought);
         this.showCustomAmountPage = false;
         this.showPaymentPage = true;
         this.amount = Number(this.customAmount);

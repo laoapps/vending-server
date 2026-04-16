@@ -301,7 +301,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
           clearInterval(this.autoSelectPaymentMethodTimer);
           this.autoSelectPaymentMethodCounter = 1;
 
-          if (this.apiService.cash.amount > 0 && this.apiService.cash.amount >= this.getTotalSale.t) {
+          if (this.apiService.cash.value > 0 && this.apiService.cash.value >= this.getTotalSale.t) {
             this.currentLogo = this.paymentList[0].image;
             this.qrcode = 'cash';
             paymentGroupLeft.classList.add('active');
@@ -372,7 +372,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
         summarizeOrder[i].stock.qtty *
         summarizeOrder[i].stock.price;
     }
-    const sum_refund = this.apiService.cash.amount - total;
+    const sum_refund = this.apiService.cash.value - total;
 
     return {
       message: IENMessage.success,
@@ -410,7 +410,7 @@ export class OrderCartPage implements OnInit, OnDestroy {
         const run = await this.paidValidationProcess.Init(params);
         if (run.message != IENMessage.success) throw new Error(run);
 
-        this.apiService.cash.amount = setSummarizeOrder.sum_refund;
+        this.apiService.cash.value = setSummarizeOrder.sum_refund;
 
         resolve(IENMessage.success);
 
