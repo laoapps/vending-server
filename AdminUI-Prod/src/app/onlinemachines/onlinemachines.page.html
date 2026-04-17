@@ -91,6 +91,12 @@
             <ion-grid class="button-grid">
               <ion-row>
                 <ion-col size="4">
+                  <ion-button expand="block" color="primary" (click)="showTickets(machine.machineId)">
+                    <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
+                    Show Tickets
+                  </ion-button>
+                </ion-col>
+                <ion-col size="4">
                   <ion-button expand="block" color="danger" (click)="exitApp(machine.machineId)">
                     <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
                     Exit

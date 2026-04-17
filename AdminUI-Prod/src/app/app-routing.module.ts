@@ -271,6 +271,10 @@ const routes: Routes = [
   {
     path: 'report-callbacklog',
     loadChildren: () => import('./report-callbacklog/report-callbacklog.module').then( m => m.ReportCallbacklogPageModule)
+  },
+  {
+    path: 'ticket-list',
+    loadChildren: () => import('./ticket-list/ticket-list.module').then( m => m.TicketListPageModule)
   }
 ];
 @NgModule({

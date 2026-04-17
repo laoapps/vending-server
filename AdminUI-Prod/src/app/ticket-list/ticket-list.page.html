@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Support Tickets</ion-title>
+    <ion-button slot="end" (click)="openCreateTicketModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Status Tabs -->
+  <ion-segment [(ngModel)]="selectedStatus" (ionChange)="loadTickets()">
+    <ion-segment-button value="pending">
+      <ion-label>Pending</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="solving">
+      <ion-label>Solving</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="finished">
+      <ion-label>Finished</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <ion-list>
+    <ion-item *ngFor="let ticket of tickets" (click)="openTicketDetail(ticket)" button>
+      <ion-label>
+        <h2>{{ ticket.ticketNo }} - {{ ticket.title }}</h2>
+        <p>{{ ticket.issueType | titlecase }}</p>
+        <ion-badge [color]="getStatusColor(ticket.status)">
+          {{ ticket.status | titlecase }}
+        </ion-badge>
+      </ion-label>
+      <ion-note slot="end">{{ ticket.createdAt | date:'short' }}</ion-note>
+    </ion-item>
+  </ion-list>
+
+  <ion-infinite-scroll (ionInfinite)="loadMore($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

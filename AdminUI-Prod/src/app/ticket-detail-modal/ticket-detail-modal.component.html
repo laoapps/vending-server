@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Ticket Detail</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">Close</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2>{{ ticket.ticketNo }}</h2>
+  <h3>{{ ticket.title }}</h3>
+  
+  <ion-badge [color]="getStatusColor(ticket.status)" style="margin-bottom: 16px;">
+    {{ ticket.status | titlecase }}
+  </ion-badge>
+
+  <p><strong>Issue Type:</strong> {{ ticket.issueType | titlecase }}</p>
+  <p><strong>Date:</strong> {{ ticket.createdAt | date:'medium' }}</p>
+
+  <div *ngIf="ticket.description">
+    <strong>Description:</strong>
+    <p>{{ ticket.description }}</p>
+  </div>
+
+  <!-- Photos -->
+  <div *ngIf="ticket.photos?.length">
+    <strong>Photos:</strong>
+    <div class="photo-grid">
+      <img *ngFor="let photo of ticket.photos" [src]="photo" class="ticket-photo" (click)="viewPhoto(photo)">
+    </div>
+  </div>
+
+  <!-- Status Update (only if not finished) -->
+  <div *ngIf="ticket.status !== 'finished'" class="ion-margin-top">
+    <ion-button expand="block" color="primary" (click)="updateStatus('solving')">
+      Mark as Solving
+    </ion-button>
+    <ion-button expand="block" color="success" (click)="updateStatus('finished')">
+      Mark as Finished
+    </ion-button>
+  </div>
+</ion-content>
