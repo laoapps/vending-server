@@ -2,4 +2,6 @@ todo
 1. accept block chain value to make a payment  ==> OK
 2. update topUpEwallet ===> ok
 3. update server API Vending and laabx ==>ok
-4. test all 
+4. add tickets for Admin ==> ok
+5. update tickets for laabx client 
+6. test all 
