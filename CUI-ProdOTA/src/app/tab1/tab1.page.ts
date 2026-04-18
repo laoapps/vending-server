@@ -894,6 +894,10 @@ export class Tab1Page implements OnDestroy {
             if (r?.brightness) {
               this.setBrightness(r?.brightness);
             }
+            if(r?.startTestMotor){
+              localStorage.setItem('startTestMotor', 'true');
+              this.refresh();
+            }
           } catch (err) {
             this.apiService.IndexedLogDB.addBillProcess({ errorData: `Err refresh or exit app is :${JSON.stringify(err)}` })
           }
