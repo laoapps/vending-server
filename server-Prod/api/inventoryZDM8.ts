@@ -682,7 +682,8 @@ export class InventoryZDM8 implements IBaseClass {
                             if (Number(d.data.value) != value) return res.send(PrintError(d.command, [], EMessage.invalidDataAccess, null));
 
                             const a = machineId?.data?.find(v => v.settingName == 'setting');
-                            const mId = a?.imei + '';
+                            // const mId = a?.imei + '';
+                            const mId = a?.ownerPhone + '';
                             const ownerPhone = a?.ownerPhone + '';
                             const owner = (a?.owner + '').trim();
 
