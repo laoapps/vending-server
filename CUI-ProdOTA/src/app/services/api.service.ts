@@ -200,7 +200,7 @@ export class ApiService {
 
   myTab1: Tab1Page;
 
-  cash = { value: 0,currency: 'LAK' };
+  cash = { value: 0, currency: 'LAK' };
   coinListId: string;
   coinCode: string;
   coinName: string;
@@ -260,6 +260,8 @@ export class ApiService {
   countErrorPay: number = 0;
 
   allowTopUp = false;
+  isQrPayment = false;
+  allowCashIn = false;
 
   isFranciseMode: boolean = false;
 
@@ -376,6 +378,10 @@ export class ApiService {
         const s = r?.data?.setting;
 
         if (this.allowTopUp !== s.isTopUp) this.allowTopUp = s.isTopUp ?? false;
+        if (this.isQrPayment !== s.qrPayment) this.isQrPayment = s.qrPayment ?? false;
+        if (this.allowCashIn !== s.allowCashIn) this.allowCashIn = s.allowCashIn ?? false;
+        // console.log('-----> allowTopUp :', this.allowTopUp);
+
         if (this.isAds !== s.isAds) this.isAds = s.isAds ?? false;
         if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
 

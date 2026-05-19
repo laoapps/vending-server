@@ -820,6 +820,8 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                             var responseData = await this.generateBillLAABXPro(value, d?.token);
+                            // console.log('-----> generateBillLAABXPro :', JSON.stringify(responseData));
+
                             if (responseData.status === 0) {
                                 return res.send(PrintError(d.command, responseData.message, EMessage.generateQRFailed, null));
                             }
@@ -1513,6 +1515,8 @@ export class InventoryZDM8 implements IBaseClass {
                             return res.send(PrintError("validateHMVending", {}, EMessage.notallowed, returnLog(req, res, true)));
                         }
                         const machineData = this.findMachineIdToken(token);
+                        console.log('-----> validateHMVending :', machineData);
+
                         if (!machineData) {
                             return res.send(PrintError('validateHMVending', null, EMessage.machineNotExist, returnLog(req, res, true)));
                         }
@@ -3940,7 +3944,7 @@ export class InventoryZDM8 implements IBaseClass {
             router.get('/machine/paid-orders-reports', this.checkAdmin, async (req: Request, res: Response) => {
                 try {
                     return res.send(PrintSucceeded('fetch paid orders', await this.getAllPaidOrders(), EMessage.succeeded, returnLog(req, res)));
-                }catch (error) {
+                } catch (error) {
                     console.error('Error fetching paid orders:', error);
                     return res.send(PrintError('fetch paid orders', 'Server error', EMessage.error, returnLog(req, res, true)));
                 }
@@ -7609,9 +7613,13 @@ export class InventoryZDM8 implements IBaseClass {
         return new Promise<{ status: number, message: any }>(async (resolve, reject) => {
             try {
                 const qr = { "callbackurl": process.env.SERVER_URL, "txnAmount": value };
+                console.log('-----> qr :', qr);
+                console.log('-----> TOKEN :', token);
+
+
                 axios
                     .post(
-                        "https://laabx-api.laoapps.com/api/v1/laab/genlakqr",
+                        `https://laabx-api.laoapps.com/api/v1/laab/genlakqr?test=true`,
                         qr,
                         { headers: { 'Content-Type': 'application/json', timeout: 10000, 'vending': true, 'token': token } }
                     )
@@ -7623,6 +7631,8 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                     })
                     .catch((e) => {
+                        console.log('-----> generateBillLAABXPro :', e);
+
                         reject(e);
                     });
             } catch (error) {
@@ -9315,7 +9325,7 @@ export class InventoryZDM8 implements IBaseClass {
                                             PrintSucceeded(
                                                 "ping",
                                                 {
-                                                    datapaidreports:this.getAllPaidOrders(),
+                                                    datapaidreports: this.getAllPaidOrders(),
                                                     command: "ping",
                                                     production: this.production, // no versioning
                                                     balance: r,// no versioning

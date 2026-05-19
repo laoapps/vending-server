@@ -111,7 +111,7 @@ export class Tab1Page implements OnDestroy {
   menus = [];
 
 
-  serial: ISerialService|null = null;
+  serial: ISerialService | null = null;
   open = false;
 
   vlog = { log: { data: '', limit: 50 } as IlogSerial };
@@ -760,7 +760,7 @@ export class Tab1Page implements OnDestroy {
     console.log('-----> 2');
 
 
-    this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname)||'{}').find((x:any) => x.name == 'menu-showlaabtab').status ?? false;
+    this.isShowLaabTabEnabled = JSON.parse(localStorage.getItem(this.apiService.controlMenuService.localname) || '{}').find((x: any) => x.name == 'menu-showlaabtab').status ?? false;
 
     console.log('-----> 3');
 
@@ -894,7 +894,7 @@ export class Tab1Page implements OnDestroy {
             if (r?.brightness) {
               this.setBrightness(r?.brightness);
             }
-            if(r?.startTestMotor){
+            if (r?.startTestMotor) {
               localStorage.setItem('startTestMotor', 'true');
               this.refresh();
             }
@@ -2708,7 +2708,7 @@ export class Tab1Page implements OnDestroy {
 
               const y = ApiService.vendingOnSale.find(
                 (v) => v.position == x.position
-              )|| { stock: { qtty: 0 } };
+              ) || { stock: { qtty: 0 } };
               y.stock.qtty--;
               console.log('yyyyy', y, x);
 
@@ -2941,6 +2941,8 @@ export class Tab1Page implements OnDestroy {
 
       this.setActive();
       if (!x) return alert('not found');
+      console.log('-----> addOrder allowTopUp :', this.apiService.allowTopUp);
+
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
         if (ord.length >= x?.stock.qtty) {
@@ -2987,6 +2989,8 @@ export class Tab1Page implements OnDestroy {
 
       this.setActive();
       if (!x) return alert('not found');
+      console.log('-----> addOrder Topup allowTopUp :', this.apiService.allowTopUp);
+
       const ord = this.orders.filter((v) => v.position == x.position);
       if (ord.length)
         if (ord.length >= x?.stock.qtty)
@@ -3111,9 +3115,9 @@ export class Tab1Page implements OnDestroy {
       const props_data = {
         orders: this.orders,
         getTotalSale: this.getTotalSale,
-        currentBalance:this.currentBalance
+        currentBalance: this.currentBalance
       };
-      const currentValue = this.currentBalance.value||0;
+      const currentValue = this.currentBalance.value || 0;
 
       console.log('props_data', props_data);
       const that = this;
@@ -3133,8 +3137,8 @@ export class Tab1Page implements OnDestroy {
           }
           // await this._processLoopCheckLaoQRPaid();
 
-          if(currentValue != this.currentBalance.value){
-            this.updateBalance(this.currentBalance.value-currentValue);
+          if (currentValue != this.currentBalance.value) {
+            this.updateBalance(this.currentBalance.value - currentValue);
           }
 
         });
@@ -3161,9 +3165,9 @@ export class Tab1Page implements OnDestroy {
       const props_data = {
         orders: this.orders,
         getTotalSale: this.getTotalSale,
-        currentBalance:this.currentBalance,
+        currentBalance: this.currentBalance,
       }
-      const currentValue = this.currentBalance.value||0;
+      const currentValue = this.currentBalance.value || 0;
       console.log('props_data', props_data);
       const that = this;
       this.apiService.modalCtrl.create({ component: AutoPaymentTopUpPage, componentProps: props_data, cssClass: 'dialog-fullscreenQR' }).then(r => {
@@ -3181,8 +3185,8 @@ export class Tab1Page implements OnDestroy {
           // await this._processLoopCheckLaoQRPaid();
 
           console.log('-----> CLOSE AUTO TOPUP');
-           if(currentValue != this.currentBalance.value){
-            this.updateBalance(this.currentBalance.value-currentValue);
+          if (currentValue != this.currentBalance.value) {
+            this.updateBalance(this.currentBalance.value - currentValue);
           }
 
         });
@@ -4923,48 +4927,38 @@ export class Tab1Page implements OnDestroy {
       console.error('Failed to reset NV9:', error);
     }
   }
+
   private async promptWalletId(): Promise<string | null> {
     return new Promise(async (resolve) => {
+      let digits = '';
+      let resolved = false;
+
+      const done = (val: string | null) => {
+        if (resolved) return;
+        resolved = true;
+        console.log('-----> DONE :', val);
+
+        resolve(val);
+      };
+
       const alert = await this.alertCtrl.create({
         cssClass: 'wallet-prompt-alert',
         header: 'Top up e-wallet',
-        subHeader: 'Enter your LaabX wallet ID',
-        message: 'Enter your 8-digit LaabX wallet number to receive the transfer.',
-        inputs: [
-          {
-            name: 'walletId',
-            type: 'tel',
-            placeholder: '00000000',
-            attributes: {
-              maxlength: 8,
-              inputmode: 'numeric',
-              pattern: '[0-9]*',
-              autofocus: true,
-            },
-          },
-        ],
+        subHeader: 'LaabX Wallet ID',
+        message: ' ',
         buttons: [
           {
             text: 'Cancel',
             role: 'cancel',
             cssClass: 'wallet-prompt-cancel',
-            handler: () => resolve(null),
+            handler: () => done(null),
           },
           {
             text: 'Confirm',
             cssClass: 'wallet-prompt-confirm',
-            handler: (data) => {
-              const val = data.walletId?.replace(/\D/g, '');
-              if (!val || val.length !== 8) {
-                // Keep alert open and show error
-                const inputEl = document.querySelector('.wallet-prompt-alert input') as HTMLInputElement;
-                if (inputEl) {
-                  inputEl.style.borderColor = 'var(--ion-color-danger)';
-                  inputEl.placeholder = 'Must be exactly 8 digits';
-                }
-                return false; // prevent dismiss
-              }
-              resolve(val);
+            handler: () => {
+              if (digits.length !== 8) return false;
+              done(digits);
             },
           },
         ],
@@ -4972,19 +4966,114 @@ export class Tab1Page implements OnDestroy {
 
       await alert.present();
 
-      // Live validation — enable/disable Confirm button
-      const inputEl = document.querySelector('.wallet-prompt-alert input') as HTMLInputElement;
-      const confirmBtn = document.querySelector('.wallet-prompt-confirm') as HTMLButtonElement;
-      if (inputEl && confirmBtn) {
-        confirmBtn.disabled = true;
-        inputEl.addEventListener('input', () => {
-          const digits = inputEl.value.replace(/\D/g, '');
-          inputEl.value = digits.slice(0, 8);
-          confirmBtn.disabled = digits.length !== 8;
+      const wrapper = document.querySelector('.wallet-prompt-alert .alert-wrapper') as HTMLElement;
+      const msgEl = wrapper?.querySelector('.alert-message') as HTMLElement;
+      if (!msgEl) return;
+
+      // ใช้ inline styles ทั้งหมด เพราะ Angular scoped CSS ไม่ถึง Alert DOM
+      msgEl.style.cssText = 'padding:0;font-size:inherit;overflow:visible';
+
+      const digitRow = document.createElement('div');
+      digitRow.style.cssText = `
+      display:flex; gap:6px; justify-content:center;
+      padding:16px 8px 20px;
+    `;
+
+      const boxes: HTMLElement[] = Array.from({ length: 8 }, (_, i) => {
+        const box = document.createElement('div');
+        box.dataset['i'] = String(i);
+        box.style.cssText = `
+        flex:1; height:44px;
+        border:1.5px solid #92949c;
+        border-radius:10px;
+        display:flex; align-items:center; justify-content:center;
+        font-size:18px; font-weight:500;
+        color:#1a1a1a;
+        font-family:'JetBrains Mono', monospace;
+        transition:border-color 0.15s, background 0.12s;
+      `;
+        box.textContent = '_';
+        digitRow.appendChild(box);
+        return box;
+      });
+
+      const keypadEl = document.createElement('div');
+      keypadEl.style.cssText = `
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:8px; padding:0 4px 8px;
+    `;
+
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, 'del'].forEach((k) => {
+        const key = document.createElement('div');
+        key.style.cssText = `
+        height:52px; border-radius:12px;
+        display:flex; align-items:center; justify-content:center;
+        font-size:20px; font-weight:500;
+        cursor:pointer; user-select:none;
+        -webkit-tap-highlight-color:transparent;
+        transition:background 0.1s, transform 0.08s;
+        ${k === ''
+            ? 'background:transparent;border:none;pointer-events:none;'
+            : 'background:#f4f5f8;border:0.5px solid #e0e0e0;color:#1a1a1a;'}
+      `;
+        if (k === 'del') {
+          key.innerHTML = '⌫';
+          key.style.color = '#92949c';
+          key.style.fontSize = '22px';
+        } else if (k !== '') {
+          key.textContent = String(k);
+        }
+        if (k !== '') key.dataset['k'] = String(k);
+        keypadEl.appendChild(key);
+      });
+
+      msgEl.appendChild(digitRow);
+      msgEl.appendChild(keypadEl);
+
+      const confirmBtn = wrapper.querySelector('.wallet-prompt-confirm') as HTMLButtonElement;
+      confirmBtn.disabled = true;
+
+      const render = () => {
+        boxes.forEach((box, i) => {
+          const filled = i < digits.length;
+          const active = i === digits.length && digits.length < 8;
+          box.textContent = filled ? digits[i] : '_';
+          box.style.borderColor = active
+            ? 'var(--ion-color-primary)'
+            : filled ? '#3d3d3d' : '#92949c';
+          box.style.background = filled ? '#f4f5f8' : 'transparent';
+          box.style.boxShadow = active
+            ? '0 0 0 3px rgba(var(--ion-color-primary-rgb),0.15)'
+            : 'none';
         });
-      }
+        confirmBtn.disabled = digits.length !== 8;
+      };
+
+      keypadEl.addEventListener('click', (e) => {
+        const key = (e.target as HTMLElement).closest<HTMLElement>('[data-k]');
+        if (!key) return;
+        const k = key.dataset['k'];
+
+        // tap feedback
+        key.style.transform = 'scale(0.93)';
+        key.style.background = '#e5e5ea';
+        setTimeout(() => {
+          key.style.transform = 'scale(1)';
+          key.style.background = '#f4f5f8';
+        }, 120);
+
+        if (k === 'del') {
+          digits = digits.slice(0, -1);
+        } else if (digits.length < 8 && k) {
+          digits += k;
+        }
+        render();
+      });
+
+      render();
     });
   }
+
 
   public async topUpEwallet() {
     try {

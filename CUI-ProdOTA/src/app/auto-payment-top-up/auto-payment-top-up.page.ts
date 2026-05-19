@@ -25,7 +25,7 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
 
-  @Input() orders: Array<any>=[];
+  @Input() orders: Array<any> = [];
   @Input() getTotalSale: any;
   @Input() currentBalance: { value: number, currency: string } = { value: 0, currency: 'LAK' };
 
@@ -253,25 +253,32 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
         title: 'Lao QR (optional)',
         detail: 'Pay your orders by using Lao QR One QRCode',
         value: 'LaoQR'
-      },
-      {
+      }
+
+    ]);
+    if (this.apiService.isQrPayment) {
+      this.bankList.push({
         image: `../../../../assets/logo/LAAB-logo.png`,
         name: 'LAABX',
         title: 'LAABX (optional)',
         detail: 'Pay your orders by using LAABX QRCode',
         value: 'LAABX'
-      }
-    ]);
+      });
+    }
+
     console.log('NV9USB', localStorage.getItem('NV9USB'));
     if (localStorage.getItem('NV9USB')) {
-      this.bankList.unshift(
-        {
-          image: `../../../../assets/logo/lak-cash.png`,
-          name: 'Cash',
-          title: 'Cash (optional)',
-          detail: 'Pay your orders by using Cash',
-          value: 'cash'
-        })
+      if (this.apiService.allowCashIn) {
+        this.bankList.unshift(
+          {
+            image: `../../../../assets/logo/lak-cash.png`,
+            name: 'Cash',
+            title: 'Cash (optional)',
+            detail: 'Pay your orders by using Cash',
+            value: 'cash'
+          })
+      }
+
     }
     console.log('bankList', this.bankList);
     this.paymentList.push(...[...this.cashesList, ...this.bankList]);
@@ -396,8 +403,8 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
           if (this.currentBalance.value >= this.getTotalSale.t) {
 
             this.paymentmethod = IPaymentMethod.cash;
-            this.paymentText = this.paymentList.find(v=>v.value===IPaymentMethod.cash)?.name;
-            this.paymentLogo = this.paymentList.find(v=>v.value===IPaymentMethod.cash)?.image;
+            this.paymentText = this.paymentList.find(v => v.value === IPaymentMethod.cash)?.name;
+            this.paymentLogo = this.paymentList.find(v => v.value === IPaymentMethod.cash)?.image;
             this._processLoopDestroyCash();
           } else {
             const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method' }).getCanvas();
@@ -425,8 +432,8 @@ export class AutoPaymentTopUpPage implements OnInit, OnDestroy {
 
 
           this.paymentmethod = IPaymentMethod.LaoQR;
-           this.paymentText = this.paymentList.find(v=>v.value===IPaymentMethod.LaoQR)?.name;
-            this.paymentLogo = this.paymentList.find(v=>v.value===IPaymentMethod.LaoQR)?.image;
+          this.paymentText = this.paymentList.find(v => v.value === IPaymentMethod.LaoQR)?.name;
+          this.paymentLogo = this.paymentList.find(v => v.value === IPaymentMethod.LaoQR)?.image;
           this._processLoopDestroyLastest(this.defaultPhone);
 
         }, 1000);

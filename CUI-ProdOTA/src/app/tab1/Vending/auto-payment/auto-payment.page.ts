@@ -229,24 +229,31 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
         detail: 'Pay your orders by using Lao QR One QRCode',
         value: 'LaoQR'
       },
-      {
+
+    ]);
+
+    if (this.apiService.isQrPayment) {
+      this.bankList.push({
         image: `../../../../assets/logo/LAAB-logo.png`,
         name: 'LAABX',
         title: 'LAABX (optional)',
         detail: 'Pay your orders by using LAABX QRCode',
         value: 'LAABX'
-      }
-    ]);
+      });
+    }
     console.log('NV9USB', localStorage.getItem('NV9USB'));
     if (localStorage.getItem('NV9USB')) {
-      this.bankList.unshift(
-        {
-          image: `../../../../assets/logo/lak-cash.png`,
-          name: 'Cash',
-          title: 'Cash (optional)',
-          detail: 'Pay your orders by using Cash',
-          value: 'cash'
-        })
+      if (this.apiService.allowCashIn) {
+        this.bankList.unshift(
+          {
+            image: `../../../../assets/logo/lak-cash.png`,
+            name: 'Cash',
+            title: 'Cash (optional)',
+            detail: 'Pay your orders by using Cash',
+            value: 'cash'
+          })
+      }
+
     }
     console.log('bankList', this.bankList);
     this.paymentList.push(...[...this.cashesList, ...this.bankList]);
