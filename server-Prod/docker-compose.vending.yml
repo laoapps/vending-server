@@ -135,8 +135,8 @@ services:
       - name=SHAREHAPPINESS
 
       - NOCNOC_SERVER=
-      # - SERVER_URL=https://vending-service-api5.laoapps.com
-      - SERVER_URL=https://tvending4.khamvong.com
+      - SERVER_URL=https://vending-service-api5.laoapps.com
+      # - SERVER_URL=https://tvending4.khamvong.com
       - DEFAULT_MERCHANGE_PHONE=2055516321
       - DEFAULT_MERCHANGE_ID=OPFJ8Z15PW09VQG1HLVIYYJRA
 
