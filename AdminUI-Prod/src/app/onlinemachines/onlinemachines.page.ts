@@ -35,6 +35,7 @@ interface MachineData {
   settings: any;
   showSecrets?: boolean; // Track visibility for each machine
   ownerUuid: string;
+  imei?: string;
 }
 
 @Component({
