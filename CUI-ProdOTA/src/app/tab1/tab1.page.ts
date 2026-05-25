@@ -98,6 +98,7 @@ import { CustomNumberPadPage } from '../custom-number-pad/custom-number-pad.page
 import { AlertController } from '@ionic/angular';
 import { BlockchainDbService } from '../blockchain-db';
 import { NumpadModalComponent } from '../components/numpad-modal/numpad-modal.component';
+import { QrconfigMachinePage } from '../qrconfig-machine/qrconfig-machine.page';
 
 @Component({
   selector: 'app-tab1',
@@ -2453,44 +2454,37 @@ export class Tab1Page implements OnDestroy {
       x?.length < 12
     )
       return;
-    const m = await this.apiService.showModal(StocksalePage, {}, false) || {} as HTMLIonModalElement;
-    this.checkActiveModal(m);
+    this.openManageStock();
+  }
 
-    m.onDidDismiss().then((r) => {
-      const d = r?.data as { resetCashCount: boolean };
-      console.log('manageStock', r.data);
-      // if (r.data) {
-      const k = 'refillSaleStock';
-      this.storage.get(k + '_', k).then((rx) => {
-        const b = rx.v as Array<IVendingMachineSale>;
-        const s = b ? b : [];
-        const u = new Date();
-        this.vendingOnSale.forEach((v) => (v.updatedAt = u));
-        s.unshift(...this.vendingOnSale);
-        this.storage.set(k + '_', s, k);
+  async openManageStock() {
+    try {
+      const m = await this.apiService.showModal(StocksalePage, {}, false) || {} as HTMLIonModalElement;
+      this.checkActiveModal(m);
 
-        // setTimeout(() => {
-        //   this.apiService.saveSale(s).subscribe(r=>{
-        //     console.log(r);
-        //     if(r.status){
-        //       console.log(`save sale success`);
-        //     } else {
-        //       this.apiService.simpleMessage(IENMessage.saveSaleFail);
-        //     }
-        //   });
-        // }, 500);
+      m.onDidDismiss().then((r) => {
+        const d = r?.data as { resetCashCount: boolean };
+        console.log('manageStock', r.data);
+        // if (r.data) {
+        const k = 'refillSaleStock';
+        this.storage.get(k + '_', k).then((rx) => {
+          const b = rx.v as Array<IVendingMachineSale>;
+          const s = b ? b : [];
+          const u = new Date();
+          this.vendingOnSale.forEach((v) => (v.updatedAt = u));
+          s.unshift(...this.vendingOnSale);
+          this.storage.set(k + '_', s, k);
+        });
+        if (d?.resetCashCount) {
+          this.resetCashAcceptor();
+        }
       });
-      if (d?.resetCashCount) {
-        this.resetCashAcceptor();
-      }
+      m.present();
+      this.otherModalAreOpening = true;
+      this.openAnotherModal(m);
+    } catch (error) {
 
-
-
-    });
-    m.present();
-    this.otherModalAreOpening = true;
-    this.openAnotherModal(m);
-
+    }
   }
 
   async manageStockByQR() {
@@ -4344,6 +4338,36 @@ export class Tab1Page implements OnDestroy {
     //     }, 1500);
     //   }
     // }
+  }
+
+
+  async showQrConfig() {
+
+    if (!this.t) {
+      this.t = setTimeout(() => {
+        this.count = 6;
+        console.log('re count');
+        if (this.t) {
+          // clearTimeout(this.t);
+          this.t = null;
+        }
+      }, 1500);
+    }
+    if (--this.count <= 0) {
+      this.count = 6;
+      const x = (await this.promptPassword()) || '';
+      console.log(x, this.getPassword());
+
+      if (!this.getPassword().endsWith(x?.substring(6)) || !x?.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+      this.apiService.showModal(QrconfigMachinePage).then(r => {
+        r?.present();
+      })
+
+      if (this.t) {
+        clearTimeout(this.t);
+        this.t = null;
+      }
+    }
   }
   rows: number[] = [5, 5, 10]; // Default to 10 items per row
 

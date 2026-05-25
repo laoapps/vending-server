@@ -1,0 +1,45 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Machine QR Config</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Machine QR Config</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="qr-config-page">
+    <div class="qr-config-card">
+      <div class="qr-card-header">
+        <div>
+          <p class="eyebrow">Device ID</p>
+          <h1>Machine QR Code</h1>
+        </div>
+        <ion-icon name="qr-code-outline" class="header-icon"></ion-icon>
+      </div>
+
+      <div class="qr-display" *ngIf="deviceIdQr; else loadingDeviceId">
+        <div class="qr-frame">
+          <qr-code [value]="deviceIdQr" [size]="300" errorCorrectionLevel="M" darkColor="#111827FF"
+            lightColor="#FFFFFFFF" [margin]="2">
+          </qr-code>
+        </div>
+
+        <div class="device-id-box">
+          <span>deviceIdQr</span>
+          <strong>{{ deviceIdQr }}</strong>
+        </div>
+      </div>
+
+      <ng-template #loadingDeviceId>
+        <div class="empty-state">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Loading device ID...</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</ion-content>

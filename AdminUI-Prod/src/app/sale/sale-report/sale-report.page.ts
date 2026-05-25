@@ -83,7 +83,7 @@ export class SaleReportPage implements OnInit {
 
   async exportToExcel() {
     const dataToexport = this.filterData(this.lists)
-    console.log('dataToexport ', dataToexport);
+    // console.log('dataToexport ', dataToexport);
     this.apiService.exportIVendingMachineReportSaleToExcel(dataToexport);
 
 

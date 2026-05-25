@@ -201,6 +201,10 @@ const routes: Routes = [
   {
     path: 'custom-number-pad',
     loadChildren: () => import('./custom-number-pad/custom-number-pad.module').then(m => m.CustomNumberPadPageModule)
+  },
+  {
+    path: 'qrconfig-machine',
+    loadChildren: () => import('./qrconfig-machine/qrconfig-machine.module').then( m => m.QrconfigMachinePageModule)
   }
 ];
 @NgModule({

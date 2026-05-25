@@ -3328,7 +3328,22 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
-            // list log machinesale timeline
+
+
+            router.post(
+                this.path + "/loadMachineConfig",
+                async (req, res) => {
+                    try {
+                        const deviceId = req.body.deviceId;
+                        if (!deviceId) {
+                            return res.send(PrintError("loadMachineConfig", {}, EMessage.bodyIsEmpty));
+                        }
+                        return res.send(PrintError("loadMachineConfig", {}, EMessage.notfound));
+                    } catch (error) {
+                        res.send(PrintError("loadMachineConfig", error, EMessage.unknownError));
+                    }
+                }
+            );
 
             router.post(
                 this.path + "/listMachineSaleLog",

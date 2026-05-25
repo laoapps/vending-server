@@ -48,6 +48,8 @@ import { IndexerrorService } from '../indexerror.service';
 import { VideoCacheService } from '../video-cache.service';
 import { Indexsavesale } from '../indexsavesale';
 import { App } from '@capacitor/app';
+import { Device } from '@capacitor/device';
+
 
 var REQUEST_TIME_OUT = 10000;
 
@@ -363,7 +365,7 @@ export class ApiService {
       this.machineId.otp
     );
 
-    let pendingstock = [];
+    let pendingstock: any = [];
     let pendingstockcount = 0;
     this.wsapi.aliveSubscription.subscribe(async r => {
       console.log('PING2');
@@ -376,6 +378,15 @@ export class ApiService {
         const rSetting = r?.data?.setting;
 
         const s = r?.data?.setting;
+
+        if (r?.message === EMessage.openstock) {
+          console.log('----->OPEN STOCK');
+          if (this.myTab1?.isOpenStock) {
+            this.closeModal();
+          }
+          this.myTab1?.openManageStock();
+          return;
+        }
 
         if (this.allowTopUp !== s.isTopUp) this.allowTopUp = s.isTopUp ?? false;
         if (this.isQrPayment !== s.qrPayment) this.isQrPayment = s.qrPayment ?? false;
@@ -428,16 +439,6 @@ export class ApiService {
         this.secret = r?.data?.secret ?? null;
         console.log('-----> SECRET :', this.secret);
 
-
-        if (r?.message === EMessage.openstock) {
-          console.log('----->OPEN STOCK');
-          if (this.myTab1?.isOpenStock) {
-            this.closeModal();
-          }
-          this.myTab1?.manageStockByQR();
-
-          return;
-        }
 
 
         if (this.areArraysDifferentUnordered(this.adsList ?? [], rSetting.adsList ?? [])) {
@@ -1851,6 +1852,21 @@ export class ApiService {
   }
 
 
+  loadConfigMachine(deviceId: string) {
+    const url = `/loadMachineConfig`;
+
+    const req = {
+      deviceId
+    };
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+
 
 
   // confirmBillPaid(transactionList: any) {
@@ -2470,6 +2486,19 @@ export class ApiService {
     this.toast
       .create({ message: text, duration: time })
       .then((r) => r.present());
+  }
+
+
+  async getAndroidDeviceId(): Promise<string> {
+    try {
+      const result = await Device.getId();
+
+      return result.identifier || 'webconfig';
+    } catch (error) {
+      console.error('Get Device ID Error:', error);
+
+      return 'webconfig';
+    }
   }
 
   soundSystemError(): Promise<any> {
