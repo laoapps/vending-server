@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
+import { IonicStorageService } from '../ionic-storage.service';
 
 @Component({
   selector: 'app-qrconfig-machine',
@@ -15,6 +16,7 @@ export class QrconfigMachinePage implements OnInit, OnDestroy {
   constructor(
     public apiService: ApiService,
     private modalCtrl: ModalController,
+    public storage: IonicStorageService,
   ) { }
 
   ngOnInit() {
@@ -58,6 +60,10 @@ export class QrconfigMachinePage implements OnInit, OnDestroy {
       const response = await this.apiService.loadConfigMachine(this.deviceIdQr);
       const resStatus = response?.data?.status;
       if (resStatus === 1) {
+        const configData = response?.data?.data ?? {};
+        // console.log('-----> configData :', configData);
+        this.saveLocalStorage(configData);
+
         this.stopLoadConfigMachineLoop();
         await this.modalCtrl.dismiss();
       }
@@ -66,6 +72,48 @@ export class QrconfigMachinePage implements OnInit, OnDestroy {
 
     } finally {
       this.isLoadingConfigMachine = false;
+    }
+  }
+
+  async saveLocalStorage(configData: any) {
+    try {
+      localStorage.setItem('isLTC', configData.isLTC ? 'yes' : '');
+
+
+      localStorage.setItem('wsurl', configData.wsurl)
+      localStorage.setItem('url', configData.url)
+      localStorage.setItem('vending_server', configData.vending_server)
+      localStorage.setItem('machineId', configData.machineId)
+      localStorage.setItem('otp', configData.otp)
+      localStorage.setItem('contact', configData.contact)
+      localStorage.setItem('isRobotMuted', configData.isRobotMuted ? 'yes' : '');
+      localStorage.setItem('isMusicMuted', configData.isMusicMuted ? 'yes' : '');
+      localStorage.setItem('isAds', configData.isAds ? 'yes' : '');
+      localStorage.setItem('francisemode', configData.francisemode ? 'yes' : '');
+      localStorage.setItem('qrMode', configData.qrMode ? 'yes' : '');
+      localStorage.setItem('musicVolume', configData.musicVolume + '');
+
+      localStorage.setItem('portName', configData.portName);
+      localStorage.setItem('baudRate', configData.baudRate);
+      localStorage.setItem('device', configData.device);
+
+      localStorage.setItem('offlineMode', configData.offlineMode + '');
+      localStorage.setItem('dropSensor', configData.dropSensor + '');
+      localStorage.setItem('NV9USB', configData.NV9USB ? 'true' : 'false');
+
+
+      localStorage.setItem('product_fall_limit', configData.productFallLimit + '');
+
+
+      this.storage.set('saleStock', [], 'stock').then(r => {
+        console.log('reset', r);
+        // window.location.reload();
+        this.apiService.reloadPage();
+      }).catch(e => {
+        console.log('reset error', e);
+      });
+    } catch (error) {
+
     }
   }
 

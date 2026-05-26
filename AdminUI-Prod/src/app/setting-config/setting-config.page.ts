@@ -191,10 +191,13 @@ export class SettingConfigPage implements OnInit {
     // localStorage.setItem('product_fall_limit', this.productFallLimit + '');
     configData.product_fall_limit = this.productFallLimit + '';
 
-    console.log('-----> configData :', configData);
+    // console.log('-----> configData :', configData);
 
-    const response = await this.apiService.setConfigMachine(configData).toPromise();
-    console.log('-----> RESPONSE :', response['data']);
+    this.apiService.setConfigMachine(configData).subscribe(r => {
+      const response: any = r;
+      if (response.status != 1) return this.apiService.simpleMessage(response.message);
+      this.apiService.simpleMessage('ສຳເຫຼັດແລ້ວ');
+    }, error => this.apiService.simpleMessage(error.message));
 
 
 
