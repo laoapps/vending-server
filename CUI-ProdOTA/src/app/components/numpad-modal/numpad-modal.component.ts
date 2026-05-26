@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { ApiService } from 'src/app/services/api.service';
 
 @Component({
   selector: 'app-numpad-modal',
@@ -13,12 +14,15 @@ export class NumpadModalComponent implements OnInit {
   @Input() hideByDefault = true;   // New: control if it starts hidden
 
   value = '';
-  keys = ['1','2','3','4','5','6','7','8','9','cancel','0','backspace'];
+  keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'cancel', '0', 'backspace'];
 
   showPassword = false;           // Controls whether digits are visible
   private holdTimeout: any;
 
-  constructor(private modalCtrl: ModalController) {}
+
+  constructor(private modalCtrl: ModalController,
+    public apiService: ApiService,
+  ) { }
 
   ngOnInit() {
     this.showPassword = !this.hideByDefault;
@@ -30,6 +34,14 @@ export class NumpadModalComponent implements OnInit {
 
   get isComplete(): boolean {
     return this.value.length === this.length;
+  }
+
+  get secretQrValue(): string {
+    return JSON.stringify({
+      uuid: this.apiService.secret,
+      machineId: this.apiService.machineId?.machineId,
+      action: 'OPEN_STOCK'
+    });
   }
 
   // New: Check if we should show actual digit or dot

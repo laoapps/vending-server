@@ -275,6 +275,10 @@ const routes: Routes = [
   {
     path: 'ticket-list',
     loadChildren: () => import('./ticket-list/ticket-list.module').then( m => m.TicketListPageModule)
+  },
+  {
+    path: 'setting-config',
+    loadChildren: () => import('./setting-config/setting-config.module').then( m => m.SettingConfigPageModule)
   }
 ];
 @NgModule({

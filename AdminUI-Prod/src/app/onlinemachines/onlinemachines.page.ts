@@ -22,6 +22,7 @@ import { IonContent, ModalController } from '@ionic/angular'; // <-- ADD THIS
 import { ReportCallbacklogPage } from '../report-callbacklog/report-callbacklog.page';
 import { PaidOrdersModalComponent } from '../modals/paid-orders-modal/paid-orders-modal.component';
 import { TicketListPage } from '../ticket-list/ticket-list.page';
+import { SettingConfigPage } from '../setting-config/setting-config.page';
 interface MachineData {
   machineId: string;
   owner: string;
@@ -445,6 +446,21 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   async openPaidOrdersModal() {
     const modal = await this.modalCtrl.create({
       component: PaidOrdersModalComponent,
+      cssClass: 'full-screen-modal',     // ← Important
+      backdropDismiss: true,
+      showBackdrop: true,
+      breakpoints: [0.95],              // Makes it almost full screen (95%)
+      initialBreakpoint: 0.95,
+      handle: false,                    // Hide the drag handle
+    });
+
+    await modal.present();
+  }
+
+
+  async openConfigMachine() {
+    const modal = await this.modalCtrl.create({
+      component: SettingConfigPage,
       cssClass: 'full-screen-modal',     // ← Important
       backdropDismiss: true,
       showBackdrop: true,

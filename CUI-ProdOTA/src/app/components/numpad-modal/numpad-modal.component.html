@@ -5,24 +5,16 @@
   <p class="numpad-subtitle">{{ subtitle }}</p>
 
   <div class="digit-row" style="position: relative;">
-    <div
-      *ngFor="let d of digits; let i = index"
-      class="digit-box"
-      [class.active]="i === value.length && !isComplete"
+    <div *ngFor="let d of digits; let i = index" class="digit-box" [class.active]="i === value.length && !isComplete"
       [class.filled]="!!d">
       <span>{{ getDisplayChar(d, i) }}</span>
     </div>
 
     <!-- Eye Button (Hold to Show) -->
-    <button
-      class="eye-btn"
-      *ngIf="value.length > 0"
-      (mousedown)="onEyeMouseDown()"
-      (mouseup)="onEyeMouseUp()"
-      (mouseleave)="onEyeMouseUp()"        
-      (touchstart)="onEyeTouchStart()"
-      (touchend)="onEyeTouchEnd()">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <button class="eye-btn" *ngIf="value.length > 0" (mousedown)="onEyeMouseDown()" (mouseup)="onEyeMouseUp()"
+      (mouseleave)="onEyeMouseUp()" (touchstart)="onEyeTouchStart()" (touchend)="onEyeTouchEnd()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
         <circle cx="12" cy="12" r="3"></circle>
         <line *ngIf="!showPassword" x1="3" y1="3" x2="21" y2="21" stroke-width="2.5"></line>
@@ -34,19 +26,16 @@
     {{ isComplete ? 'Ready to confirm' : value.length + '/' + length + ' digits entered' }}
   </p>
 
-   <div class="numpad-grid">
-    <button
-      *ngFor="let key of keys"
-      class="np-key"
-      [class.action-key]="key === 'cancel' || key === 'backspace'"
+  <div class="numpad-grid">
+    <button *ngFor="let key of keys" class="np-key" [class.action-key]="key === 'cancel' || key === 'backspace'"
       (click)="onKey(key)">
       <ng-container [ngSwitch]="key">
         <span *ngSwitchCase="'backspace'">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
-            <line x1="18" y1="9" x2="12" y2="15"/>
-            <line x1="12" y1="9" x2="18" y2="15"/>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
+            <line x1="18" y1="9" x2="12" y2="15" />
+            <line x1="12" y1="9" x2="18" y2="15" />
           </svg>
         </span>
         <span *ngSwitchCase="'cancel'">Cancel</span>
@@ -54,8 +43,13 @@
       </ng-container>
     </button>
   </div>
-
   <button class="confirm-btn" [disabled]="!isComplete" (click)="confirm()">
     Confirm
   </button>
+
+  <div class="secret-qr" *ngIf="apiService.secret">
+    <qr-code [value]="secretQrValue" [size]="160" errorCorrectionLevel="M" darkColor="#111827FF" lightColor="#FFFFFFFF"
+      [margin]="2">
+    </qr-code>
+  </div>
 </div>

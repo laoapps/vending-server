@@ -3338,6 +3338,30 @@ export class InventoryZDM8 implements IBaseClass {
                         if (!deviceId) {
                             return res.send(PrintError("loadMachineConfig", {}, EMessage.bodyIsEmpty));
                         }
+                        const redisDoc = `MANCHINE_CONFIG_${deviceId}`;
+                        const configData = await redisClient.get(redisDoc);
+                        if (configData) {
+                            return res.send(PrintSucceeded("loadMachineConfig", JSON.parse(configData), EMessage.succeeded));
+                        }
+                        return res.send(PrintError("loadMachineConfig", {}, EMessage.notfound));
+                    } catch (error) {
+                        res.send(PrintError("loadMachineConfig", error, EMessage.unknownError));
+                    }
+                }
+            );
+
+            router.post(
+                this.path + "/setMachineConfig",
+                async (req, res) => {
+                    try {
+                        const deviceId = req.body.deviceId;
+                        const configData = req.body;
+                        delete configData.deviceId;
+                        if (!deviceId) {
+                            return res.send(PrintError("loadMachineConfig", {}, EMessage.bodyIsEmpty));
+                        }
+                        const redisDoc = `MANCHINE_CONFIG_${deviceId}`;
+                        await redisClient.setex(redisDoc, 60 * 10, JSON.stringify(configData));
                         return res.send(PrintError("loadMachineConfig", {}, EMessage.notfound));
                     } catch (error) {
                         res.send(PrintError("loadMachineConfig", error, EMessage.unknownError));

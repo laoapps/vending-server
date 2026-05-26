@@ -31,6 +31,10 @@
   background: var(--ion-background-color);
   border-radius: 20px 20px 0 0;
   padding: 1rem 1.25rem 2rem;
+  box-sizing: border-box;
+  max-height: calc(100vh - env(safe-area-inset-top, 0px) - 16px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .drag-handle {
@@ -134,4 +138,18 @@
   transition: opacity 0.2s;
 
   &:disabled { opacity: 0.35; }
+}
+
+.secret-qr {
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+
+  qr-code {
+    display: block;
+    width: min(160px, 100%);
+    max-width: 100%;
+  }
 }
