@@ -102,7 +102,7 @@ export class QrconfigMachinePage implements OnInit, OnDestroy {
       localStorage.setItem('NV9USB', configData.NV9USB ? 'true' : 'false');
 
 
-      localStorage.setItem('product_fall_limit', configData.productFallLimit + '');
+      localStorage.setItem('product_fall_limit', '10');
 
 
       this.storage.set('saleStock', [], 'stock').then(r => {
