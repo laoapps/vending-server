@@ -3362,7 +3362,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const redisDoc = `MANCHINE_CONFIG_${deviceId}`;
                         delete configData.deviceId;
                         await redisClient.setex(redisDoc, 60 * 10, JSON.stringify(configData));
-                        return res.send(PrintError("loadMachineConfig", {}, EMessage.notfound));
+                        return res.send(PrintSucceeded("loadMachineConfig", {}, EMessage.succeeded));
                     } catch (error) {
                         res.send(PrintError("loadMachineConfig", error, EMessage.unknownError));
                     }

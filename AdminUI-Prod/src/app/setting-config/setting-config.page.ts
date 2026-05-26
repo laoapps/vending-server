@@ -13,7 +13,7 @@ import { App } from '@capacitor/app';
 })
 export class SettingConfigPage implements OnInit {
 
-  deviecId: string = '';
+  deviceId: string = '';
   wsurl = localStorage.getItem('wsurl') || environment.wsurl;
   url = localStorage.getItem('url') || environment.url;
   vending_server = localStorage.getItem('vending_server') || environment.vending_server;
@@ -142,7 +142,7 @@ export class SettingConfigPage implements OnInit {
   async save() {
     const configData: any = {};
     // localStorage.setItem('isLTC', this.isLTC ? 'yes' : '');
-    configData.deviecId = this.deviecId;
+    configData.deviceId = this.deviceId;
     configData.isLTC = this.isLTC ? 'yes' : '';
 
     // localStorage.setItem('wsurl', this.wsurl)
@@ -191,7 +191,7 @@ export class SettingConfigPage implements OnInit {
     // localStorage.setItem('product_fall_limit', this.productFallLimit + '');
     configData.product_fall_limit = this.productFallLimit + '';
 
-    // console.log('-----> configData :', configData);
+    console.log('-----> configData :', configData);
 
     const response = await this.apiService.setConfigMachine(configData).toPromise();
     console.log('-----> RESPONSE :', response['data']);
