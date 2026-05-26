@@ -728,6 +728,11 @@ export class ApiService {
     }
 
 
+    setConfigMachine(data: any) {
+        return this.http.post(this.url + '/setMachineConfig', data, { headers: this.headerBase() });
+    }
+
+
     getFreeProduct(position: number, id: number) {
         this.currentPaymentProvider = EPaymentProvider.mmoney;
         const req = {} as IReqModel;

@@ -139,7 +139,7 @@ export class SettingConfigPage implements OnInit {
 
   }
 
-  save() {
+  async save() {
     const configData: any = {};
     // localStorage.setItem('isLTC', this.isLTC ? 'yes' : '');
     configData.deviecId = this.deviecId;
@@ -191,7 +191,12 @@ export class SettingConfigPage implements OnInit {
     // localStorage.setItem('product_fall_limit', this.productFallLimit + '');
     configData.product_fall_limit = this.productFallLimit + '';
 
-    console.log('-----> configData :', configData);
+    // console.log('-----> configData :', configData);
+
+    const response = await this.apiService.setConfigMachine(configData).toPromise();
+    console.log('-----> RESPONSE :', response['data']);
+
+
 
 
 
