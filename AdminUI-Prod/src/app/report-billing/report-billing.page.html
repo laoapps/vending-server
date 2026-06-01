@@ -1,0 +1,141 @@
+<ion-header class="no-print">
+  <ion-toolbar color="primary">
+    <ion-title>ໃບສະເໜີ</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="invoice-page-content">
+
+  <!-- Action Buttons (hidden on print) -->
+  <div class="action-buttons no-print">
+    <ion-button color="medium" fill="outline" (click)="printPage()">
+      <ion-icon name="print-outline" slot="start"></ion-icon>
+      ພິມ (Ctrl+P)
+    </ion-button>
+    <ion-button color="danger" fill="solid" (click)="downloadPDF()" [disabled]="isGeneratingPDF">
+      <ion-spinner *ngIf="isGeneratingPDF" name="crescent" slot="start"></ion-spinner>
+      <ion-icon *ngIf="!isGeneratingPDF" name="document-text-outline" slot="start"></ion-icon>
+      {{ isGeneratingPDF ? 'ກຳລັງສ້າງ PDF...' : 'ດາວໂຫຼດ PDF' }}
+    </ion-button>
+  </div>
+
+  <!-- Input Controls (hidden on print) -->
+  <div class="input-controls no-print">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>ປ້ອນຂໍ້ມູນ</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">ຊື່ລູກຄ້າ (Customer Name)</ion-label>
+          <ion-input type="text" [(ngModel)]="customerName" placeholder="ໃສ່ຊື່ລູກຄ້າ"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">% ຄ່າສິດທິ (Franchise %)</ion-label>
+          <ion-input type="number" [(ngModel)]="franchisePercent" min="0" max="100"
+            placeholder="ໃສ່ເປີເຊັນ"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">ຄ່າໄຟ (LAK)</ion-label>
+          <ion-input type="number" [(ngModel)]="electricTotal" placeholder="ໃສ່ຄ່າໄຟ"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Invoice Content (printed) -->
+  <div id="invoice-content" class="invoice-wrapper">
+
+    <!-- Company Header -->
+    <div class="company-header">
+      <h2 class="company-name">ບໍລິສັດ ດອກບົວຄຳ ການຄ້າ ຂາເຂົ້າ-ຂາອອກ ຈຳກັດ</h2>
+      <p class="company-address">ຮ່ອມ 1/3 ຖະໜົນສີທອງ ບ້ານປາກທ້າງ, ເມືອງ ສີໂຄດຕະບອງ ນະຄອນຫຼວງວຽງຈັນ</p>
+      <p class="company-contact">ໂທ: 020 55516321/.02077868868/.02056924465.</p>
+      <p class="company-contact">Email: dorkbouakham@gmail.com , touya.ra@gmail.com</p>
+    </div>
+
+    <!-- Date & Invoice Number -->
+    <div class="invoice-meta">
+      <div class="meta-row">
+        <span class="meta-label red-text">ວັນທີ</span>
+        <span class="meta-value">{{ currentDate }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label red-text">ເລກທີ</span>
+        <span class="meta-value">{{ invoiceNumber }}</span>
+      </div>
+    </div>
+
+    <!-- Invoice Title -->
+    <div class="invoice-title">
+      <h1>ໃບສະເໜີ</h1>
+    </div>
+
+    <!-- Customer Row -->
+    <table class="invoice-table">
+      <thead>
+        <tr class="customer-row">
+          <td class="label-cell">ລູກຄ້າ:</td>
+          <td colspan="2" class="customer-name-cell">{{ customerName }}</td>
+          <td class="date-range-cell">{{ fromDate }} - {{ toDate }}</td>
+        </tr>
+        <tr class="header-row">
+          <th class="col-num">ລຳດັບ</th>
+          <th class="col-desc">ລາຍລະອຽດ</th>
+          <th class="col-qty">ຈ/ນ</th>
+          <th class="col-total">ຍອດຂາຍທັງໝົດ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Row 1: Total Sales -->
+        <tr class="data-row">
+          <td class="col-num">1</td>
+          <td class="col-desc">ຂາຍໄດ້ທັງໝົດ</td>
+          <td class="col-qty">{{ saleCount }}</td>
+          <td class="col-total text-right">{{ formatNumber(totalCount) }}</td>
+        </tr>
+
+        <!-- Row 2: Franchise % -->
+        <tr class="row-blue">
+          <td class="col-num">2</td>
+          <td class="col-desc text-center" colspan="2">ຍອດ{{ franchisePercent }}%</td>
+          <td class="col-total text-right">{{ formatNumber(franchiseAmount) }}</td>
+        </tr>
+
+        <!-- Row 3: Electric -->
+        <tr class="data-row">
+          <td class="col-num">3</td>
+          <td class="col-desc text-center" colspan="2">ຄ່າໄຟ</td>
+          <td class="col-total text-right">{{ formatNumber(electricTotal) }}</td>
+        </tr>
+
+        <!-- Row 4: Grand Total -->
+        <tr class="row-yellow">
+          <td class="col-num">4</td>
+          <td class="col-desc text-center" colspan="2">ລວມຍອດທີ່ຕ້ອງຈ່າຍ</td>
+          <td class="col-total text-right bold-text">{{ formatNumber(totalFrandchise) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Payment Info -->
+    <div class="payment-info">
+      <p class="payment-note">ກໍລະນີບໍ່ເອົາບິນອາກອນ ໂອນໃຫ້ບັນຊີເຈົ້າຂອງ ບໍລິສັດເລີຍ</p>
+      <p><strong>Anousone Rabounthunh Mr</strong></p>
+      <p><strong>LAK 010-12-11505525</strong></p>
+      <p><strong>USD 090-12-0100409709-001</strong></p>
+      <p><strong>M-Money: 55516321</strong></p>
+    </div>
+
+    <!-- Signature Row -->
+    <div class="signature-row">
+      <div class="signature-left">
+        <p>ລາຍເຊັນລູກຄ້າ</p>
+      </div>
+      <div class="signature-right">
+        <p>ການເງິນ</p>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

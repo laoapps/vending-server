@@ -4,6 +4,7 @@ import { ApiService } from 'src/app/services/api.service';
 import { LoadVendingMachineSaleBillReportProcess } from '../processes/loadVendingMachineBillReport.process';
 import { SaleReportViewPage } from 'src/app/sale-report-view/sale-report-view.page';
 import { IFilteredData } from 'src/app/services/syste.model';
+import { ReportBillingPage } from 'src/app/report-billing/report-billing.page';
 
 
 
@@ -44,10 +45,6 @@ export class SaleReportPage implements OnInit {
 
   exportOptions: Array<any> = [
     {
-      icon: 'fa-solid fa-file-pdf text-danger',
-      text: 'Export PDF'
-    },
-    {
       icon: 'fa-solid fa-file-excel text-success',
       text: 'Export Excel'
     }
@@ -61,6 +58,22 @@ export class SaleReportPage implements OnInit {
 
   ngOnInit() {
     this.toggleButtons();
+  }
+
+  async exportToPDF() {
+    this.apiService.modal
+      .create({
+        component: ReportBillingPage,
+        componentProps: {
+          saleCount: this.sum_qtty,
+          totalCount: this.sum_total,
+          fromDate: this.fromDate,
+          toDate: this.toDate,
+        },
+        cssClass: 'custom-modal-full',
+        backdropDismiss: true,
+      })
+      .then((modal) => modal.present());
   }
 
   close() {
@@ -88,6 +101,9 @@ export class SaleReportPage implements OnInit {
 
 
   }
+
+
+
 
 
   filterData(data: any[]): IFilteredData[] {
@@ -169,6 +185,7 @@ export class SaleReportPage implements OnInit {
         console.log(`saleSumerizeList der`, this.saleSumerizeList.length, '=====>', this.saleSumerizeList);
         this.sum_qtty = this.saleSumerizeList.reduce((a, b) => a + b.stock.qtty, 0);
         this.sum_total = this.saleSumerizeList.reduce((a, b) => a + b.stock.total, 0);
+
 
 
         resolve(IENMessage.success);

@@ -205,6 +205,10 @@ const routes: Routes = [
   {
     path: 'qrconfig-machine',
     loadChildren: () => import('./qrconfig-machine/qrconfig-machine.module').then( m => m.QrconfigMachinePageModule)
+  },
+  {
+    path: 'bill-not-drop',
+    loadChildren: () => import('./bill-not-drop/bill-not-drop.module').then( m => m.BillNotDropPageModule)
   }
 ];
 @NgModule({

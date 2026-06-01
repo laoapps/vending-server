@@ -1,0 +1,260 @@
+// ============================================
+// Variables
+// ============================================
+$primary-border: 1px solid #333;
+$cell-padding: 6px 10px;
+$blue-bg: #a8d1e7;
+$yellow-bg: #f5d76e;
+$header-bg: #4a90d9;
+$header-text: #fff;
+
+// ============================================
+// Page Layout
+// ============================================
+.invoice-page-content {
+  --background: #f0f0f0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 16px;
+}
+
+.input-controls {
+  padding: 0 16px 16px;
+
+  ion-card {
+    margin: 0;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  ion-card-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+// ============================================
+// Invoice Wrapper
+// ============================================
+.invoice-wrapper {
+  background: #fff;
+  max-width: 800px;
+  margin: 0 auto 32px;
+  padding: 32px 40px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-size: 14px;
+  color: #000;
+}
+
+// ============================================
+// Company Header
+// ============================================
+.company-header {
+  margin-bottom: 8px;
+
+  .company-name {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+    line-height: 1.4;
+  }
+
+  .company-address,
+  .company-contact {
+    margin: 2px 0;
+    font-size: 13px;
+  }
+}
+
+// ============================================
+// Invoice Meta (Date & Number)
+// ============================================
+.invoice-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: -40px;
+  margin-bottom: 8px;
+
+  .meta-row {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .meta-label {
+    font-weight: 600;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .meta-value {
+    min-width: 90px;
+  }
+
+  .red-text {
+    color: #cc0000;
+  }
+}
+
+// ============================================
+// Invoice Title
+// ============================================
+.invoice-title {
+  text-align: center;
+  margin: 8px 0 16px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    text-decoration: underline;
+    margin: 0;
+  }
+}
+
+// ============================================
+// Invoice Table
+// ============================================
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+
+  th, td {
+    border: $primary-border;
+    padding: $cell-padding;
+    font-size: 13px;
+  }
+
+  .customer-row {
+    td {
+      border: $primary-border;
+      padding: 6px 10px;
+    }
+
+    .label-cell {
+      font-weight: 600;
+      white-space: nowrap;
+      width: 80px;
+    }
+
+    .customer-name-cell {
+      font-size: 14px;
+    }
+
+    .date-range-cell {
+      text-align: right;
+      font-weight: 600;
+      white-space: nowrap;
+      text-decoration: underline;
+      width: 160px;
+    }
+  }
+
+  .header-row {
+    background-color: $header-bg;
+    color: $header-text;
+
+    th {
+      text-align: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+  }
+
+  .col-num  { width: 60px;  text-align: center; }
+  .col-desc { }
+  .col-qty  { width: 60px;  text-align: center; }
+  .col-total { width: 140px; text-align: right; }
+
+  .data-row {
+    background: #fff;
+  }
+
+  .row-blue {
+    background-color: $blue-bg;
+    font-weight: 600;
+  }
+
+  .row-yellow {
+    background-color: $yellow-bg;
+    font-weight: 700;
+  }
+
+  .text-center { text-align: center; }
+  .text-right  { text-align: right; }
+  .bold-text   { font-weight: 800; font-size: 14px; }
+}
+
+// ============================================
+// Payment Info
+// ============================================
+.payment-info {
+  margin: 12px 0;
+  font-size: 13px;
+
+  .payment-note {
+    text-decoration: underline;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 2px 0;
+  }
+}
+
+// ============================================
+// Signature Row
+// ============================================
+.signature-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding: 0 20px;
+
+  .signature-left,
+  .signature-right {
+    text-align: center;
+
+    p {
+      font-weight: 600;
+      margin-bottom: 32px;
+    }
+  }
+}
+
+// ============================================
+// Print Styles
+// ============================================
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .invoice-page-content {
+    --background: #fff;
+  }
+
+  .invoice-wrapper {
+    box-shadow: none;
+    margin: 0;
+    padding: 20px;
+    max-width: 100%;
+  }
+
+  ion-header,
+  ion-toolbar,
+  .action-buttons,
+  .input-controls {
+    display: none !important;
+  }
+
+  body, html {
+    background: #fff !important;
+  }
+}

@@ -10,7 +10,7 @@ export const environment = {
     // wsurl: 'wss://tvending4.khamvong.com/zdm8',
     // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
-    vending_server: 'https://tvending4.khamvong.com',
+    vending_server: 'https://vending-service-api5.laoapps.com',
 
 
     urlLTC: 'https://vendingserviceapi.laoapps.com/zdm8',

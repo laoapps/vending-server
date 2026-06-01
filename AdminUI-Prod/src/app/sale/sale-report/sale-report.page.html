@@ -40,6 +40,13 @@
       </button>
     </div>
 
+    <div class="btn-list">
+      <button class="export-btn" (click)="exportToPDF()">
+        <i class="fa-solid fa-file-pdf text-danger"></i>
+        <span>Export PDF</span>
+      </button>
+    </div>
+
     <div class="sum-data">
       <div class="group" *ngFor="let d of [
         {text: 'Machine', value: machineId},

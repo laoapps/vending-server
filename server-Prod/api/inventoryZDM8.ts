@@ -773,7 +773,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     redisClient.save();
                                 }
 
-                                redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(trandList));
+                                redisClient.setex(machineId.machineId + EMessage.ListTransaction, 60 * 15, JSON.stringify(trandList));
                                 const event: IVendingEventLog = {
                                     machineId: machineId?.machineId,
                                     event: EVendingEvent.selling,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
@@ -4923,6 +4923,43 @@ export class InventoryZDM8 implements IBaseClass {
                 this.checkSuperAdmin,
                 this.checkAdmin,
 
+                async (req, res) => {
+                    try {
+                        let ownerUuid = req.body.ownerUuid;
+                        const machineId = req.body.machineId;
+                        if (!ownerUuid) {
+                            ownerUuid = res.locals["ownerUuid"];
+                        }
+                        const data = req.body;
+
+                        if (!ownerUuid || !machineId) {
+                            res.send(PrintError("reportBillNotPaid", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day').toDate();
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day').toDate();
+                        // console.log(' GET SALE BILL NOT PAID ', machineId, fromDate.toString(), toDate.toString())
+                        const run = await this.getReportBillNotPaid(machineId, ownerUuid, fromDate.toString(), toDate.toString());
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportBillNotPaid :', error);
+                        res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
+
+            router.post(this.path + '/reportBillNotPaidCUI',
+                this.checkSuperAdmin,
+                this.checkAdmin,
                 async (req, res) => {
                     try {
                         let ownerUuid = req.body.ownerUuid;

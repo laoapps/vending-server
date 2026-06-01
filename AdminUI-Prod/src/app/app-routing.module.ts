@@ -279,6 +279,10 @@ const routes: Routes = [
   {
     path: 'setting-config',
     loadChildren: () => import('./setting-config/setting-config.module').then( m => m.SettingConfigPageModule)
+  },
+  {
+    path: 'report-billing',
+    loadChildren: () => import('./report-billing/report-billing.module').then( m => m.ReportBillingPageModule)
   }
 ];
 @NgModule({

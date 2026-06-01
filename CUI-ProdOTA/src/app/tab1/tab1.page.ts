@@ -137,6 +137,7 @@ export class Tab1Page implements OnDestroy {
   offlineMode: Boolean = true;
 
   isOpenStock = false;
+  private numpadModal?: HTMLIonModalElement;
 
 
   // enableCashIn: boolean = false;
@@ -2433,10 +2434,28 @@ export class Tab1Page implements OnDestroy {
       },
     });
 
+    this.numpadModal = modal;
     await modal.present();
     const { data, role } = await modal.onWillDismiss();
+    if (this.numpadModal === modal) {
+      this.numpadModal = undefined;
+    }
     return role === 'confirm' ? data : null;
   }
+
+  async closeNumpadModalIfOpen() {
+    if (!this.numpadModal) return;
+
+    const modal = this.numpadModal;
+    this.numpadModal = undefined;
+
+    try {
+      await modal.dismiss(null, 'cancel');
+    } catch (error) {
+      console.log('closeNumpadModalIfOpen', error);
+    }
+  }
+
   async manageStock() {
     if (this.qrMode) {
       if (this.apiService.secret) {

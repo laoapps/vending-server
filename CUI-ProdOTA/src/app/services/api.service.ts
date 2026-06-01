@@ -384,7 +384,8 @@ export class ApiService {
           if (this.myTab1?.isOpenStock) {
             this.closeModal();
           }
-          this.myTab1?.openManageStock();
+          await this.myTab1?.closeNumpadModalIfOpen();
+          await this.myTab1?.openManageStock();
           return;
         }
 
@@ -422,7 +423,6 @@ export class ApiService {
             // console.log('-----> billData', billData);
             await this.saveSale(billData[billData.length - 1].bills);
             await indexsaveSale.deleteBillProcess(billData[billData.length - 1].transactionID);
-
           }
 
         } catch (errSaveSale) {
