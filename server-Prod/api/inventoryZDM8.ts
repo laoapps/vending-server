@@ -4957,6 +4957,45 @@ export class InventoryZDM8 implements IBaseClass {
             )
 
 
+            router.post(this.path + '/billNotPaidCLI',
+                async (req, res) => {
+                    try {
+                        let ownerUuid = req.body.ownerUuid;
+
+                        const machineId = this.findMachineIdToken(req.body.token);
+                        // console.log('-----> MACHINEID :', machineId.machineId);
+                        // const machineId = req.body.machineId;
+                        if (!machineId) {
+                            res.send(PrintError("billNotPaidCLI", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+
+                        if (!ownerUuid) {
+                            const m = await machineClientIDEntity.findOne({
+                                where: {
+                                    machineId: machineId.machineId,
+                                },
+                            });
+
+                            // console.log('-----> M :', m?.ownerUuid);
+                            ownerUuid = m?.ownerUuid;
+                        }
+
+                        const run = await this.getReportBillNotPaid10Muni(machineId.machineId, ownerUuid);
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            ownerUuid
+                        }
+                        return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('billNotPaidCLI :', error);
+                        res.send(PrintError("billNotPaidCLI", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
             router.post(this.path + '/reportBillNotPaidCUI',
                 this.checkSuperAdmin,
                 this.checkAdmin,
@@ -9949,6 +9988,31 @@ export class InventoryZDM8 implements IBaseClass {
                 order: [['id', 'DESC']]
             }
         }
+
+        const ent = VendingMachineBillFactory(
+            EEntity.vendingmachinebill + "_" + ownerUuid,
+            dbConnection
+        );
+        await ent.sync();
+        const bill = await ent.findAndCountAll(condition);
+        return bill;
+    }
+
+
+    private async getReportBillNotPaid10Muni(machineId: string, ownerUuid: string) {
+        let condition: any = {};
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+        condition = {
+            where: {
+                machineId: machineId,
+                paymentstatus: EPaymentStatus.pending,
+                createdAt: {
+                    [Op.gte]: tenMinutesAgo
+                }
+            },
+            order: [['id', 'DESC']]
+        }
+
 
         const ent = VendingMachineBillFactory(
             EEntity.vendingmachinebill + "_" + ownerUuid,

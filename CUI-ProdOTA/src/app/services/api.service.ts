@@ -242,6 +242,7 @@ export class ApiService {
 
 
   machineId = {} as IMachineId;
+  ownerUuid: any = null;
 
   clientId = {} as IClientId;
 
@@ -1809,6 +1810,25 @@ export class ApiService {
       token: cryptojs
         .SHA256(this.machineId.machineId + this.machineId.otp)
         .toString(cryptojs.enc.Hex),
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
+
+
+  loadBillNotPaid() {
+    const url = `/billNotPaidCLI`;
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+      ownerUuid: this.ownerUuid
     };
 
     return apiQueue.add(() => {

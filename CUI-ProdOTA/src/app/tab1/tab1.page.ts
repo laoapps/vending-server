@@ -99,6 +99,7 @@ import { AlertController } from '@ionic/angular';
 import { BlockchainDbService } from '../blockchain-db';
 import { NumpadModalComponent } from '../components/numpad-modal/numpad-modal.component';
 import { QrconfigMachinePage } from '../qrconfig-machine/qrconfig-machine.page';
+import { BillNotDropPage } from '../bill-not-drop/bill-not-drop.page';
 
 @Component({
   selector: 'app-tab1',
@@ -2557,7 +2558,28 @@ export class Tab1Page implements OnDestroy {
 
         this.showBills();
       }
-      await new Promise<void>(resolve => setTimeout(() => resolve(), 2000));
+      const m = await this.apiService.showModal(BillNotDropPage, {}, true, 'customModalLarge');
+      if (m) {
+        m.present();
+        let timeout: any;
+        const resetTimeout = () => {
+          if (timeout) clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            m.dismiss();
+          }, 20000);
+        };
+
+        const events = ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'];
+        const eventHandler = () => resetTimeout();
+
+        events.forEach(event => document.addEventListener(event, eventHandler, true));
+        resetTimeout();
+
+        m.onDidDismiss().then(() => {
+          if (timeout) clearTimeout(timeout);
+          events.forEach(event => document.removeEventListener(event, eventHandler, true));
+        });
+      }
     }).catch(er => {
       console.log(er);
       this.apiService.IndexedLogDB.addBillProcess({ errorData: `Error Click loadPaidBills ${JSON.stringify(er)}` });

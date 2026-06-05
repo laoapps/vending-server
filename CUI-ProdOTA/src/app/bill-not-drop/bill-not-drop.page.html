@@ -1,13 +1,52 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>billNotDrop</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>ລາຍການສັ່ງຊື້ສິນຄ້າ</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">billNotDrop</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-list lines="none">
+    <ion-item *ngFor="let item of billNotPaid" class="bill-item ion-margin-bottom">
+      <ion-card class="full-width">
+        <ion-card-content>
+          <div class="bill-container">
+            <div class="bill-info">
+              <div class="amount-row">
+                <span class="label">ຈຳນວນເງິນ:</span>
+                <span class="value amount">{{ item.totalvalue | number }} ກີບ</span>
+              </div>
+              <div class="info-row">
+                <ion-icon name="time-outline"></ion-icon>
+                <span class="value">{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="info-row">
+                <ion-icon name="cube-outline"></ion-icon>
+                <div class="products">
+                  <ion-badge color="secondary" *ngFor="let sale of item.vendingsales" class="product-badge">
+                    {{ sale.stock.name }}
+                  </ion-badge>
+                </div>
+              </div>
+            </div>
+            <div class="bill-action">
+              <ion-button color="danger" size="large" (click)="pay(item)" class="pay-btn">
+                <ion-icon name="card-outline" slot="start"></ion-icon>
+                ກວດສອບ
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="billNotPaid && billNotPaid.length === 0" class="no-data-container">
+    <ion-icon name="receipt-outline" class="no-data-icon"></ion-icon>
+    <h3>ຍັງບໍ່ມີລາຍການສັ່ງຊື້ສິນຄ້າ</h3>
+  </div>
 </ion-content>

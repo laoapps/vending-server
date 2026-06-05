@@ -172,10 +172,10 @@ export class ReportBillingPage implements OnInit {
     <div class="invoice-wrapper">
       <div class="header-block">
         <div class="company-info">
-          <div class="company-name">ບໍລິສັດ ດອກບົວຄຳ ກາບດ້າ ຂາເຂົ້າ-ຂາອອກ ຈຳກັດ</div>
-          <div class="company-address">ຮ່ອນ 1/3 ກຸ່ມນົບສົກຄາ ບ້ານປານທ່າງ, ເມືອງ ສີໂຄດຕະບອງ ນະຄອນ ຫລວງ ວຽງຈັນ</div>
+          <div class="company-name">ບໍລິສັດ ດອກບົວຄຳ ການຄ້າ ຂາເຂົ້າ-ຂາອອກ ຈຳກັດ</div>
+          <div class="company-address">ຮ່ອມ 1/3 ຖະໜົນສີທອງ ບ້ານປາກທ້າງ, ເມືອງ ສີໂຄດຕະບອງ ນະຄອນຫຼວງວຽງຈັນ</div>
           <div class="company-contact">ໂທ: 020 55516321/.02077868868/.02056924465.</div>
-          <div class="company-contact">Email: DorkBouaKham@gmail. , touya.ra@gmail.com</div>
+          <div class="company-contact">Email: dorkbouakham@gmail.com , touya.ra@gmail.com</div>
         </div>
         <div class="invoice-meta">
           <div><span class="red-text">ວັນທີ</span>&nbsp;&nbsp;${this.currentDate}</div>
@@ -225,7 +225,7 @@ export class ReportBillingPage implements OnInit {
       </table>
 
       <div class="payment-info">
-        <p class="payment-note">ກ່ານໂອນຊຳລະລາຄາທວ ໂອນໃຫ້ຫ້ານຊຳລົງ ບໍລິສັດເລີຍ</p>
+        <p class="payment-note">ກໍລະນີບໍ່ເອົາບິນອາກອນ ໂອນໃຫ້ບັນຊີເຈົ້າຂອງ ບໍລິສັດເລີຍ</p>
         <p><strong>Anousone Rabounthunh Mr</strong></p>
         <p><strong>LAK 010-12-11505525</strong></p>
         <p><strong>USD 090-12-0100409709-001</strong></p>

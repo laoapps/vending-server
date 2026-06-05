@@ -160,7 +160,7 @@ ion-item {
 }
 
 
-    .dialog-fullscreenQR {
+.dialog-fullscreenQR {
 	align-items: center;
 	justify-content: center; 
 	&::part(content){
@@ -168,6 +168,16 @@ ion-item {
 	  height: 90%; 
 	}
   }
+
+.customModalLarge {
+	align-items: center;
+	justify-content: center; 
+	&::part(content){
+	  width: 76%;
+	  height: 70%;
+	  border-radius: 20px;
+	}
+}
 
 .form-control:focus {
     box-shadow: none;

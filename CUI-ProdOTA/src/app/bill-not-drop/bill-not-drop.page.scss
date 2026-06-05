@@ -1,0 +1,98 @@
+.bill-item {
+  --background: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+}
+
+.full-width {
+  width: 100%;
+  margin: 0;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bill-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bill-info {
+  flex: 1;
+}
+
+.amount-row {
+  margin-bottom: 10px;
+  .label {
+    font-size: 1.2rem;
+    color: var(--ion-color-medium);
+    margin-right: 10px;
+  }
+  .amount {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--ion-color-dark);
+  }
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  color: var(--ion-color-step-600);
+
+  ion-icon {
+    margin-right: 8px;
+    font-size: 1.2rem;
+  }
+
+  .value {
+    font-size: 1.1rem;
+  }
+}
+
+.products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-left: 5px;
+}
+
+.product-badge {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+
+.bill-action {
+  margin-left: 20px;
+}
+
+.pay-btn {
+  --border-radius: 12px;
+  font-weight: bold;
+  height: 60px;
+  min-width: 150px;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 15px rgba(235, 68, 90, 0.3);
+}
+
+.no-data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--ion-color-medium);
+
+  .no-data-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-weight: 300;
+  }
+}
