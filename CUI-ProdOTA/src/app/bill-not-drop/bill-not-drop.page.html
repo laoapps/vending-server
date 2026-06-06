@@ -34,9 +34,10 @@
               </div>
             </div>
             <div class="bill-action">
-              <ion-button color="danger" size="large" (click)="pay(item)" class="pay-btn">
-                <ion-icon name="card-outline" slot="start"></ion-icon>
-                ກວດສອບ
+              <ion-button color="danger" size="large" (click)="checkPayAndDrop(item)" class="pay-btn" [disabled]="item.loading">
+                <ion-spinner name="crescent" *ngIf="item.loading" slot="start"></ion-spinner>
+                <ion-icon name="card-outline" slot="start" *ngIf="!item.loading"></ion-icon>
+                {{ item.loading ? 'ກຳລັງກວດສອບ...' : 'ກວດສອບ' }}
               </ion-button>
             </div>
           </div>

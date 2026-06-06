@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
-import * as QRCode from 'qrcode';
-import { QrpayPage } from '../qrpay/qrpay.page';
+
 
 @Component({
   selector: 'app-bill-not-drop',
@@ -27,7 +26,8 @@ export class BillNotDropPage implements OnInit {
       const response = await this.apiService.loadBillNotPaid();
       if (response.data.status === 1) {
         this.apiService.ownerUuid = response.data.data.ownerUuid;
-        this.billNotPaid = response.data.data.rows ?? [];
+        const rows = response.data.data.rows ?? [];
+        this.billNotPaid = rows.map((item: any) => ({ ...item, loading: false }));
       } else {
         this.dismiss();
       }
@@ -36,12 +36,23 @@ export class BillNotDropPage implements OnInit {
     }
   }
 
-  async pay(item: any) {
+  async checkPayAndDrop(item: any) {
+    if (item.loading) return;
+    item.loading = true;
     try {
-      console.log('-----> ITEM :', item);
-      // const response = await this.apiService.checkPaidAndDrop('');
+      const response = await this.apiService.checkPaidAndDrop(item?.transactionID);
+      // const response = await this.apiService.checkPaidAndDrop('205885355620260606122706');
+      if (response.data.status === 1) {
+        this.dismiss();
+      } else {
+        this.billNotPaid = this.billNotPaid.filter((i: any) => i.transactionID !== item.transactionID);
+      }
+      // console.log('-----> RESPONSE :', response.data);
+
     } catch (error) {
       console.error('Error opening payment modal:', error);
+    } finally {
+      item.loading = false;
     }
   }
 

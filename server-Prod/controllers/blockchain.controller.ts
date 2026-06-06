@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as crypto from 'crypto';
-import { MachineBlockchainValueEntity,dbConnection } from '../entities'; // your entity
+import { MachineBlockchainValueEntity, dbConnection } from '../entities'; // your entity
 import { redisClient } from '../services/service';
 import { v4 as uuidv4 } from 'uuid';
 import { MachineClientIDFactory } from '../entities/machineclientid.entity';
@@ -18,10 +18,7 @@ export interface ValueTransaction {
   actor?: string;
   hash: string;
 }
-export const machineClientlist = MachineClientIDFactory(
-        EEntity.machineclientid,
-        dbConnection
-    );
+
 export const findOrCreateValueRecord = async (machineId: string, ownerUuid: string) => {
   let record = await MachineBlockchainValueEntity.findOne({ where: { machineId, ownerUuid } });
   if (!record) {

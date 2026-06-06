@@ -32,6 +32,7 @@ import axios from "axios";
 import { apiQueue } from "./api/queue.services";
 import { BlockchainValueAPI } from "./api/blockchain.routes";
 
+
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
 process.env.backendKey = process.env.backendKey;
@@ -133,8 +134,7 @@ CreateDatabase("")
 
 
 
-    /// blockchain
-    new BlockchainValueAPI(app);
+
 
 
 
@@ -153,6 +153,12 @@ CreateDatabase("")
     const wss3 = new WebSocket.Server({ noServer: true });
     //.... VENDING
     // const ssZDM8 = new SocketServerZDM8();
+
+
+    /// blockchain
+    const b = new BlockchainValueAPI(app);
+
+
     const invZDM8 = new InventoryZDM8(app, wss1);
     const invLocker = new InventoryLocker(app, wss3);
     //.... KIOSK

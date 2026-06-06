@@ -55,8 +55,6 @@ import {
     storePaymentTransaction,
     markPaymentAsPaid,
     monitorUnpaidPayments,
-    calculateTicketValue,
-    promotioPercentage,
 } from "../services/service";
 import {
     EClientCommand,
@@ -164,7 +162,7 @@ import { RecordBillingFactory } from "../entities/recordbilling.entity";
 import { apiQueue } from "./queue.services";
 import { getTransactionsLaoQRFromRedis, removeTransactionLaoQRFromRedis, saveTransactionLaoQrToRedis } from "../services/laoqrredis";
 import { ProductCreditFactory } from "../entities/productcredit.entity";
-import { addValue } from "../controllers/blockchain.controller";
+import { BlockchainValueAPI } from "./blockchain.routes";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -368,7 +366,6 @@ export class InventoryZDM8 implements IBaseClass {
         this.initBankNotes();
 
         this.ssocket = new SocketServerZDM8(this.ports);
-
         this.wss = wss;
         try {
             this.initWs(wss);
@@ -5620,11 +5617,14 @@ export class InventoryZDM8 implements IBaseClass {
 
             )
 
+
             router.post(this.path + '/checkPaidAndDrop',
                 async (req, res) => {
                     try {
                         const transactionID = req.body.transactionID;
-                        if (!transactionID) {
+                        const ownerUuid = req.body.ownerUuid;
+                        const bankname = 'HM';
+                        if (!transactionID || !ownerUuid || !bankname) {
                             res.send(PrintError("checkPaidMmoney", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
                             return;
                         };
@@ -5633,15 +5633,82 @@ export class InventoryZDM8 implements IBaseClass {
                             res.send(PrintError("checkPaidMmoney", result.message, EMessage.error, returnLog(req, res, true)));
                             return;
                         }
-                        return res.send(PrintSucceeded("report", result.message, EMessage.succeeded, returnLog(req, res)));
+
+                        const ent = VendingMachineBillFactory(
+                            EEntity.vendingmachinebill + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await ent.sync();
+                        const bill = await ent.findOne({
+                            where: { transactionID },
+                        });
+                        if (!bill) {
+                            return res.send(PrintError("checkPaidMmoney", [], EMessage.notfound, returnLog(req, res, true)));
+                        }
+
+                        if (bill.paymentstatus !== EPaymentStatus.pending) {
+                            return res.send(PrintError("checkPaidMmoney", [], EMessage.exist, returnLog(req, res, true)));
+                        }
+
+                        bill.paymentstatus = EPaymentStatus.paid;
+                        bill.changed("paymentstatus", true);
+                        bill.paymentref = bankname + '';
+                        bill.changed("paymentref", true);
+                        bill.paymenttime = new Date();
+                        bill.changed("paymenttime", true);
+                        bill.paymentmethod = "LaoQR";
+                        bill.changed("paymentmethod", true);
+
+                        // console.log('=====>machineId', bill.machineId);
+
+                        this.getBillProcess(bill.machineId, async (b) => {
+                            bill.vendingsales.forEach((v, i) => {
+                                v.stock.image = "";
+                                b.push({
+                                    ownerUuid,
+                                    position: v.position,
+                                    bill: bill.toJSON(),
+                                    transactionID: getNanoSecTime(),
+                                });
+                            });
+
+                            await bill.save();
+
+                            const resD = {} as IResModel;
+                            resD.command = EMACHINE_COMMAND.waitingt;
+                            resD.message = EMessage.waitingt;
+                            resD.status = 1;
+                            resD.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                            this.setBillProces(bill.machineId, b);
+                            await redisClient.del(transactionID + EMessage.BillCreatedTemp);
+                            let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
+
+                            let trandList: Array<any> = [];
+                            try {
+                                const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                                if (!Array.isArray(parsedData)) {
+                                    console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                                    trandList = [];
+                                } else {
+                                    trandList = parsedData;
+                                }
+                            } catch (error) {
+                                console.error('JSON parse error:', error.message);
+                                trandList = [];
+                            }
+
+                            const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+                            redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                            this.sendWSToMachine(bill.machineId, resD);
+                        });
+                        return res.send(PrintSucceeded("checkPaidMmoney", result.message, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
-                        console.log('reportBillNotPaid :', error);
-                        res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                        console.log('checkPaidMmoney :', error);
+                        res.send(PrintError("checkPaidMmoney", error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
 
             )
-
 
             router.post(this.path + '/sendDropAdmin',
                 this.checkSuperAdmin,
@@ -8184,6 +8251,8 @@ export class InventoryZDM8 implements IBaseClass {
                     setImmediate(async () => {
                         try {
                             let resultPhone: any = {};
+
+                            try {
                                 const redisData = await redisClient.get(transactionID + EMessage.TransactionPhone);
                                 if (redisData) {
                                     try {
@@ -8193,63 +8262,31 @@ export class InventoryZDM8 implements IBaseClass {
                                         resultPhone = {};
                                     }
                                 }
-                            const percentage = await promotioPercentage({ action: 'get',data:{promotionname:'vendingLAK'} },  '');
+                            } catch (redisErr) {
+                                console.warn("Redis unavailable:", redisErr);
+                                resultPhone = {};
+                            }
 
-                            const amount  = calculateTicketValue(resultPhone?.orderBill, 100_000, Number.isNaN(percentage) ? 0 : percentage?.data?.promotionvalue||0);
-                            /// coupon
-                            const result = await addValue(
-                                bill.machineId,
-                                ownerUuid,
-                                amount,
-                                "coupon",
-                                `api:LAOQRCALLBACK`
-                            );
-                            console.log('addValue result', result);
-                            console.log('amount', {m:bill.machineId,
-                                ow:ownerUuid,
-                                am:amount,
-                                c:"coupon",
-                                a:`api:LAOQRCALLBACK`});
+                            if (resultPhone?.phone) {
+                                const phone = "+85620" + resultPhone.phone;
+                                const body = {
+                                    name: phone,
+                                    phoneNumber: phone,
+                                    username: phone,
+                                    password: "1234567890", // อย่าใช้ plain number เป็น password ถ้าไม่จำเป็น
+                                    googleToken: { phoneNumber: phone, otp: "111111" },
+                                    orderBill: resultPhone?.orderBill ?? [],
+                                    trandID: transactionID,
+                                };
 
+                                const url = "https://hangmistore-api.laoapps.com/api/v1/authUM/register4";
 
-
-                            // let resultPhone: any = {};
-
-                            // try {
-                            //     const redisData = await redisClient.get(transactionID + EMessage.TransactionPhone);
-                            //     if (redisData) {
-                            //         try {
-                            //             resultPhone = JSON.parse(redisData);
-                            //         } catch (jsonErr) {
-                            //             console.warn("Redis JSON parse error:", jsonErr);
-                            //             resultPhone = {};
-                            //         }
-                            //     }
-                            // } catch (redisErr) {
-                            //     console.warn("Redis unavailable:", redisErr);
-                            //     resultPhone = {};
-                            // }
-
-                            // if (resultPhone?.phone) {
-                            //     const phone = "+85620" + resultPhone.phone;
-                            //     const body = {
-                            //         name: phone,
-                            //         phoneNumber: phone,
-                            //         username: phone,
-                            //         password: "1234567890", // อย่าใช้ plain number เป็น password ถ้าไม่จำเป็น
-                            //         googleToken: { phoneNumber: phone, otp: "111111" },
-                            //         orderBill: resultPhone?.orderBill ?? [],
-                            //         trandID: transactionID,
-                            //     };
-
-                            //     const url = "https://hangmistore-api.laoapps.com/api/v1/authUM/register4";
-
-                            //     try {
-                            //         await axios.post(url, body, { timeout: 10000 }); // กัน server ช้า
-                            //     } catch (apiErr) {
-                            //         console.error("API request failed:", apiErr.message);
-                            //     }
-                            // }
+                                try {
+                                    await axios.post(url, body, { timeout: 10000 }); // กัน server ช้า
+                                } catch (apiErr) {
+                                    console.error("API request failed:", apiErr.message);
+                                }
+                            }
                         } catch (errorTopUp) {
                             console.error("Unexpected error give topup:", errorTopUp);
                         }
@@ -8265,9 +8302,6 @@ export class InventoryZDM8 implements IBaseClass {
                     };
                     await setVendingEvent(EVendingEvent.sold, event);
                     await this.SaveCallbackLogMMoney(bill.machineId, transactionID, EMessage.succeeded);
-
-
-
                     return resolve(bill); // Add return to stop callback execution
                 });
 

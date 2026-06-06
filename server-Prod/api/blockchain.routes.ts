@@ -3,13 +3,14 @@ import {
     addValue,
     deductValue,
     clearValueToZero,
-    findOrCreateValueRecord,
-    machineClientlist,
+    findOrCreateValueRecord
 } from "../controllers/blockchain.controller";
 import { findPhoneNumberByUuidOnUserManager, findRealDB, PrintError, PrintSucceeded, redisClient, sendCouponeToUser } from "../services/service"; // Your existing redisClient
 import { v4 as uuidv4 } from "uuid";
 import cryptojs, { AES } from "crypto-js";
-import { EMessage } from "../entities/system.model";
+import { EEntity, EMessage } from "../entities/system.model";
+import { MachineClientIDFactory } from "../entities/machineclientid.entity";
+import { dbConnection } from "../entities";
 
 /**
  * BlockchainValueAPI
@@ -20,12 +21,16 @@ import { EMessage } from "../entities/system.model";
  */
 export class BlockchainValueAPI {
     path = 'coupon';
-    constructor(app: express.Application) {
+    machineClientlist = MachineClientIDFactory(
+        EEntity.machineclientid,
+        dbConnection
+    );
+    constructor(app: express.Router) {
         this.registerRoutes(app);
         console.log("[BlockchainValueAPI] Routes registered");
     }
 
-    private registerRoutes(app: express.Application): void {
+    private registerRoutes(app: express.Router): void {
         // === Add value to blockchain ===
         // app.post(`${this.path}/add-value`, async (req, res) => {
         //   try {
@@ -116,7 +121,7 @@ export class BlockchainValueAPI {
                 }
 
                 // TODO: For better performance, consider adding a hashedToken column in MachineClientID
-                const mlist = await machineClientlist.findAll({
+                const mlist = await this.machineClientlist.findAll({
                     attributes: { exclude: ['photo'] }
                 });
 
@@ -228,7 +233,7 @@ export class BlockchainValueAPI {
                     return res.send(PrintError('get-value', 'token is required', EMessage.error));
                 }
 
-                const mlist = await machineClientlist.findAll({ attributes: { exclude: ['photo'] } });
+                const mlist = await this.machineClientlist.findAll({ attributes: { exclude: ['photo'] } });
                 const m = mlist.find(v =>
                     cryptojs.SHA256(v.machineId + v.otp).toString(cryptojs.enc.Hex) === token
                 );

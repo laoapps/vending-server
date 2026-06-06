@@ -42,6 +42,7 @@ import axios, { AxiosHeaders, AxiosResponse } from 'axios';
 import { BehaviorSubject } from 'rxjs';
 import { IndexedDBService } from './indededdb.service';
 import { RemainingbillsPage } from '../remainingbills/remainingbills.page';
+import { BillNotDropPage } from '../bill-not-drop/bill-not-drop.page';
 import { Toast } from '@capacitor/toast';
 import { IndexdblocalService } from './indexdblocal.service';
 import { IndexerrorService } from '../indexerror.service';
@@ -1433,6 +1434,9 @@ export class ApiService {
 
   async showModal(component: any, d: any = {}, closebyblackdrop: boolean = true, cssClass: string = '') {
     try {
+      if (component === RemainingbillsPage) {
+        await this.dismissModalByComponent(BillNotDropPage);
+      }
       // let x = '{';
       // const l = Object.keys(d).length;
       // if (!l) {
@@ -1454,6 +1458,17 @@ export class ApiService {
       this.toast.create({ message: 'Error', duration: 2000 }).then((r) => {
         r.present();
       });
+    }
+  }
+
+  async dismissModalByComponent(component: any) {
+    try {
+      const top = await this.modalCtrl.getTop();
+      if (top && top.component === component) {
+        await top.dismiss();
+      }
+    } catch (error) {
+      console.log('Error dismissModalByComponent :', error);
     }
   }
   closeModal(data: any = null) {
