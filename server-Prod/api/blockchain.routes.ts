@@ -6,7 +6,7 @@ import {
     findOrCreateValueRecord,
     verifyHashChain
 } from "../controllers/blockchain.controller";
-import { findPhoneNumberByUuidOnUserManager, findRealDB, PrintError, PrintSucceeded, redisClient, sendCouponeToUser } from "../services/service"; // Your existing redisClient
+import { findPhoneNumberByUuidOnUserManager, findRealDB, findUuidByPhoneNumberOnUserManager, PrintError, PrintSucceeded, redisClient, sendCouponeToUser } from "../services/service"; // Your existing redisClient
 import { v4 as uuidv4 } from "uuid";
 import cryptojs, { AES } from "crypto-js";
 import { EEntity, EMessage } from "../entities/system.model";
@@ -33,84 +33,81 @@ export class BlockchainValueAPI {
 
     private registerRoutes(app: express.Router): void {
         // === Add value to blockchain ===
-        // app.post(`${this.path}/add-value`, async (req, res) => {
-        //   try {
-        //     const { machineId, ownerUuid, amount, note, actor } = req.body;
+        app.post(`${this.path}/add-value`,
+            // checkSuperAdmin, 
+            async (req, res) => {
+                try {
+                    const { machineId, ownerUuid, amount, note, actor } = req.body;
 
-        //     if (!machineId || !ownerUuid || typeof amount !== "number" || amount <= 0) {
-        //       return res.status(400).json({
-        //         success: false,
-        //         error: "machineId, ownerUuid and positive amount are required",
-        //       });
-        //     }
+                    if (!machineId || !ownerUuid || typeof amount !== "number" || amount <= 0) {
+                        return res.send(PrintError('add-value', 'machineId, ownerUuid and positive amount are required', EMessage.error));
+                    }
 
-        //     const result = await addValue(
-        //       machineId,
-        //       ownerUuid,
-        //       amount,
-        //       note || "API top-up",
-        //       actor || `api:${req.ip}`
-        //     );
+                    const result = await addValue(
+                        machineId,
+                        ownerUuid,
+                        amount,
+                        note || "API top-up",
+                        actor || `api:${req.ip}`
+                    );
 
-        //     res.json(result);
-        //   } catch (error: any) {
-        //     console.error("[Blockchain] add-value error:", error);
-        //     res.status(500).json({ success: false, error: error.message });
-        //   }
-        // });
+                    res.send(PrintSucceeded('add-value', result, EMessage.succeeded));
+                } catch (error: any) {
+                    console.error("[Blockchain] add-value error:", error);
+                    res.send(PrintError('add-value', error.message, EMessage.error));
+                }
+            });
 
         // === Deduct value from blockchain ===
-        // app.post(`${this.path}/deduct-value`, async (req, res) => {
-        //     try {
-        //         const { machineId, ownerUuid, amount, note, actor } = req.body;
+        app.post(`${this.path}/deduct-value`,
+            // checkSuperAdmin, 
+            async (req, res) => {
+                try {
+                    const { machineId, ownerUuid, amount, note, actor } = req.body;
 
-        //         if (!machineId || !ownerUuid || typeof amount !== "number" || amount <= 0) {
-        //             return res.status(400).json({
-        //                 success: false,
-        //                 error: "machineId, ownerUuid and positive amount are required",
-        //             });
-        //         }
+                    if (!machineId || !ownerUuid || typeof amount !== "number" || amount <= 0) {
+                        return res.send(PrintError('deduct-value', 'machineId, ownerUuid and positive amount are required', EMessage.error));
+                    }
 
-        //         const result = await deductValue(
-        //             machineId,
-        //             ownerUuid,
-        //             amount,
-        //             note || "API deduction",
-        //             actor || `api:${req.ip}`
-        //         );
+                    const result = await deductValue(
+                        machineId,
+                        ownerUuid,
+                        amount,
+                        note || "API deduction",
+                        actor || `api:${req.ip}`
+                    );
 
-        //         res.json(result);
-        //     } catch (error: any) {
-        //         console.error("[Blockchain] deduct-value error:", error);
-        //         res.status(500).json({ success: false, error: error.message });
-        //     }
-        // });
+                    res.send(PrintSucceeded('deduct-value', result, EMessage.succeeded));
+                } catch (error: any) {
+                    console.error("[Blockchain] deduct-value error:", error);
+                    res.send(PrintError('deduct-value', error.message, EMessage.error));
+                }
+            });
 
-        // // === Clear value to 0 ===
-        // app.post(`${this.path}/clear-value`, async (req, res) => {
-        //     try {
-        //         const { machineId, ownerUuid, note, actor } = req.body;
+        // === Clear value to 0 ===
+        app.post(`${this.path}/clear-value`,
+            // checkSuperAdmin, 
+            async (req, res) => {
+                try {
+                    const { machineId, ownerUuid, note, actor } = req.body;
 
-        //         if (!machineId || !ownerUuid) {
-        //             return res.status(400).json({
-        //                 success: false,
-        //                 error: "machineId and ownerUuid are required",
-        //             });
-        //         }
+                    if (!machineId || !ownerUuid) {
+                        return res.send(PrintError('clear-value', 'machineId and ownerUuid are required', EMessage.error));
+                    }
 
-        //         const result = await clearValueToZero(
-        //             machineId,
-        //             ownerUuid,
-        //             note || "API clear to zero",
-        //             actor || `api:${req.ip}`
-        //         );
+                    const result = await clearValueToZero(
+                        machineId,
+                        ownerUuid,
+                        note || "API clear to zero",
+                        actor || `api:${req.ip}`
+                    );
 
-        //         res.json(result);
-        //     } catch (error: any) {
-        //         console.error("[Blockchain] clear-value error:", error);
-        //         res.status(500).json({ success: false, error: error.message });
-        //     }
-        // });
+                    res.send(PrintSucceeded('clear-value', result, EMessage.succeeded));
+                } catch (error: any) {
+                    console.error("[Blockchain] clear-value error:", error);
+                    res.send(PrintError('clear-value', error.message, EMessage.error));
+                }
+            });
 
         // === Generate QR Coupon (stores in your Redis) ===
         app.post(`${this.path}/generate-qr-coupon`, async (req, res) => {
@@ -269,7 +266,7 @@ export class BlockchainValueAPI {
                 res.send(PrintError('get-value', error.message, EMessage.error));
             }
         });
-        app.get(`${this.path} / verify`, async (req, res) => {
+        app.get(`${this.path}/verify`, async (req, res) => {
             try {
                 const { machineId, ownerUuid } = req.query as any;
 
@@ -309,4 +306,41 @@ export function checkToken(req: Request, res: Response, next: NextFunction) {
         res.status(400).end();
     }
 }
+export function checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+        // console.log('checkSupAdmin');
+        const token = req.body.token;
+        const secret = req.body.secret;
+        let phoneNumber = req.body.shopPhonenumber;
+        if (!token) throw new Error(EMessage.tokenNotFound);
 
+        findRealDB(token).then((r) => {
+            const uuid = r;
+            if (!uuid) throw new Error(EMessage.notfound);
+            // req['gamerUuid'] = gamerUuid;
+            res.locals["superadmin"] = uuid;
+            if (secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
+                res.locals["secret"] = uuid;
+            }
+            if (phoneNumber && secret == 'e2f48898-3453-4214-9025-27e905b269d9') {
+                phoneNumber = `+85620${phoneNumber}`;
+                findUuidByPhoneNumberOnUserManager(phoneNumber).then(r_owneruuid => {
+                    res.locals["ownerUuid"] = r_owneruuid.uuid;
+                    next();
+                });
+            } else {
+                res.locals["ownerUuid"] = uuid;
+                next();
+            }
+        })
+            .catch((e) => {
+                console.log(e);
+                res.status(400).end();
+            });
+
+    } catch (error) {
+        console.log(error);
+
+        res.status(400).end();
+    }
+}

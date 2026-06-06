@@ -105,16 +105,19 @@
         <ion-icon style="color: white;" name="cart-outline"></ion-icon>
       </div>
     </a> -->
-    <a (click)="showGetCouponPromotion()" href="javascript:void(0)"
-      class="item-green control-menu menu-whatsapp active">
-      <div class=" text">ຮັບລາງວັນ</div>
+    <a (click)="showGetCouponPromotion()" href="javascript:void(0)">
+      <!-- <div class=" text">ຮັບລາງວັນ</div>
       <div class="icon">
         <ion-icon style="color: white;" name="logo-whatsapp"></ion-icon>
+      </div> -->
+      <div class="qr-container">
+        <img src="../../assets//redeemqr.gif" alt="HM Coupon QR Code" class="qr-gif">
+        <!-- <p class="redeem-text">REDEEM</p> -->
       </div>
     </a>
     <a (click)="loadPaidBills()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
       <div class="text" style="color: black;">ເຄື່ອງບໍ່ທັນຕົກ </div>
-      <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">1000ກີບ
+      <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">
         <!-- {{this.apiService.pb.length}} -->
       </ion-badge>
       <div class="icon">
