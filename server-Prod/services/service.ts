@@ -883,10 +883,10 @@ export function calculateTicketValue(
 
     return ticketValue;
 }
-export async function promotioPercentage(data: any, token: string):Promise<any> {
+export async function promotioPercentage(data: any, token: string): Promise<any> {
     try {
         const LAABX_GAME_URL = 'https://laabx-game-api.laoapps.com/api/v1/';
-        return axios.post(LAABX_GAME_URL + 'gamecenter/promotioPercentage', data, { headers: {'Content-Type': 'application/json', 'token': token}, timeout: 25000 }); // add only the token (Content-Type already in instance) and override timeout only for this request
+        return axios.post(LAABX_GAME_URL + 'gamecenter/promotioPercentage', data, { headers: { 'Content-Type': 'application/json', 'token': token }, timeout: 25000 }); // add only the token (Content-Type already in instance) and override timeout only for this request
     } catch (error) {
         console.log('promotioPercentageERROR', error);
         return new Promise((resolve, reject) => {
@@ -895,12 +895,12 @@ export async function promotioPercentage(data: any, token: string):Promise<any> 
     }
 }
 
-export async function sendCouponeToUser(phoneNumber:string,amount:number=0,coin='lak'):Promise<any> {
+export async function sendCouponeToUser(phoneNumber: string, amount: number = 0, coin = 'Lak'): Promise<any> {
     return axios.post(`${process.env.LAKCOUPON}`, {
-                    phoneNumber: phoneNumber,
-                    amount: amount,
-                    coin
-                }).catch(e => {
-                    console.error("[Blockchain Redeem] Callback error:", e);
-                });
+        phoneNumber: phoneNumber,
+        amount: amount,
+        coin
+    }).catch(e => {
+        console.error("[Blockchain Redeem] Callback error:", e);
+    });
 }

@@ -173,7 +173,7 @@ export class BlockchainValueAPI {
                 const { uuid } = req.body;
                 const ownerUuid = res.locals["ownerUuid"];
 
-                console.log('----->redeem-coupon BODY :', req.body);
+                // console.log('----->redeem-coupon BODY :', req.body);
 
 
                 if (!uuid) {
@@ -222,7 +222,7 @@ export class BlockchainValueAPI {
                     await sendCouponeToUser(phoneNumber, clearResult.amount);
                 }
 
-                console.log("[Blockchain Redeem] Result:", result);
+                // console.log("[Blockchain Redeem] Result:", result);
                 res.send(PrintSucceeded('redeem-coupon', result, EMessage.succeeded));
             } catch (error: any) {
                 console.error("[Blockchain] redeem-coupon error:", error);
@@ -288,7 +288,7 @@ export class BlockchainValueAPI {
 
 export function checkToken(req: Request, res: Response, next: NextFunction) {
     try {
-        const token = req.body.token;
+        const token = req.headers.token.toString();
         if (!token) throw new Error(EMessage.tokenNotFound);
 
         findRealDB(token)
@@ -309,7 +309,7 @@ export function checkToken(req: Request, res: Response, next: NextFunction) {
 export function checkSuperAdmin(req: Request, res: Response, next: NextFunction) {
     try {
         // console.log('checkSupAdmin');
-        const token = req.body.token;
+        const token = req.headers.token.toString();
         const secret = req.body.secret;
         let phoneNumber = req.body.shopPhonenumber;
         if (!token) throw new Error(EMessage.tokenNotFound);
