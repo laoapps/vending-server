@@ -55,6 +55,8 @@ import {
     storePaymentTransaction,
     markPaymentAsPaid,
     monitorUnpaidPayments,
+    calculateTicketValue,
+    promotioPercentage,
 } from "../services/service";
 import {
     EClientCommand,
@@ -163,6 +165,7 @@ import { apiQueue } from "./queue.services";
 import { getTransactionsLaoQRFromRedis, removeTransactionLaoQRFromRedis, saveTransactionLaoQrToRedis } from "../services/laoqrredis";
 import { ProductCreditFactory } from "../entities/productcredit.entity";
 import { BlockchainValueAPI } from "./blockchain.routes";
+import { addValue } from "../controllers/blockchain.controller";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -8251,42 +8254,74 @@ export class InventoryZDM8 implements IBaseClass {
                     setImmediate(async () => {
                         try {
                             let resultPhone: any = {};
-
-                            try {
-                                const redisData = await redisClient.get(transactionID + EMessage.TransactionPhone);
-                                if (redisData) {
-                                    try {
-                                        resultPhone = JSON.parse(redisData);
-                                    } catch (jsonErr) {
-                                        console.warn("Redis JSON parse error:", jsonErr);
-                                        resultPhone = {};
-                                    }
-                                }
-                            } catch (redisErr) {
-                                console.warn("Redis unavailable:", redisErr);
-                                resultPhone = {};
-                            }
-
-                            if (resultPhone?.phone) {
-                                const phone = "+85620" + resultPhone.phone;
-                                const body = {
-                                    name: phone,
-                                    phoneNumber: phone,
-                                    username: phone,
-                                    password: "1234567890", // อย่าใช้ plain number เป็น password ถ้าไม่จำเป็น
-                                    googleToken: { phoneNumber: phone, otp: "111111" },
-                                    orderBill: resultPhone?.orderBill ?? [],
-                                    trandID: transactionID,
-                                };
-
-                                const url = "https://hangmistore-api.laoapps.com/api/v1/authUM/register4";
-
+                            const redisData = await redisClient.get(transactionID + EMessage.TransactionPhone);
+                            if (redisData) {
                                 try {
-                                    await axios.post(url, body, { timeout: 10000 }); // กัน server ช้า
-                                } catch (apiErr) {
-                                    console.error("API request failed:", apiErr.message);
+                                    resultPhone = JSON.parse(redisData);
+                                } catch (jsonErr) {
+                                    console.warn("Redis JSON parse error:", jsonErr);
+                                    resultPhone = {};
                                 }
                             }
+                            const percentage = await promotioPercentage({ action: 'get', data: { promotionname: 'vendingLAK' } }, '');
+
+                            const amount = calculateTicketValue(resultPhone?.orderBill, 100_000, Number.isNaN(percentage) ? 0 : percentage?.data?.promotionvalue || 0);
+                            /// coupon
+                            const result = await addValue(
+                                bill.machineId,
+                                ownerUuid,
+                                amount,
+                                "coupon",
+                                `api:LAOQRCALLBACK`
+                            );
+                            console.log('addValue result', result);
+                            console.log('amount', {
+                                m: bill.machineId,
+                                ow: ownerUuid,
+                                am: amount,
+                                c: "coupon",
+                                a: `api:LAOQRCALLBACK`
+                            });
+
+
+
+                            // let resultPhone: any = {};
+
+                            // try {
+                            //     const redisData = await redisClient.get(transactionID + EMessage.TransactionPhone);
+                            //     if (redisData) {
+                            //         try {
+                            //             resultPhone = JSON.parse(redisData);
+                            //         } catch (jsonErr) {
+                            //             console.warn("Redis JSON parse error:", jsonErr);
+                            //             resultPhone = {};
+                            //         }
+                            //     }
+                            // } catch (redisErr) {
+                            //     console.warn("Redis unavailable:", redisErr);
+                            //     resultPhone = {};
+                            // }
+
+                            // if (resultPhone?.phone) {
+                            //     const phone = "+85620" + resultPhone.phone;
+                            //     const body = {
+                            //         name: phone,
+                            //         phoneNumber: phone,
+                            //         username: phone,
+                            //         password: "1234567890", // อย่าใช้ plain number เป็น password ถ้าไม่จำเป็น
+                            //         googleToken: { phoneNumber: phone, otp: "111111" },
+                            //         orderBill: resultPhone?.orderBill ?? [],
+                            //         trandID: transactionID,
+                            //     };
+
+                            //     const url = "https://hangmistore-api.laoapps.com/api/v1/authUM/register4";
+
+                            //     try {
+                            //         await axios.post(url, body, { timeout: 10000 }); // กัน server ช้า
+                            //     } catch (apiErr) {
+                            //         console.error("API request failed:", apiErr.message);
+                            //     }
+                            // }
                         } catch (errorTopUp) {
                             console.error("Unexpected error give topup:", errorTopUp);
                         }

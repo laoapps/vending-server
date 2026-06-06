@@ -3,7 +3,8 @@ import {
     addValue,
     deductValue,
     clearValueToZero,
-    findOrCreateValueRecord
+    findOrCreateValueRecord,
+    verifyHashChain
 } from "../controllers/blockchain.controller";
 import { findPhoneNumberByUuidOnUserManager, findRealDB, PrintError, PrintSucceeded, redisClient, sendCouponeToUser } from "../services/service"; // Your existing redisClient
 import { v4 as uuidv4 } from "uuid";
@@ -138,7 +139,9 @@ export class BlockchainValueAPI {
                 }
 
                 const uuid = uuidv4();
-                const baseUrl = process.env.SERVER_URL + "/coupon/redeem-coupon";
+                // const baseUrl = process.env.SERVER_URL + "/coupon/redeem-coupon";
+                const baseUrl = 'https://tvending4.khamvong.com' + "/coupon/redeem-coupon";
+
 
                 // Store minimal mapping in Redis (machineId:ownerUuid)
                 await redisClient.setex(
@@ -251,16 +254,36 @@ export class BlockchainValueAPI {
 
                 const record = await findOrCreateValueRecord(m.machineId, m.ownerUuid);
 
+                const verification = verifyHashChain(record);
+
                 res.send(PrintSucceeded('get-value', {
                     machineId: m.machineId,
                     ownerUuid: m.ownerUuid,
                     currentValue: typeof record.value === "string" ? parseFloat(record.value) : record.value,
+                    verification: verification,           // ← Add this
                     data: record.data,
                     updatedAt: record.updatedAt,
                 }, EMessage.succeeded));
 
             } catch (error: any) {
                 res.send(PrintError('get-value', error.message, EMessage.error));
+            }
+        });
+        app.get(`${this.path} / verify`, async (req, res) => {
+            try {
+                const { machineId, ownerUuid } = req.query as any;
+
+                const record = await findOrCreateValueRecord(machineId, ownerUuid);
+                const result = verifyHashChain(record);
+
+                res.send(PrintSucceeded('verify-blockchain', {
+                    machineId,
+                    ownerUuid,
+                    ...result,
+                    totalTransactions: record.data?.transactions?.length || 0
+                }, EMessage.succeeded));
+            } catch (error: any) {
+                res.send(PrintError('verify-blockchain', error.message, EMessage.error));
             }
         });
     }

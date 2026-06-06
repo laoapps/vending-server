@@ -18,7 +18,53 @@ export interface ValueTransaction {
   actor?: string;
   hash: string;
 }
+export const verifyHashChain = (record: any): {
+  valid: boolean;
+  brokenAt?: number;
+  reason?: string
+} => {
+  const data = record?.data || {};
+  const transactions: ValueTransaction[] = data.transactions || [];
 
+  if (transactions.length === 0) {
+    return { valid: true }; // No transactions yet = valid
+  }
+
+  let prevHash = '';
+
+  for (let i = 0; i < transactions.length; i++) {
+    const tx = transactions[i];
+
+    // Rebuild transaction without the stored hash
+    const txWithoutHash = {
+      ts: tx.ts,
+      type: tx.type,
+      amount: tx.amount,
+      previousValue: tx.previousValue,
+      newValue: tx.newValue,
+      note: tx.note,
+      actor: tx.actor,
+    };
+
+    // Recompute hash
+    const expectedHash = crypto
+      .createHash('sha256')
+      .update(prevHash + JSON.stringify(txWithoutHash))
+      .digest('hex');
+
+    if (tx.hash !== expectedHash) {
+      return {
+        valid: false,
+        brokenAt: i,
+        reason: `Hash mismatch at transaction #${i}. Expected: ${expectedHash}, Found: ${tx.hash}`,
+      };
+    }
+
+    prevHash = tx.hash; // Move to next link in chain
+  }
+
+  return { valid: true };
+};
 export const findOrCreateValueRecord = async (machineId: string, ownerUuid: string) => {
   let record = await MachineBlockchainValueEntity.findOne({ where: { machineId, ownerUuid } });
   if (!record) {
