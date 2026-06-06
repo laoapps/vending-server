@@ -38,26 +38,8 @@ export class BillNotDropPage implements OnInit {
 
   async pay(item: any) {
     try {
-      // Generate QR Code data URL from the string in the bill item
-      const dataUrl = await QRCode.toDataURL(item.qr);
-      
-      const m = await this.modalCtrl.create({
-        component: QrpayPage,
-        componentProps: {
-          encodedData: dataUrl,
-          amount: item.totalvalue,
-          ref: item.paymentref
-        },
-        cssClass: 'dialog-fullscreen'
-      });
-      
-      await m.present();
-      
-      // If payment is successful, we might want to refresh the list or close this modal
-      const { data } = await m.onDidDismiss();
-      if (data && data.success) {
-        this.loadBillNotPaid();
-      }
+      console.log('-----> ITEM :', item);
+      // const response = await this.apiService.checkPaidAndDrop('');
     } catch (error) {
       console.error('Error opening payment modal:', error);
     }

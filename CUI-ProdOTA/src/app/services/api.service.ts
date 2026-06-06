@@ -1839,6 +1839,25 @@ export class ApiService {
     }) as Promise<AxiosResponse<IResModel>>;
   }
 
+
+  checkPaidAndDrop(transactionID: string) {
+    const url = `/checkPaidAndDrop`;
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+      ownerUuid: this.ownerUuid,
+      transactionID
+    };
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
   // if there is a new ads then remove the old ones 
   // loadAds(existIds: Array<number>) {
   //   return axios.post<IResModel>(

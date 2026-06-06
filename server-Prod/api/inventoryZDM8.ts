@@ -5617,6 +5617,28 @@ export class InventoryZDM8 implements IBaseClass {
 
             )
 
+            router.post(this.path + '/checkPaidAndDrop',
+                async (req, res) => {
+                    try {
+                        const transactionID = req.body.transactionID;
+                        if (!transactionID) {
+                            res.send(PrintError("checkPaidMmoney", [], EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                            return;
+                        };
+                        const result = await CheckMmoneyPaid(transactionID);
+                        if (result.status == 0) {
+                            res.send(PrintError("checkPaidMmoney", result.message, EMessage.error, returnLog(req, res, true)));
+                            return;
+                        }
+                        return res.send(PrintSucceeded("report", result.message, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log('reportBillNotPaid :', error);
+                        res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+
+            )
+
 
             router.post(this.path + '/sendDropAdmin',
                 this.checkSuperAdmin,
