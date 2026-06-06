@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { GetCouponPromotionPageRoutingModule } from './get-coupon-promotion-routing.module';
 
 import { GetCouponPromotionPage } from './get-coupon-promotion.page';
+import { QrCodeModule } from 'ng-qrcode';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    GetCouponPromotionPageRoutingModule
+    GetCouponPromotionPageRoutingModule,
+    QrCodeModule
   ],
   declarations: [GetCouponPromotionPage]
 })

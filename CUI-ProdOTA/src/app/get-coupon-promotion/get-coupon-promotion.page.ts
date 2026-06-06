@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { ModalController } from '@ionic/angular';
 
@@ -7,7 +7,7 @@ import { ModalController } from '@ionic/angular';
   templateUrl: './get-coupon-promotion.page.html',
   styleUrls: ['./get-coupon-promotion.page.scss'],
 })
-export class GetCouponPromotionPage implements OnInit {
+export class GetCouponPromotionPage implements OnInit, OnDestroy {
 
   constructor(
     private apiService: ApiService,
@@ -16,13 +16,33 @@ export class GetCouponPromotionPage implements OnInit {
 
   qrCode: string = '';
   balanceValue: number = 0;
+  private autoDismissTimer: any;
 
 
   ngOnInit() {
     this.loadCoupon();
+    this.startAutoDismissTimer();
+  }
+
+  ngOnDestroy() {
+    this.clearTimer();
+  }
+
+  startAutoDismissTimer() {
+    this.clearTimer();
+    this.autoDismissTimer = setTimeout(() => {
+      this.dismiss();
+    }, 60000); // 1 minute
+  }
+
+  clearTimer() {
+    if (this.autoDismissTimer) {
+      clearTimeout(this.autoDismissTimer);
+    }
   }
 
   dismiss() {
+    this.clearTimer();
     this.modalCtrl.dismiss();
   }
   async loadCoupon() {
@@ -33,7 +53,6 @@ export class GetCouponPromotionPage implements OnInit {
         this.apiService.simpleMessage('ບໍ່ສາມາດຮັບລາວວັນໄດ້');
         return;
       }
-      // console.log('-----> RESPONSE :', response.data);
       const qrData = {
         type: response.data.data?.type,
         uuid: response.data.data?.uuid,
@@ -41,9 +60,6 @@ export class GetCouponPromotionPage implements OnInit {
       };
       this.balanceValue = response.data.data?.record?.value ?? 0;
       this.qrCode = JSON.stringify(qrData);
-      console.log('-----> QR :', this.qrCode);
-      console.log('-----> BALANCE  :', this.balanceValue);
-
     } catch (error) {
 
     }

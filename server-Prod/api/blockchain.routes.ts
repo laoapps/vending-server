@@ -173,6 +173,9 @@ export class BlockchainValueAPI {
                 const { uuid } = req.body;
                 const ownerUuid = res.locals["ownerUuid"];
 
+                console.log('----->redeem-coupon BODY :', req.body);
+
+
                 if (!uuid) {
                     return res.send(PrintError('redeem-coupon', 'uuid is required', EMessage.error));
                 }

@@ -1,13 +1,48 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>getCouponPromotion</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" (click)="startAutoDismissTimer()">
+  <div class="promotion-container">
+    <div class="header-section">
+      <h1 class="title">ສະແກນຮັບໂປຣໂມຊັ່ນ</h1>
+      <p class="subtitle">Scan for Promotion</p>
+    </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">getCouponPromotion</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <div class="qr-card">
+      <div class="qr-wrapper" *ngIf="qrCode; else loading">
+        <div class="qr-frame">
+          <qr-code [value]="qrCode" [size]="400" errorCorrectionLevel="H" darkColor="#000000" lightColor="#FFFFFF"
+            [margin]="2">
+          </qr-code>
+        </div>
+        <div class="value-badge" *ngIf="balanceValue > 0">
+          <span class="label">ມູນຄ່າ</span>
+          <span class="amount">{{ balanceValue | number }}</span>
+          <span class="currency">ກີບ</span>
+        </div>
+      </div>
+
+      <ng-template #loading>
+        <div class="loading-state">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>ກຳລັງໂຫລດ...</p>
+        </div>
+      </ng-template>
+
+      <div class="instruction-section">
+        <div class="instruction-item">
+          <ion-icon name="phone-portrait-outline"></ion-icon>
+          <p>ໃຊ້ໂທລະສັບຂອງທ່ານສະແກນ QR Code</p>
+        </div>
+        <div class="instruction-item">
+          <ion-icon name="gift-outline"></ion-icon>
+          <p>ເພື່ອຮັບສ່ວນຫຼຸດ ຫຼື ຄູປອງພິເສດ</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-section">
+      <button class="close-btn" (click)="dismiss()">
+        <ion-icon name="close-circle-outline"></ion-icon>
+        <span>ປິດ / Close</span>
+      </button>
+    </div>
+  </div>
 </ion-content>
