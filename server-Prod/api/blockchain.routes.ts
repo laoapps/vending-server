@@ -136,8 +136,8 @@ export class BlockchainValueAPI {
                 }
 
                 const uuid = uuidv4();
-                // const baseUrl = process.env.SERVER_URL + "/coupon/redeem-coupon";
-                const baseUrl = 'https://tvending4.khamvong.com' + "/coupon/redeem-coupon";
+                const baseUrl = process.env.SERVER_URL + "/coupon/redeem-coupon";
+                // const baseUrl = 'https://tvending4.khamvong.com' + "/coupon/redeem-coupon";
 
 
                 // Store minimal mapping in Redis (machineId:ownerUuid)
