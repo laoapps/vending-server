@@ -112,7 +112,7 @@ services:
       # - EPIN_URL=http://host.docker.internal:30001
       # - TEST_CALLBACK:http://host.docker.internal:9006
       # - USERMANAGER_HOST=http://host.docker.internal:4500
-      - LAKCOUPON = https://hangmistore-api.laoapps.com/api/v1/authUM/vendingtolakwallet
+      - LAKCOUPON=https://hangmistore-api.laoapps.com/api/v1/authUM/vendingtolakwallet
       - LAAB_URL=https://laab-api.laoapps.com
       - EPIN_URL=https://epin-api.laoapps.com
       - TEST_CALLBACK=http://laoapps.com:9006

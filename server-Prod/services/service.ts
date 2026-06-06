@@ -897,9 +897,13 @@ export async function promotioPercentage(data: any, token: string): Promise<any>
 
 export async function sendCouponeToUser(phoneNumber: string, amount: number = 0, coin = 'Lak'): Promise<any> {
     return axios.post(`${process.env.LAKCOUPON}`, {
-        phoneNumber: phoneNumber,
+        phoneNumber: phoneNumber.slice(-8),
         amount: amount,
         coin
+    }, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
     }).catch(e => {
         console.error("[Blockchain Redeem] Callback error:", e);
     });

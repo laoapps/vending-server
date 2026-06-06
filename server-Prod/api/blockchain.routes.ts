@@ -219,7 +219,9 @@ export class BlockchainValueAPI {
 
                 // Send coupon to user (fire and forget)
                 if (phoneNumber) {
-                    await sendCouponeToUser(phoneNumber, clearResult.amount);
+                    await sendCouponeToUser((phoneNumber?.phoneNumber + ''), clearResult.amount);
+                    // console.log('-----> logLaabx :', logLaabx);
+
                 }
 
                 // console.log("[Blockchain Redeem] Result:", result);
