@@ -1,70 +1,13 @@
-<ion-content [fullscreen]="true" class="promotion-page">
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>getCouponPromotion</ion-title>
+  </ion-toolbar>
+</ion-header>
 
-  <div class="promotion-container">
-
-    <!-- Close -->
-    <ion-button fill="clear" class="close-btn" (click)="dismiss()">
-      ✕
-    </ion-button>
-
-    <!-- Gift Icon -->
-    <div class="gift-box">
-      🎁
-    </div>
-
-    <!-- Title -->
-    <h1 class="title">
-      ຮັບຄູປອງສ່ວນຫຼຸດ
-    </h1>
-
-    <p class="subtitle">
-      Scan QR Code ເພື່ອຮັບ Promotion ຈາກຕູ້ອັດຕະໂນມັດ
-    </p>
-
-    <!-- Reward -->
-    <div class="reward-card">
-      <div class="reward-label">
-        ມູນຄ່າຄູປອງ
-      </div>
-
-      <div class="reward-value">
-        {{ balanceValue | number }}
-      </div>
-
-      <div class="reward-unit">
-        LAK
-      </div>
-    </div>
-
-    <!-- QR -->
-    <div class="qr-wrapper" *ngIf="qrCode">
-
-      <qrcode [qrdata]="qrCode" [width]="280" [errorCorrectionLevel]="'M'">
-      </qrcode>
-
-    </div>
-
-    <!-- Instruction -->
-    <div class="instruction">
-
-      <div class="step">
-        1️⃣ ເປີດກ້ອງ ຫຼື Messenger
-      </div>
-
-      <div class="step">
-        2️⃣ Scan QR Code
-      </div>
-
-      <div class="step">
-        3️⃣ ກົດຮັບ Coupon
-      </div>
-
-    </div>
-
-    <div class="expire-note">
-      * Coupon ສາມາດໃຊ້ສຳລັບການຊື້ຄັ້ງຕໍ່ໄປ
-    </div>
-
-  </div>
-
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">getCouponPromotion</ion-title>
+    </ion-toolbar>
+  </ion-header>
 </ion-content>
