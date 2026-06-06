@@ -30,6 +30,7 @@ import { initialize } from "./services/topup.service";
 import { createLogger, format, transports } from 'winston';
 import axios from "axios";
 import { apiQueue } from "./api/queue.services";
+import { BlockchainValueAPI } from "./api/blockchain.routes";
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
 // const env = JSON.parse(f); //../
@@ -130,6 +131,15 @@ CreateDatabase("")
       }
     })
 
+
+
+    /// blockchain
+    new BlockchainValueAPI(app);
+
+
+
+
+    ///
 
     // const wss = new WebSocket.Server({ server });
 
@@ -239,6 +249,7 @@ CreateDatabase("")
         res.send(PrintError(d.command, error, EMessage.error));
       }
     });
+
 
 
     const server = http.createServer(app);

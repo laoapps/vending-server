@@ -853,3 +853,54 @@ export async function monitorUnpaidPayments(machineId: string) {
         throw error;
     }
 }
+
+export function calculateTicketValue(
+    items: any[],
+    maxVal: number = 100000,
+    percentage: number = 0 // percentage as whole number (e.g. 1 = 1%)
+) {
+    // convert whole-number percentage to actual percent
+    const pct = percentage / 100;
+
+    let ticketValue = 0;
+
+    for (const item of items) {
+        const qty = item.quantity || 1;
+        const value = item.value || 0;
+
+        // Base contribution
+        let baseContribution = Math.min(value, maxVal) * pct * qty;
+
+        // Extra contribution if value exceeds maxVal
+        if (value > maxVal) {
+            const excess = value - maxVal;
+            const extraRanges = Math.ceil(excess / maxVal);
+            baseContribution += (extraRanges * maxVal * pct) * qty;
+        }
+
+        ticketValue += baseContribution;
+    }
+
+    return ticketValue;
+}
+export async function promotioPercentage(data: any, token: string):Promise<any> {
+    try {
+        const LAABX_GAME_URL = 'https://laabx-game-api.laoapps.com/api/v1/';
+        return axios.post(LAABX_GAME_URL + 'gamecenter/promotioPercentage', data, { headers: {'Content-Type': 'application/json', 'token': token}, timeout: 25000 }); // add only the token (Content-Type already in instance) and override timeout only for this request
+    } catch (error) {
+        console.log('promotioPercentageERROR', error);
+        return new Promise((resolve, reject) => {
+            reject(error);
+        });
+    }
+}
+
+export async function sendCouponeToUser(phoneNumber:string,amount:number=0,coin='lak'):Promise<any> {
+    return axios.post(`${process.env.LAKCOUPON}`, {
+                    phoneNumber: phoneNumber,
+                    amount: amount,
+                    coin
+                }).catch(e => {
+                    console.error("[Blockchain Redeem] Callback error:", e);
+                });
+}

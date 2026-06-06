@@ -33,6 +33,7 @@ import { CallbacklogFactory, CallbacklogStatic } from "./callbacklogs.entity";
 import { MachineBlockFactory, MachineBlockStatic } from "./machineblock.entity";
 import { MachineFactory, MachineStatic } from "./machine.entity";
 import { TicketFactory, TicketStatic } from "./tickete.entity";
+import { MachineBlockchainValue, MachineBlockchainValueFactory, MachineBlockchainValueStatic } from '../entities/blockchain.entity';
 
 
 export let dbConnection: sequelize.Sequelize;
@@ -81,8 +82,14 @@ export let BundleEntity: BundleStatic;
 export let MachineBlockEntity: MachineBlockStatic;
 export let MachineEntity: MachineStatic;
 export let TicketEntity: TicketStatic;
+export let MachineBlockchainValueEntity:  MachineBlockchainValueStatic;
 
 export const initDB = async () => {
+    MachineBlockchainValueEntity = MachineBlockchainValueFactory(EEntity.MachineBlockChain,dbConnection);
+    MachineBlockchainValueEntity.sync().then(r => {
+        console.log('MachineBlockchainValueEntity synced', r);
+    });
+
     TicketEntity = TicketFactory(dbConnection);
     TicketEntity.sync().then(r => {
         console.log('TicketEntity synced', r);
