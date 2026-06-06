@@ -97,7 +97,6 @@
 
 <ion-content (click)="reloadAutoPayment()" [scrollEvents]="true" (ionScroll)="toggleWebviewTab($event)"
   [fullscreen]="true" class="tab1-container">
-
   <span class="btn-abs-list">
     <!-- <a *ngIf="apiService.isDropStock == true" (click)="showBills()" href="javascript:void(0)"
       class="item-deep-blue menu-shopping-cart attention-grabber">
@@ -106,11 +105,17 @@
         <ion-icon style="color: white;" name="cart-outline"></ion-icon>
       </div>
     </a> -->
-
+    <a (click)="showGetCouponPromotion()" href="javascript:void(0)"
+      class="item-green control-menu menu-whatsapp active">
+      <div class=" text">ຮັບລາງວັນ</div>
+      <div class="icon">
+        <ion-icon style="color: white;" name="logo-whatsapp"></ion-icon>
+      </div>
+    </a>
     <a (click)="loadPaidBills()" href="javascript:void(0)" class="item-deep-blue menu-shopping-cart">
       <div class="text" style="color: black;">ເຄື່ອງບໍ່ທັນຕົກ </div>
-      <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">
-        {{this.apiService.pb.length}}
+      <ion-badge color="danger" style="position: absolute; top: -5px; right: -10px;">1000ກີບ
+        <!-- {{this.apiService.pb.length}} -->
       </ion-badge>
       <div class="icon">
         <ion-icon style="color: black;" name="cart-outline"></ion-icon>

@@ -1873,6 +1873,23 @@ export class ApiService {
     }) as Promise<AxiosResponse<IResModel>>;
   }
 
+
+
+  loaCouponPromotion() {
+    const url = `/coupon/generate-qr-coupon`;
+    const req = {
+      token: cryptojs
+        .SHA256(this.machineId.machineId + this.machineId.otp)
+        .toString(cryptojs.enc.Hex),
+    };
+    return apiQueue.add(() => {
+      return this.apiServer.post<IResModel>(url, req, {
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
+
   // if there is a new ads then remove the old ones 
   // loadAds(existIds: Array<number>) {
   //   return axios.post<IResModel>(

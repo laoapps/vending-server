@@ -100,6 +100,7 @@ import { BlockchainDbService } from '../blockchain-db';
 import { NumpadModalComponent } from '../components/numpad-modal/numpad-modal.component';
 import { QrconfigMachinePage } from '../qrconfig-machine/qrconfig-machine.page';
 import { BillNotDropPage } from '../bill-not-drop/bill-not-drop.page';
+import { GetCouponPromotionPage } from '../get-coupon-promotion/get-coupon-promotion.page';
 
 @Component({
   selector: 'app-tab1',
@@ -2600,6 +2601,18 @@ export class Tab1Page implements OnDestroy {
   //     }
   //   })
   // }
+
+
+  async showGetCouponPromotion() {
+    try {
+      this.apiService.showModal(GetCouponPromotionPage).then(r => {
+        r?.present();
+      })
+    } catch (error) {
+
+    }
+  }
+
   loadOnlineMachine() {
     this.apiService.loadOnlineMachine().then((rx) => {
       const r = rx.data;

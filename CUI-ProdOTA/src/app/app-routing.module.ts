@@ -209,6 +209,10 @@ const routes: Routes = [
   {
     path: 'bill-not-drop',
     loadChildren: () => import('./bill-not-drop/bill-not-drop.module').then( m => m.BillNotDropPageModule)
+  },
+  {
+    path: 'get-coupon-promotion',
+    loadChildren: () => import('./get-coupon-promotion/get-coupon-promotion.module').then( m => m.GetCouponPromotionPageModule)
   }
 ];
 @NgModule({

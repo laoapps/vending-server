@@ -20,7 +20,7 @@ import { dbConnection } from "../entities";
  *   new BlockchainValueAPI(app);
  */
 export class BlockchainValueAPI {
-    path = 'coupon';
+    path = '/coupon';
     machineClientlist = MachineClientIDFactory(
         EEntity.machineclientid,
         dbConnection
@@ -114,7 +114,11 @@ export class BlockchainValueAPI {
         // === Generate QR Coupon (stores in your Redis) ===
         app.post(`${this.path}/generate-qr-coupon`, async (req, res) => {
             try {
-                const { token } = req.body; // SHA256(machineId + otp)
+                // const { token } = req.body;
+                const token = req.body.token;
+                // console.log('-----> BODY :', req.body);
+                // console.log('query', req.query);
+
 
                 if (!token) {
                     return res.send(PrintError('generate-qr-coupon', 'token is required', EMessage.error));

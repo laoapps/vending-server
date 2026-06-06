@@ -1,0 +1,112 @@
+.promotion-page {
+
+  --background: linear-gradient(
+    180deg,
+    #ff8a00 0%,
+    #ffb300 100%
+  );
+
+  .promotion-container {
+    min-height: 100%;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 20px;
+  }
+
+  .gift-box {
+    font-size: 60px;
+    margin-bottom: 12px;
+    animation: bounce 2s infinite;
+  }
+
+  .title {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .subtitle {
+    color: rgba(255,255,255,.95);
+    font-size: 15px;
+    margin-bottom: 24px;
+  }
+
+  .reward-card {
+    background: white;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  }
+
+  .reward-label {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .reward-value {
+    font-size: 42px;
+    font-weight: 800;
+    color: #ff6b00;
+    margin-top: 6px;
+  }
+
+  .reward-unit {
+    color: #888;
+    font-size: 14px;
+  }
+
+  .qr-wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+
+  .instruction {
+    width: 100%;
+    max-width: 320px;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 16px;
+    color: white;
+  }
+
+  .step {
+    padding: 6px 0;
+    font-size: 15px;
+  }
+
+  .expire-note {
+    margin-top: 16px;
+    color: rgba(255,255,255,.85);
+    font-size: 12px;
+  }
+}
+
+@keyframes bounce {
+  0%,100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}

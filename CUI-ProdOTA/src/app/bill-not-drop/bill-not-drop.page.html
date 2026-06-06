@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="primary">
+  <ion-toolbar color="danger">
     <ion-title>ລາຍການສັ່ງຊື້ສິນຄ້າ</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismiss()">
@@ -27,7 +27,7 @@
               <div class="info-row">
                 <ion-icon name="cube-outline"></ion-icon>
                 <div class="products">
-                  <ion-badge color="secondary" *ngFor="let sale of item.vendingsales" class="product-badge">
+                  <ion-badge color="warning" *ngFor="let sale of item.vendingsales" class="product-badge">
                     {{ sale.stock.name }}
                   </ion-badge>
                 </div>

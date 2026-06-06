@@ -32,7 +32,7 @@
   .amount {
     font-size: 2rem;
     font-weight: bold;
-    color: var(--ion-color-dark);
+    color: var(--ion-color-danger);
   }
 }
 
@@ -45,6 +45,7 @@
   ion-icon {
     margin-right: 8px;
     font-size: 1.2rem;
+    color: var(--ion-color-warning);
   }
 
   .value {
@@ -63,6 +64,7 @@
   padding: 6px 12px;
   font-size: 0.9rem;
   border-radius: 8px;
+  color: var(--ion-color-danger-contrast);
 }
 
 .bill-action {
@@ -75,7 +77,7 @@
   height: 60px;
   min-width: 150px;
   font-size: 1.3rem;
-  box-shadow: 0 4px 15px rgba(235, 68, 90, 0.3);
+  box-shadow: 0 4px 15px rgba(var(--ion-color-danger-rgb), 0.3);
 }
 
 .no-data-container {
@@ -90,6 +92,7 @@
     font-size: 80px;
     margin-bottom: 20px;
     opacity: 0.5;
+    color: var(--ion-color-danger);
   }
 
   h3 {
