@@ -14,6 +14,7 @@ import { MachineSaleFactory } from '../entities/machinesale.entity';
 import https from 'https';
 import { hashSync } from 'bcryptjs';
 import { VendingEventLogFactory } from '../entities/vendingevents.entity';
+import { AnomalyDetector } from './anomalyDetection';
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
@@ -43,6 +44,27 @@ export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort);
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
+
+
+
+
+// implement later here 
+
+
+export const sendExternalNotification = async (notification: any) => {
+    // Call your existing WA / Google notification function here
+    // await yourWhatsAppService.send(...)
+};
+
+
+
+
+
+
+
+
+
+
 export function returnLog(req: Request, res: Response, error = false) {
     return { superadmin: res.locals['superadmin'] + '', subadmin: res.locals['subadmin'] + '', ownerUuid: res.locals['ownerUuid'] + '', url: req.protocol + "://" + req.get('host') + req.originalUrl, body: req.body, error }
 }
@@ -112,6 +134,31 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
     }, delay ? 1000 : 0);
 
 }
+export function wsSendAdmins(uuid: string = EMessage.all, wss: WebSocketServer.Server, comm: string, d: any, delay: boolean = false) {
+    setTimeout(() => {
+        wss.clients.forEach(ws => {
+            if (ws) {
+                if (ws.readyState === 1) {
+                    if (ws['adminlogin'] && uuid == EMessage.all) {
+                        console.log('sending to adminlogin', ws['ownerUuid']);
+                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded, null)));
+                    } else if (ws['adminlogin'] && ws['ownerUuid'] + '' == uuid) {
+                        console.log('sending to ', uuid);
+                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded, null)));
+                        return;
+                    }
+                }
+                else {
+                    console.log('client ', ws['ownerUuid'], ws.readyState);
+
+                }
+            }
+
+        });
+    }, delay ? 1000 : 0);
+
+}
+
 
 
 // export function xORChecksum(array = new Array<any>()) {
@@ -908,3 +955,6 @@ export async function sendCouponeToUser(phoneNumber: string, amount: number = 0,
         console.error("[Blockchain Redeem] Callback error:", e);
     });
 }
+
+
+
