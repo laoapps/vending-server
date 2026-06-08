@@ -14,6 +14,7 @@ import { MachineSaleFactory } from '../entities/machinesale.entity';
 import https from 'https';
 import { hashSync } from 'bcryptjs';
 import { VendingEventLogFactory } from '../entities/vendingevents.entity';
+import { AnomalyDetector, AnomalyNotification } from './anomalyDetection';
 
 const _default_format = 'YYYY-MM-DD HH:mm:ss';
 export const getNow = () => moment().format(_default_format);
@@ -43,6 +44,71 @@ export const redisClient = new Redis('redis://' + redisHost + ':' + redisPort);
 export enum RedisKeys {
     storenamebyprofileuuid = 'store_name_by_profileuuid_',
 }
+
+
+
+
+// implement later here 
+
+
+const NOTIFY_API_URL = 'https://laab-notify.laoapps.com/api/v1/notifyByBot';
+const BACKEND_KEY = 'babec81f-ce3c-4ca8-a9de-e84b3ef256ab';
+
+export const sendExternalNotification = async (notification: AnomalyNotification): Promise<void> => {
+    try {
+        const { machineId, type, message, severity, data } = notification;
+
+        // Prepare title and body
+        const title = `[${severity.toUpperCase()}] Vending Machine Anomaly - ${machineId}`;
+
+        let body = message;
+
+        // Add extra details if available
+        if (data) {
+            if (data.currentTemp !== undefined) {
+                body += `\nCurrent Temperature: ${data.currentTemp}°C`;
+            }
+            if (data.highTempDurationMinutes !== undefined) {
+                body += `\nHigh Temp Duration: ${data.highTempDurationMinutes} minutes`;
+            }
+            if (data.avgTempLast30Min !== undefined) {
+                body += `\nAvg Temp (last 30 min): ${data.avgTempLast30Min}°C`;
+            }
+        }
+
+        const payload = {
+            topic: `machine_${machineId}`,           // You can change this if needed
+            title: title,
+            body: body,
+        };
+
+        console.log(`[NOTIFY] Sending anomaly notification for machine ${machineId}`);
+
+        const response = await axios.post(NOTIFY_API_URL, payload, {
+            headers: {
+                'backendkey': BACKEND_KEY,
+                'Content-Type': 'application/json',
+            },
+            timeout: 10000, // 10 seconds timeout
+        });
+
+        console.log(`[NOTIFY] Notification sent successfully for machine ${machineId}`, response.data);
+    } catch (error: any) {
+        console.error(`[NOTIFY ERROR] Failed to send notification for machine ${notification.machineId}:`, 
+            error.response?.data || error.message);
+        // Do not throw error — we don't want to break the main flow
+    }
+};
+
+
+
+
+
+
+
+
+
+
 export function returnLog(req: Request, res: Response, error = false) {
     return { superadmin: res.locals['superadmin'] + '', subadmin: res.locals['subadmin'] + '', ownerUuid: res.locals['ownerUuid'] + '', url: req.protocol + "://" + req.get('host') + req.originalUrl, body: req.body, error }
 }
@@ -112,6 +178,31 @@ export function wsSendToClient(wss: WebSocketServer.Server, comm: string, uuid: 
     }, delay ? 1000 : 0);
 
 }
+export function wsSendAdmins(uuid: string = EMessage.all, wss: WebSocketServer.Server, comm: string, d: any, delay: boolean = false) {
+    setTimeout(() => {
+        wss.clients.forEach(ws => {
+            if (ws) {
+                if (ws.readyState === 1) {
+                    if (ws['adminlogin'] && uuid == EMessage.all) {
+                        console.log('sending to adminlogin', ws['ownerUuid']);
+                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded, null)));
+                    } else if (ws['adminlogin'] && ws['ownerUuid'] + '' == uuid) {
+                        console.log('sending to ', uuid);
+                        ws.send(JSON.stringify(PrintSucceeded(comm, d, EMessage.succeeded, null)));
+                        return;
+                    }
+                }
+                else {
+                    console.log('client ', ws['ownerUuid'], ws.readyState);
+
+                }
+            }
+
+        });
+    }, delay ? 1000 : 0);
+
+}
+
 
 
 // export function xORChecksum(array = new Array<any>()) {
@@ -908,3 +999,6 @@ export async function sendCouponeToUser(phoneNumber: string, amount: number = 0,
         console.error("[Blockchain Redeem] Callback error:", e);
     });
 }
+
+
+

@@ -57,6 +57,9 @@ import {
     monitorUnpaidPayments,
     calculateTicketValue,
     promotioPercentage,
+    sendExternalNotification,
+    wsSendToClient,
+    wsSendAdmins,
 } from "../services/service";
 import {
     EClientCommand,
@@ -166,6 +169,7 @@ import { getTransactionsLaoQRFromRedis, removeTransactionLaoQRFromRedis, saveTra
 import { ProductCreditFactory } from "../entities/productcredit.entity";
 import { BlockchainValueAPI } from "./blockchain.routes";
 import { addValue } from "../controllers/blockchain.controller";
+import { AnomalyDetector } from "../services/anomalyDetection";
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -188,6 +192,8 @@ export class InventoryZDM8 implements IBaseClass {
     delayTime = 5000;
     path = "/zdm8";
     production = true;
+
+    anomalyDetector: AnomalyDetector;
 
     //// QR MMONEY HERE
     // public phonenumber = this.production ? '2052396969':'2054445447'// '2058623333' : '2054445447'; //LTC. 2058623333 //2052899515
@@ -370,12 +376,23 @@ export class InventoryZDM8 implements IBaseClass {
 
         this.ssocket = new SocketServerZDM8(this.ports);
         this.wss = wss;
+
+
         try {
             this.initWs(wss);
             // load machine Id
 
             // load production for each machine id
             this.init();
+
+
+            this.anomalyDetector = new AnomalyDetector(
+                this.wss,
+                redisClient,
+                wsSendAdmins
+            );
+
+
             router.get(this.path + "/", async (req, res) => {
                 console.log("TEST IS WORKING");
                 res.send({ data: "test is working" });
@@ -1222,6 +1239,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const mstatus = { temperature: d?.temperature || data, data, device: 'ADH814' } as IMachineStatus;
                         console.log(`-----> ADH814 ${machineId}, status: ${JSON.stringify(mstatus)}`);
 
+
                         try {
                             LogsTempEntity.create({ machineId: machineId, mstatus: mstatus }).then(r => {
                             }).catch(e => {
@@ -1233,7 +1251,14 @@ export class InventoryZDM8 implements IBaseClass {
                         }
 
                         writeMachineStatus(machineId, mstatus)
-
+                        try {
+                            if (typeof mstatus.temperature === 'number') {
+                                this.anomalyDetector.checkTemperatureAnomaly(machineId, mstatus.temperature)
+                                    .catch(err => console.error('Anomaly detection error:', err));
+                            }
+                        } catch (error) {
+                            console.log('Anomaly detection error:', error);
+                        }
                         res.send(
                             PrintSucceeded(
                                 d.command,
@@ -1318,7 +1343,18 @@ export class InventoryZDM8 implements IBaseClass {
 
             });
 
+            ////7th June anomaly detect non-ai verserion
+            router.get(this.path + "/anomaly-notifications", async (req, res) => {
+                try {
+                    const notifications = await redisClient.lrange('notifications:all', 0, 49);
+                    const parsed = notifications.map(n => JSON.parse(n));
+                    res.send(PrintSucceeded("GET_NOTIFICATIONS", parsed, EMessage.succeeded, returnLog(req, res)));
+                } catch (error) {
+                    res.send(PrintError("GET_NOTIFICATIONS", error, EMessage.error, returnLog(req, res, true)));
+                }
+            });
 
+            /// ==================== ANOMALY DETECTION SERVICE ====================
 
 
             // router.post(this.path + "/creditMMoney", (req, res) => {
@@ -9404,6 +9440,7 @@ export class InventoryZDM8 implements IBaseClass {
                                                 // console.log('admintoken owneruuid', rx);
                                                 if (!ownerUuid) throw new Error(EMessage.notfound);
                                                 ws['ownerUuid'] = ownerUuid;
+                                                ws['adminlogin'] = true;
                                                 this.machineClientlist
                                                     .findAll({ where: { ownerUuid } })
                                                     .then((ry) => {
