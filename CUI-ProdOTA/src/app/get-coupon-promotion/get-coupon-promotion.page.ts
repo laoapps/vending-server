@@ -47,7 +47,7 @@ export class GetCouponPromotionPage implements OnInit, OnDestroy {
   }
   async loadCoupon() {
     try {
-      const response = await this.apiService.loaCouponPromotion();
+      const response = await this.apiService.loadCouponPromotion();
       if (response.data.status !== 1) {
         this.dismiss();
         this.apiService.simpleMessage('ບໍ່ສາມາດຮັບລາວວັນໄດ້');
@@ -60,6 +60,9 @@ export class GetCouponPromotionPage implements OnInit, OnDestroy {
       };
       this.balanceValue = response.data.data?.record?.value ?? 0;
       this.qrCode = JSON.stringify(qrData);
+      if (this.balanceValue <= 0) {
+        this.dismiss();
+      }
     } catch (error) {
 
     }

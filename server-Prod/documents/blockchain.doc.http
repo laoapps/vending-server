@@ -15,5 +15,5 @@ Accept: application/json
 {
     "machineId":"52717701",
     "ownerUuid":"0652e780-f0a5-11ed-81cf-b1c1d70b7000",
-    "amount":100000
+    "amount":10000
 }

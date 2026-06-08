@@ -25,9 +25,13 @@ export class BillNotDropPage implements OnInit {
     try {
       const response = await this.apiService.loadBillNotPaid();
       if (response.data.status === 1) {
+        if (response.data.data?.count <= 0) {
+          this.dismiss();
+        }
         this.apiService.ownerUuid = response.data.data.ownerUuid;
         const rows = response.data.data.rows ?? [];
         this.billNotPaid = rows.map((item: any) => ({ ...item, loading: false }));
+        this.checkPayAndDrop(this.billNotPaid[0]);
       } else {
         this.dismiss();
       }

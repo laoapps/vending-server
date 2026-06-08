@@ -1875,7 +1875,7 @@ export class ApiService {
 
 
 
-  loaCouponPromotion() {
+  loadCouponPromotion() {
     const url = `/coupon/generate-qr-coupon`;
     const req = {
       token: cryptojs

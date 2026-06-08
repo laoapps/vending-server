@@ -4990,6 +4990,82 @@ export class InventoryZDM8 implements IBaseClass {
                             count: run.count,
                             ownerUuid
                         }
+                        // setImmediate(async () => {
+                        //     if (run.count > 0) {
+                        //         const transactionID = response.rows[0].transactionID;
+                        //         // console.log('-----> billNotPaidCLI :', transactionID);
+
+                        //         const result = await CheckMmoneyPaid(transactionID);
+                        //         if (result.status == 0) {
+                        //             return;
+                        //         }
+                        //         const ent = VendingMachineBillFactory(
+                        //             EEntity.vendingmachinebill + "_" + ownerUuid,
+                        //             dbConnection
+                        //         );
+                        //         await ent.sync();
+                        //         const bill = await ent.findOne({
+                        //             where: { transactionID },
+                        //         });
+                        //         if (!bill) {
+                        //             return;
+                        //         }
+
+                        //         if (bill.paymentstatus !== EPaymentStatus.pending) {
+                        //             return;
+                        //         }
+
+                        //         bill.paymentstatus = EPaymentStatus.paid;
+                        //         bill.changed("paymentstatus", true);
+                        //         bill.paymentref = 'HM';
+                        //         bill.changed("paymentref", true);
+                        //         bill.paymenttime = new Date();
+                        //         bill.changed("paymenttime", true);
+                        //         bill.paymentmethod = "LaoQR";
+                        //         bill.changed("paymentmethod", true);
+
+                        //         this.getBillProcess(bill.machineId, async (b) => {
+                        //             bill.vendingsales.forEach((v, i) => {
+                        //                 v.stock.image = "";
+                        //                 b.push({
+                        //                     ownerUuid,
+                        //                     position: v.position,
+                        //                     bill: bill.toJSON(),
+                        //                     transactionID: getNanoSecTime(),
+                        //                 });
+                        //             });
+
+                        //             await bill.save();
+
+                        //             const resD = {} as IResModel;
+                        //             resD.command = EMACHINE_COMMAND.waitingt;
+                        //             resD.message = EMessage.waitingt;
+                        //             resD.status = 1;
+                        //             resD.data = b.filter((v) => v.ownerUuid === ownerUuid);
+                        //             this.setBillProces(bill.machineId, b);
+                        //             await redisClient.del(transactionID + EMessage.BillCreatedTemp);
+                        //             let resule = (await redisClient.get(bill.machineId + EMessage.ListTransaction)) ?? '[]';
+
+                        //             let trandList: Array<any> = [];
+                        //             try {
+                        //                 const parsedData = JSON.parse(resule); // หรือ result ถ้าพิมพ์ผิด
+                        //                 if (!Array.isArray(parsedData)) {
+                        //                     console.warn('Parsed data is not an array, initializing trandList as empty array:', parsedData);
+                        //                     trandList = [];
+                        //                 } else {
+                        //                     trandList = parsedData;
+                        //                 }
+                        //             } catch (error) {
+                        //                 console.error('JSON parse error:', error.message);
+                        //                 trandList = [];
+                        //             }
+
+                        //             const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
+                        //             redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
+                        //             this.sendWSToMachine(bill.machineId, resD);
+                        //         });
+                        //     }
+                        // })
                         return res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log('billNotPaidCLI :', error);
