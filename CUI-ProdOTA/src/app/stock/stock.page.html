@@ -4,23 +4,42 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-item-divider>  
+<ion-content [scrollEvents]="true" (ionScroll)="onScroll($event)">
+  <ion-item-divider>
     <ion-icon name="close-circle-outline" (click)="close()"></ion-icon>
-    </ion-item-divider>
-    <ion-input [(ngModel)]="search" (ngModelChange)="doFilter()"></ion-input>
-    <div style="display: inline;">
-      <ion-item *ngFor="let s of stock" style="float:left">
-        <ion-item-divider>  
-          <ion-icon name="trash-bin-sharp" color="danger" (click)="removeStock(s.id)"></ion-icon> 
+  </ion-item-divider>
+  <ion-input [(ngModel)]="search" (ngModelChange)="doFilter()"></ion-input>
+  <div style="display: inline;">
+    <ion-item *ngFor="let s of stock" style="float:left">
+      <ion-item-divider>
+        <!-- <ion-icon name="trash-bin-sharp" color="danger" (click)="removeStock(s.id)"></ion-icon>  -->
         <!-- <ion-label><img style="width: 100px;height:240px" [src]="s.image.includes(';base64,')?s.image:this.url+'/public/'+s.image" (click)="select(s.id)"></ion-label>   -->
-        <ion-label><img style="width: 100px;height:240px" [src]="apiService?.imageList[s?.image]" (click)="select(s.id)"></ion-label>  
+        <ion-label><img style="width: 100px;height:240px" [src]="apiService?.imageList[s?.image]"
+            (click)="select(s.id)"></ion-label>
         <ion-label> {{s.name}}</ion-label>
         <ion-label> {{s.price}}</ion-label>
 
-      </ion-item-divider> 
-      
+      </ion-item-divider>
+
     </ion-item>
+  </div>
+
+  <!-- Custom Scrollbar -->
+  <div slot="fixed" class="custom-scrollbar-container" *ngIf="thumbHeight > 0">
+    <ion-button (mousedown)="startScrollUp()" (touchstart)="startScrollUp()" (mouseup)="stopScroll()"
+      (touchend)="stopScroll()" (mouseleave)="stopScroll()" class="scroll-btn up">
+      <ion-icon name="chevron-up-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+
+    <div class="scrollbar-track">
+      <div class="scrollbar-thumb" [style.height.px]="thumbHeight" [style.transform]="'translateY(' + thumbTop + 'px)'"
+        (mousedown)="startDragging($event)" (touchstart)="startDragging($event)">
+      </div>
     </div>
 
+    <ion-button (mousedown)="startScrollDown()" (touchstart)="startScrollDown()" (mouseup)="stopScroll()"
+      (touchend)="stopScroll()" (mouseleave)="stopScroll()" class="scroll-btn down">
+      <ion-icon name="chevron-down-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
 </ion-content>

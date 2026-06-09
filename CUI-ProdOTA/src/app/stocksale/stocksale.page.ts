@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, Output, ViewChild, HostListener, AfterViewInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { IonicStorageService } from '../ionic-storage.service';
 import { ApiService } from '../services/api.service';
@@ -6,13 +6,16 @@ import { IStock, IVendingMachineSale } from '../services/syste.model';
 import { StockPage } from '../stock/stock.page';
 import { ReportbillsPage } from '../reportbills/reportbills.page';
 import { ReportrefillsalePage } from '../reportrefillsale/reportrefillsale.page';
-import { AlertController } from '@ionic/angular';
+import { AlertController, IonContent } from '@ionic/angular';
+
 @Component({
   selector: 'app-stocksale',
   templateUrl: './stocksale.page.html',
   styleUrls: ['./stocksale.page.scss'],
 })
-export class StocksalePage implements OnInit, OnDestroy {
+export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild(IonContent, { static: false }) content: IonContent;
+
   prod = environment.production
   saleStock = new Array<IVendingMachineSale>();
   stock = new Array<IStock>();
@@ -22,6 +25,18 @@ export class StocksalePage implements OnInit, OnDestroy {
   search = '';
   jsonText = ';'
   isResetCash = false;
+
+  // Scrollbar properties
+  scrollTop = 0;
+  contentHeight = 0;
+  viewHeight = 0;
+  thumbHeight = 0;
+  thumbTop = 0;
+  isDragging = false;
+  startY = 0;
+  startThumbTop = 0;
+  scrollInterval: any;
+
   constructor(public apiService: ApiService,
     public alertController: AlertController,
     public storage: IonicStorageService) {
@@ -30,18 +45,91 @@ export class StocksalePage implements OnInit, OnDestroy {
     console.log(`TEST SALE STOCK`, this.saleStock);
     // this.stock=apiService.stock;
   }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.updateScrollbar();
+    }, 1000);
+  }
+
+  async onScroll(event: any) {
+    this.scrollTop = event.detail.scrollTop;
+    await this.updateScrollbar();
+  }
+
+  async updateScrollbar() {
+    if (!this.content) return;
+    const scrollElement = await this.content.getScrollElement();
+    if (!scrollElement) return;
+
+    this.contentHeight = scrollElement.scrollHeight;
+    this.viewHeight = scrollElement.clientHeight;
+
+    if (this.contentHeight > this.viewHeight) {
+      this.thumbHeight = Math.max((this.viewHeight / this.contentHeight) * this.viewHeight, 40);
+      const scrollableHeight = this.contentHeight - this.viewHeight;
+      const trackHeight = (this.viewHeight - 120) - this.thumbHeight; // Account for buttons (50px each + margins)
+      this.thumbTop = (this.scrollTop / scrollableHeight) * trackHeight;
+    } else {
+      this.thumbHeight = 0;
+    }
+  }
+
+  startScrollUp() {
+    this.stopScroll();
+    this.scrollInterval = setInterval(() => {
+      this.content.scrollByPoint(0, -100, 100);
+    }, 100);
+  }
+
+  startScrollDown() {
+    this.stopScroll();
+    this.scrollInterval = setInterval(() => {
+      this.content.scrollByPoint(0, 100, 100);
+    }, 100);
+  }
+
+  stopScroll() {
+    if (this.scrollInterval) {
+      clearInterval(this.scrollInterval);
+      this.scrollInterval = null;
+    }
+  }
+
+  startDragging(event: MouseEvent | TouchEvent) {
+    this.isDragging = true;
+    this.startY = (event instanceof MouseEvent) ? event.pageY : event.touches[0].pageY;
+    this.startThumbTop = this.thumbTop;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onDragging(event: MouseEvent | TouchEvent) {
+    if (!this.isDragging) return;
+
+    const currentY = (event instanceof MouseEvent) ? event.pageY : event.touches[0].pageY;
+    const deltaY = currentY - this.startY;
+    const trackHeight = (this.viewHeight - 120) - this.thumbHeight;
+    let newThumbTop = this.startThumbTop + deltaY;
+
+    newThumbTop = Math.max(0, Math.min(newThumbTop, trackHeight));
+    this.thumbTop = newThumbTop;
+
+    const scrollableHeight = this.contentHeight - this.viewHeight;
+    const targetScrollTop = (this.thumbTop / trackHeight) * scrollableHeight;
+    this.content.scrollToPoint(0, targetScrollTop, 0);
+  }
+
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  stopDragging() {
+    this.isDragging = false;
+  }
+
   ngOnDestroy(): void {
-    // this.apiService.saveSale(ApiService.vendingOnSale).then(rx => {
-    //   const r = rx.data;
-    //   console.log(r);
-
-    //   if (r.status) {
-
-    //   }
-    //   this.apiService.toast.create({ message: r.message, duration: 2000 }).then(r => {
-    //     r.present();
-    //   })
-    // })
+    this.stopScroll();
   }
 
   saveSaveStock() {
@@ -53,12 +141,12 @@ export class StocksalePage implements OnInit, OnDestroy {
 
         // }
         if (r.status === 1) {
-          this.apiService.closeModal({resetCashCount: this.isResetCash});
+          this.apiService.closeModal({ resetCashCount: this.isResetCash });
           this.apiService.toast.create({ message: 'ສຳເຫຼັດແລ້ວ', duration: 2000 }).then(r => {
             r.present();
           })
         } else {
-          this.apiService.closeModal({resetCashCount: this.isResetCash});
+          this.apiService.closeModal({ resetCashCount: this.isResetCash });
           this.apiService.toast.create({ message: 'ອິນເຕີເນັດຊ້າ ກະລຸນາລໍຖ້າແລ້ວລອງໃໝ່ອີກຄັ້ງ', duration: 2000 }).then(r => {
             r.present();
           })
@@ -74,7 +162,7 @@ export class StocksalePage implements OnInit, OnDestroy {
 
   closePage() {
     try {
-          this.apiService.closeModal({resetCashCount: this.isResetCash});
+      this.apiService.closeModal({ resetCashCount: this.isResetCash });
     } catch (error) {
 
     }
@@ -322,6 +410,7 @@ export class StocksalePage implements OnInit, OnDestroy {
       this.saleStock = ApiService.vendingOnSale;
       this.saleStock.sort((a, b) => a.position > b.position ? 1 : -1);
     }
+    setTimeout(() => this.updateScrollbar(), 300);
   }
   saveJsonText() {
     try {

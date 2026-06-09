@@ -5908,12 +5908,11 @@ export class InventoryZDM8 implements IBaseClass {
                                 console.error('JSON parse error:', error.message);
                                 trandList = [];
                             }
-
                             const filteredData = trandList.filter((item: any) => item.transactionID !== transactionID);
                             redisClient.setex(bill.machineId + EMessage.ListTransaction, 60 * 5, JSON.stringify(filteredData));
                             this.sendWSToMachine(bill.machineId, resD);
-                            return res.send(PrintSucceeded("reportBillNotPaid", resD, EMessage.succeeded, returnLog(req, res)));
                         });
+                        return res.send(PrintSucceeded("reportBillNotPaid", {}, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log('reportBillNotPaid :', error);
                         res.send(PrintError("reportBillNotPaid", error, EMessage.error, returnLog(req, res, true)));

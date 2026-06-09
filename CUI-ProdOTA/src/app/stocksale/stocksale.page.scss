@@ -1,9 +1,71 @@
 div.scrollmenu {
-    display: -webkit-box;
-    overflow-x: auto;
-    white-space: nowrap;
+  display: -webkit-box;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.custom-scrollbar-container {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  bottom: 15px;
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  background: rgba(240, 240, 240, 0.8);
+  border-radius: 30px;
+  padding: 10px 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ccc;
+  pointer-events: auto;
+}
+
+.scroll-btn {
+  --padding-start: 0;
+  --padding-end: 0;
+  height: 50px;
+  width: 50px;
+  margin: 0 auto;
+  --border-radius: 50%;
+  --box-shadow: none;
+  font-size: 24px;
+
+  &.up {
+    margin-bottom: 10px;
   }
-  
+
+  &.down {
+    margin-top: 10px;
+  }
+}
+
+.scrollbar-track {
+  flex: 1;
+  position: relative;
+  width: 12px;
+  background: #e0e0e0;
+  margin: 0 auto;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.scrollbar-thumb {
+  position: absolute;
+  width: 100%;
+  background: #888;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #666;
+  }
+
+  &:active {
+    background: #444;
+  }
+}
 
 // .position-img {
 //   width: 100%;
