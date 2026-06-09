@@ -48,6 +48,8 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   @Input() serial: ISerialService =null as any;
   url = this.apiService.url;
   lists: Array<any> = [];
+  qrCode: string = '';
+  balanceValue: number = 0;
 
   constructor(public apiService: ApiService, private modalCtrl: ModalController) {
 
@@ -86,6 +88,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
       // Requirement 2: Watchdog for hangs (starts after bills are confirmed present)
       this.startWatchdogTimer();
+      this.loadCoupon();
       this.loadAutoFall();
       // console.log('R', this.r);
       // console.log(`here`);
@@ -236,6 +239,29 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
 
     this.retryProcessBillNew({ transactionID, position, ownerUuid, transID: transID + '' });
+  }
+
+  async loadCoupon() {
+    try {
+      const response = await this.apiService.loadCouponPromotion();
+      if (response.data.status !== 1) {
+        this.qrCode = '';
+        this.balanceValue = 0;
+        return;
+      }
+
+      const qrData = {
+        type: response.data.data?.type,
+        uuid: response.data.data?.uuid,
+        url: response.data.data?.url
+      };
+
+      this.balanceValue = response.data.data?.record?.value ?? 0;
+      this.qrCode = this.balanceValue > 0 ? JSON.stringify(qrData) : '';
+    } catch (error) {
+      this.qrCode = '';
+      this.balanceValue = 0;
+    }
   }
 
   ngOnDestroy(): void {

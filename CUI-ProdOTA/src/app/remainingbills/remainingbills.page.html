@@ -34,6 +34,39 @@
           </div>
         </div>
       </div>
+      <div class="coupon-promotion-card" *ngIf="qrCode">
+        <div class="coupon-text">
+          <div class="coupon-title">ສະແກນຮັບລາງວັນ</div>
+          <div class="coupon-subtitle">Scan for reward</div>
+          <div class="coupon-value" *ngIf="balanceValue > 0">
+            <span>ມູນຄ່າ</span>
+            <strong>{{ balanceValue | number }}</strong>
+            <span>ກີບ</span>
+          </div>
+        </div>
+
+        <div class="reward-qr-main">
+          <div class="coupon-qr-frame">
+            <qr-code [value]="qrCode" [size]="240" errorCorrectionLevel="H" darkColor="#000000" lightColor="#FFFFFF"
+              [margin]="4">
+            </qr-code>
+          </div>
+        </div>
+
+        <div class="download-laabx-section">
+          <div class="download-title">Download LAABX</div>
+          <div class="download-badges">
+            <div class="download-item">
+              <img src="assets/logo/laab_ios.png" alt="Download LAABX iOS">
+              <span>iOS</span>
+            </div>
+            <div class="download-item">
+              <img src="assets/logo/laab_android.png" alt="Download LAABX Android">
+              <span>Android</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </span>
   </div>
 
@@ -85,7 +118,6 @@
       </div>
 
     </div>
-
 
     <!-- <div class="marquee-pro">
       <div class="glow-bg"></div>

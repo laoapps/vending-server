@@ -23,6 +23,7 @@ ion-content {
 
     .item {
         position: relative;
+        z-index: 1;
         margin-top: 80%;
         color: #333;
         background: rgb(255,255,255);
@@ -31,8 +32,9 @@ ion-content {
         padding: 10px;
         display: flex;
         flex-direction: row; /* เปลี่ยนเป็น row เพื่อให้เรียงแนวนอน */
+        flex-wrap: wrap;
         align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
-        gap: 20px; /* ระยะห่างระหว่างวิดีโอและเนื้อหา */
+        gap: 14px 20px; /* ระยะห่างระหว่างวิดีโอและเนื้อหา */
 
         .gif-box {
             flex-shrink: 0; /* ป้องกันการหดตัวของวิดีโอ */
@@ -87,6 +89,120 @@ ion-content {
                     font-weight: 300;
                     width: 120px;
                 }
+            }
+        }
+
+        .coupon-promotion-card {
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(190px, 1fr) auto 220px;
+            align-items: center;
+            gap: 16px;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c1dff 0%, #ff2f72 48%, #ffb703 100%);
+            border: 4px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.35);
+            color: #fff;
+        }
+
+        .coupon-text {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .coupon-title {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.15;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0,0,0,.4);
+        }
+
+        .coupon-subtitle {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff8d7;
+            text-shadow: 0 1px 3px rgba(0,0,0,.35);
+        }
+
+        .coupon-value {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: fit-content;
+            min-height: 38px;
+            margin-top: 4px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #fff;
+            color: #111;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,.25);
+
+            strong {
+                font-size: 22px;
+                line-height: 1;
+            }
+        }
+
+        .reward-qr-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .coupon-qr-frame {
+            padding: 8px;
+            background: #fff;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 0 4px #ffe066, 0 6px 16px rgba(0,0,0,.45);
+        }
+
+        .download-laabx-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #fff;
+            color: #333;
+            box-shadow: 0 4px 14px rgba(0,0,0,.22);
+        }
+
+        .download-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #7c1dff;
+            text-align: center;
+        }
+
+        .download-badges {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .download-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+
+            img {
+                width: 76px;
+                height: 76px;
+                object-fit: contain;
             }
         }
     }
@@ -274,6 +390,150 @@ ion-content {
     .laab-card-body::-webkit-scrollbar {
         height: 0;
         width: 0;
+    }
+
+    .coupon-promotion-card {
+        position: fixed;
+        top: 72px;
+        right: 20px;
+        bottom: auto;
+        left: auto;
+        width: 390px;
+        max-width: calc(100vw - 40px);
+        z-index: 1000002;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 12px;
+        background: rgba(10,10,10,.98);
+        border-radius: 5px;
+        border: 4px solid #ffd700;
+        box-shadow: 0px 0px 0px 4px rgba(255,255,255,1), 0px 10px 30px rgba(0,0,0,.65);
+        color: #fff;
+    }
+
+    .reward-qr-section {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 0;
+        padding: 10px;
+        border-radius: 5px;
+        background: #b91616;
+    }
+
+    .coupon-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        flex: 0 0 auto;
+        min-width: 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    .coupon-title {
+        width: 100%;
+        font-size: 23px;
+        font-weight: 800;
+        line-height: 1.2;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0,0,0,.45);
+        overflow-wrap: anywhere;
+    }
+
+    .coupon-subtitle {
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff4c7;
+        line-height: 1.2;
+    }
+
+    .reward-qr-main {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .coupon-value {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 40px;
+        padding: 6px 12px;
+        border-radius: 5px;
+        background: #ffd700;
+        color: #111;
+        font-size: 14px;
+        font-weight: 700;
+
+        strong {
+            font-size: 22px;
+            line-height: 1;
+        }
+    }
+
+    .coupon-qr-frame {
+        flex: 0 0 auto;
+        padding: 8px;
+        background: #fff;
+        border: 4px solid #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 0 3px #ffd700, 0 8px 20px rgba(0,0,0,.5);
+    }
+
+    .download-laabx-section {
+        width: 100%;
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 5px;
+        background: #fff;
+        color: #333;
+    }
+
+    .download-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #DD3932;
+        text-align: center;
+    }
+
+    .download-badges {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .download-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #555;
+
+        img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
     }
 
 }

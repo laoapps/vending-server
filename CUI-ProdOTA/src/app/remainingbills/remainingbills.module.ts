@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { RemainingbillsPageRoutingModule } from './remainingbills-routing.module';
 
 import { RemainingbillsPage } from './remainingbills.page';
+import { QrCodeModule } from 'ng-qrcode';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    RemainingbillsPageRoutingModule
+    RemainingbillsPageRoutingModule,
+    QrCodeModule
   ],
   declarations: [RemainingbillsPage]
 })
