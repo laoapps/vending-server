@@ -45,7 +45,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
   private deliveryBills: DeliveryBills[] = []; // Replace `this.r` with typed property
   private readonly SUPPORTED_DEVICES = ['VMC', 'ZDM8', 'MT102', 'adh814'];
   @Input() r = new Array<IBillProcess>();
-  @Input() serial: ISerialService =null as any;
+  @Input() serial: ISerialService = null as any;
   url = this.apiService.url;
   lists: Array<any> = [];
   qrCode: string = '';
@@ -243,21 +243,23 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
 
   async loadCoupon() {
     try {
-      const response = await this.apiService.loadCouponPromotion();
-      if (response.data.status !== 1) {
-        this.qrCode = '';
-        this.balanceValue = 0;
-        return;
+      if (this.apiService.allowTopUp) {
+        const response = await this.apiService.loadCouponPromotion();
+        if (response.data.status !== 1) {
+          this.qrCode = '';
+          this.balanceValue = 0;
+          return;
+        }
+
+        const qrData = {
+          type: response.data.data?.type,
+          uuid: response.data.data?.uuid,
+          url: response.data.data?.url
+        };
+
+        this.balanceValue = response.data.data?.record?.value ?? 0;
+        this.qrCode = this.balanceValue > 0 ? JSON.stringify(qrData) : '';
       }
-
-      const qrData = {
-        type: response.data.data?.type,
-        uuid: response.data.data?.uuid,
-        url: response.data.data?.url
-      };
-
-      this.balanceValue = response.data.data?.record?.value ?? 0;
-      this.qrCode = this.balanceValue > 0 ? JSON.stringify(qrData) : '';
     } catch (error) {
       this.qrCode = '';
       this.balanceValue = 0;
@@ -476,7 +478,7 @@ export class RemainingbillsPage implements OnInit, OnDestroy {
       try {
         await this.apiService.reconfirmStockAndDrop(bills, dropPositionData);
         resolve();
-      } catch (error:any) {
+      } catch (error: any) {
         try {
           const billData: IBillSaveSale = {
             transactionID: Number(bills[0].transactionID),

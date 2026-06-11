@@ -110,7 +110,7 @@
       <div class="icon">
         <ion-icon style="color: white;" name="logo-whatsapp"></ion-icon>
       </div> -->
-      <div *ngIf="apiService.allowTopUp == false" class="qr-container">
+      <div *ngIf="apiService.allowTopUp == true" class="qr-container">
         <img src="../../assets//redeemqr.gif" alt="HM Coupon QR Code" class="qr-gif">
         <p class="redeem-text">REDEEM</p>
       </div>
