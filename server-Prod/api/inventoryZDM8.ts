@@ -757,7 +757,7 @@ export class InventoryZDM8 implements IBaseClass {
                             await ent.sync();
 
                             ent.create(bill).then(async (r) => {
-                                redisClient.setex(qr.requestId + EMessage.BillCreatedTemp, 75, ownerUuid);
+                                redisClient.setex(qr.requestId + EMessage.BillCreatedTemp, 60 * 10, ownerUuid);
                                 redisClient.save();
 
                                 let result = (await redisClient.get(machineId.machineId + EMessage.ListTransaction)) ?? '[]';
