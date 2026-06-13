@@ -66,9 +66,9 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
     this.viewHeight = scrollElement.clientHeight;
 
     if (this.contentHeight > this.viewHeight) {
-      this.thumbHeight = Math.max((this.viewHeight / this.contentHeight) * this.viewHeight, 40);
+      this.thumbHeight = Math.max((this.viewHeight / this.contentHeight) * (this.viewHeight - 120), 40);
       const scrollableHeight = this.contentHeight - this.viewHeight;
-      const trackHeight = (this.viewHeight - 120) - this.thumbHeight; // Account for buttons (50px each + margins)
+      const trackHeight = (this.viewHeight - 120) - this.thumbHeight; 
       this.thumbTop = (this.scrollTop / scrollableHeight) * trackHeight;
     } else {
       this.thumbHeight = 0;
@@ -77,15 +77,21 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
 
   startScrollUp() {
     this.stopScroll();
-    this.scrollInterval = setInterval(() => {
-      this.content.scrollByPoint(0, -100, 100);
+    this.scrollInterval = setInterval(async () => {
+      const newScrollTop = Math.max(0, this.scrollTop - 50);
+      this.content.scrollToPoint(0, newScrollTop, 100);
+      if (newScrollTop === 0) this.stopScroll();
     }, 100);
   }
 
   startScrollDown() {
     this.stopScroll();
-    this.scrollInterval = setInterval(() => {
-      this.content.scrollByPoint(0, 100, 100);
+    this.scrollInterval = setInterval(async () => {
+      const scrollElement = await this.content.getScrollElement();
+      const maxScroll = scrollElement.scrollHeight - scrollElement.clientHeight;
+      const newScrollTop = Math.min(maxScroll, this.scrollTop + 50);
+      this.content.scrollToPoint(0, newScrollTop, 100);
+      if (newScrollTop === maxScroll) this.stopScroll();
     }, 100);
   }
 

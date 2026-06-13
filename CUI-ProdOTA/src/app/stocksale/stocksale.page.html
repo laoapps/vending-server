@@ -4,7 +4,7 @@
       <ion-icon name="close-circle-outline" (click)="cancel()"></ion-icon>
     </ion-title>
     <!-- <ion-icon name="refresh-circle-sharp" color="danger" (click)="reset()"></ion-icon> -->
-    <ion-checkbox [(ngModel)]="isResetCash" >Reset Cash</ion-checkbox>
+    <ion-checkbox [(ngModel)]="isResetCash">Reset Cash</ion-checkbox>
 
     <ion-button color="success" (click)="saveSaveStock()">ບັນທຶກການປ່ຽນແປງ</ion-button>
     <ion-button color="danger" (click)="closePage()">ປິດໜ້ານິ້</ion-button>
@@ -73,20 +73,19 @@
 
   <!-- Custom Scrollbar -->
   <div slot="fixed" class="custom-scrollbar-container" *ngIf="thumbHeight > 0">
-    <ion-button (mousedown)="startScrollUp()" (touchstart)="startScrollUp()" (mouseup)="stopScroll()" (touchend)="stopScroll()" (mouseleave)="stopScroll()" class="scroll-btn up">
+    <ion-button (mousedown)="startScrollUp()" (touchstart)="startScrollUp()" (mouseup)="stopScroll()"
+      (touchend)="stopScroll()" (mouseleave)="stopScroll()" class="scroll-btn up">
       <ion-icon name="chevron-up-outline" slot="icon-only"></ion-icon>
     </ion-button>
-    
+
     <div class="scrollbar-track">
-      <div class="scrollbar-thumb" 
-           [style.height.px]="thumbHeight" 
-           [style.transform]="'translateY(' + thumbTop + 'px)'"
-           (mousedown)="startDragging($event)"
-           (touchstart)="startDragging($event)">
+      <div class="scrollbar-thumb" [style.height.px]="thumbHeight" [style.transform]="'translateY(' + thumbTop + 'px)'"
+        (mousedown)="startDragging($event)" (touchstart)="startDragging($event)">
       </div>
     </div>
 
-    <ion-button (mousedown)="startScrollDown()" (touchstart)="startScrollDown()" (mouseup)="stopScroll()" (touchend)="stopScroll()" (mouseleave)="stopScroll()" class="scroll-btn down">
+    <ion-button (mousedown)="startScrollDown()" (touchstart)="startScrollDown()" (mouseup)="stopScroll()"
+      (touchend)="stopScroll()" (mouseleave)="stopScroll()" class="scroll-btn down">
       <ion-icon name="chevron-down-outline" slot="icon-only"></ion-icon>
     </ion-button>
   </div>

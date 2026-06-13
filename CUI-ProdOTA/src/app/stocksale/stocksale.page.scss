@@ -4,9 +4,13 @@ div.scrollmenu {
   white-space: nowrap;
 }
 
+ion-content {
+  --padding-end: 70px;
+}
+
 .custom-scrollbar-container {
   position: absolute;
-  right: 15px;
+  right: 5px;
   top: 15px;
   bottom: 15px;
   width: 60px;

@@ -165,6 +165,8 @@ export class Tab1Page implements OnDestroy {
   production = environment.production;
 
   hmLogo = 'assets/icon/logo.png';
+  redemgif = 'assets/redeemqr.gif';
+
 
   vendingOnSale = new Array<IVendingMachineSale>();
   vendingBill = new Array<IVendingMachineBill>();
