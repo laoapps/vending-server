@@ -1064,15 +1064,17 @@ export class BillingPage implements OnInit {
         return;
       }
 
+      const fromDateAdjusted = moment(this.fromDate).subtract(1, 'days').format('YYYY-MM-DD');
+
       const data = {
         machineId: this.machineId,
-        fromDate: this.fromDate,
+        fromDate: fromDateAdjusted,
         toDate: this.toDate,
         token: this.token,
       };
 
       const paramsData = {
-        fromDate: this.fromDate,
+        fromDate: fromDateAdjusted,
         toDate: this.toDate,
         machineId: this.machineId,
         // ownerUuid: this.ownerUuid,
@@ -1089,7 +1091,7 @@ export class BillingPage implements OnInit {
 
       const dataAllPa = {
         machineId: ['54265001', '54265002', '54265003'],
-        fromDate: this.fromDate,
+        fromDate: fromDateAdjusted,
         toDate: this.toDate,
         token: this.token,
       };
@@ -1127,7 +1129,7 @@ export class BillingPage implements OnInit {
         const transactionID = bankNotInMy[index]['ເລກທູລະກຳ'];
         const data = {
           machineId: this.machineId,
-          fromDate: this.fromDate,
+          fromDate: fromDateAdjusted,
           toDate: this.toDate,
           token: this.token,
           transactionID: transactionID
