@@ -1080,9 +1080,7 @@ export class BillingPage implements OnInit {
       }
 
       const billNotPaid = await this.apiService.loadVendingMachineBillNotPaid(paramsData).toPromise();
-
       const billNotPaidData = JSON.parse(JSON.stringify(billNotPaid['data']?.rows ?? []));
-
 
       const dataServer = await this.apiService
         .loadVendingMachineSaleBillReport(data)
@@ -1100,10 +1098,12 @@ export class BillingPage implements OnInit {
         .loadVendingMachineSaleBillReportManyMachine(dataAllPa)
         .toPromise();
 
-      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []));
+      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []))
+        .filter((item: any) => this.isBetweenDateHM(item.createdAt));
       this._lServer = run;
 
-      const runAll = JSON.parse(JSON.stringify(dataAll['data']?.rows ?? []));
+      const runAll = JSON.parse(JSON.stringify(dataAll['data']?.rows ?? []))
+        .filter((item: any) => this.isBetweenDateHM(item.createdAt));
       this._lServer = runAll;
 
       // console.log('-----> billPaid :', run);

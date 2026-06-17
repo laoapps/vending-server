@@ -398,7 +398,6 @@ export class ApiService {
 
         if (this.isAds !== s.isAds) this.isAds = s.isAds ?? false;
         if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
-
         if (this.dropDelay !== s.dropDelay) this.dropDelay = s.dropDelay ?? 10;
         // if (this.brightnessValue != s.brightness) {
         //   this.brightnessValue = s.brightness ?? 1;
@@ -3166,8 +3165,7 @@ export class ApiService {
 
   apiBase = axios.create({
     baseURL: this.url,
-    timeout: 25000,    // mobile networks are slower
-    // NO httpAgent/httpsAgent needed in Capacitor/Browser
+    timeout: 25000,
   });
 
   // vending_server = localStorage.getItem('vending_server') || environment.vending_server;

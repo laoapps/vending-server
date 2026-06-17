@@ -1,0 +1,23 @@
+.image-preview-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.product_image {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f9f9f9;
+  margin-bottom: 12px;
+}
+
+.image-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}

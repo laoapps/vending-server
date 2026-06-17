@@ -68,7 +68,7 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
     if (this.contentHeight > this.viewHeight) {
       this.thumbHeight = Math.max((this.viewHeight / this.contentHeight) * (this.viewHeight - 120), 40);
       const scrollableHeight = this.contentHeight - this.viewHeight;
-      const trackHeight = (this.viewHeight - 120) - this.thumbHeight; 
+      const trackHeight = (this.viewHeight - 120) - this.thumbHeight;
       this.thumbTop = (this.scrollTop / scrollableHeight) * trackHeight;
     } else {
       this.thumbHeight = 0;

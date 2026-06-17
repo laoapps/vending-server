@@ -9,27 +9,43 @@
 <ion-content>
   <ion-list>
     <ion-item>
-      <ion-img class="product_image"[src]="showImage(s.image)"></ion-img>
-      <input type="file" name="file" accept="image/*"
-      (change)="handleInputChange($event)">
-        <button 
-      (click)="cancel()">Clear</button>
+      <ion-label position="stacked">Product Image (Framed)</ion-label>
+
+      <div class="image-preview-wrapper">
+        <!-- Preview Image -->
+        <ion-img class="product_image" [src]="showImage(s.image)" (click)="handleInputChange($event)">
+          <!-- Optional: click image to change -->
+        </ion-img>
+
+        <!-- File Input + Clear -->
+        <div class="image-actions">
+          <input type="file" accept="image/*" (change)="handleInputChange($event)" hidden #fileInput>
+
+          <ion-button fill="outline" size="small" (click)="fileInput.click()">
+            Choose Photo
+          </ion-button>
+
+          <ion-button *ngIf="imageSrc" fill="clear" color="danger" size="small" (click)="cancel()">
+            Clear
+          </ion-button>
+        </div>
+      </div>
     </ion-item>
     <ion-item>
       <ion-label>Name:</ion-label>
-      <ion-input type="text" slot="end"  [(ngModel)]="s.name"></ion-input>
+      <ion-input type="text" slot="end" [(ngModel)]="s.name"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>Price</ion-label>
-      <ion-input type="number" slot="end"  [(ngModel)]="s.price"></ion-input>
+      <ion-input type="number" slot="end" [(ngModel)]="s.price"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>QTT</ion-label>
-      <ion-input type="number" slot="end"   [(ngModel)]="s.qtty"></ion-input>
+      <ion-input type="number" slot="end" [(ngModel)]="s.qtty"></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>Active</ion-label>
-      <ion-toggle slot="end" [(ngModel)]="s.isActive" ></ion-toggle>
+      <ion-toggle slot="end" [(ngModel)]="s.isActive"></ion-toggle>
     </ion-item>
     <ion-item>
       <ion-button (click)="save()">Save</ion-button> <ion-button (click)="close()">Close</ion-button>

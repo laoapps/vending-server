@@ -1,5 +1,3 @@
-
-
 import PQueue from 'p-queue';
 import { App } from '@capacitor/app';
 
