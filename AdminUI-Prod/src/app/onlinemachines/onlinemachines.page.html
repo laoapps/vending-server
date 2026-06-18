@@ -123,7 +123,7 @@
                   </ion-button>
                 </ion-col>
                 <ion-col size="4">
-                  <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
+                  <ion-button expand="block" color="primary" (click)="manage(machine.imei, 1)">
                     <ion-icon slot="start" name="laptop-outline"></ion-icon>
                     My Account
                   </ion-button>
@@ -135,7 +135,7 @@
                   </ion-button>
                 </ion-col>
                 <ion-col size="4">
-                  <ion-button expand="block" color="tertiary" (click)="showBilling(machine.machineId,machine.owner)">
+                  <ion-button expand="block" color="tertiary" (click)="showBilling(machine.machineId,machine.imei)">
                     <ion-icon slot="start" name="bill"></ion-icon>
                     Billing
                   </ion-button>
@@ -242,7 +242,7 @@
                 </ion-button>
               </ion-item>
               <ion-item>
-                <ion-button expand="block" color="primary" (click)="manage(machine.owner, 1)">
+                <ion-button expand="block" color="primary" (click)="manage(machine.imei, 1)">
                   <ion-icon slot="start" name="laptop-outline"></ion-icon>
                   My Account
                 </ion-button>

@@ -897,6 +897,16 @@ export class Tab1Page implements OnDestroy {
               }, 5000);
               return;
             }
+            if (r?.recoverSale) {
+              console.log('-----> RECONVER SALE');
+
+              Toast.show({ text: 'recoverSale ' + r.recoverSale, duration: 'long' });
+              this.apiService.recoverSale();
+              setTimeout(() => {
+                return this.refresh();
+              }, 5000);
+              return;
+            }
             if (r?.brightness) {
               this.setBrightness(r?.brightness);
             }

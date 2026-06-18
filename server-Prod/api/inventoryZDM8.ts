@@ -1617,6 +1617,52 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(PrintError("exitMachineAdmin", error, EMessage.error, returnLog(req, res, true)));
                     }
                 });
+
+
+            router.post(this.path + "/recoverSaleAdmin",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
+                        wsx.forEach(ws => {
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { recoverSale: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
+                                    )
+                                );
+                        })
+                        res.send(PrintSucceeded("recoverSaleAdmin", !!wsx, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("recoverSaleAdmin", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(this.path + "/exitAppMachine",
                 this.checkSuperAdmin,
 
