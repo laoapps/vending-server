@@ -901,10 +901,34 @@ export class Tab1Page implements OnDestroy {
               console.log('-----> RECONVER SALE');
 
               Toast.show({ text: 'recoverSale ' + r.recoverSale, duration: 'long' });
-              this.apiService.recoverSale();
+              // this.apiService.recoverSale();
+
+              // this.apiService.recoverSale().then((rx) => {
+              //   const r = rx.data;
+              //   // console.log(r);
+              //   if (r.status) {
+              //     ApiService.vendingOnSale.length = 0;
+              //     console.log('recover', r.data);
+
+              //     ApiService.vendingOnSale.push(...r.data);
+              //     this.saleList.push(...this.vendingOnSale);
+              //     if (this.saleList[0]?.position == 0) this.compensation = 1;
+              //     this.saleList.sort((a, b) => {
+              //       if (a.position < b.position) return -1;
+              //     });
+              //     this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
+              //   }
+              //   this.apiService.toast
+              //     .create({ message: r.message, duration: 200 })
+              //     .then((r) => {
+              //       r.present();
+              //     });
+              // });
+              this.storage.set('saleStock', [], 'stock');
+
               setTimeout(() => {
                 return this.refresh();
-              }, 5000);
+              }, 1000);
               return;
             }
             if (r?.brightness) {
@@ -2161,7 +2185,7 @@ export class Tab1Page implements OnDestroy {
   }
   setActive() {
     console.log('active');
-    this._checkHowTo_Time = this._checkHowTo_Duration + 1000;
+    this._checkHowTo_Time = this._checkHowTo_Duration;
   }
 
   // autoUpdateCash() {
@@ -3073,7 +3097,6 @@ export class Tab1Page implements OnDestroy {
 
       const y = JSON.parse(JSON.stringify(x)) as IVendingMachineSale;
       y.stock.qtty = 1;
-      // y.stock.price = y.stock.price + 1000;
       y.stock.price = this.calculateTicketValue([{ value: y.stock.price }]);
 
       console.log('y', y);

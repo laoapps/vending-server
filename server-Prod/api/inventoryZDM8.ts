@@ -3566,6 +3566,107 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
 
+
+            router.post(
+                this.path + "/saveMachineSaleLAABX",
+                // this.checkToken,
+                // this.checkToken.bind(this),
+                // this.checkDisabled.bind(this),
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        const d = req.body as IReqModel;
+                        const machineId = res.locals["machineId"];
+                        if (!machineId) throw new Error("machine is not exit");
+                        const sEnt = FranchiseStockFactory(EEntity.franchisestock + "_" + machineId.machineId, dbConnection);
+                        await sEnt.sync();
+
+                        const run = await sEnt.findOne({ order: [['id', 'desc']] });
+                        const calculate = laabHashService.CalculateHash(JSON.stringify(d.data));
+                        const sign = laabHashService.Sign(calculate, IFranchiseStockSignature.privatekey);
+                        const list = new Array<IVendingMachineSale>();
+                        list.push(...d.data);
+                        list.forEach(v => v.machineId = machineId.machineId);
+                        if (run == null) {
+
+                            sEnt.create({
+                                data: list,
+                                hashM: sign,
+                                hashP: 'null'
+                            }).then(r => {
+                            }).catch(error => console.log(`save stock fail`));
+
+                        } else {
+
+                            sEnt.create({
+                                data: list,
+                                hashM: sign,
+                                hashP: run.hashM
+                            }).then(r => {
+                            }).catch(error => console.log(`save stock fail`));
+
+                        }
+
+                        // console.log(`----> machine id der`, machineId.machineId);
+                        const event: IVendingEventLog = {
+                            machineId: machineId.machineId,
+                            event: EVendingEvent.updating_stock,// selling, sold, updating_stock, total_sale_today, machine_offline, no_sale , machine_is_online now, retry_delivery, restart, refresh
+                            data: { data: list, time: new Date() },//[{time, position, product, price,ip,data}
+                            date: momenttz().tz(SERVER_TIME_ZONE).date(),
+                            month: momenttz().tz(SERVER_TIME_ZONE).month() + 1,
+                            year: momenttz().tz(SERVER_TIME_ZONE).year()
+                        };
+                        await setVendingEvent(EVendingEvent.updating_stock, event);
+                        setImmediate(() => {
+                            const wsx = this.wsClient.filter(v => v['machineId'] === machineId.machineId);
+                            wsx.forEach(ws => {
+                                if (ws.readyState === WebSocketServer.OPEN)
+                                    ws?.send(
+                                        JSON.stringify(
+                                            PrintSucceeded(
+                                                "ping",
+                                                {
+                                                    command: "ping",
+                                                    production: this.production,
+                                                    balance: {},
+                                                    limiter: {},
+                                                    merchant: {},
+                                                    mymmachinebalance: {},
+                                                    mymlimiterbalance: {},
+                                                    setting: { recoverSale: true },
+                                                    mstatus: {},
+                                                    mymstatus: {},
+                                                    mymsetting: {},
+                                                    mymlimiter: {},
+                                                    app_version: {},
+                                                    pendingStock: {},
+                                                    adsSetting: {},
+                                                    adsVersion: {},
+                                                    settingVersion: {},
+                                                },
+                                                EMessage.succeeded,
+                                                null
+                                            )
+                                        )
+                                    );
+                            })
+                        })
+                        res.send(
+                            PrintSucceeded(
+                                "saveMachineSale",
+                                writeMachineSale(machineId.machineId, JSON.stringify(list)),
+                                EMessage.succeeded
+                                , returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listSale", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+
             router.post(
                 this.path + "/saveMachineSaleAndDrop",
                 this.checkMachineIdToken.bind(this),

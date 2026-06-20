@@ -14,8 +14,8 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
 
   stock: Array<IStock> = [];
   selectedItem: IStock;
-  url =this.apiService.url;
-  search='';
+  url = this.apiService.url;
+  search = '';
 
   // Scrollbar properties
   scrollTop = 0;
@@ -29,7 +29,8 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
   scrollInterval: any;
 
   constructor(public apiService: ApiService) {
-    this.stock=apiService.stock;
+    this.stock = apiService.stock;
+    console.log('-----> STOCK :', this.stock);
   }
 
   ngAfterViewInit() {
@@ -47,7 +48,7 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
     if (!this.content) return;
     const scrollElement = await this.content.getScrollElement();
     if (!scrollElement) return;
-    
+
     this.contentHeight = scrollElement.scrollHeight;
     this.viewHeight = scrollElement.clientHeight;
 
@@ -116,7 +117,7 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
 
   select(id: number) {
     this.selectedItem = this.stock.find(v => v.id == id);
-    console.log('select',this.selectedItem);
+    console.log('select', this.selectedItem);
     this.apiService.dismissModal(this.selectedItem)
   }
   close() {
@@ -124,22 +125,22 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
     console.log(this.selectedItem);
     this.apiService.dismissModal(this.selectedItem)
   }
-  removeStock(id:number){
+  removeStock(id: number) {
     const conf = confirm('Are you sure');
-    if(!conf) return;
+    if (!conf) return;
     const p = prompt('Type 123456');
-    if(p!=='123456') return;
-    const idx =this.apiService.stock.findIndex(v=>v.id==id);
-    if(idx!=-1){
-      this.apiService.stock.splice(idx,1);
+    if (p !== '123456') return;
+    const idx = this.apiService.stock.findIndex(v => v.id == id);
+    if (idx != -1) {
+      this.apiService.stock.splice(idx, 1);
       this.apiService.updateStockItems(this.apiService.stock);
     }
   }
-  doFilter(){
-    if(this.search)
-    this.stock=this.apiService.stock.filter(v=>v.name.toLowerCase().includes(this.search.toLowerCase()));
-    else this.stock=this.apiService.stock;
-    
+  doFilter() {
+    if (this.search)
+      this.stock = this.apiService.stock.filter(v => v.name.toLowerCase().includes(this.search.toLowerCase()));
+    else this.stock = this.apiService.stock;
+
     setTimeout(() => this.updateScrollbar(), 300);
   }
   ngOnInit() {
