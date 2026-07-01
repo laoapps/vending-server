@@ -26,7 +26,7 @@ export class MmoneyxAPI {
                 try {
                     const { user_id, starDate, endDate } = req.body;
 
-                    if (!user_id || !starDate || endDate) {
+                    if (!user_id || !starDate || !endDate) {
                         return res.send(PrintError('mmoneyxRoutes', {}, EMessage.bodyIsEmpty));
                     }
                     const url = 'https://gateway.ltcdev.la/PartnerVending/GetTransIn';
