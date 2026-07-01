@@ -31,6 +31,7 @@ import { createLogger, format, transports } from 'winston';
 import axios from "axios";
 import { apiQueue } from "./api/queue.services";
 import { BlockchainValueAPI } from "./api/blockchain.routes";
+import { MmoneyxAPI } from "./api/mmoneyx.routes";
 
 
 // const f = fs.readFileSync(__dirname + "/.env", "utf8");
@@ -157,6 +158,9 @@ CreateDatabase("")
 
     /// blockchain
     const b = new BlockchainValueAPI(app);
+
+    const mmoneyx = new MmoneyxAPI(app);
+
 
 
     const invZDM8 = new InventoryZDM8(app, wss1);

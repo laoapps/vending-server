@@ -699,7 +699,6 @@ export class Tab1Page implements OnDestroy {
       }
       ticketValue += contribution + item.value;
     }
-
     return ticketValue;
   }
 

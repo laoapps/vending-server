@@ -1,0 +1,38 @@
+post https://gateway.ltcdev.la/PartnerVending/GetTransIn
+Content-Type: application/json
+api-key : 69b713d9-6eb2-413c-950e-34c11b8d5de6
+
+{
+    "user_id":"2077733201",
+    "starDate":"2026-06-1",
+    "endDate":"2026-06-2"
+}
+
+####
+post https://gateway.ltcdev.la/PartnerVending/GetTransOut
+Content-Type: application/json
+api-key : 69b713d9-6eb2-413c-950e-34c11b8d5de6
+
+{
+    "user_id":"2077733201",
+    "starDate":"2026-06-1",
+    "endDate":"2026-06-2"
+}
+
+###
+post https://gateway.ltcdev.la/PartnerVending/RegisterMerchant
+Content-Type: application/json
+api-key : 69b713d9-6eb2-413c-950e-34c11b8d5de6
+
+{
+    "requestId":"2077733201",
+    "merchantname":"2026-06-1",
+    "customername":"2026-06-2",
+    "msisdn":"20xxxx",
+    "address":"Phongton Chanthabuli, Vientiane"
+}
+
+###
+get https://gateway.ltcdev.la/PartnerVending/MerchantList
+Content-Type: application/json
+api-key : 69b713d9-6eb2-413c-950e-34c11b8d5de6
