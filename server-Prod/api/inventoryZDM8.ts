@@ -2810,10 +2810,10 @@ export class InventoryZDM8 implements IBaseClass {
                                 sEnt
                                     .findOne({ where: { position: o.position, machineId: o.machineId } })
                                     .then((rx) => {
-                                        if (rx)
-                                            return res.send(
-                                                PrintError("addSale", [], EMessage.duplicatedPosition, returnLog(req, res, true))
-                                            );
+                                        // if (rx)
+                                        //     return res.send(
+                                        //         PrintError("addSale", [], EMessage.duplicatedPosition, returnLog(req, res, true))
+                                        //     );
                                         sEnt
                                             .create(o)
                                             .then((r) => {
