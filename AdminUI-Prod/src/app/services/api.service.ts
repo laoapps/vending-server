@@ -395,6 +395,21 @@ export class ApiService {
     }
 
 
+    getReportMmoneyx(starDate: string, endDate: string) {
+        const bodyData = {
+            shopPhonenumber: localStorage.getItem('phoneNumberLocal'),
+            secret: localStorage.getItem('secretLocal'),
+            starDate,
+            endDate,
+            user_id: `20${localStorage.getItem('phoneMmoney')}`
+        };
+        return this.http.post<IResModel>(environment.baseurl + '/mmoneyx/mmoneyxRoutes', bodyData, {
+            headers: {
+                'Content-Type': 'application/json',
+                token: localStorage.getItem('token'),
+            }
+        });
+    }
 
     super_listMachine() {
         const token = localStorage.getItem('lva_token');
@@ -749,6 +764,12 @@ export class ApiService {
     }
     showLoading(message = 'loading...') {
         this.load.create({ message, duration: 15000 }).then(r => {
+            r.present();
+        });
+    }
+
+    showLoadingLong(message = 'loading...') {
+        this.load.create({ message }).then(r => {
             r.present();
         });
     }

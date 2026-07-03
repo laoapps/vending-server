@@ -16,6 +16,8 @@ export class BillingPage implements OnInit {
 
   customer: string;
   month: string;
+  year: string;
+
 
   _lServer: any[] = [];
   bankInMyData: any = null;
@@ -47,13 +49,21 @@ export class BillingPage implements OnInit {
 
   ngOnInit() {
     this.token = localStorage.getItem('lva_token');
-    this.month = localStorage.getItem('monthReceipt');
+    this.month = localStorage.getItem('monthReceipt') ?? '1';
+    this.year = localStorage.getItem('yearReceipt') ?? '2026';
+    this.initDate();
   }
 
   savedata() {
     if (this.month) {
       localStorage.setItem('monthReceipt', this.month);
+      // this.onFileSelectedMmoney();
     }
+    if (this.year) {
+      localStorage.setItem('yearReceipt', this.year);
+
+    }
+    this.initDate();
   }
 
 
@@ -743,80 +753,87 @@ export class BillingPage implements OnInit {
     allMMoney: any
 
   ) {
-    // 1) เตรียม workbook
-    const wb = XLSX.utils.book_new();
+    try {
+      // 1) เตรียม workbook
+      const wb = XLSX.utils.book_new();
 
-    // 2) แปลงข้อมูลแต่ละชุดเป็น sheet
-    const sheet1 = XLSX.utils.json_to_sheet(this.mapBankInMy(bankInMy));
+      // 2) แปลงข้อมูลแต่ละชุดเป็น sheet
+      const sheet1 = XLSX.utils.json_to_sheet(this.mapBankInMy(bankInMy));
 
-    const sheet2 = XLSX.utils.json_to_sheet(this.mapMyNotInBankNotPaid(myNotInBankNotPaid));
+      const sheet2 = XLSX.utils.json_to_sheet(this.mapMyNotInBankNotPaid(myNotInBankNotPaid));
 
-    const sheet3 = XLSX.utils.json_to_sheet(this.mapMyNotInBankPaid(myNotInBankPaid));
+      const sheet3 = XLSX.utils.json_to_sheet(this.mapMyNotInBankPaid(myNotInBankPaid));
 
-    const sheet4 = XLSX.utils.json_to_sheet(this.mapMyBankNoServer(myBankNoServer));
+      const sheet4 = XLSX.utils.json_to_sheet(this.mapMyBankNoServer(myBankNoServer));
 
-    // const sheet5 = XLSX.utils.json_to_sheet(this.mapMyBankServer(myBankServer));
-    const sheet6 = XLSX.utils.json_to_sheet(this.MapMyBillNotPaid(billNotPaid));
+      // const sheet5 = XLSX.utils.json_to_sheet(this.mapMyBankServer(myBankServer));
+      const sheet6 = XLSX.utils.json_to_sheet(this.MapMyBillNotPaid(billNotPaid));
 
-    // const sheet7 = XLSX.utils.json_to_sheet(this.MapMySaleServer(allSaleServer));
-    // const sheet8 = XLSX.utils.json_to_sheet(this.MapMySaleSuccess(allSaleSuccess));
-    const sheet9 = XLSX.utils.json_to_sheet(this.mapAllMMoney(allMMoney));
-
-
-    const finalArray = this.mergeData(this.MapMySaleServer(allSaleServer), this.mapMyNotInBankNotPaid(myNotInBankNotPaid), this.mapMyNotInBankPaid(myNotInBankPaid));
-
-    const sheet10 = XLSX.utils.json_to_sheet(this.mapAllData(finalArray));
-    // console.log('----->1.ສັງລວມ :', [this.mapBankInMy(bankInMy)[0]]);
-    // this.bankInMyData = this.mapBankInMy(bankInMy);
-    // this.allMMoneyData = this.mapAllMMoney(allMMoney);
-    // this.finalArrayData = this.mapAllData(finalArray);
-    // this.myBankNoServerData = this.mapMyBankNoServer(myBankNoServer);
-    // this.billNotPaidData = this.MapMyBillNotPaid(billNotPaid);
-    // this.myNotInBankNotPaidData = this.mapMyNotInBankNotPaid(myNotInBankNotPaid);
-    // this.myNotInBankPaidData = this.mapMyNotInBankPaid(myNotInBankPaid);
+      // const sheet7 = XLSX.utils.json_to_sheet(this.MapMySaleServer(allSaleServer));
+      // const sheet8 = XLSX.utils.json_to_sheet(this.MapMySaleSuccess(allSaleSuccess));
+      const sheet9 = XLSX.utils.json_to_sheet(this.mapAllMMoney(allMMoney));
 
 
+      const finalArray = this.mergeData(this.MapMySaleServer(allSaleServer), this.mapMyNotInBankNotPaid(myNotInBankNotPaid), this.mapMyNotInBankPaid(myNotInBankPaid));
 
-    // console.log('-----> 2.MMoney :', [this.mapAllMMoney(allMMoney)[0]]);
-    // console.log('-----> 3.ການຂາຍທັງໝົດ :', [this.mapAllData(finalArray)[0]]);
-    // console.log('-----> 4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ :', [this.mapMyBankNoServer(myBankNoServer)[0]]);
-    // console.log('-----> 5.ບິນບໍ່ທັນຈ່າຍ :', [this.MapMyBillNotPaid(billNotPaid)[0]]);
-    // console.log('-----> 6.ບິນຍິງຕົກເອງ :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
-    // console.log('-----> 7.ບິນທີ່ຕ້ອງທວງເງິນ :', this.mapMyNotInBankPaid(myNotInBankPaid)[0]);
-
-    // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
-    XLSX.utils.book_append_sheet(wb, sheet1, "1.ສັງລວມ(3-6-7)");
-
-    XLSX.utils.book_append_sheet(wb, sheet9, "2.MMoney");
-    // XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
-    XLSX.utils.book_append_sheet(wb, sheet10, "3.ການຂາຍທັງໝົດ");
-    // console.log('----->3 :', [this.MapMySaleServer(allSaleServer)[0]]);
-
-    // XLSX.utils.book_append_sheet(wb, sheet2, "3.1.ບິນຍິງຕົກເອງ");
-    // console.log('----->3.1 :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
-
-    // XLSX.utils.book_append_sheet(wb, sheet3, "3.2.ບິນທີ່ຕ້ອງທວງເງິນ");
-    // console.log('----->3.2 :', [this.mapMyNotInBankPaid(myNotInBankPaid)[0]]);
-
-    XLSX.utils.book_append_sheet(wb, sheet4, "4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ(2)");
-    XLSX.utils.book_append_sheet(wb, sheet6, "5.ບິນບໍ່ທັນຈ່າຍ");
-
-    XLSX.utils.book_append_sheet(wb, sheet2, "6.ບິນຍິງຕົກເອງ");
-    XLSX.utils.book_append_sheet(wb, sheet3, "7.ບິນທີ່ຕ້ອງທວງເງິນ(7-2)");
+      const sheet10 = XLSX.utils.json_to_sheet(this.mapAllData(finalArray));
+      // console.log('----->1.ສັງລວມ :', [this.mapBankInMy(bankInMy)[0]]);
+      // this.bankInMyData = this.mapBankInMy(bankInMy);
+      // this.allMMoneyData = this.mapAllMMoney(allMMoney);
+      // this.finalArrayData = this.mapAllData(finalArray);
+      // this.myBankNoServerData = this.mapMyBankNoServer(myBankNoServer);
+      // this.billNotPaidData = this.MapMyBillNotPaid(billNotPaid);
+      // this.myNotInBankNotPaidData = this.mapMyNotInBankNotPaid(myNotInBankNotPaid);
+      // this.myNotInBankPaidData = this.mapMyNotInBankPaid(myNotInBankPaid);
 
 
-    // XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
-    // XLSX.utils.book_append_sheet(wb, sheet5, "ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver");
-    // XLSX.utils.book_append_sheet(wb, sheet6, "ບິນບໍ່ທັນຈ່າຍ");
-    // XLSX.utils.book_append_sheet(wb, sheet7, "ການຂາຍທັງໝົດ");
 
-    // 4) สร้างไฟล์ Excel
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+      // console.log('-----> 2.MMoney :', [this.mapAllMMoney(allMMoney)[0]]);
+      // console.log('-----> 3.ການຂາຍທັງໝົດ :', [this.mapAllData(finalArray)[0]]);
+      // console.log('-----> 4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ :', [this.mapMyBankNoServer(myBankNoServer)[0]]);
+      // console.log('-----> 5.ບິນບໍ່ທັນຈ່າຍ :', [this.MapMyBillNotPaid(billNotPaid)[0]]);
+      // console.log('-----> 6.ບິນຍິງຕົກເອງ :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
+      // console.log('-----> 7.ບິນທີ່ຕ້ອງທວງເງິນ :', this.mapMyNotInBankPaid(myNotInBankPaid)[0]);
 
-    // 5) ชื่อไฟล์
-    const filename = `${this.customer} ເດືອນ(${this.month})-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
-    saveAs(blob, filename);
+      // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
+      XLSX.utils.book_append_sheet(wb, sheet1, "1.ສັງລວມ(3-6-7)");
+
+      XLSX.utils.book_append_sheet(wb, sheet9, "2.MMoney");
+      // XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
+      XLSX.utils.book_append_sheet(wb, sheet10, "3.ການຂາຍທັງໝົດ");
+      // console.log('----->3 :', [this.MapMySaleServer(allSaleServer)[0]]);
+
+      // XLSX.utils.book_append_sheet(wb, sheet2, "3.1.ບິນຍິງຕົກເອງ");
+      // console.log('----->3.1 :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
+
+      // XLSX.utils.book_append_sheet(wb, sheet3, "3.2.ບິນທີ່ຕ້ອງທວງເງິນ");
+      // console.log('----->3.2 :', [this.mapMyNotInBankPaid(myNotInBankPaid)[0]]);
+
+      XLSX.utils.book_append_sheet(wb, sheet4, "4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ(2)");
+      XLSX.utils.book_append_sheet(wb, sheet6, "5.ບິນບໍ່ທັນຈ່າຍ");
+
+      XLSX.utils.book_append_sheet(wb, sheet2, "6.ບິນຍິງຕົກເອງ");
+      XLSX.utils.book_append_sheet(wb, sheet3, "7.ບິນທີ່ຕ້ອງທວງເງິນ(7-2)");
+
+
+      // XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
+      // XLSX.utils.book_append_sheet(wb, sheet5, "ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver");
+      // XLSX.utils.book_append_sheet(wb, sheet6, "ບິນບໍ່ທັນຈ່າຍ");
+      // XLSX.utils.book_append_sheet(wb, sheet7, "ການຂາຍທັງໝົດ");
+
+      // 4) สร้างไฟล์ Excel
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+
+      // 5) ชื่อไฟล์
+      const filename = `${this.customer} ເດືອນ(${this.month})-(${this.machineId}-${this.fromDate}ຫາ${this.toDate}).xlsx`;
+      saveAs(blob, filename);
+    } catch (error) {
+
+    }
+    finally {
+      this.apiService.dismissLoading();
+    }
   }
 
 
@@ -1008,10 +1025,102 @@ export class BillingPage implements OnInit {
 
       this.dataExcel = Array.from(uniqueMap.values());
 
-      console.log('📘 หลังตัดข้อมูลซ้ำ เหลือ:', this.dataExcel.length, 'แถว');
+      console.log('📘 หลังตัดข้อมูลซ้ำ เหลือ:', this.dataExcel.length, 'แถว', 'DATA :', JSON.stringify(this.dataExcel));
 
     } catch (error) {
       console.error('Error onFileSelected:', error);
+    }
+  }
+
+  async initDate() {
+    try {
+      const startDateInit = `${this.year}-${Number(this.month) < 10 ? `0${this.month}` : this.month}-01`;
+      this.fromDate = startDateInit;
+      const endDateInit = `${this.year}-${Number(this.month) + 1 < 10 ? `0${Number(this.month) + 1}` : Number(this.month) + 1}-01`;
+      this.toDate = endDateInit;
+    } catch (error) {
+      console.log('-----> Error initDate :', error);
+    }
+  }
+
+  async onFileSelectedMmoney() {
+    try {
+      this.apiService.showLoadingLong();
+      const dataMmoneyFromAPI = [];
+      this.dataExcel = [];
+      const fromDate1 = new Date(this.fromDate);
+      fromDate1.setDate(fromDate1.getDate() - 1);
+      const date1 = new Date(this.toDate);
+      date1.setMonth(Number(this.month) - 1);
+      date1.setDate(15);
+      const endDate1Data: string = [
+        date1.getFullYear(),
+        String(date1.getMonth() + 1).padStart(2, "0"),
+        String(date1.getDate()).padStart(2, "0"),
+      ].join("-");
+
+      const fromDate1Data: string = [
+        fromDate1.getFullYear(),
+        String(fromDate1.getMonth() + 1).padStart(2, "0"),
+        String(fromDate1.getDate()).padStart(2, "0"),
+      ].join("-");
+      const date2 = new Date(this.toDate);
+      date2.setMonth(Number(this.month) - 1);
+      date2.setDate(14);
+      const startDate1Data: string = [
+        date2.getFullYear(),
+        String(date2.getMonth() + 1).padStart(2, "0"),
+        String(date2.getDate()).padStart(2, "0"),
+      ].join("-");
+      // console.log('-----> endDate1Data :', startDate1Data);
+
+      const response1 = await this.apiService.getReportMmoneyx(fromDate1Data, endDate1Data).toPromise();
+      const res1Data = response1.data ?? [];
+      for (let index = 0; index < res1Data.length; index++) {
+        const element = res1Data[index];
+        const dataToEX = {
+          "#": index + 1 + '',
+          "ເລກທູລະກຳ": element['trans_id'] ?? '',
+          "ຈຳນວນເງິນ": new Intl.NumberFormat('en-US').format(element['trans_amount']) ?? '',
+          "ລາຍລະອຽດ": element['trans_ref_col1'] ?? '',
+          "ຊ່ອງທາງ": element['trans_ref_col4'] ?? '',
+          "ວັນທີ": element['create_at'] ?? ''
+        };
+
+        dataMmoneyFromAPI.unshift(dataToEX);
+      }
+
+      const response2 = await this.apiService.getReportMmoneyx(startDate1Data, this.toDate).toPromise();
+      const res1Data2 = response2.data ?? [];
+      for (let index = 0; index < res1Data2.length; index++) {
+        const element = res1Data2[index];
+        const dataToEX = {
+          "#": index + 1 + '',
+          "ເລກທູລະກຳ": element['trans_id'] ?? '',
+          "ຈຳນວນເງິນ": new Intl.NumberFormat('en-US').format(element['trans_amount']) ?? '',
+          "ລາຍລະອຽດ": element['trans_ref_col1'] ?? '',
+          "ຊ່ອງທາງ": element['trans_ref_col4'] ?? '',
+          "ວັນທີ": element['create_at'] ?? ''
+        };
+        dataMmoneyFromAPI.unshift(dataToEX);
+      }
+      const uniqueMap = new Map<string, any>();
+
+      for (const row of dataMmoneyFromAPI) {
+        const transactionNo = row['ເລກທູລະກຳ'];
+
+        if (transactionNo && !uniqueMap.has(transactionNo)) {
+          uniqueMap.set(transactionNo, row);
+        }
+      }
+
+      this.dataExcel = Array.from(uniqueMap.values());
+      // console.log('-----> JSON.stringify(this.dataExcel) :', JSON.stringify(this.dataExcel));
+
+    } catch (error) {
+      console.error('Error onFileSelected:', error);
+    } finally {
+      this.apiService.dismissLoading();
     }
   }
 
@@ -1059,10 +1168,13 @@ export class BillingPage implements OnInit {
 
   async onProcessBilling() {
     try {
-      if (!this.selectedFile) {
-        alert('กรุณาเลือกไฟล์ Excel ก่อน');
-        return;
-      }
+      // if (!this.selectedFile) {
+      //   alert('กรุณาเลือกไฟล์ Excel ก่อน');
+      //   return;
+      // }
+      await this.onFileSelectedMmoney();
+
+      this.apiService.showLoadingLong();
 
       const fromDateAdjusted = moment(this.fromDate).subtract(1, 'days').format('YYYY-MM-DD');
 
@@ -1267,20 +1379,26 @@ export class BillingPage implements OnInit {
 
 
   async checkBillNotPaid() {
-    const body = {
-      "machineId": this.machineId,
-      "fromDate": this.fromDate,
-      "toDate": this.toDate,
-      "token": this.token
-    };
-    // console.log('checkBillNotPaid :', body);
-    this.apiService.showLoading();
-    const result = await this.apiService.checkAndConfirmBillToDeliver(body).toPromise();
-    this.apiService.dismissLoading();
-    if (result['status'] == 1) {
-      this.apiService.alertSuccess('ກວດເຄື່ອງສຳເຫຼັດ');
-    } else {
-      this.apiService.alertError('ເກີດຂໍ້ຜິດພາດໃນການກວດເຄື່ອງ')
+    try {
+      const body = {
+        "machineId": this.machineId,
+        "fromDate": this.fromDate,
+        "toDate": this.toDate,
+        "token": this.token
+      };
+      // console.log('checkBillNotPaid :', body);
+      this.apiService.showLoadingLong();
+      const result = await this.apiService.checkAndConfirmBillToDeliver(body).toPromise();
+      if (result['status'] == 1) {
+        this.apiService.alertSuccess('ກວດເຄື່ອງສຳເຫຼັດ');
+      } else {
+        this.apiService.alertError('ເກີດຂໍ້ຜິດພາດໃນການກວດເຄື່ອງ')
+      }
+    } catch (error) {
+      this.apiService.dismissLoading();
+    } finally {
+      this.apiService.dismissLoading();
+
     }
 
   }

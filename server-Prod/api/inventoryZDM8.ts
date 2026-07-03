@@ -2944,7 +2944,7 @@ export class InventoryZDM8 implements IBaseClass {
 
 
                         const transaction = await dbConnection.transaction();
-
+                        let newSale: any;
                         try {
 
                             const sEnt = VendingMachineSaleFactory(
@@ -3017,13 +3017,13 @@ export class InventoryZDM8 implements IBaseClass {
                                 stock: newData,
                             } as IVendingMachineSale;
 
-                            const newSale = await sEnt.create(oSave, { transaction });
+                            newSale = await sEnt.create(oSave, { transaction });
                         } catch (err) {
                             await transaction.rollback();
                         }
                         await transaction.commit();
 
-                        return res.send(PrintSucceeded("editProductDetail", {}, EMessage.succeeded, returnLog(req, res)));
+                        return res.send(PrintSucceeded("editProductDetail", newSale, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);

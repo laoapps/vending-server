@@ -14,12 +14,17 @@
       <ion-input style="border: 1px solid gray; border-radius: 10px;" [(ngModel)]="customer" type="text"
         placeholder="ລູກຄ້າ"></ion-input>
     </ion-col>
-    <ion-col size="3">
+    <ion-col size="2">
       <ion-label>ຄ່າທຳນຽມ(%)</ion-label>
       <ion-input style="border: 1px solid gray; border-radius: 10px;" [(ngModel)]="rate" type="text"
         placeholder="ຄ່າທຳນຽມ"></ion-input>
     </ion-col>
-    <ion-col size="3">
+    <ion-col size="2">
+      <ion-label>ປີທີ່ເກັບເງິນ</ion-label>
+      <ion-input style="border: 1px solid gray; border-radius: 10px;" [(ngModel)]="year" type="text"
+        placeholder="ປິ"></ion-input>
+    </ion-col>
+    <ion-col size="2">
       <ion-label>ເດືອນທີ່ເກັບເງິນ</ion-label>
       <ion-input style="border: 1px solid gray; border-radius: 10px;" [(ngModel)]="month" type="text"
         placeholder="ເດືອນ"></ion-input>
@@ -68,7 +73,7 @@
 
         <input type="file" accept=".xlsx,.xls" #fileInput hidden (change)="onFileSelected($event)" />
 
-        <div *ngIf="selectedFile" class="file-info">
+        <!-- <div *ngIf="selectedFile" class="file-info">
           <ion-item lines="none">
             <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
             <ion-label>{{ selectedFile.name }}</ion-label>
@@ -76,14 +81,14 @@
               <ion-icon name="close-circle-outline"></ion-icon>
             </ion-button>
           </ion-item>
-        </div>
+        </div> -->
 
         <!-- <ion-button expand="block" color="success" (click)="onProcess()" [disabled]="!selectedFile">
           <ion-icon name="play-outline" slot="start"></ion-icon>
           ນຳເງິນ
         </ion-button> -->
 
-        <ion-button expand="block" color="success" (click)="onProcessBilling()" [disabled]="!selectedFile">
+        <ion-button expand="block" color="success" (click)="onProcessBilling()">
           <ion-icon name="play-outline" slot="start"></ion-icon>
           Process Billing
         </ion-button>

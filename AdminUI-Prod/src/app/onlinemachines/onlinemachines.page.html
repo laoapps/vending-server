@@ -135,7 +135,8 @@
                   </ion-button>
                 </ion-col>
                 <ion-col size="4">
-                  <ion-button expand="block" color="tertiary" (click)="showBilling(machine.machineId,machine.imei)">
+                  <ion-button expand="block" color="tertiary"
+                    (click)="showBilling(machine.machineId,machine.imei,machine.owner)">
                     <ion-icon slot="start" name="bill"></ion-icon>
                     Billing
                   </ion-button>
@@ -260,7 +261,8 @@
                 </ion-button>
               </ion-col>
               <ion-col size="4">
-                <ion-button expand="block" color="tertiary" (click)="showBilling(machine.machineId,machine.imei)">
+                <ion-button expand="block" color="tertiary"
+                  (click)="showBilling(machine.machineId,machine.imei,machine.owner)">
                   <ion-icon slot="start" name="bill"></ion-icon>
                   Billing
                 </ion-button>

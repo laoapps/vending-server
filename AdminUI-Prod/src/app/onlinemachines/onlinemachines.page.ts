@@ -333,9 +333,11 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   }
 
 
-  showBilling(machineId: string, phoneNumber: string) {
+  showBilling(machineId: string, phoneNumber: string, ownerPhone: string) {
     console.log('machineId :', machineId);
     localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
+    localStorage.setItem('phoneMmoney', ownerPhone.slice(-8));
+
     this.apiService.modal
       .create({
         component: BillingPage,
