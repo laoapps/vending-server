@@ -9658,7 +9658,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 /////
                                 const redisKey = `${ws['machineId']}_RECOVERSALE`;
-                                const redisSaveValue = await redisClient.get(redisKey)
+                                const redisSaveValue = await redisClient.get(redisKey);
                                 if (redisSaveValue) {
                                     await redisClient.del(redisKey);
                                     return ws.send(
