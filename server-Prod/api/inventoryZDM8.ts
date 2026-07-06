@@ -3618,38 +3618,61 @@ export class InventoryZDM8 implements IBaseClass {
                         };
                         await setVendingEvent(EVendingEvent.updating_stock, event);
                         setImmediate(() => {
-                            const wsx = this.wsClient.filter(v => v['machineId'] === machineId.machineId);
-                            wsx.forEach(ws => {
-                                if (ws.readyState === WebSocketServer.OPEN)
-                                    ws?.send(
-                                        JSON.stringify(
-                                            PrintSucceeded(
-                                                "ping",
-                                                {
-                                                    command: "ping",
-                                                    production: this.production,
-                                                    balance: {},
-                                                    limiter: {},
-                                                    merchant: {},
-                                                    mymmachinebalance: {},
-                                                    mymlimiterbalance: {},
-                                                    setting: { recoverSale: true },
-                                                    mstatus: {},
-                                                    mymstatus: {},
-                                                    mymsetting: {},
-                                                    mymlimiter: {},
-                                                    app_version: {},
-                                                    pendingStock: {},
-                                                    adsSetting: {},
-                                                    adsVersion: {},
-                                                    settingVersion: {},
-                                                },
-                                                EMessage.succeeded,
-                                                null
-                                            )
-                                        )
-                                    );
-                            })
+                            const redisDoc = `${machineId.machineId}_RECOVERSALE`;
+
+                            const redisValue =
+                            {
+                                command: "ping",
+                                production: this.production,
+                                balance: {},
+                                limiter: {},
+                                merchant: {},
+                                mymmachinebalance: {},
+                                mymlimiterbalance: {},
+                                setting: { recoverSale: true },
+                                mstatus: {},
+                                mymstatus: {},
+                                mymsetting: {},
+                                mymlimiter: {},
+                                app_version: {},
+                                pendingStock: {},
+                                adsSetting: {},
+                                adsVersion: {},
+                                settingVersion: {},
+                            };
+                            redisClient.set(redisDoc, JSON.stringify(redisValue), 'EX', 60 * 60);
+                            // const wsx = this.wsClient.filter(v => v['machineId'] === machineId.machineId);
+                            // wsx.forEach(ws => {
+                            //     if (ws.readyState === WebSocketServer.OPEN)
+                            //         ws?.send(
+                            //             JSON.stringify(
+                            //                 PrintSucceeded(
+                            //                     "ping",
+                            //                     {
+                            //                         command: "ping",
+                            //                         production: this.production,
+                            //                         balance: {},
+                            //                         limiter: {},
+                            //                         merchant: {},
+                            //                         mymmachinebalance: {},
+                            //                         mymlimiterbalance: {},
+                            //                         setting: { recoverSale: true },
+                            //                         mstatus: {},
+                            //                         mymstatus: {},
+                            //                         mymsetting: {},
+                            //                         mymlimiter: {},
+                            //                         app_version: {},
+                            //                         pendingStock: {},
+                            //                         adsSetting: {},
+                            //                         adsVersion: {},
+                            //                         settingVersion: {},
+                            //                     },
+                            //                     EMessage.succeeded,
+                            //                     null
+                            //                 )
+                            //             )
+                            //         );
+                            // })
                         })
                         res.send(
                             PrintSucceeded(
@@ -9629,6 +9652,30 @@ export class InventoryZDM8 implements IBaseClass {
                         }
                         else if (d.command == "ping") {
                             try {
+
+
+
+
+                                /////
+                                const redisKey = `${ws['machineId']}_RECOVERSALE`;
+                                const redisSaveValue = await redisClient.get(redisKey)
+                                if (redisSaveValue) {
+                                    await redisClient.del(redisKey);
+                                    return ws.send(
+                                        JSON.stringify(
+                                            PrintSucceeded(
+                                                "ping",
+                                                JSON.parse(redisSaveValue),
+                                                EMessage.succeeded
+                                                ,
+                                                null
+                                            )
+                                        )
+                                    );
+                                }
+
+
+
 
                                 let settingVersion = d?.data?.settingVersion;
                                 let adsVersion = d?.data?.adsVersion;
