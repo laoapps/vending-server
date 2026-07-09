@@ -37,6 +37,7 @@ interface MachineData {
   showSecrets?: boolean; // Track visibility for each machine
   ownerUuid: string;
   imei?: string;
+  createdAt?: string;
 }
 
 @Component({
@@ -162,6 +163,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           showSecrets: this.showAllSecrets,
           ownerUuid: machine.ownerUuid,
           imei: d?.imei ? String(d.imei) : 'Unknown',
+          createdAt: machine?.createdAt,
         });
       });
 
