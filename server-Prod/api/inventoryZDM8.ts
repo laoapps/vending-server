@@ -5548,6 +5548,32 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             )
 
+
+
+            router.post(this.path + '/saveScreenshot',
+                // this.checkSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineToken = req.body.token;
+                        const base64Image = req.body.base64Image;
+                        if (!machineToken || !base64Image) {
+                            return res.send(PrintError('saveScreenshot', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        }
+                        const machineData = this.findMachineIdToken(machineToken);
+                        if (!machineData) {
+                            return res.send(PrintError('saveScreenshot', null, EMessage.machineNotExist, returnLog(req, res, true)));
+                        }
+                        const redisDoc = `${machineData.machineId}_SAVESCREENSHOT`;
+                        await redisClient.setex(redisDoc, 24 * 60 * 60, base64Image);
+                        redisClient.save();
+                        return res.send(PrintSucceeded('saveScreenshot', machineData, EMessage.succeeded, returnLog(req, res, true)));
+                    } catch (error) {
+                        console.error('Error saveScreenshot is :', JSON.stringify(error));
+                        res.send(PrintError('saveScreenshot', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            )
+
             router.post(this.path + '/reportBilling', uploadExcelMemory.single('file'), this.checkSuperAdmin,
                 // this.checkToken.bind(this),
                 // this.checkDisabled.bind(this),

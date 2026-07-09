@@ -168,23 +168,23 @@ export class ApiService {
   // =============================================
 
 
-/////
-// captureScreenAsBase64().then(base64 => {
-//     if (!base64) return;
+  /////
+  // captureScreenAsBase64().then(base64 => {
+  //     if (!base64) return;
 
-//     const payload = {
-//       type: 'screenshot',
-//       machineId: 'VM-001',
-//       timestamp: new Date().toISOString(),
-//       image: base64,                    // ← base64 string
-//       format: 'png'
-//     };
+  //     const payload = {
+  //       type: 'screenshot',
+  //       machineId: 'VM-001',
+  //       timestamp: new Date().toISOString(),
+  //       image: base64,                    // ← base64 string
+  //       format: 'png'
+  //     };
 
-//     if (ws && ws.readyState === WebSocket.OPEN) {
-//       ws.send(JSON.stringify(payload));
-//       console.log('Screenshot sent via WebSocket');
-//     }
-//   });
+  //     if (ws && ws.readyState === WebSocket.OPEN) {
+  //       ws.send(JSON.stringify(payload));
+  //       console.log('Screenshot sent via WebSocket');
+  //     }
+  //   });
 
 
   async captureScreenAsBase64(): Promise<string | null> {
@@ -256,6 +256,7 @@ export class ApiService {
   /// REBOOT
   async rebootMachine() {
     try {
+      await this.serialPort?.close();
       await Reboot.reboot();
     } catch (err) {
       console.error('Reboot failed:', err);

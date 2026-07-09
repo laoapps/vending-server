@@ -896,33 +896,18 @@ export class Tab1Page implements OnDestroy {
               }, 5000);
               return;
             }
+
+            if (r?.reboot) {
+              setTimeout(() => {
+                Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
+                this.apiService.rebootMachine();
+              }, 5000);
+              return;
+            }
             if (r?.recoverSale) {
               console.log('-----> RECONVER SALE');
 
               Toast.show({ text: 'recoverSale ' + r.recoverSale, duration: 'long' });
-              // this.apiService.recoverSale();
-
-              // this.apiService.recoverSale().then((rx) => {
-              //   const r = rx.data;
-              //   // console.log(r);
-              //   if (r.status) {
-              //     ApiService.vendingOnSale.length = 0;
-              //     console.log('recover', r.data);
-
-              //     ApiService.vendingOnSale.push(...r.data);
-              //     this.saleList.push(...this.vendingOnSale);
-              //     if (this.saleList[0]?.position == 0) this.compensation = 1;
-              //     this.saleList.sort((a, b) => {
-              //       if (a.position < b.position) return -1;
-              //     });
-              //     this.storage.set('saleStock', ApiService.vendingOnSale, 'stock');
-              //   }
-              //   this.apiService.toast
-              //     .create({ message: r.message, duration: 200 })
-              //     .then((r) => {
-              //       r.present();
-              //     });
-              // });
               this.storage.set('saleStock', [], 'stock');
 
               setTimeout(() => {
