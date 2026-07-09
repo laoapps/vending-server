@@ -186,6 +186,33 @@ export class ApiService {
   //     }
   //   });
 
+  checkProcessTime(): boolean {
+    const key = 'lastProcessTime';
+    const lastTime = localStorage.getItem(key);
+
+    // ถ้ายังไม่เคยบันทึกเวลา
+    if (!lastTime) {
+      localStorage.setItem(key, Date.now().toString());
+      return true;
+    }
+
+    const now = Date.now();
+    const diff = now - Number(lastTime);
+
+    // 10 นาที = 600,000 ms
+    const tenMinutes = 10 * 60 * 1000;
+
+    if (diff >= tenMinutes) {
+      // Reset เวลาใหม่
+      localStorage.setItem(key, now.toString());
+
+      // ให้ไป process ต่อ
+      return true;
+    }
+
+    // ยังไม่ครบ 10 นาที
+    return false;
+  }
 
   async captureScreenAsBase64(): Promise<string | null> {
     try {
@@ -223,16 +250,13 @@ export class ApiService {
         return;
       }
 
-      console.log('Screenshot saved at:', result.path);
-
-      // === Option A: Upload from TypeScript (recommended) ===
-      // You can use @capacitor/http or fetch + FormData
+      // console.log('Screenshot saved at:', result.path);
       const fileResponse = await fetch(`file://${result.path}`);
       const blob = await fileResponse.blob();
 
       const formData = new FormData();
       formData.append('screenshot', blob, result.filename || 'screenshot.png');
-      formData.append('machineId', 'YOUR_MACHINE_ID'); // optional
+      formData.append('machineId', this.machineId.machineId);
       formData.append('timestamp', new Date().toISOString());
 
       const uploadRes = await fetch(serverUploadUrl, {

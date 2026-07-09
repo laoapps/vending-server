@@ -922,6 +922,10 @@ export class Tab1Page implements OnDestroy {
               localStorage.setItem('startTestMotor', 'true');
               this.refresh();
             }
+
+            if (this.apiService.checkProcessTime()) {
+              this.apiService.takeScreenshotAndUpload(`${environment.url}/saveScreenshot`);
+            }
           } catch (err) {
             this.apiService.IndexedLogDB.addBillProcess({ errorData: `Err refresh or exit app is :${JSON.stringify(err)}` })
           }
