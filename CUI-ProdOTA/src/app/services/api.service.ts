@@ -50,13 +50,22 @@ import { VideoCacheService } from '../video-cache.service';
 import { Indexsavesale } from '../indexsavesale';
 import { App } from '@capacitor/app';
 import { Device } from '@capacitor/device';
-  import { registerPlugin } from '@capacitor/core';
+import { registerPlugin } from '@capacitor/core';
 
 interface RebootPlugin {
   reboot(): Promise<void>;
 }
+interface ScreenCapturePlugin {
+  captureScreen(): Promise<{
+    success: boolean;
+    path?: string;
+    filename?: string;
+    error?: string;
+  }>;
+}
 
 const Reboot = registerPlugin<RebootPlugin>('Reboot');
+const ScreenCapture = registerPlugin<ScreenCapturePlugin>('ScreenCapture');
 
 var REQUEST_TIME_OUT = 10000;
 
@@ -81,13 +90,184 @@ export class ApiService {
   }
 
 
-  async   rebootMachine() {
+  //// SCREEN CAPTURE
+  async captureAndSaveScreen() {
+    try {
+      const result = await ScreenCapture.captureScreen();
+
+      if (!result.success || !result.path) {
+        return { success: false, error: result.error || 'Failed to capture screen' };
+      }
+
+      return {
+        success: true,
+        path: result.path,
+        filename: result.filename,
+      };
+    } catch (err: any) {
+      console.error('captureAndSaveScreen error:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  // =============================================
+  // 2. Upload saved screenshot via HTTPS (FormData)
+  // =============================================
+  async uploadScreenshotViaHttp(
+    filePath: string,
+    uploadUrl: string,
+    extraData: Record<string, string> = {}
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const fileResponse = await fetch(`file://${filePath}`);
+      const blob = await fileResponse.blob();
+
+      const formData = new FormData();
+      formData.append('screenshot', blob, 'screenshot.png');
+
+      // Add any extra data (machineId, timestamp, etc.)
+      Object.keys(extraData).forEach(key => {
+        formData.append(key, extraData[key]);
+      });
+
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        return { success: true, message: 'Uploaded successfully' };
+      } else {
+        const text = await response.text();
+        return { success: false, message: `Upload failed: ${text}` };
+      }
+    } catch (err: any) {
+      console.error('uploadScreenshotViaHttp error:', err);
+      return { success: false, message: err.message };
+    }
+  }
+
+  // =============================================
+  // 3. Capture + Upload via HTTPS (convenience function)
+  // =============================================
+  async captureAndUploadViaHttp(
+    uploadUrl: string,
+    extraData: Record<string, string> = {}
+  ) {
+    const captureResult = await this.captureAndSaveScreen();
+
+    if (!captureResult.success || !captureResult.path) {
+      return { success: false, error: captureResult.error };
+    }
+
+    return await this.uploadScreenshotViaHttp(captureResult.path, uploadUrl, extraData);
+  }
+
+  // =============================================
+  // 4. Capture and get Base64 (Best for WebSocket)
+  // =============================================
+
+
+/////
+// captureScreenAsBase64().then(base64 => {
+//     if (!base64) return;
+
+//     const payload = {
+//       type: 'screenshot',
+//       machineId: 'VM-001',
+//       timestamp: new Date().toISOString(),
+//       image: base64,                    // ← base64 string
+//       format: 'png'
+//     };
+
+//     if (ws && ws.readyState === WebSocket.OPEN) {
+//       ws.send(JSON.stringify(payload));
+//       console.log('Screenshot sent via WebSocket');
+//     }
+//   });
+
+
+  async captureScreenAsBase64(): Promise<string | null> {
+    try {
+      const result = await ScreenCapture.captureScreen();
+
+      if (!result.success || !result.path) {
+        console.error('Failed to capture for base64');
+        return null;
+      }
+
+      // Read file and convert to base64
+      const fileResponse = await fetch(`file://${result.path}`);
+      const blob = await fileResponse.blob();
+
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1]; // remove data:image/png;base64,
+          resolve(base64);
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (err) {
+      console.error('captureScreenAsBase64 error:', err);
+      return null;
+    }
+  }
+
+  async takeScreenshotAndUpload(serverUploadUrl: string) {
+    try {
+      const result = await this.captureAndSaveScreen();
+
+      if (!result.success || !result.path) {
+        console.error('Screenshot failed');
+        return;
+      }
+
+      console.log('Screenshot saved at:', result.path);
+
+      // === Option A: Upload from TypeScript (recommended) ===
+      // You can use @capacitor/http or fetch + FormData
+      const fileResponse = await fetch(`file://${result.path}`);
+      const blob = await fileResponse.blob();
+
+      const formData = new FormData();
+      formData.append('screenshot', blob, result.filename || 'screenshot.png');
+      formData.append('machineId', 'YOUR_MACHINE_ID'); // optional
+      formData.append('timestamp', new Date().toISOString());
+
+      const uploadRes = await fetch(serverUploadUrl, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (uploadRes.ok) {
+        console.log('Screenshot uploaded successfully');
+      } else {
+        console.error('Upload failed');
+      }
+
+    } catch (err) {
+      console.error('Screenshot error:', err);
+    }
+  }
+  ////
+
+
+  /// REBOOT
+  async rebootMachine() {
     try {
       await Reboot.reboot();
     } catch (err) {
       console.error('Reboot failed:', err);
     }
   }
+
+
+
+
+
+
+
   vendingGoPageSound() {
     this.soundPaymentMethod();
     setTimeout(() => {
