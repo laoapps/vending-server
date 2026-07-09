@@ -170,10 +170,15 @@ import { ProductCreditFactory } from "../entities/productcredit.entity";
 import { BlockchainValueAPI } from "./blockchain.routes";
 import { addValue } from "../controllers/blockchain.controller";
 import { AnomalyDetector } from "../services/anomalyDetection";
+import multer from 'multer';
+
 
 
 export const SERVER_TIME_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+const uploadFile = multer({
+    storage: multer.memoryStorage(),
+});
 
 export class InventoryZDM8 implements IBaseClass {
 
@@ -5551,21 +5556,29 @@ export class InventoryZDM8 implements IBaseClass {
 
 
             router.post(this.path + '/saveScreenshot',
+                uploadFile.single('screenshot'),
                 // this.checkSuperAdmin,
                 async (req, res) => {
                     try {
+                        if (!req.file) {
+                            return res.status(400).json({
+                                success: false,
+                                message: 'No file',
+                            });
+                        }
                         const machineToken = req.body.token;
-                        const base64Image = req.body.base64Image;
-                        if (!machineToken || !base64Image) {
+                        if (!machineToken) {
                             return res.send(PrintError('saveScreenshot', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
                         }
                         const machineData = this.findMachineIdToken(machineToken);
                         if (!machineData) {
                             return res.send(PrintError('saveScreenshot', null, EMessage.machineNotExist, returnLog(req, res, true)));
                         }
+                        const base64 = req.file.buffer.toString('base64');
+                        const dataUri = `data:${req.file.mimetype};base64,${base64}`;
                         const redisDoc = `${machineData.machineId}_SAVESCREENSHOT`;
-                        await redisClient.setex(redisDoc, 24 * 60 * 60, base64Image);
-                        redisClient.save();
+                        await redisClient.setex(redisDoc, 24 * 60 * 60, dataUri);
+
                         return res.send(PrintSucceeded('saveScreenshot', machineData, EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
                         console.error('Error saveScreenshot is :', JSON.stringify(error));
