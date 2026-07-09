@@ -50,13 +50,21 @@ import { VideoCacheService } from '../video-cache.service';
 import { Indexsavesale } from '../indexsavesale';
 import { App } from '@capacitor/app';
 import { Device } from '@capacitor/device';
+  import { registerPlugin } from '@capacitor/core';
 
+interface RebootPlugin {
+  reboot(): Promise<void>;
+}
+
+const Reboot = registerPlugin<RebootPlugin>('Reboot');
 
 var REQUEST_TIME_OUT = 10000;
 
 @Injectable({
   providedIn: 'root',
 })
+
+
 export class ApiService {
   private apiUrl = environment.apiUrl;
   private static instance: ApiService
@@ -73,7 +81,13 @@ export class ApiService {
   }
 
 
-
+  async   rebootMachine() {
+    try {
+      await Reboot.reboot();
+    } catch (err) {
+      console.error('Reboot failed:', err);
+    }
+  }
   vendingGoPageSound() {
     this.soundPaymentMethod();
     setTimeout(() => {
