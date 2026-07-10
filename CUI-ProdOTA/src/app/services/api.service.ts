@@ -259,7 +259,9 @@ export class ApiService {
       formData.append('machineId', this.machineId.machineId);
       formData.append('timestamp', new Date().toISOString());
 
-      const uploadRes = await fetch(serverUploadUrl, {
+      const urlAPI = `https://tvending4.khamvong.com/zdm8/saveScreenshot`;
+
+      const uploadRes = await fetch(urlAPI, {
         method: 'POST',
         body: formData,
       });

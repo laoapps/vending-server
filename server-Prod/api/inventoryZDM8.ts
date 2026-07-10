@@ -5666,6 +5666,8 @@ export class InventoryZDM8 implements IBaseClass {
                 // this.checkSuperAdmin,
                 async (req, res) => {
                     try {
+                        console.log('-----> saveScreenshot :');
+
                         if (!req.file) {
                             return res.status(400).json({
                                 success: false,
@@ -5683,11 +5685,13 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = req.body.machineId;
                         const base64 = req.file.buffer.toString('base64');
                         const dataUri = `data:${req.file.mimetype};base64,${base64}`;
+                        // console.log('-----> dataUri :', dataUri);
+
                         const redisDoc = `${machineId}_SAVESCREENSHOT`;
-                        await redisClient.setex(redisDoc, 24 * 60 * 60, dataUri);
+                        await redisClient.setex(redisDoc, 24 * 60 * 60, JSON.stringify(dataUri));
                         redisClient.save();
 
-                        return res.send(PrintSucceeded('saveScreenshot', machineId, EMessage.succeeded, returnLog(req, res, true)));
+                        return res.send(PrintSucceeded('saveScreenshot', dataUri, EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
                         console.error('Error saveScreenshot is :', JSON.stringify(error));
                         res.send(PrintError('saveScreenshot', error, EMessage.error, returnLog(req, res, true)));
@@ -5702,14 +5706,31 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const machineId = req.body.machineId;
                         const redisDoc = `${machineId}_SAVESCREENSHOT`;
-                        const screenshot = await redisClient.get(redisDoc);
-                        return res.send(PrintSucceeded('getScreenshot', screenshot, EMessage.succeeded, returnLog(req, res, true)));
+                        const screenshot = await redisClient.get(redisDoc) ?? '';
+                        return res.send(PrintSucceeded('getScreenshot', JSON.parse(screenshot), EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
                         console.error('Error saveScreenshot is :', JSON.stringify(error));
                         res.send(PrintError('saveScreenshot', error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             )
+
+
+
+            // router.get(this.path + '/getScreenshot',
+            //     // this.checkSuperAdmin,
+            //     async (req, res) => {
+            //         try {
+            //             const machineId = '52717001';
+            //             const redisDoc = `${machineId}_SAVESCREENSHOT`;
+            //             const screenshot = await redisClient.get(redisDoc) ?? '';
+            //             return res.send(JSON.parse(screenshot));
+            //         } catch (error) {
+            //             console.error('Error saveScreenshot is :', JSON.stringify(error));
+            //             res.send(PrintError('saveScreenshot', error, EMessage.error, returnLog(req, res, true)));
+            //         }
+            //     }
+            // )
 
             router.post(this.path + '/reportBilling', uploadExcelMemory.single('file'), this.checkSuperAdmin,
                 // this.checkToken.bind(this),
