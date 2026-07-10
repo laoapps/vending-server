@@ -5672,21 +5672,22 @@ export class InventoryZDM8 implements IBaseClass {
                                 message: 'No file',
                             });
                         }
-                        const machineToken = req.body.token;
-                        if (!machineToken) {
-                            return res.send(PrintError('saveScreenshot', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
-                        }
-                        const machineData = this.findMachineIdToken(machineToken);
-                        if (!machineData) {
-                            return res.send(PrintError('saveScreenshot', null, EMessage.machineNotExist, returnLog(req, res, true)));
-                        }
+                        // const machineToken = req.body.token;
+                        // if (!machineToken) {
+                        //     return res.send(PrintError('saveScreenshot', null, EMessage.bodyIsEmpty, returnLog(req, res, true)));
+                        // }
+                        // const machineData = this.findMachineIdToken(machineToken);
+                        // if (!machineData) {
+                        //     return res.send(PrintError('saveScreenshot', null, EMessage.machineNotExist, returnLog(req, res, true)));
+                        // }
+                        const machineId = req.body.machineId;
                         const base64 = req.file.buffer.toString('base64');
                         const dataUri = `data:${req.file.mimetype};base64,${base64}`;
-                        const redisDoc = `${machineData.machineId}_SAVESCREENSHOT`;
+                        const redisDoc = `${machineId}_SAVESCREENSHOT`;
                         await redisClient.setex(redisDoc, 24 * 60 * 60, dataUri);
                         redisClient.save();
 
-                        return res.send(PrintSucceeded('saveScreenshot', machineData, EMessage.succeeded, returnLog(req, res, true)));
+                        return res.send(PrintSucceeded('saveScreenshot', machineId, EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
                         console.error('Error saveScreenshot is :', JSON.stringify(error));
                         res.send(PrintError('saveScreenshot', error, EMessage.error, returnLog(req, res, true)));
