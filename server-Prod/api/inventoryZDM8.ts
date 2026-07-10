@@ -5684,8 +5684,25 @@ export class InventoryZDM8 implements IBaseClass {
                         const dataUri = `data:${req.file.mimetype};base64,${base64}`;
                         const redisDoc = `${machineData.machineId}_SAVESCREENSHOT`;
                         await redisClient.setex(redisDoc, 24 * 60 * 60, dataUri);
+                        redisClient.save();
 
                         return res.send(PrintSucceeded('saveScreenshot', machineData, EMessage.succeeded, returnLog(req, res, true)));
+                    } catch (error) {
+                        console.error('Error saveScreenshot is :', JSON.stringify(error));
+                        res.send(PrintError('saveScreenshot', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            )
+
+
+            router.post(this.path + '/getScreenshot',
+                // this.checkSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineId = req.body.machineId;
+                        const redisDoc = `${machineId}_SAVESCREENSHOT`;
+                        const screenshot = await redisClient.get(redisDoc);
+                        return res.send(PrintSucceeded('getScreenshot', screenshot, EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
                         console.error('Error saveScreenshot is :', JSON.stringify(error));
                         res.send(PrintError('saveScreenshot', error, EMessage.error, returnLog(req, res, true)));
