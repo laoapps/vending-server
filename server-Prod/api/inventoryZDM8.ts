@@ -1464,7 +1464,7 @@ export class InventoryZDM8 implements IBaseClass {
                         })
 
 
-                        res.send(PrintSucceeded("refreshMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("rebootMachineAdmin", !!wsx, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
@@ -1518,7 +1518,7 @@ export class InventoryZDM8 implements IBaseClass {
                         })
 
 
-                        res.send(PrintSucceeded("refreshMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("takeSnapshopMachineAdmin", !!wsx, EMessage.succeeded, returnLog(req, res)));
 
                     } catch (error) {
                         console.log(error);
