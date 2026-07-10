@@ -1420,6 +1420,112 @@ export class InventoryZDM8 implements IBaseClass {
                 });
 
 
+            router.post(this.path + "/rebootMachineAdmin",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
+                        wsx.forEach(ws => {
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { reboot: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
+
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
+
+                                            },
+                                            EMessage.succeeded
+                                            ,
+                                            null
+                                        )
+                                    )
+                                );
+                        })
+
+
+                        res.send(PrintSucceeded("refreshMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
+
+
+            router.post(this.path + "/takeSnapshopMachineAdmin",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
+                        wsx.forEach(ws => {
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { takeSnapshot: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
+
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
+
+                                            },
+                                            EMessage.succeeded
+                                            ,
+                                            null
+                                        )
+                                    )
+                                );
+                        })
+
+
+                        res.send(PrintSucceeded("refreshMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("addProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
+
             router.post(this.path + "/testGenerateQR",
                 this.checkSuperAdmin,
                 this.validateSuperAdmin,

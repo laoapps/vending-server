@@ -904,6 +904,11 @@ export class Tab1Page implements OnDestroy {
               }, 5000);
               return;
             }
+
+            if (r?.takeSnapshot) {
+              this.apiService.takeScreenshotAndUpload(`${environment.url}/saveScreenshot`);
+              return;
+            }
             if (r?.recoverSale) {
               console.log('-----> RECONVER SALE');
 
