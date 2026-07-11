@@ -5752,12 +5752,16 @@ export class InventoryZDM8 implements IBaseClass {
 
 
             router.post(this.path + '/getScreenshot',
-                // this.checkSuperAdmin,
+                this.checkSuperAdmin,
+                this.checkAdmin,
                 async (req, res) => {
                     try {
                         const machineId = req.body.machineId;
                         const redisDoc = `${machineId}_SAVESCREENSHOT`;
-                        const screenshot = await redisClient.get(redisDoc) ?? '';
+                        const screenshot = await redisClient.get(redisDoc);
+                        if (!screenshot) {
+                            return res.send(PrintError('getScreenshot', null, EMessage.succeeded, returnLog(req, res, true)));
+                        }
                         return res.send(PrintSucceeded('getScreenshot', JSON.parse(screenshot), EMessage.succeeded, returnLog(req, res, true)));
                     } catch (error) {
                         console.error('Error saveScreenshot is :', JSON.stringify(error));
