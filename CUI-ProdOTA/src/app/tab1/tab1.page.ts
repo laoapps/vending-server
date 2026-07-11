@@ -2565,6 +2565,14 @@ export class Tab1Page implements OnDestroy {
     this.openAnotherModal(m);
 
   }
+
+  async takeSnapshotServer() {
+    try {
+      this.apiService.takeScreenshotAndUpload('');
+    } catch (error) {
+
+    }
+  }
   processLoadedPaidBills = false;
   async loadPaidBills() {
     if (this.processLoadedPaidBills) return;

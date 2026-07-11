@@ -5685,8 +5685,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const machineId = req.body.machineId;
                         const base64 = req.file.buffer.toString('base64');
                         const dataUri = `data:${req.file.mimetype};base64,${base64}`;
-                        // console.log('-----> dataUri :', dataUri);
-
+                        console.log('-----> dataUri :', machineId);
                         const redisDoc = `${machineId}_SAVESCREENSHOT`;
                         await redisClient.setex(redisDoc, 24 * 60 * 60, JSON.stringify(dataUri));
                         redisClient.save();

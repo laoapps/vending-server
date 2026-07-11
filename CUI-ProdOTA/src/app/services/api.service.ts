@@ -110,81 +110,6 @@ export class ApiService {
     }
   }
 
-  // =============================================
-  // 2. Upload saved screenshot via HTTPS (FormData)
-  // =============================================
-  async uploadScreenshotViaHttp(
-    filePath: string,
-    uploadUrl: string,
-    extraData: Record<string, string> = {}
-  ): Promise<{ success: boolean; message?: string }> {
-    try {
-      const fileResponse = await fetch(`file://${filePath}`);
-      const blob = await fileResponse.blob();
-
-      const formData = new FormData();
-      formData.append('screenshot', blob, 'screenshot.png');
-
-      // Add any extra data (machineId, timestamp, etc.)
-      Object.keys(extraData).forEach(key => {
-        formData.append(key, extraData[key]);
-      });
-
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        return { success: true, message: 'Uploaded successfully' };
-      } else {
-        const text = await response.text();
-        return { success: false, message: `Upload failed: ${text}` };
-      }
-    } catch (err: any) {
-      console.error('uploadScreenshotViaHttp error:', err);
-      return { success: false, message: err.message };
-    }
-  }
-
-  // =============================================
-  // 3. Capture + Upload via HTTPS (convenience function)
-  // =============================================
-  async captureAndUploadViaHttp(
-    uploadUrl: string,
-    extraData: Record<string, string> = {}
-  ) {
-    const captureResult = await this.captureAndSaveScreen();
-
-    if (!captureResult.success || !captureResult.path) {
-      return { success: false, error: captureResult.error };
-    }
-
-    return await this.uploadScreenshotViaHttp(captureResult.path, uploadUrl, extraData);
-  }
-
-  // =============================================
-  // 4. Capture and get Base64 (Best for WebSocket)
-  // =============================================
-
-
-  /////
-  // captureScreenAsBase64().then(base64 => {
-  //     if (!base64) return;
-
-  //     const payload = {
-  //       type: 'screenshot',
-  //       machineId: 'VM-001',
-  //       timestamp: new Date().toISOString(),
-  //       image: base64,                    // ← base64 string
-  //       format: 'png'
-  //     };
-
-  //     if (ws && ws.readyState === WebSocket.OPEN) {
-  //       ws.send(JSON.stringify(payload));
-  //       console.log('Screenshot sent via WebSocket');
-  //     }
-  //   });
 
   checkProcessTime(): boolean {
     const key = 'lastProcessTime';
@@ -257,22 +182,28 @@ export class ApiService {
       const formData = new FormData();
       formData.append('screenshot', blob, result.filename || 'screenshot.png');
       formData.append('machineId', this.machineId.machineId);
-      formData.append('timestamp', new Date().toISOString());
+      // formData.append('timestamp', new Date().toISOString());
+      const serverURL = 'https://tvending4.khamvong.com/zdm8/saveScreenshot';
 
-      const urlAPI = `https://tvending4.khamvong.com/zdm8/saveScreenshot`;
-
-      const uploadRes = await fetch(urlAPI, {
+      const uploadRes = await fetch(serverURL, {
         method: 'POST',
         body: formData,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (uploadRes.ok) {
+        this.alertSuccess('Screenshot uploaded successfully');
         console.log('Screenshot uploaded successfully');
       } else {
+        this.alertError('Upload failed');
+
         console.error('Upload failed');
       }
 
     } catch (err) {
+      this.alertError('Screenshot error:')
       console.error('Screenshot error:', err);
     }
   }
@@ -291,6 +222,82 @@ export class ApiService {
 
 
 
+
+  // =============================================
+  // 2. Upload saved screenshot via HTTPS (FormData)
+  // =============================================
+  // async uploadScreenshotViaHttp(
+  //   filePath: string,
+  //   uploadUrl: string,
+  //   extraData: Record<string, string> = {}
+  // ): Promise<{ success: boolean; message?: string }> {
+  //   try {
+  //     const fileResponse = await fetch(`file://${filePath}`);
+  //     const blob = await fileResponse.blob();
+
+  //     const formData = new FormData();
+  //     formData.append('screenshot', blob, 'screenshot.png');
+
+  //     // Add any extra data (machineId, timestamp, etc.)
+  //     Object.keys(extraData).forEach(key => {
+  //       formData.append(key, extraData[key]);
+  //     });
+
+  //     const response = await fetch(uploadUrl, {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+
+  //     if (response.ok) {
+  //       return { success: true, message: 'Uploaded successfully' };
+  //     } else {
+  //       const text = await response.text();
+  //       return { success: false, message: `Upload failed: ${text}` };
+  //     }
+  //   } catch (err: any) {
+  //     console.error('uploadScreenshotViaHttp error:', err);
+  //     return { success: false, message: err.message };
+  //   }
+  // }
+
+  // =============================================
+  // 3. Capture + Upload via HTTPS (convenience function)
+  // =============================================
+  // async captureAndUploadViaHttp(
+  //   uploadUrl: string,
+  //   extraData: Record<string, string> = {}
+  // ) {
+  //   const captureResult = await this.captureAndSaveScreen();
+
+  //   if (!captureResult.success || !captureResult.path) {
+  //     return { success: false, error: captureResult.error };
+  //   }
+
+  //   return await this.uploadScreenshotViaHttp(captureResult.path, uploadUrl, extraData);
+  // }
+
+  // =============================================
+  // 4. Capture and get Base64 (Best for WebSocket)
+  // =============================================
+
+
+  /////
+  // captureScreenAsBase64().then(base64 => {
+  //     if (!base64) return;
+
+  //     const payload = {
+  //       type: 'screenshot',
+  //       machineId: 'VM-001',
+  //       timestamp: new Date().toISOString(),
+  //       image: base64,                    // ← base64 string
+  //       format: 'png'
+  //     };
+
+  //     if (ws && ws.readyState === WebSocket.OPEN) {
+  //       ws.send(JSON.stringify(payload));
+  //       console.log('Screenshot sent via WebSocket');
+  //     }
+  //   });
 
 
 
