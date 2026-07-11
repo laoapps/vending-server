@@ -1658,6 +1658,57 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 });
 
+
+            router.post(this.path + "/rebootMachine",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const m = req?.body?.data?.machineId;
+                        const wsx = this.wsClient.filter(v => v['machineId'] === m);
+                        wsx.forEach(ws => {
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: {},
+                                                limiter: {},
+                                                merchant: {},
+                                                mymmachinebalance: {},
+                                                mymlimiterbalance: {},
+                                                setting: { reboot: true },
+                                                mstatus: {},
+                                                mymstatus: {},
+                                                mymsetting: {},
+                                                mymlimiter: {},
+                                                app_version: {},
+                                                pendingStock: {},
+
+                                                adsSetting: {},
+                                                adsVersion: {},
+                                                settingVersion: {},
+
+                                            },
+                                            EMessage.succeeded
+                                            ,
+                                            null
+                                        )
+                                    )
+                                );
+                        })
+
+
+                        res.send(PrintSucceeded("rebootMachine", !!wsx, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("rebootMachine", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                });
             router.post(this.path + "/validateHMVending",
                 async (req, res) => {
                     try {
@@ -5686,6 +5737,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const base64 = req.file.buffer.toString('base64');
                         const dataUri = `data:${req.file.mimetype};base64,${base64}`;
                         console.log('-----> dataUri :', machineId);
+
                         const redisDoc = `${machineId}_SAVESCREENSHOT`;
                         await redisClient.setex(redisDoc, 24 * 60 * 60, JSON.stringify(dataUri));
                         redisClient.save();
