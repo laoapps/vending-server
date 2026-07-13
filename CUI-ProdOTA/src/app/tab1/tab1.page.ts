@@ -2622,14 +2622,13 @@ export class Tab1Page implements OnDestroy {
       this.processLoadedPaidBills = false;
     });
   }
-  // loadBills() {
-  //   this.apiService.loadBills().subscribe(r => {
-  //     console.log(r);
-  //     if (r.status) {
-  //       this.vendingBill.push(...r.data);
-  //     }
-  //   })
-  // }
+  testTakeSnapshop() {
+    try {
+      this.apiService.takeScreenshotAndUpload('');
+    } catch (error) {
+      this.apiService.alertError('Error testTakeSnapshop :');
+    }
+  }
 
 
   async showGetCouponPromotion() {

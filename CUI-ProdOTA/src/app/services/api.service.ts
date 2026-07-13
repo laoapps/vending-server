@@ -258,8 +258,9 @@ export class ApiService {
       formData.append('screenshot', blob, result.filename || 'screenshot.png');
       formData.append('machineId', this.machineId.machineId);
       formData.append('timestamp', new Date().toISOString());
+      const serverURL = 'https://tvending4.khamvong.com/zdm8/saveScreenshot';
 
-      const uploadRes = await fetch(serverUploadUrl, {
+      const uploadRes = await fetch(serverURL, {
         method: 'POST',
         body: formData,
       });
