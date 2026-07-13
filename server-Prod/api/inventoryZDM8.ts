@@ -9900,7 +9900,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 const redisSaveValue = await redisClient.get(redisKey);
                                 if (redisSaveValue) {
                                     await redisClient.del(redisKey);
-                                    return ws.send(
+                                    ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
                                                 "ping",
