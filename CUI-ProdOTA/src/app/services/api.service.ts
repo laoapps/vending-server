@@ -243,33 +243,33 @@ export class ApiService {
 
   async takeScreenshotAndUpload(serverUploadUrl: string) {
     try {
-      const result = await this.captureAndSaveScreen();
+      // const result = await this.captureAndSaveScreen();
 
-      if (!result.success || !result.path) {
-        console.error('Screenshot failed');
-        return;
-      }
+      // if (!result.success || !result.path) {
+      //   console.error('Screenshot failed');
+      //   return;
+      // }
 
-      // console.log('Screenshot saved at:', result.path);
-      const fileResponse = await fetch(`file://${result.path}`);
-      const blob = await fileResponse.blob();
+      // // console.log('Screenshot saved at:', result.path);
+      // const fileResponse = await fetch(`file://${result.path}`);
+      // const blob = await fileResponse.blob();
 
-      const formData = new FormData();
-      formData.append('screenshot', blob, result.filename || 'screenshot.png');
-      formData.append('machineId', this.machineId.machineId);
-      formData.append('timestamp', new Date().toISOString());
-      const serverURL = 'https://tvending4.khamvong.com/zdm8/saveScreenshot';
+      // const formData = new FormData();
+      // formData.append('screenshot', blob, result.filename || 'screenshot.png');
+      // formData.append('machineId', this.machineId.machineId);
+      // formData.append('timestamp', new Date().toISOString());
+      // const serverURL = 'https://tvending4.khamvong.com/zdm8/saveScreenshot';
 
-      const uploadRes = await fetch(serverURL, {
-        method: 'POST',
-        body: formData,
-      });
+      // const uploadRes = await fetch(serverURL, {
+      //   method: 'POST',
+      //   body: formData,
+      // });
 
-      if (uploadRes.ok) {
-        console.log('Screenshot uploaded successfully');
-      } else {
-        console.error('Upload failed');
-      }
+      // if (uploadRes.ok) {
+      //   console.log('Screenshot uploaded successfully');
+      // } else {
+      //   console.error('Upload failed');
+      // }
 
     } catch (err) {
       console.error('Screenshot error:', err);
