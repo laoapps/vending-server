@@ -9892,15 +9892,12 @@ export class InventoryZDM8 implements IBaseClass {
                         else if (d.command == "ping") {
                             try {
 
-
-
-
                                 /////
                                 const redisKey = `${ws['machineId']}_RECOVERSALE`;
                                 const redisSaveValue = await redisClient.get(redisKey);
                                 if (redisSaveValue) {
                                     await redisClient.del(redisKey);
-                                    return ws.send(
+                                    ws.send(
                                         JSON.stringify(
                                             PrintSucceeded(
                                                 "ping",
@@ -9912,10 +9909,6 @@ export class InventoryZDM8 implements IBaseClass {
                                         )
                                     );
                                 }
-
-
-
-
                                 let settingVersion = d?.data?.settingVersion;
                                 let adsVersion = d?.data?.adsVersion;
                                 let clientVersion = d?.data?.clientVersion;
