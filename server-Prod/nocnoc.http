@@ -1,0 +1,13 @@
+### Validate Token - User Manager
+POST https://nocnoc-api.laoapps.com/
+Content-Type: application/json
+BackendKey: cf4f51eb-c999-4077-b7ca-110a66d563e5
+
+{
+  "object": "authorize",
+  "method": "validateToken",
+  "data": {
+    "service": "ADMINVENDINGSERVICE",
+    "token": ""
+  }
+}

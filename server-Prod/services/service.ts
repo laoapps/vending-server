@@ -339,8 +339,6 @@ export function findPhoneNumberByUuidOnUserManager(uuid: string): Promise<any> {
 export function validateTokenOnUserManager(token: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
         try {
-
-
             const validateParams: any = {
                 object: "authorize",
                 method: "validateToken",
@@ -354,9 +352,11 @@ export function validateTokenOnUserManager(token: string): Promise<any> {
             const validated = await axios.post(USERMANAGER_URL, validateParams, { headers: { 'Content-Type': 'application/json', 'BackendKey': process.env.SERVICE_BACKEND_KEY + '' } });
             // console.log('validated', validated.data);
 
+            console.log('validateTokenOnUserManager', validated.data);
             if (validated.data.status != 1) return resolve('');
             resolve(validated.data.data);//uuid
         } catch (error) {
+            console.log('error validateTokenOnUserManager', error);
             reject(error);
         }
     });
