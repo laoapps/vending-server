@@ -23,6 +23,7 @@ import { ReportCallbacklogPage } from '../report-callbacklog/report-callbacklog.
 import { PaidOrdersModalComponent } from '../modals/paid-orders-modal/paid-orders-modal.component';
 import { TicketListPage } from '../ticket-list/ticket-list.page';
 import { SettingConfigPage } from '../setting-config/setting-config.page';
+import { CompareExcelPage } from '../compare-excel/compare-excel.page';
 interface MachineData {
   machineId: string;
   owner: string;
@@ -466,6 +467,21 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   async openConfigMachine() {
     const modal = await this.modalCtrl.create({
       component: SettingConfigPage,
+      cssClass: 'full-screen-modal',     // ← Important
+      backdropDismiss: true,
+      showBackdrop: true,
+      breakpoints: [0.95],              // Makes it almost full screen (95%)
+      initialBreakpoint: 0.95,
+      handle: false,                    // Hide the drag handle
+    });
+
+    await modal.present();
+  }
+
+
+  async openCompareExecl() {
+    const modal = await this.modalCtrl.create({
+      component: CompareExcelPage,
       cssClass: 'full-screen-modal',     // ← Important
       backdropDismiss: true,
       showBackdrop: true,

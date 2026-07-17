@@ -66,6 +66,69 @@ export class BillingPage implements OnInit {
     this.initDate();
   }
 
+  adjustDay(dateStr: string, days: number): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() + days);
+
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+
+    return `${y}-${m}-${dd}`;
+  }
+
+
+  // filterByDateUTC7Server(
+  //   data: any[],
+  //   fromDate: string,
+  //   toDate: string
+  // ) {
+  //   return data.filter((item) => {
+  //     if (!item["createdAt"]) {
+  //       return false;
+  //     }
+
+  //     const date = moment
+  //       .utc(item["createdAt"])
+  //       .tz("Asia/Vientiane")
+  //       .format("YYYY-MM-DD");
+
+  //     return date >= fromDate && date < toDate;
+  //   });
+  // }
+
+
+  filterByDateUTC7Server(
+    data: any[],
+    fromDate: string,
+    toDate: string
+  ) {
+
+
+    return data
+      .filter((item) => {
+        if (!item["createdAt"]) {
+          return false;
+        }
+
+        const date = moment
+          .utc(item["createdAt"])
+          .tz("Asia/Vientiane")
+          .format("YYYY-MM-DD");
+
+        return date >= fromDate && date < toDate;
+      })
+      .map((item) => ({
+        ...item,
+        createdAt: moment
+          .utc(item["createdAt"])
+          .tz("Asia/Vientiane")
+          .format("YYYY-MM-DD HH:mm:ss"),
+
+      }));
+  }
 
   async storeOpen(type) {
 
@@ -149,20 +212,9 @@ export class BillingPage implements OnInit {
     );
   }
 
-  // mapBankInMy(data: any[]) {
-  //   return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
-  //     .map(item => ({
-  //       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-  //       "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
-  //       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-  //       "ວັນທີ": item["ວັນທີ"].toString()
-  //     }));
-  // }
-
   mapBankInMy(data: any[]) {
     // filter + map รายการปกติ
     const filtered = data
-      .filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
       .map(item => ({
         "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
         "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
@@ -174,23 +226,11 @@ export class BillingPage implements OnInit {
 
       }));
 
-    // -------- คำนวณข้อมูลสรุป --------
-
-    // 1) จำนวนทั้งหมด
     const totalCount = filtered.length;
-
-    // 2) รวมจำนวนเงินทั้งหมด
     const totalMoney = filtered.reduce((sum, item) => {
       return sum + Number(item["ຈຳນວນເງິນ"]);
     }, 0);
-
-    // 3) อัตรา 4.5%
-    // const rate = 4.5;
-
-    // 4) ค่าบริการ Franchise fee
     const franchiseFee = (totalMoney * this.rate) / 100;
-
-    // -------- เพิ่ม 4 records ต่อท้าย --------
 
     const summaryRows = [
       {
@@ -238,55 +278,11 @@ export class BillingPage implements OnInit {
 
 
 
-  // mapMyNotInBankNotPaid(data: any[]) {
-  //   const EXCEL_LIMIT = 32767;
-
-  //   return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
-  //     const sales = item['vendingsales'] || [];
-
-  //     // 1) ตรวจว่ามี dropAt == null หรือไม่
-  //     const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
-
-  //     // 2) ย่อข้อมูล vendingsales
-  //     const compactSales = sales.map((s: any) => ({
-  //       position: s.position,
-  //       dropAt: s.dropAt,
-  //       machineId: s.machineId,
-  //       name: s.stock?.name,
-  //       price: s.stock?.price,
-  //       qtty: s.qtty
-  //     }));
-
-  //     // 3) JSON string
-  //     const refString = JSON.stringify(compactSales);
-  //     const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
-
-  //     // 4) สร้าง object ผลลัพธ์
-  //     const result: any = {
-  //       "ເລກທູລະກຳ": item["transactionID"],
-  //       "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
-  //       "ຊ່ອງທາງ": item["paymentref"],
-  //       "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
-  //     };
-
-  //     // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
-  //     if (hasNullDropAt) {
-  //       result["ພິເສດ"] = true;
-  //     }
-
-  //     // 6) ใส่ ref ต่อท้าย
-  //     result["ref"] = safeRef;
-
-  //     return result;
-  //   });
-  // }
-
   mapMyNotInBankNotPaid(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
     // ⭐ 1) Filter + map ข้อมูลหลัก
     const mapped = data
-      .filter(item => this.isBetweenDateHM(item["createdAt"].toString()))
       .map(item => {
         const sales = item['vendingsales'] || [];
 
@@ -309,7 +305,7 @@ export class BillingPage implements OnInit {
           "ເລກທູລະກຳ": item["transactionID"],
           "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
           "ຊ່ອງທາງ": item["paymentref"],
-          "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+          "ວັນທີ": item["createdAt"].toString(),
           "ເລກຕູ້": item["machineId"] ?? ''
         };
 
@@ -323,19 +319,12 @@ export class BillingPage implements OnInit {
         return result;
       });
 
-
-    // ⭐ 2) คำนวณ summary
     const totalCount = mapped.length;
     const totalMoney = mapped.reduce(
       (sum, item) => sum + Number(item["ຈຳນວນເງິນ"]),
       0
     );
-
-    // const rate = 4.5;
     const fee = totalMoney * (this.rate / 100);
-
-    // ⭐ 3) เพิ่ม 1 แถวว่าง + summary 4 แถว
-    // const emptyRow = { "": "" };
 
     const summaryRows = [
       { "ຈຳນວນທັງໝົດ": totalCount },
@@ -343,8 +332,6 @@ export class BillingPage implements OnInit {
     ];
 
     this.myNotInBankNotPaidData = summaryRows;
-
-    // ⭐ 4) return รวมทั้งหมด
     return [...mapped, ...summaryRows];
   }
 
@@ -352,15 +339,7 @@ export class BillingPage implements OnInit {
 
 
   mapMyNotInBankPaid(data: any[]) {
-    // return data.filter(item => this.isBetweenDateMMoney(item["txnDateTime"].toString())).
-    //   map(item => ({
-    //     "ເລກທູລະກຳ": item["billNumber"],
-    //     "ຈຳນວນເງິນ": this.clearPrice(item["txnAmount"].toString()),
-    //     "ຊ່ອງທາງ": item["refNo"],
-    //     "ວັນທີ": item["txnDateTime"].toString()
-    //   }));
-
-    const filtered = data.filter(item => this.isBetweenDateMMoney(item["txnDateTime"].toString())).
+    const filtered = data.
       map(item => ({
         "ເລກທູລະກຳ": item["billNumber"],
         "ຈຳນວນເງິນ": this.clearPrice(item["txnAmount"].toString()),
@@ -371,24 +350,11 @@ export class BillingPage implements OnInit {
         )?.machineId ?? ""
 
       }));
-
-    // -------- คำนวณข้อมูลสรุป --------
-
-    // 1) จำนวนทั้งหมด
     const totalCount = filtered.length;
-
-    // 2) รวมจำนวนเงินทั้งหมด
     const totalMoney = filtered.reduce((sum, item) => {
       return sum + Number(item["ຈຳນວນເງິນ"]);
     }, 0);
-
-    // 3) อัตรา 4.5%
-    // const rate = 4.5;
-
-    // 4) ค่าบริการ Franchise fee
     const franchiseFee = (totalMoney * this.rate) / 100;
-
-    // -------- เพิ่ม 4 records ต่อท้าย --------
     const summaryRows = [
       {
         "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
@@ -402,20 +368,11 @@ export class BillingPage implements OnInit {
     ];
 
     this.myNotInBankPaidData = summaryRows;
-
-    // return = ข้อมูลเดิม + 4 แถวสรุป
     return [...filtered, ...summaryRows];
   }
 
   mapMyBankNoServer(data: any[]) {
-    // return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
-    //   "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-    //   "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
-    //   "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-    //   "ວັນທີ": item["ວັນທີ"].toString()
-    // }));
-
-    const filtered = data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
+    const filtered = data.map(item => ({
       "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
       "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
       "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
@@ -425,19 +382,11 @@ export class BillingPage implements OnInit {
       )?.machineId ?? ""
 
     }));
-
-    // -------- คำนวณข้อมูลสรุป --------
-
-    // 1) จำนวนทั้งหมด
     const totalCount = filtered.length;
-
-    // 2) รวมจำนวนเงินทั้งหมด
     const totalMoney = filtered.reduce((sum, item) => {
       return sum + Number(item["ຈຳນວນເງິນ"]);
     }, 0);
 
-
-    // -------- เพิ่ม 4 records ต่อท้าย --------
     const summaryRows = [
       {
         "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
@@ -455,15 +404,8 @@ export class BillingPage implements OnInit {
 
 
   mapAllMMoney(data: any[]) {
-    // return data.filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString())).map(item => ({
-    //   "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
-    //   "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
-    //   "ຊ່ອງທາງ": item["ຊ່ອງທາງ"],
-    //   "ວັນທີ": item["ວັນທີ"].toString()
-    // }));
 
     const filtered = data
-      .filter(item => this.isBetweenDateMMoney(item["ວັນທີ"].toString()))
       .map(item => ({
         "ເລກທູລະກຳ": item["ເລກທູລະກຳ"],
         "ຈຳນວນເງິນ": this.clearPrice(item["ຈຳນວນເງິນ"].toString()),
@@ -475,23 +417,14 @@ export class BillingPage implements OnInit {
 
       }));
 
-    // -------- คำนวณข้อมูลสรุป --------
-
-    // 1) จำนวนทั้งหมด
     const totalCount = filtered.length;
 
     // 2) รวมจำนวนเงินทั้งหมด
     const totalMoney = filtered.reduce((sum, item) => {
       return sum + Number(item["ຈຳນວນເງິນ"]);
     }, 0);
-
-    // 3) อัตรา 4.5%
-    // const rate = 4.5;
-
-    // 4) ค่าบริการ Franchise fee
     const franchiseFee = (totalMoney * this.rate) / 100;
 
-    // -------- เพิ่ม 4 records ต่อท้าย --------
     const summaryRows = [
       {
         "ລາຍການສະຫຼຸບ": "ຈຳນວນທັງໝົດ",
@@ -516,8 +449,6 @@ export class BillingPage implements OnInit {
       this.totalFranchiseCount = franchiseFee;
     }
     this.allMMoneyData = summaryRows;
-
-    // return = ข้อมูลเดิม + 4 แถวสรุป
     return [...filtered, ...summaryRows];
   }
 
@@ -525,13 +456,9 @@ export class BillingPage implements OnInit {
   mapMyBankServer(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
-    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
+    return data.map(item => {
       const sales = item['vendingsales'] || [];
-
-      // 1) ตรวจว่ามี dropAt == null หรือไม่
       const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
-
-      // 2) ย่อข้อมูล vendingsales
       const compactSales = sales.map((s: any) => ({
         position: s.position,
         dropAt: s.dropAt,
@@ -540,26 +467,19 @@ export class BillingPage implements OnInit {
         price: s.stock?.price,
         qtty: s.qtty
       }));
-
-      // 3) JSON string
       const refString = JSON.stringify(compactSales);
       const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
-
-      // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ວັນທີ": item["createdAt"].toString(),
         "ເລກຕູ້": item["machineId"] ?? ''
       };
-
-      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
       if (hasNullDropAt) {
         result["ພິເສດ"] = true;
       }
 
-      // 6) ใส่ ref ต่อท้าย
       result["ref"] = safeRef;
 
       return result;
@@ -570,13 +490,9 @@ export class BillingPage implements OnInit {
   MapMyBillNotPaid(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
-    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
+    return data.map(item => {
       const sales = item['vendingsales'] || [];
-
-      // 1) ตรวจว่ามี dropAt == null หรือไม่
       const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
-
-      // 2) ย่อข้อมูล vendingsales
       const compactSales = sales.map((s: any) => ({
         position: s.position,
         dropAt: s.dropAt,
@@ -585,26 +501,18 @@ export class BillingPage implements OnInit {
         price: s.stock?.price,
         qtty: s.qtty
       }));
-
-      // 3) JSON string
       const refString = JSON.stringify(compactSales);
       const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
-
-      // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentmethod"],
-        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ວັນທີ": item["createdAt"].toString(),
         "ເລກຕູ້": item["machineId"] ?? ''
       };
-
-      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
       if (hasNullDropAt) {
         result["ພິເສດ"] = true;
       }
-
-      // 6) ใส่ ref ต่อท้าย
       result["ref"] = safeRef;
 
       return result;
@@ -614,13 +522,9 @@ export class BillingPage implements OnInit {
   MapMySaleServer(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
-    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
+    return data.map(item => {
       const sales = item['vendingsales'] || [];
-
-      // 1) ตรวจว่ามี dropAt == null หรือไม่
       const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
-
-      // 2) ย่อข้อมูล vendingsales
       const compactSales = sales.map((s: any) => ({
         position: s.position,
         dropAt: s.dropAt,
@@ -629,26 +533,20 @@ export class BillingPage implements OnInit {
         price: s.stock?.price,
         qtty: s.qtty
       }));
-
-      // 3) JSON string
       const refString = JSON.stringify(compactSales);
       const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
-
-      // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ວັນທີ": item["createdAt"].toString(),
         "ເລກຕູ້": item["machineId"] ?? ''
       };
 
-      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
       if (hasNullDropAt) {
         result["ພິເສດ"] = true;
       }
 
-      // 6) ใส่ ref ต่อท้าย
       result["ref"] = safeRef;
 
       return result;
@@ -659,13 +557,11 @@ export class BillingPage implements OnInit {
   MapMySaleSuccess(data: any[]) {
     const EXCEL_LIMIT = 32767;
 
-    return data.filter(item => this.isBetweenDateHM(item["createdAt"].toString())).map(item => {
+    return data.map(item => {
       const sales = item['vendingsales'] || [];
 
-      // 1) ตรวจว่ามี dropAt == null หรือไม่
       const hasNullDropAt = sales.some((s: any) => s.dropAt == null);
 
-      // 2) ย่อข้อมูล vendingsales
       const compactSales = sales.map((s: any) => ({
         position: s.position,
         dropAt: s.dropAt,
@@ -675,20 +571,17 @@ export class BillingPage implements OnInit {
         qtty: s.qtty
       }));
 
-      // 3) JSON string
       const refString = JSON.stringify(compactSales);
       const safeRef = refString.length > EXCEL_LIMIT ? "" : refString;
 
-      // 4) สร้าง object ผลลัพธ์
       const result: any = {
         "ເລກທູລະກຳ": item["transactionID"],
         "ຈຳນວນເງິນ": this.clearPrice(item["totalvalue"].toString()),
         "ຊ່ອງທາງ": item["paymentref"],
-        "ວັນທີ": this.convertTimeZone(item["createdAt"].toString()),
+        "ວັນທີ": item["createdAt"].toString(),
         "ເລກຕູ້": item["machineId"] ?? ''
       };
 
-      // 5) ถ้ามี dropAt == null → เพิ่ม field ใหม่ *ก่อน ref*
       if (hasNullDropAt) {
         result["ພິເສດ"] = true;
       }
@@ -703,42 +596,42 @@ export class BillingPage implements OnInit {
     return parseInt(price?.replace(/\D/g, ''));
   }
 
-  isBetweenDateMMoney(
-    dateTime: string,
+  // isBetweenDateMMoney(
+  //   dateTime: string,
 
-  ): boolean {
-    const checkDate = new Date(dateTime);
-    const start = new Date(this.fromDate + " 00:00:00");
-    const end = new Date(this.toDate + " 23:59:59");
-    end.setDate(end.getDate() - 1);
-    return checkDate >= start && checkDate <= end;
-  }
+  // ): boolean {
+  //   const checkDate = new Date(dateTime);
+  //   const start = new Date(this.fromDate + " 00:00:00");
+  //   const end = new Date(this.toDate + " 23:59:59");
+  //   end.setDate(end.getDate() - 1);
+  //   return checkDate >= start && checkDate <= end;
+  // }
 
-  isBetweenDateHM(
-    utcDateTime: string,
-  ): boolean {
+  // isBetweenDateHM(
+  //   utcDateTime: string,
+  // ): boolean {
 
-    const utcDate = new Date(utcDateTime);
+  //   const utcDate = new Date(utcDateTime);
 
-    if (isNaN(utcDate.getTime())) {
-      return false;
-    }
+  //   if (isNaN(utcDate.getTime())) {
+  //     return false;
+  //   }
 
-    const localTime = moment.utc(utcDateTime).tz("Asia/Bangkok").toDate();
+  //   const localTime = moment.utc(utcDateTime).tz("Asia/Bangkok").toDate();
 
-    const start = new Date(this.fromDate + "T00:00:00");
-    const end = new Date(this.toDate + "T23:59:59");
-    end.setDate(end.getDate() - 1);
+  //   const start = new Date(this.fromDate + "T00:00:00");
+  //   const end = new Date(this.toDate + "T23:59:59");
+  //   end.setDate(end.getDate() - 1);
 
-    return localTime >= start && localTime <= end;
-  }
+  //   return localTime >= start && localTime <= end;
+  // }
 
-  convertTimeZone(utcDateTime: string) {
-    // const utcDate = new Date(utcDateTime);
-    const localTime = moment.utc(utcDateTime).tz("Asia/Bangkok").format('YYYY-MM-DD HH:mm:ss');
+  // convertTimeZone(utcDateTime: string) {
+  //   // const utcDate = new Date(utcDateTime);
+  //   const localTime = moment.utc(utcDateTime).tz("Asia/Bangkok").format('YYYY-MM-DD HH:mm:ss');
 
-    return localTime;
-  }
+  //   return localTime;
+  // }
 
 
   exportAllSheets(
@@ -777,23 +670,6 @@ export class BillingPage implements OnInit {
       const finalArray = this.mergeData(this.MapMySaleServer(allSaleServer), this.mapMyNotInBankNotPaid(myNotInBankNotPaid), this.mapMyNotInBankPaid(myNotInBankPaid));
 
       const sheet10 = XLSX.utils.json_to_sheet(this.mapAllData(finalArray));
-      // console.log('----->1.ສັງລວມ :', [this.mapBankInMy(bankInMy)[0]]);
-      // this.bankInMyData = this.mapBankInMy(bankInMy);
-      // this.allMMoneyData = this.mapAllMMoney(allMMoney);
-      // this.finalArrayData = this.mapAllData(finalArray);
-      // this.myBankNoServerData = this.mapMyBankNoServer(myBankNoServer);
-      // this.billNotPaidData = this.MapMyBillNotPaid(billNotPaid);
-      // this.myNotInBankNotPaidData = this.mapMyNotInBankNotPaid(myNotInBankNotPaid);
-      // this.myNotInBankPaidData = this.mapMyNotInBankPaid(myNotInBankPaid);
-
-
-
-      // console.log('-----> 2.MMoney :', [this.mapAllMMoney(allMMoney)[0]]);
-      // console.log('-----> 3.ການຂາຍທັງໝົດ :', [this.mapAllData(finalArray)[0]]);
-      // console.log('-----> 4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ :', [this.mapMyBankNoServer(myBankNoServer)[0]]);
-      // console.log('-----> 5.ບິນບໍ່ທັນຈ່າຍ :', [this.MapMyBillNotPaid(billNotPaid)[0]]);
-      // console.log('-----> 6.ບິນຍິງຕົກເອງ :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
-      // console.log('-----> 7.ບິນທີ່ຕ້ອງທວງເງິນ :', this.mapMyNotInBankPaid(myNotInBankPaid)[0]);
 
       // 3) เพิ่มลง workbook พร้อมตั้งชื่อแต่ละแท็บ
       XLSX.utils.book_append_sheet(wb, sheet1, "1.ສັງລວມ(3-6-7)");
@@ -801,25 +677,13 @@ export class BillingPage implements OnInit {
       XLSX.utils.book_append_sheet(wb, sheet9, "2.MMoney");
       // XLSX.utils.book_append_sheet(wb, sheet8, "ບິນທັງໝົດທີ່ຕົງກັນພ້ອມສິນຄ້າ");
       XLSX.utils.book_append_sheet(wb, sheet10, "3.ການຂາຍທັງໝົດ");
-      // console.log('----->3 :', [this.MapMySaleServer(allSaleServer)[0]]);
 
-      // XLSX.utils.book_append_sheet(wb, sheet2, "3.1.ບິນຍິງຕົກເອງ");
-      // console.log('----->3.1 :', [this.mapMyNotInBankNotPaid(myNotInBankNotPaid)[0]]);
-
-      // XLSX.utils.book_append_sheet(wb, sheet3, "3.2.ບິນທີ່ຕ້ອງທວງເງິນ");
-      // console.log('----->3.2 :', [this.mapMyNotInBankPaid(myNotInBankPaid)[0]]);
 
       XLSX.utils.book_append_sheet(wb, sheet4, "4.ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ(2)");
       XLSX.utils.book_append_sheet(wb, sheet6, "5.ບິນບໍ່ທັນຈ່າຍ");
 
       XLSX.utils.book_append_sheet(wb, sheet2, "6.ບິນຍິງຕົກເອງ");
       XLSX.utils.book_append_sheet(wb, sheet3, "7.ບິນທີ່ຕ້ອງທວງເງິນ(7-2)");
-
-
-      // XLSX.utils.book_append_sheet(wb, sheet4, "ບິນທີ່ບໍ່ຮູ້ທີ່ມາຂອງເງິນ");
-      // XLSX.utils.book_append_sheet(wb, sheet5, "ບິນທີ່ມີໃນທະນາຄານແລະມີໃນserver");
-      // XLSX.utils.book_append_sheet(wb, sheet6, "ບິນບໍ່ທັນຈ່າຍ");
-      // XLSX.utils.book_append_sheet(wb, sheet7, "ການຂາຍທັງໝົດ");
 
       // 4) สร้างไฟล์ Excel
       const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -866,79 +730,7 @@ export class BillingPage implements OnInit {
   }
 
 
-
-
-
-  // mergeData(data3: any[], data31: any[], data32: any[]) {
-  //   const result: any[] = [];
-
-  //   // ---------- ขั้นที่ 1: ใช้ data3 เป็นหลัก ----------
-  //   data3.forEach(main => {
-  //     const match31 = data31.find(d => d['ເລກທູລະກຳ'] === main['ເລກທູລະກຳ']);
-  //     const match32 = data32.find(d => d['ເລກທູລະກຳ'] === main['ເລກທູລະກຳ']);
-
-  //     result.push({
-  //       transactionID: main['ເລກທູລະກຳ'],
-  //       totalvalue: main['ຈຳນວນເງິນ'],
-  //       paymentref: main['ຊ່ອງທາງ'],
-  //       vendingsales: main['ref'] || [],
-  //       createAt: main['ວັນທີ'] ?? '',
-  //       isSendDrop: !!match31,
-  //       isRequest: !!match32,
-
-  //     });
-  //   });
-
-
-  //   // ---------- ขั้นที่ 2: หาใน 3.1 ที่ไม่มีใน 3 ----------
-  //   data31.forEach(drop => {
-  //     const exists = result.find(r => r['ເລກທູລະກຳ'] === drop['ເລກທູລະກຳ']);
-
-  //     if (!exists) {
-  //       result.push({
-  //         transactionID: drop['ເລກທູລະກຳ'],
-  //         totalvalue: drop['ຈຳນວນເງິນ'],
-  //         paymentref: drop['ຊ່ອງທາງ'],
-  //         vendingsales: [],
-  //         createAt: drop['ວັນທີ'] ?? '',
-  //         isSendDrop: true,
-  //         isRequest: false
-  //       });
-  //     }
-  //   });
-
-
-  //   // ---------- ขั้นที่ 3: หาใน 3.2 ที่ไม่มีใน 3 ----------
-  //   data32.forEach(req => {
-  //     const exists = result.find(r => r['ເລກທູລະກຳ'] === req['ເລກທູລະກຳ']);
-
-  //     if (!exists) {
-  //       result.push({
-  //         transactionID: req['ເລກທູລະກຳ'],
-  //         totalvalue: req['ຈຳນວນເງິນ'],
-  //         paymentref: req['ຊ່ອງທາງ'],
-  //         vendingsales: [],
-  //         createAt: req['ວັນທີ'] ?? '',
-  //         isSendDrop: false,
-  //         isRequest: true      // เพราะมาจาก 3.2
-  //       });
-  //     }
-  //   });
-
-  //   return result;
-  // }
-
-
   mapAllData(data: any[]) {
-    // return data.map(item => ({
-    //   "ເລກທູລະກຳ": item["transactionID"],
-    //   "ຈຳນວນເງິນ": item["totalvalue"],
-    //   "ຊ່ອງທາງ": item["paymentref"],
-    //   "ວັນທີ": item["createAt"].toString(),
-    //   "ref": item['vendingsales'],
-    //   "ຍິງຕົກເອງ": item['isSendDrop'] ? 'YES' : '',
-    //   "ຕ້ອງທວງເງິນ": item['isRequest'] ? 'YES' : '',
-    // }));
 
     const filtered = data.map(item => ({
       "ເລກທູລະກຳ": item["transactionID"],
@@ -986,20 +778,6 @@ export class BillingPage implements OnInit {
 
     return [...filtered, ...summaryRows];
   }
-
-  // ✅ เมื่อเลือกไฟล์ Excel
-  // async onFileSelected(event: any) {
-  //   try {
-  //     const file = event.target.files[0];
-  //     if (!file) return;
-
-  //     this.selectedFile = file;
-  //     this.dataExcel = await this.readExcelFile(file);
-
-  //     console.log('📘 อ่านไฟล์สำเร็จ:', this.dataExcel.length, 'แถว');
-  //   } catch (error) {
-  //     console.error('Error onFileSelected:', error);
-  //   }
   // }
 
 
@@ -1034,10 +812,19 @@ export class BillingPage implements OnInit {
 
   async initDate() {
     try {
-      const startDateInit = `${this.year}-${Number(this.month) < 10 ? `0${this.month}` : this.month}-01`;
-      this.fromDate = startDateInit;
-      const endDateInit = `${this.year}-${Number(this.month) + 1 < 10 ? `0${Number(this.month) + 1}` : Number(this.month) + 1}-01`;
-      this.toDate = endDateInit;
+      // const startDateInit = `${this.year}-${Number(this.month) < 10 ? `0${this.month}` : this.month}-01`;
+      // this.fromDate = startDateInit;
+      // const endDateInit = `${this.year}-${Number(this.month) + 1 < 10 ? `0${Number(this.month) + 1}` : Number(this.month) + 1}-01`;
+      // this.toDate = endDateInit;
+
+      const year = Number(this.year);
+      const month = Number(this.month);
+
+      const nextMonth = month === 12 ? 1 : month + 1;
+      const nextYear = month === 12 ? year + 1 : year;
+
+      this.fromDate = `${year}-${String(month).padStart(2, '0')}-01`;
+      this.toDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
     } catch (error) {
       console.log('-----> Error initDate :', error);
     }
@@ -1059,11 +846,12 @@ export class BillingPage implements OnInit {
         String(date1.getDate()).padStart(2, "0"),
       ].join("-");
 
-      const fromDate1Data: string = [
-        fromDate1.getFullYear(),
-        String(fromDate1.getMonth() + 1).padStart(2, "0"),
-        String(fromDate1.getDate()).padStart(2, "0"),
-      ].join("-");
+      // const fromDate1Data: string = [
+      //   fromDate1.getFullYear(),
+      //   String(fromDate1.getMonth() + 1).padStart(2, "0"),
+      //   String(fromDate1.getDate()).padStart(2, "0"),
+      // ].join("-");
+
       const date2 = new Date(this.toDate);
       date2.setMonth(Number(this.month) - 1);
       date2.setDate(14);
@@ -1074,7 +862,7 @@ export class BillingPage implements OnInit {
       ].join("-");
       // console.log('-----> endDate1Data :', startDate1Data);
 
-      const response1 = await this.apiService.getReportMmoneyx(fromDate1Data, endDate1Data).toPromise();
+      const response1 = await this.apiService.getReportMmoneyx(this.adjustDay(this.fromDate, -2), endDate1Data).toPromise();
       const res1Data = response1.data ?? [];
       for (let index = 0; index < res1Data.length; index++) {
         const element = res1Data[index];
@@ -1090,7 +878,7 @@ export class BillingPage implements OnInit {
         dataMmoneyFromAPI.unshift(dataToEX);
       }
 
-      const response2 = await this.apiService.getReportMmoneyx(startDate1Data, this.toDate).toPromise();
+      const response2 = await this.apiService.getReportMmoneyx(startDate1Data, this.adjustDay(this.toDate, +1)).toPromise();
       const res1Data2 = response2.data ?? [];
       for (let index = 0; index < res1Data2.length; index++) {
         const element = res1Data2[index];
@@ -1104,17 +892,28 @@ export class BillingPage implements OnInit {
         };
         dataMmoneyFromAPI.unshift(dataToEX);
       }
+
+      const resultExcel = dataMmoneyFromAPI.filter((item) => {
+        const date = item["ວັນທີ"].substring(0, 10); // YYYY-MM-DD
+        return date >= this.fromDate && date < this.toDate;
+      });
+
       const uniqueMap = new Map<string, any>();
 
-      for (const row of dataMmoneyFromAPI) {
+      for (const row of resultExcel) {
         const transactionNo = row['ເລກທູລະກຳ'];
-
         if (transactionNo && !uniqueMap.has(transactionNo)) {
           uniqueMap.set(transactionNo, row);
         }
       }
 
       this.dataExcel = Array.from(uniqueMap.values());
+      // console.log('-----> DATA EXCEL :', JSON.stringify(this.dataExcel[0]));
+
+      // console.log('-----> FROM DATE :', this.fromDate);
+      // console.log('-----> TO DATE :', this.toDate);
+
+
       // console.log('-----> JSON.stringify(this.dataExcel) :', JSON.stringify(this.dataExcel));
 
     } catch (error) {
@@ -1172,53 +971,62 @@ export class BillingPage implements OnInit {
       //   alert('กรุณาเลือกไฟล์ Excel ก่อน');
       //   return;
       // }
-      await this.onFileSelectedMmoney();
 
+      await this.onFileSelectedMmoney();
       this.apiService.showLoadingLong();
 
-      const fromDateAdjusted = moment(this.fromDate).subtract(1, 'days').format('YYYY-MM-DD');
+      // const fromDateAdjusted = moment(this.fromDate).subtract(1, 'days').format('YYYY-MM-DD');
 
       const data = {
         machineId: this.machineId,
-        fromDate: fromDateAdjusted,
-        toDate: this.toDate,
+        fromDate: this.adjustDay(this.fromDate, -2),
+        toDate: this.adjustDay(this.toDate, +2),
         token: this.token,
       };
 
       const paramsData = {
-        fromDate: fromDateAdjusted,
-        toDate: this.toDate,
+        fromDate: this.adjustDay(this.fromDate, -2),
+        toDate: this.adjustDay(this.toDate, +2),
         machineId: this.machineId,
         // ownerUuid: this.ownerUuid,
         token: this.token
       }
 
       const billNotPaid = await this.apiService.loadVendingMachineBillNotPaid(paramsData).toPromise();
-      const billNotPaidData = JSON.parse(JSON.stringify(billNotPaid['data']?.rows ?? []));
+      // console.log('-----> fromDate :', this.fromDate);
+      // console.log('-----> toDate :', this.toDate);
+
+      const billNotPaidData = JSON.parse(JSON.stringify(this.filterByDateUTC7Server(billNotPaid['data']?.rows ?? [], this.fromDate, this.toDate)));
+      // console.log('-----> fromDate :', this.fromDate);
+      // console.log('-----> toDate :', this.toDate);
+      // console.log('-----> billNotPaidData 2:', billNotPaidData);
+      // return;
 
       const dataServer = await this.apiService
         .loadVendingMachineSaleBillReport(data)
         .toPromise();
 
+      // const dataAllPa = {
+      //   machineId: ['54265001', '54265002', '54265003'],
+      //   fromDate: this.adjustDay(this.fromDate, -2),
+      //   toDate: this.adjustDay(this.toDate, +2),
+      //   token: this.token,
+      // };
 
-      const dataAllPa = {
-        machineId: ['54265001', '54265002', '54265003'],
-        fromDate: fromDateAdjusted,
-        toDate: this.toDate,
-        token: this.token,
-      };
+      // const dataAll = await this.apiService
+      //   .loadVendingMachineSaleBillReportManyMachine(dataAllPa)
+      //   .toPromise();
+      // this._l = dataAll;
 
-      const dataAll = await this.apiService
-        .loadVendingMachineSaleBillReportManyMachine(dataAllPa)
-        .toPromise();
-
-      const run = JSON.parse(JSON.stringify(dataServer['data']?.rows ?? []))
-        .filter((item: any) => this.isBetweenDateHM(item.createdAt));
+      const run = JSON.parse(JSON.stringify(this.filterByDateUTC7Server(dataServer['data']?.rows ?? [], this.fromDate, this.toDate)));
       this._lServer = run;
 
-      const runAll = JSON.parse(JSON.stringify(dataAll['data']?.rows ?? []))
-        .filter((item: any) => this.isBetweenDateHM(item.createdAt));
-      this._lServer = runAll;
+      // const runAll = JSON.parse(JSON.stringify(this.filterByDateUTC7Server(dataAll['data']?.rows ?? [], this.fromDate, this.toDate)));
+      // this._lServer = runAll;
+
+
+      // console.log('-----> dataServer 2:', run);
+
 
       // console.log('-----> billPaid :', run);
 
@@ -1241,8 +1049,8 @@ export class BillingPage implements OnInit {
         const transactionID = bankNotInMy[index]['ເລກທູລະກຳ'];
         const data = {
           machineId: this.machineId,
-          fromDate: fromDateAdjusted,
-          toDate: this.toDate,
+          fromDate: this.adjustDay(this.fromDate, -2),
+          toDate: this.adjustDay(this.toDate, +2),
           token: this.token,
           transactionID: transactionID
         };
@@ -1282,16 +1090,6 @@ export class BillingPage implements OnInit {
           myNotInBankNotPaid.push(element)
         }
       }
-      // console.log('-----> 5 myNotInBankNotPaid :', myNotInBankNotPaid);
-      // this.exportMyNotInBankNotPaid(myNotInBankNotPaid);
-      // console.log('-----> 6 myNotInBankPaid :', myNotInBankPaid);
-      // this.exportMyNotInBankPaid(myNotInBankPaid);
-
-      // console.log('-----> 7 myBankNoServer :', myBankNoServer);
-      // this.exportMyBankNoServer(myBankNoServer);
-
-      // console.log('-----> 8 myBankServer :', myBankServer);
-      // this.exportMyBankServer(myBankServer);
 
 
       this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer, billNotPaidData, run, myInBank, this.dataExcel);
@@ -1382,11 +1180,14 @@ export class BillingPage implements OnInit {
     try {
       const body = {
         "machineId": this.machineId,
-        "fromDate": this.fromDate,
-        "toDate": this.toDate,
+        "fromDate": this.adjustDay(this.fromDate, -2),
+        // "fromDate1": this.fromDate,
+        "toDate": this.adjustDay(this.toDate, +1),
+        // "toDate1": this.toDate,
         "token": this.token
       };
-      // console.log('checkBillNotPaid :', body);
+
+      // console.log('checkBillNotPaid :', JSON.stringify(body));
       this.apiService.showLoadingLong();
       const result = await this.apiService.checkAndConfirmBillToDeliver(body).toPromise();
       if (result['status'] == 1) {

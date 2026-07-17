@@ -283,6 +283,10 @@ const routes: Routes = [
   {
     path: 'report-billing',
     loadChildren: () => import('./report-billing/report-billing.module').then( m => m.ReportBillingPageModule)
+  },
+  {
+    path: 'compare-excel',
+    loadChildren: () => import('./compare-excel/compare-excel.module').then( m => m.CompareExcelPageModule)
   }
 ];
 @NgModule({
