@@ -2,7 +2,19 @@ import { Component, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
 import * as Excel from 'exceljs';
 
+interface MissingExcelItem {
+  id: string;
+  rowNumber: number;
+}
 
+interface CompareExcelResult {
+  fileName: string;
+  sheetName: string;
+  list1Count: number;
+  list2Count: number;
+  missingIn1: MissingExcelItem[];
+  missingIn2: MissingExcelItem[];
+}
 
 @Component({
   selector: 'app-compare-excel',
@@ -10,6 +22,9 @@ import * as Excel from 'exceljs';
   styleUrls: ['./compare-excel.page.scss'],
 })
 export class CompareExcelPage implements OnInit {
+  isLoading = false;
+  errorMessage = '';
+  result: CompareExcelResult | null = null;
 
   constructor() { }
 
@@ -42,16 +57,16 @@ export class CompareExcelPage implements OnInit {
   }
 
   async onFileSelected(event: any) {
+    const input = event.target as HTMLInputElement;
+
     try {
-      const file = event.target.files[0];
+      const file = input.files?.[0];
       if (!file) return;
 
-      console.log('-----> FILE :', JSON.stringify(file));
-
-
-      this.checkMissing(file).catch(err => {
-        console.error('❌ Error checkMissing:', err.message);
-      });
+      this.isLoading = true;
+      this.errorMessage = '';
+      this.result = null;
+      await this.checkMissing(file);
       // const rawData = await this.readExcelFile(file);
       // console.log('-----> rawData :', rawData);
       // const uniqueMap = new Map<string, any>();
@@ -63,24 +78,28 @@ export class CompareExcelPage implements OnInit {
       //     uniqueMap.set(transactionNo, row);
       //   }
       // }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error onFileSelected:', error);
+      this.errorMessage = error?.message || 'ບໍ່ສາມາດອ່ານໄຟລ໌ Excel ໄດ້ ກະລຸນາລອງໃໝ່';
+    } finally {
+      this.isLoading = false;
+      input.value = '';
     }
   }
 
 
-  async checkMissing(filePath: string, sheetName?: string) {
+  async checkMissing(file: File, sheetName?: string) {
     try {
       const wb = new Excel.Workbook();
-      console.log(`📂 กำลังอ่านไฟล์: ${JSON.stringify(filePath)}...`);
-      await wb.xlsx.readFile(filePath);
+      console.log(`📂 กำลังอ่านไฟล์: ${file.name}...`);
+      const buffer = await file.arrayBuffer();
+      await wb.xlsx.load(buffer);
 
       // 📍 แก้ไขตรงนี้: ถ้ามีระบุชื่อชีทให้ใช้ชื่อนั้น ถ้าไม่มีให้ดึงชีทแรก (worksheets[0])
       const sheet = sheetName ? wb.getWorksheet(sheetName) : wb.worksheets[0];
 
       if (!sheet) {
-        console.error(`❌ ไม่พบชีทที่ต้องการในไฟล์นี้ (ระบุ: ${sheetName || 'ชีทแรก'})`);
-        return;
+        throw new Error(`ບໍ່ພົບຊີດທີ່ຕ້ອງການໃນໄຟລ໌ນີ້ (ລະບຸ: ${sheetName || 'ຊີດທຳອິດ'})`);
       }
 
       console.log(`📄 กำลังตรวจสอบชีท: [${sheet.name}]`);
@@ -100,36 +119,46 @@ export class CompareExcelPage implements OnInit {
       console.log(`\n📊 จำนวนข้อมูล ชุดที่ 1 (คอลัมน์ A-D): ${list1.size} รายการ`);
       console.log(`📊 จำนวนข้อมูล ชุดที่ 2 (คอลัมน์ G-K): ${list2.size} รายการ\n`);
 
-      const missingIn1: string[] = [];
-      const missingIn2: string[] = [];
+      const missingIn1: MissingExcelItem[] = [];
+      const missingIn2: MissingExcelItem[] = [];
 
       for (const [id2, rowNum] of list2.entries()) {
         if (!list1.has(id2)) {
-          missingIn1.push(`- แถวที่ ${rowNum} ใน Excel: ID [${id2}]`);
+          missingIn1.push({ id: id2, rowNumber: rowNum });
         }
       }
 
       for (const [id1, rowNum] of list1.entries()) {
         if (!list2.has(id1)) {
-          missingIn2.push(`- แถวที่ ${rowNum} ใน Excel: ID [${id1}]`);
+          missingIn2.push({ id: id1, rowNumber: rowNum });
         }
       }
 
+      this.result = {
+        fileName: file.name,
+        sheetName: sheet.name,
+        list1Count: list1.size,
+        list2Count: list2.size,
+        missingIn1,
+        missingIn2
+      };
+
       console.log('--- 🔴 รายการที่มีใน [ชุด 2] แต่หายไปจาก [ชุด 1] ---');
       if (missingIn1.length > 0) {
-        console.log(missingIn1.join('\n'));
+        console.log(missingIn1.map(item => `- แถวที่ ${item.rowNumber} ใน Excel: ID [${item.id}]`).join('\n'));
       } else {
         console.log('✅ ไม่มี (ครบถ้วน)');
       }
 
       console.log('\n--- 🔴 รายการที่มีใน [ชุด 1] แต่หายไปจาก [ชุด 2] ---');
       if (missingIn2.length > 0) {
-        console.log(missingIn2.join('\n'));
+        console.log(missingIn2.map(item => `- แถวที่ ${item.rowNumber} ใน Excel: ID [${item.id}]`).join('\n'));
       } else {
         console.log('✅ ไม่มี (ครบถ้วน)');
       }
     } catch (error) {
       console.log('-----> Error checkMissing :', error);
+      throw error;
     }
   }
 

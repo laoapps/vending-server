@@ -1,17 +1,177 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>ສົມທຽບບິນໃນ Excel</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-row>
-    <ion-col size="12">
-      <ion-button expand="block" color="primary" (click)="fileInput.click()">
-        <ion-icon name="document-attach-outline" slot="start"></ion-icon>
-        ເລືອກໄຟລ໌ Excel
+<ion-content class="ion-padding">
+  <main class="page-container">
+    <section class="upload-card">
+      <div class="upload-icon">
+        <ion-icon name="document-attach-outline"></ion-icon>
+      </div>
+      <div class="upload-copy">
+        <h1>ກວດສອບຂໍ້ມູນໃນໄຟລ໌ Excel</h1>
+        <p>ສົມທຽບ ID ລະຫວ່າງຊຸດທີ 1 (ຖັນ A) ແລະ ຊຸດທີ 2 (ຖັນ G)</p>
+      </div>
+      <ion-button color="primary" (click)="fileInput.click()" [disabled]="isLoading">
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        {{ isLoading ? 'ກຳລັງກວດສອບ...' : 'ເລືອກໄຟລ໌ Excel' }}
       </ion-button>
-      <input type="file" accept=".xlsx,.xls" #fileInput hidden (change)="onFileSelected($event)" />
-    </ion-col>
-  </ion-row>
+      <input
+        type="file"
+        accept=".xlsx,.xls"
+        #fileInput
+        hidden
+        (change)="onFileSelected($event)"
+      />
+    </section>
+
+    <section *ngIf="isLoading" class="state-card loading-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <div>
+        <h2>ກຳລັງອ່ານ ແລະ ສົມທຽບຂໍ້ມູນ</h2>
+        <p>ກະລຸນາລໍຖ້າ...</p>
+      </div>
+    </section>
+
+    <section *ngIf="errorMessage && !isLoading" class="state-card error-state">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <div>
+        <h2>ບໍ່ສາມາດກວດສອບໄຟລ໌ໄດ້</h2>
+        <p>{{ errorMessage }}</p>
+      </div>
+    </section>
+
+    <ng-container *ngIf="result as data">
+      <section class="file-info">
+        <div>
+          <span class="eyebrow">ຜົນການກວດສອບ</span>
+          <h2>{{ data.fileName }}</h2>
+        </div>
+        <div class="sheet-badge">
+          <ion-icon name="grid-outline"></ion-icon>
+          ຊີດ: {{ data.sheetName }}
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <article class="summary-card set-one">
+          <div class="summary-icon"><ion-icon name="list-outline"></ion-icon></div>
+          <div>
+            <span>ຂໍ້ມູນຊຸດທີ 1</span>
+            <strong>{{ data.list1Count | number }}</strong>
+            <small>ລາຍການ · ຖັນ A–D</small>
+          </div>
+        </article>
+
+        <article class="summary-card set-two">
+          <div class="summary-icon"><ion-icon name="list-outline"></ion-icon></div>
+          <div>
+            <span>ຂໍ້ມູນຊຸດທີ 2</span>
+            <strong>{{ data.list2Count | number }}</strong>
+            <small>ລາຍການ · ຖັນ G–K</small>
+          </div>
+        </article>
+
+        <article
+          class="summary-card comparison"
+          [class.complete]="data.missingIn1.length === 0 && data.missingIn2.length === 0"
+        >
+          <div class="summary-icon">
+            <ion-icon
+              [name]="data.missingIn1.length === 0 && data.missingIn2.length === 0
+                ? 'checkmark-circle-outline'
+                : 'alert-circle-outline'"
+            ></ion-icon>
+          </div>
+          <div>
+            <span>ຜົນຕ່າງທັງໝົດ</span>
+            <strong>{{ data.missingIn1.length + data.missingIn2.length }}</strong>
+            <small>
+              {{ data.missingIn1.length === 0 && data.missingIn2.length === 0
+                ? 'ຂໍ້ມູນຄົບຖ້ວນ'
+                : 'ລາຍການທີ່ບໍ່ກົງກັນ' }}
+            </small>
+          </div>
+        </article>
+      </section>
+
+      <section class="result-grid">
+        <article class="result-card">
+          <header>
+            <div>
+              <span class="direction">ຊຸດທີ 2 → ຊຸດທີ 1</span>
+              <h3>ມີໃນຊຸດທີ 2 ແຕ່ບໍ່ມີໃນຊຸດທີ 1</h3>
+            </div>
+            <span class="count-badge" [class.zero]="data.missingIn1.length === 0">
+              {{ data.missingIn1.length }} ລາຍການ
+            </span>
+          </header>
+
+          <div *ngIf="data.missingIn1.length === 0" class="complete-state">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <span>ຂໍ້ມູນຄົບຖ້ວນ ບໍ່ພົບລາຍການທີ່ຂາດຫາຍ</span>
+          </div>
+
+          <div *ngIf="data.missingIn1.length > 0" class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ແຖວໃນ Excel</th>
+                  <th>Transaction ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of data.missingIn1">
+                  <td><span class="row-number">{{ item.rowNumber }}</span></td>
+                  <td class="transaction-id">{{ item.id }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="result-card">
+          <header>
+            <div>
+              <span class="direction">ຊຸດທີ 1 → ຊຸດທີ 2</span>
+              <h3>ມີໃນຊຸດທີ 1 ແຕ່ບໍ່ມີໃນຊຸດທີ 2</h3>
+            </div>
+            <span class="count-badge" [class.zero]="data.missingIn2.length === 0">
+              {{ data.missingIn2.length }} ລາຍການ
+            </span>
+          </header>
+
+          <div *ngIf="data.missingIn2.length === 0" class="complete-state">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <span>ຂໍ້ມູນຄົບຖ້ວນ ບໍ່ພົບລາຍການທີ່ຂາດຫາຍ</span>
+          </div>
+
+          <div *ngIf="data.missingIn2.length > 0" class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ແຖວໃນ Excel</th>
+                  <th>Transaction ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of data.missingIn2">
+                  <td><span class="row-number">{{ item.rowNumber }}</span></td>
+                  <td class="transaction-id">{{ item.id }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </ng-container>
+
+    <section *ngIf="!result && !isLoading && !errorMessage" class="empty-state">
+      <ion-icon name="documents-outline"></ion-icon>
+      <h2>ຍັງບໍ່ມີຜົນການກວດສອບ</h2>
+      <p>ເລືອກໄຟລ໌ .xlsx ຫຼື .xls ເພື່ອເລີ່ມສົມທຽບຂໍ້ມູນ</p>
+    </section>
+  </main>
 </ion-content>
