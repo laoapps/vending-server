@@ -9,16 +9,9 @@
     <ion-col size="12">
       <ion-button expand="block" color="primary" (click)="fileInput.click()">
         <ion-icon name="document-attach-outline" slot="start"></ion-icon>
-        ເລືອກໄຟລ໌ Excel MMoneyX
+        ເລືອກໄຟລ໌ Excel
       </ion-button>
       <input type="file" accept=".xlsx,.xls" #fileInput hidden (change)="onFileSelected($event)" />
-    </ion-col>
-    <ion-col size="12">
-      <ion-button expand="block" color="primary" (click)="fileInput.click()">
-        <ion-icon name="document-attach-outline" slot="start"></ion-icon>
-        ເລືອກໄຟລ໌ Excel Vending
-      </ion-button>
-      <input type="file" accept=".xlsx,.xls" #fileInput hidden (change)="onFileSelected2($event)" />
     </ion-col>
   </ion-row>
 </ion-content>

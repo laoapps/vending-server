@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
+import * as Excel from 'exceljs';
+
 
 
 @Component({
@@ -8,10 +10,6 @@ import * as XLSX from 'xlsx';
   styleUrls: ['./compare-excel.page.scss'],
 })
 export class CompareExcelPage implements OnInit {
-  dataExcel: any[] = [];
-  dataExcel2: any[] = [];
-
-
 
   constructor() { }
 
@@ -48,8 +46,13 @@ export class CompareExcelPage implements OnInit {
       const file = event.target.files[0];
       if (!file) return;
 
+      console.log('-----> FILE :', JSON.stringify(file));
 
-      const rawData = await this.readExcelFile(file);
+
+      this.checkMissing(file).catch(err => {
+        console.error('❌ Error checkMissing:', err.message);
+      });
+      // const rawData = await this.readExcelFile(file);
       // console.log('-----> rawData :', rawData);
       // const uniqueMap = new Map<string, any>();
 
@@ -60,58 +63,74 @@ export class CompareExcelPage implements OnInit {
       //     uniqueMap.set(transactionNo, row);
       //   }
       // }
-
-      this.dataExcel = this.markDuplicateRows(Array.from(rawData.values()));
-
-      console.log('📘 หลังตัดข้อมูลซ้ำ เหลือ:', this.dataExcel.length, 'แถว', 'DATA :', JSON.stringify(this.dataExcel));
-      console.log('-----> dataExcel :', JSON.stringify(this.dataExcel[0]));
-
-
     } catch (error) {
       console.error('Error onFileSelected:', error);
     }
   }
 
 
-
-  async onFileSelected2(event: any) {
+  async checkMissing(filePath: string, sheetName?: string) {
     try {
-      const file = event.target.files[0];
-      if (!file) return;
+      const wb = new Excel.Workbook();
+      console.log(`📂 กำลังอ่านไฟล์: ${JSON.stringify(filePath)}...`);
+      await wb.xlsx.readFile(filePath);
 
+      // 📍 แก้ไขตรงนี้: ถ้ามีระบุชื่อชีทให้ใช้ชื่อนั้น ถ้าไม่มีให้ดึงชีทแรก (worksheets[0])
+      const sheet = sheetName ? wb.getWorksheet(sheetName) : wb.worksheets[0];
 
-      const rawData = await this.readExcelFile(file);
-      this.dataExcel2 = this.markDuplicateRows(Array.from(rawData.values()));
-      console.log('📘 หลังตัดข้อมูลซ้ำ เหลือ:', this.dataExcel2.length, 'แถว', 'DATA :', JSON.stringify(this.dataExcel2));
+      if (!sheet) {
+        console.error(`❌ ไม่พบชีทที่ต้องการในไฟล์นี้ (ระบุ: ${sheetName || 'ชีทแรก'})`);
+        return;
+      }
+
+      console.log(`📄 กำลังตรวจสอบชีท: [${sheet.name}]`);
+
+      const list1 = new Map<string, number>(); // เก็บ ID จากคอลัมน์ A
+      const list2 = new Map<string, number>(); // เก็บ ID จากคอลัมน์ G
+
+      // วนลูปอ่านข้อมูลทุกบรรทัด
+      sheet.eachRow((row, rowNum) => {
+        const id1 = String(row.getCell(1).value || '').trim();
+        if (id1) list1.set(id1, rowNum);
+
+        const id2 = String(row.getCell(7).value || '').trim();
+        if (id2) list2.set(id2, rowNum);
+      });
+
+      console.log(`\n📊 จำนวนข้อมูล ชุดที่ 1 (คอลัมน์ A-D): ${list1.size} รายการ`);
+      console.log(`📊 จำนวนข้อมูล ชุดที่ 2 (คอลัมน์ G-K): ${list2.size} รายการ\n`);
+
+      const missingIn1: string[] = [];
+      const missingIn2: string[] = [];
+
+      for (const [id2, rowNum] of list2.entries()) {
+        if (!list1.has(id2)) {
+          missingIn1.push(`- แถวที่ ${rowNum} ใน Excel: ID [${id2}]`);
+        }
+      }
+
+      for (const [id1, rowNum] of list1.entries()) {
+        if (!list2.has(id1)) {
+          missingIn2.push(`- แถวที่ ${rowNum} ใน Excel: ID [${id1}]`);
+        }
+      }
+
+      console.log('--- 🔴 รายการที่มีใน [ชุด 2] แต่หายไปจาก [ชุด 1] ---');
+      if (missingIn1.length > 0) {
+        console.log(missingIn1.join('\n'));
+      } else {
+        console.log('✅ ไม่มี (ครบถ้วน)');
+      }
+
+      console.log('\n--- 🔴 รายการที่มีใน [ชุด 1] แต่หายไปจาก [ชุด 2] ---');
+      if (missingIn2.length > 0) {
+        console.log(missingIn2.join('\n'));
+      } else {
+        console.log('✅ ไม่มี (ครบถ้วน)');
+      }
     } catch (error) {
-      console.error('Error onFileSelected:', error);
+      console.log('-----> Error checkMissing :', error);
     }
   }
 
-
-  private readExcelFile(file: File): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheet];
-
-          // 🚨 แก้ปัญหาวันที่ถูกแปลงเป็นตัวเลข
-          const json = XLSX.utils.sheet_to_json(worksheet, {
-            raw: false     // สำคัญมาก
-          });
-
-          resolve(json);
-        } catch (err) {
-          reject(err);
-        }
-      };
-
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(file);
-    });
-  }
 }
