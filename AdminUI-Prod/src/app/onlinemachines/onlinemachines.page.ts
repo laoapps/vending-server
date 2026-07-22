@@ -40,6 +40,8 @@ interface MachineData {
   imei?: string;
   createdAt?: string;
   location?: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
   savingLocation?: boolean;
 }
 
@@ -154,6 +156,12 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         const location = (d?.location != null && String(d.location).trim() !== '')
           ? String(d.location).trim()
           : '';
+        const latitude = (d?.latitude != null && d?.latitude !== '' && Number.isFinite(Number(d.latitude)))
+          ? Number(d.latitude)
+          : '';
+        const longitude = (d?.longitude != null && d?.longitude !== '' && Number.isFinite(Number(d.longitude)))
+          ? Number(d.longitude)
+          : '';
 
         machines.push({
           machineId: machine.machineId,
@@ -171,6 +179,8 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           imei: d?.imei ? String(d.imei) : 'Unknown',
           createdAt: machine?.createdAt,
           location,
+          latitude,
+          longitude,
         });
       });
 
@@ -198,7 +208,18 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     if (!machine?.machineId || machine.savingLocation) return;
 
     const location = (machine.location != null) ? String(machine.location).trim() : '';
+    const latitudeRaw = machine.latitude;
+    const longitudeRaw = machine.longitude;
+    const latitude = (latitudeRaw != null && latitudeRaw !== '' && Number.isFinite(Number(latitudeRaw)))
+      ? Number(latitudeRaw)
+      : null;
+    const longitude = (longitudeRaw != null && longitudeRaw !== '' && Number.isFinite(Number(longitudeRaw)))
+      ? Number(longitudeRaw)
+      : null;
+
     machine.location = location;
+    machine.latitude = latitude ?? '';
+    machine.longitude = longitude ?? '';
     machine.savingLocation = true;
 
     try {
@@ -211,12 +232,16 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         data: {
           machineId: machine.machineId,
           location,
+          latitude,
+          longitude,
         },
       });
 
       if (response?.data?.status === 1) {
         if (!machine.settings) machine.settings = {};
         machine.settings.location = location;
+        machine.settings.latitude = latitude;
+        machine.settings.longitude = longitude;
         this.apiService.alertSuccess('ອັບເດດທີ່ຕັ້ງສຳເຫຼັດ');
       } else {
         this.apiService.alertError(response?.data?.message || 'ອັບເດດທີ່ຕັ້ງບໍ່ສຳເຫຼັດ');
