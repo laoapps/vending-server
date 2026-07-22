@@ -238,6 +238,10 @@ export class MachinePage implements OnInit {
             setting.adsList = [];
 
             setting.imei = '';
+            setting.location = '';
+          }
+          if (setting.location == undefined || setting.location == null) {
+            setting.location = '';
           }
           if (typeof setting.light == 'boolean') {
             setting.light = { start: 3, end: 2 };

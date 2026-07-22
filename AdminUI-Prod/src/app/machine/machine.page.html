@@ -176,6 +176,9 @@
                           [(ngModel)]="settings[p.machineId].dropDelay"></ion-input> </div>
                       <div style="float: left;"> <ion-icon name="sunny-outline"></ion-icon> <ion-input type="number"
                           [(ngModel)]="settings[p.machineId].brightness"></ion-input> </div>
+                      <div style="float: left;"> <ion-icon name="location-outline"></ion-icon> <ion-input
+                          class="custominput" type="text" label="ที่ตั้ง" placeholder="enter location"
+                          [(ngModel)]="settings[p.machineId].location"></ion-input> </div>
                     </td>
                     <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
 
