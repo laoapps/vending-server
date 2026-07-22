@@ -1732,6 +1732,84 @@ export class InventoryZDM8 implements IBaseClass {
                 }
 
             );
+            router.post(this.path + "/updateMachineLocationAdmin",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineId = req?.body?.data?.machineId;
+                        const location = (req?.body?.data?.location != null)
+                            ? String(req.body.data.location).trim()
+                            : '';
+
+                        if (!machineId) {
+                            return res.send(PrintError("updateMachineLocationAdmin", [], EMessage.notfound, returnLog(req, res, true)));
+                        }
+
+                        const r = await this.machineClientlist.findOne({ where: { machineId } });
+                        if (!r) {
+                            return res.send(PrintError("updateMachineLocationAdmin", [], EMessage.notfound, returnLog(req, res, true)));
+                        }
+
+                        if (!r.data) r.data = [];
+                        if (!Array.isArray(r.data)) r.data = [r.data];
+
+                        let a = r.data.find((v: any) => v?.settingName == 'setting');
+                        if (!a) {
+                            a = { settingName: 'setting', location };
+                            r.data.push(a);
+                        } else {
+                            a.location = location;
+                        }
+
+                        r.changed('data', true);
+                        const a2 = JSON.parse(JSON.stringify(r.data));
+                        const s = a2.find((v: any) => v?.settingName == 'setting');
+                        await writeMachineSetting(r.machineId, a2);
+                        writeMachineSettingVersion(r.machineId, a2);
+
+                        this.machineIds.find(v => {
+                            if (v.machineId == r.machineId) {
+                                Object.assign(v, r);
+                            }
+                        });
+
+                        await Promise.all([
+                            redisClient.del('machines:isActive:all'),
+                            redisClient.del('machines:isActive:true'),
+                            redisClient.del('machines:isActive:false'),
+                        ]);
+
+                        await r.save();
+
+                        const wsx = this.wsClient.filter(v => v['machineId'] === r.machineId);
+                        wsx.forEach(ws => {
+                            if (ws.readyState === WebSocketServer.OPEN)
+                                ws?.send(
+                                    JSON.stringify(
+                                        PrintSucceeded(
+                                            "ping",
+                                            {
+                                                command: "ping",
+                                                production: this.production,
+                                                balance: r,
+                                                setting: s,
+                                            },
+                                            EMessage.succeeded,
+                                            null
+                                        )
+                                    )
+                                );
+                        });
+
+                        res.send(PrintSucceeded("updateMachineLocationAdmin", { machineId, location }, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        console.log("Error updateMachineLocationAdmin", error);
+                        res.send(PrintError("updateMachineLocationAdmin", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
             router.post(this.path + "/exitAppMachineAdmin",
                 this.checkSuperAdmin,
                 this.validateSuperAdmin,

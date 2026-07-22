@@ -55,6 +55,24 @@
                   [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
               </ion-button>
             </ion-card-title>
+            <div class="machine-location" [class.has-location]="!!machine.location">
+              <ion-icon name="location"></ion-icon>
+              <ion-input
+                class="location-input"
+                type="text"
+                placeholder="ປ້ອນທີ່ຕັ້ງຕູ້"
+                [(ngModel)]="machine.location"
+                [disabled]="machine.savingLocation">
+              </ion-input>
+              <ion-button
+                size="small"
+                fill="solid"
+                color="warning"
+                [disabled]="machine.savingLocation"
+                (click)="updateLocation(machine)">
+                <ion-icon slot="icon-only" [name]="machine.savingLocation ? 'hourglass-outline' : 'save-outline'"></ion-icon>
+              </ion-button>
+            </div>
           </ion-card-header>
           <ion-card-content>
             <ion-list lines="none">
@@ -202,6 +220,24 @@
                   [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
               </ion-button>
             </ion-card-title>
+            <div class="machine-location" [class.has-location]="!!machine.location">
+              <ion-icon name="location"></ion-icon>
+              <ion-input
+                class="location-input"
+                type="text"
+                placeholder="ປ້ອນທີ່ຕັ້ງຕູ້"
+                [(ngModel)]="machine.location"
+                [disabled]="machine.savingLocation">
+              </ion-input>
+              <ion-button
+                size="small"
+                fill="solid"
+                color="warning"
+                [disabled]="machine.savingLocation"
+                (click)="updateLocation(machine)">
+                <ion-icon slot="icon-only" [name]="machine.savingLocation ? 'hourglass-outline' : 'save-outline'"></ion-icon>
+              </ion-button>
+            </div>
           </ion-card-header>
           <ion-card-content>
             <ion-list lines="none">

@@ -39,6 +39,8 @@ interface MachineData {
   ownerUuid: string;
   imei?: string;
   createdAt?: string;
+  location?: string;
+  savingLocation?: boolean;
 }
 
 @Component({
@@ -149,6 +151,9 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         }
 
         const d = machine?.data?.[0] || null;
+        const location = (d?.location != null && String(d.location).trim() !== '')
+          ? String(d.location).trim()
+          : '';
 
         machines.push({
           machineId: machine.machineId,
@@ -165,6 +170,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           ownerUuid: machine.ownerUuid,
           imei: d?.imei ? String(d.imei) : 'Unknown',
           createdAt: machine?.createdAt,
+          location,
         });
       });
 
@@ -187,6 +193,41 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   }
 
 
+
+  async updateLocation(machine: MachineData) {
+    if (!machine?.machineId || machine.savingLocation) return;
+
+    const location = (machine.location != null) ? String(machine.location).trim() : '';
+    machine.location = location;
+    machine.savingLocation = true;
+
+    try {
+      const token = localStorage.getItem('token');
+      const secret = localStorage.getItem('secretLocal');
+      const response = await axios.post(`${environment.url}/updateMachineLocationAdmin`, {
+        secret,
+        shopPhonenumber: '',
+        token,
+        data: {
+          machineId: machine.machineId,
+          location,
+        },
+      });
+
+      if (response?.data?.status === 1) {
+        if (!machine.settings) machine.settings = {};
+        machine.settings.location = location;
+        this.apiService.alertSuccess('ອັບເດດທີ່ຕັ້ງສຳເຫຼັດ');
+      } else {
+        this.apiService.alertError(response?.data?.message || 'ອັບເດດທີ່ຕັ້ງບໍ່ສຳເຫຼັດ');
+      }
+    } catch (err: any) {
+      console.error('Error updating location:', err);
+      this.apiService.alertError(err?.message || err);
+    } finally {
+      machine.savingLocation = false;
+    }
+  }
 
   async exitApp(machineId: string) {
     try {
