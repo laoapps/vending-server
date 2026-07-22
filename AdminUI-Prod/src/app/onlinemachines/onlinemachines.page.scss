@@ -93,6 +93,7 @@ ion-card-title {
 
 .machine-coords {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-top: 8px;
 
@@ -106,6 +107,12 @@ ion-card-title {
     --placeholder-color: #9e9e9e;
     border-radius: 6px;
     font-weight: 600;
+  }
+
+  ion-button {
+    flex-shrink: 0;
+    margin: 0;
+    height: 32px;
   }
 }
 

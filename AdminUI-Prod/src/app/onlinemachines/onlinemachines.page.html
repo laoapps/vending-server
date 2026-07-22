@@ -95,6 +95,15 @@
                   [(ngModel)]="machine.longitude"
                   [disabled]="machine.savingLocation">
                 </ion-input>
+                <ion-button
+                  size="small"
+                  fill="solid"
+                  color="tertiary"
+                  [disabled]="machine.savingLocation"
+                  (click)="openPickLocation(machine)"
+                  title="เลือกพิกัดบนแผนที่ดาวเทียม">
+                  <ion-icon slot="icon-only" name="map-outline"></ion-icon>
+                </ion-button>
               </div>
             </div>
           </ion-card-header>
@@ -280,6 +289,15 @@
                   [(ngModel)]="machine.longitude"
                   [disabled]="machine.savingLocation">
                 </ion-input>
+                <ion-button
+                  size="small"
+                  fill="solid"
+                  color="tertiary"
+                  [disabled]="machine.savingLocation"
+                  (click)="openPickLocation(machine)"
+                  title="เลือกพิกัดบนแผนที่ดาวเทียม">
+                  <ion-icon slot="icon-only" name="map-outline"></ion-icon>
+                </ion-button>
               </div>
             </div>
           </ion-card-header>

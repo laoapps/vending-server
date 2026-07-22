@@ -1,0 +1,54 @@
+ion-content {
+  --background: #f4f6f8;
+}
+
+.pick-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+  z-index: 1000;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #455a64;
+}
+
+.coords {
+  display: flex;
+  gap: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e65100;
+  font-variant-numeric: tabular-nums;
+}
+
+.pick-error,
+.pick-loading {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  position: relative;
+  z-index: 1000;
+}
+
+.pick-error {
+  color: #b71c1c;
+  background: #ffebee;
+}
+
+.pick-loading {
+  color: #1565c0;
+  background: #e3f2fd;
+}
+
+.pick-map {
+  width: 100%;
+  height: calc(100% - 52px);
+  min-height: 420px;
+}

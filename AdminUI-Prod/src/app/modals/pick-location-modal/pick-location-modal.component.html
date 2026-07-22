@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="confirm()" [disabled]="selectedLat == null || selectedLng == null">
+        ใช้พิกัดนี้
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="pick-toolbar">
+    <div class="hint">แตะบนแผนที่ หรือลากหมุดเพื่อเลือกตำแหน่ง</div>
+    <div class="coords" *ngIf="selectedLat != null && selectedLng != null">
+      <span>Lat: {{ selectedLat | number:'1.5-6' }}</span>
+      <span>Lng: {{ selectedLng | number:'1.5-6' }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="pick-error">{{ errorMessage }}</div>
+  <div *ngIf="loading" class="pick-loading">กำลังโหลดแผนที่...</div>
+
+  <div [id]="mapElementId" class="pick-map"></div>
+</ion-content>

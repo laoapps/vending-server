@@ -10,11 +10,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { NotifierModule } from 'angular-notifier';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import { PaidOrdersModalComponent } from './modals/paid-orders-modal/paid-orders-modal.component';
+import { PickLocationModalComponent } from './modals/pick-location-modal/pick-location-modal.component';
 import { TicketDetailModalComponent } from './ticket-detail-modal/ticket-detail-modal.component';
 // import { Storage } from '@ionic/storage';
 
 @NgModule({
-  declarations: [AppComponent,PaidOrdersModalComponent,TicketDetailModalComponent,],
+  declarations: [AppComponent,PaidOrdersModalComponent,PickLocationModalComponent,TicketDetailModalComponent,],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule,HttpClientModule,NotifierModule, IonicStorageModule.forRoot()],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],

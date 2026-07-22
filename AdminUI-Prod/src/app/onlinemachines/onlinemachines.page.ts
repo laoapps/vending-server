@@ -21,6 +21,7 @@ import { StockReportPage } from '../sale/stock-report/stock-report.page';
 import { IonContent, ModalController } from '@ionic/angular'; // <-- ADD THIS
 import { ReportCallbacklogPage } from '../report-callbacklog/report-callbacklog.page';
 import { PaidOrdersModalComponent } from '../modals/paid-orders-modal/paid-orders-modal.component';
+import { PickLocationModalComponent } from '../modals/pick-location-modal/pick-location-modal.component';
 import { TicketListPage } from '../ticket-list/ticket-list.page';
 import { SettingConfigPage } from '../setting-config/setting-config.page';
 import { CompareExcelPage } from '../compare-excel/compare-excel.page';
@@ -203,6 +204,32 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   }
 
 
+
+  async openPickLocation(machine: MachineData) {
+    if (!machine || machine.savingLocation) return;
+
+    const modal = await this.modalCtrl.create({
+      component: PickLocationModalComponent,
+      componentProps: {
+        latitude: machine.latitude,
+        longitude: machine.longitude,
+        title: machine.location || machine.machineId || 'เลือกพิกัดบนแผนที่',
+      },
+      cssClass: 'full-screen-modal',
+      backdropDismiss: true,
+      showBackdrop: true,
+      breakpoints: [0.95],
+      initialBreakpoint: 0.95,
+      handle: false,
+    });
+
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+    if (role !== 'confirm' || !data) return;
+
+    machine.latitude = data.latitude;
+    machine.longitude = data.longitude;
+  }
 
   async updateLocation(machine: MachineData) {
     if (!machine?.machineId || machine.savingLocation) return;
