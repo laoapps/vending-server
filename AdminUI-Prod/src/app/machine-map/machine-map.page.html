@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Machine Map</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refresh()" [disabled]="loading">
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="map-toolbar">
+    <div class="stat">
+      <strong>{{ mappedCount }}</strong>
+      <span>ตู้บนแผนที่</span>
+    </div>
+    <div class="stat muted">
+      <strong>{{ missingCount }}</strong>
+      <span>ยังไม่มีพิกัด</span>
+    </div>
+    <div class="legend">
+      <span class="dot online"></span> Online
+      <span class="dot offline"></span> Offline
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="map-error">{{ errorMessage }}</div>
+  <div *ngIf="loading" class="map-loading">กำลังโหลด...</div>
+
+  <div id="machine-map" class="map-canvas"></div>
+</ion-content>

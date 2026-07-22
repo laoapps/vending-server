@@ -1,0 +1,140 @@
+ion-content {
+  --background: #f4f6f8;
+}
+
+.map-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+  z-index: 1000;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 90px;
+
+  strong {
+    font-size: 1.1rem;
+    color: #1b5e20;
+    line-height: 1.1;
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: #607d8b;
+  }
+
+  &.muted strong {
+    color: #ef6c00;
+  }
+}
+
+.legend {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #455a64;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+
+  &.online {
+    background: #2e7d32;
+  }
+
+  &.offline {
+    background: #c62828;
+  }
+}
+
+.map-error,
+.map-loading {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  position: relative;
+  z-index: 1000;
+}
+
+.map-error {
+  color: #b71c1c;
+  background: #ffebee;
+}
+
+.map-loading {
+  color: #1565c0;
+  background: #e3f2fd;
+}
+
+.map-canvas {
+  width: 100%;
+  height: calc(100% - 58px);
+  min-height: 420px;
+}
+
+:host ::ng-deep {
+  .machine-marker {
+    background: transparent;
+    border: none;
+  }
+
+  .marker-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -100%);
+    white-space: nowrap;
+  }
+
+  .marker-label {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #fff;
+    color: #212121;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    margin-bottom: 4px;
+    border: 1px solid #ffb74d;
+  }
+
+  .marker-pin {
+    width: 16px;
+    height: 16px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  }
+
+  .marker-wrap.online .marker-pin {
+    background: #2e7d32;
+  }
+
+  .marker-wrap.offline .marker-pin {
+    background: #c62828;
+  }
+
+  .marker-wrap.online .marker-label {
+    border-color: #81c784;
+  }
+
+  .map-popup {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+}

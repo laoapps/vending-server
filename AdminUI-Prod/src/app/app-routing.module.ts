@@ -237,6 +237,10 @@ const routes: Routes = [
     loadChildren: () => import('./onlinemachines/onlinemachines.module').then(m => m.OnlinemachinesPageModule)
   },
   {
+    path: 'machine-map',
+    loadChildren: () => import('./machine-map/machine-map.module').then(m => m.MachineMapPageModule)
+  },
+  {
     path: 'log-temp',
     loadChildren: () => import('./log-temp/log-temp.module').then(m => m.LogTempPageModule)
   },

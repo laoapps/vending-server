@@ -545,6 +545,10 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   }
 
 
+  openMachineMap() {
+    this.apiService.router.navigate(['/machine-map']);
+  }
+
   async openCompareExecl() {
     const modal = await this.modalCtrl.create({
       component: CompareExcelPage,
