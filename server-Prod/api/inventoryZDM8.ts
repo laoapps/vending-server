@@ -2836,6 +2836,48 @@ export class InventoryZDM8 implements IBaseClass {
 
 
             router.post(
+                this.path + "/listProductLAABX",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const isActive = req.query['isActive'];
+                        let actives = [];
+                        if (isActive == 'all') actives.push(...[true, false]);
+                        else actives.push(...isActive == 'yes' ? [true] : [false]);
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+                        const sEnt = StockFactory(
+                            EEntity.product + "_" + ownerUuid,
+                            dbConnection
+                        );
+                        await sEnt.sync();
+                        sEnt
+                            .findAll({ where: { isActive: { [Op.in]: actives } } })
+                            .then((r) => {
+
+                                const rData = r ?? [];
+                                const uniqueData = [
+                                    ...new Map(
+                                        rData.map(item => [`${item.name}-${item.price}`, item])
+                                    ).values()
+                                ];
+
+                                res.send(PrintSucceeded("listProduct", uniqueData, EMessage.succeeded, returnLog(req, res)));
+                            })
+                            .catch((e) => {
+                                console.log("error list product", e);
+
+                                res.send(PrintError("listProduct", e, EMessage.error, returnLog(req, res, true)));
+                            });
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listProduct", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+
+            router.post(
                 this.path + "/listProductImages",
                 this.checkSuperAdmin,
 
