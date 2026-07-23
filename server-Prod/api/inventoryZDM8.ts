@@ -4855,6 +4855,42 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+            router.post(
+                this.path + "/loadVendingMachineSaleBillReportLAABX",
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+
+                async (req, res) => {
+                    try {
+
+                        const data = req.body;
+                        const ownerUuid = res.locals["ownerUuid"];
+                        const machineId = data.machineId;
+
+                        const fromDate = momenttz
+                            .tz(data.fromDate, SERVER_TIME_ZONE)
+                            .startOf('day')
+                            .toDate();
+
+                        const toDate = momenttz
+                            .tz(data.toDate, SERVER_TIME_ZONE)
+                            .endOf('day')
+                            .toDate();
+
+                        const run = await this.getReportSale(machineId, fromDate, toDate, ownerUuid);
+                        const response = {
+                            rows: run.rows,
+                            count: run.count,
+                            message: IENMessage.success
+                        }
+                        res.send(PrintSucceeded("report", response, EMessage.succeeded, returnLog(req, res)));
+
+                    } catch (error) {
+                        res.send(PrintError("report", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
 
             router.post(
                 this.path + "/loadVendingMachineSaleBillReportManyMachine",
@@ -6646,6 +6682,58 @@ export class InventoryZDM8 implements IBaseClass {
                     }
                 }
             );
+
+            router.post(
+                this.path + "/listMachineLAABX",
+                //APIAdminAccess,
+                this.checkSuperAdmin,
+
+                this.checkAdmin,
+
+                // this.checkDisabled.bind(this),
+                async (req, res) => {
+                    try {
+                        const isActive = req.query['isActive'];
+
+                        let actives = [];
+                        if (isActive === 'all') {
+                            actives = [true, false];
+                        } else if (isActive === 'true') {
+                            actives = [true];
+                        } else if (isActive === 'false') {
+                            actives = [false];
+                        } else {
+                            // Default case if isActive is not provided or invalid
+                            actives = [true, false];
+                        }
+                        // console.log('Active der', actives);
+
+                        const ownerUuid = res.locals["ownerUuid"] || "";
+
+                        this.machineClientlist.findAll({
+                            where: {
+                                ownerUuid,
+                                isActive: { [Op.in]: actives }
+                            }
+                        }).then((r) => {
+                            const result = r.map(item => ({
+                                machineId: item.machineId,
+                                location: item.data?.[0]?.location ?? null,
+                            }));
+                            res.send(PrintSucceeded("listMachine", result, EMessage.succeeded, returnLog(req, res, true)));
+                        })
+                            .catch((e) => {
+                                console.log("Error list machine", e);
+                                res.send(PrintError("listMachine", e, EMessage.error, returnLog(req, res, true)));
+                            });
+
+                    } catch (error) {
+                        console.log(error);
+                        res.send(PrintError("listMachine", error, EMessage.error, returnLog(req, res)));
+                    }
+                }
+            );
+
             router.post(
                 this.path + "/checkMyMmoney",
                 //APIAdminAccess,
