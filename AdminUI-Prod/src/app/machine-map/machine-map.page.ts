@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import axios from 'axios';
+import { Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiService } from '../services/api.service';
 
@@ -13,6 +14,8 @@ interface MapMachine {
   longitude: number;
   status: 'Online' | 'Broken' | 'Unknown';
   owner: string;
+  qtyToday: number;
+  amountToday: number;
 }
 
 const HIDDEN_STORAGE_KEY = 'machineMapHiddenIds';
@@ -26,6 +29,9 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   private map: any;
   private markersLayer: any;
   private hiddenIds = new Set<string>();
+  private salesUpdateSub?: Subscription;
+  private todaySalesByMachine = new Map<string, { qtyToday: number; amountToday: number }>();
+  private todaySalesHydrated = false;
 
   machines: MapMachine[] = [];
   listFilter = '';
@@ -36,6 +42,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   constructor(
     private router: Router,
     public apiService: ApiService,
+    private ngZone: NgZone,
   ) {
     this.hiddenIds = this.loadHiddenIds();
   }
@@ -54,11 +61,27 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     return this.machines.filter((m) => this.isVisible(m.machineId)).length;
   }
 
+  get totalQtyToday(): number {
+    return this.machines.reduce((sum, m) => sum + (Number(m.qtyToday) || 0), 0);
+  }
+
+  get totalAmountToday(): number {
+    return this.machines.reduce((sum, m) => sum + (Number(m.amountToday) || 0), 0);
+  }
+
   ngAfterViewInit() {
     this.initPage();
+    this.hydrateTodaySalesOnce();
+    this.salesUpdateSub = this.apiService.wsapi.salesUpdateSubscription.subscribe((payload) => {
+      if (!payload?.machineId) return;
+      this.ngZone.run(() => {
+        this.applyTodaySalesUpdate(payload.machineId, payload.qtyToday, payload.amountToday);
+      });
+    });
   }
 
   ngOnDestroy() {
+    this.salesUpdateSub?.unsubscribe();
     this.destroyMap();
   }
 
@@ -68,7 +91,12 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
 
   async refresh() {
     await this.loadMachines();
+    this.applyTodaySalesToList();
     this.renderMarkers();
+  }
+
+  formatAmount(amount?: number): string {
+    return (Number(amount) || 0).toLocaleString('en-US');
   }
 
   isVisible(machineId: string): boolean {
@@ -97,11 +125,57 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     this.renderMarkers(false);
   }
 
+  private hydrateTodaySalesOnce() {
+    if (this.todaySalesHydrated) return;
+    this.todaySalesHydrated = true;
+    this.apiService.loadAllVendingMachinesTodaySalesSummary().subscribe({
+      next: (res: any) => {
+        if (res?.status !== 1) return;
+        const rows = res?.data?.rows || [];
+        for (const row of rows) {
+          if (!row?.machineId) continue;
+          this.todaySalesByMachine.set(row.machineId, {
+            qtyToday: Number(row.qtyToday) || 0,
+            amountToday: Number(row.amountToday) || 0,
+          });
+        }
+        this.applyTodaySalesToList();
+        this.renderMarkers(false);
+      },
+      error: (err) => {
+        console.error('today sales hydrate failed', err);
+        this.todaySalesHydrated = false;
+      },
+    });
+  }
+
+  private applyTodaySalesUpdate(machineId: string, qtyToday: number, amountToday: number) {
+    this.todaySalesByMachine.set(machineId, {
+      qtyToday: Number(qtyToday) || 0,
+      amountToday: Number(amountToday) || 0,
+    });
+    const m = this.machines.find((x) => x.machineId === machineId);
+    if (m) {
+      m.qtyToday = Number(qtyToday) || 0;
+      m.amountToday = Number(amountToday) || 0;
+      this.renderMarkers(false);
+    }
+  }
+
+  private applyTodaySalesToList() {
+    for (const m of this.machines) {
+      const s = this.todaySalesByMachine.get(m.machineId);
+      m.qtyToday = s?.qtyToday ?? 0;
+      m.amountToday = s?.amountToday ?? 0;
+    }
+  }
+
   private async initPage() {
     try {
       await this.ensureLeaflet();
       this.initMap();
       await this.loadMachines();
+      this.applyTodaySalesToList();
       this.renderMarkers();
     } catch (err: any) {
       console.error('Map init error:', err);
@@ -231,6 +305,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           ? String(d.location).trim()
           : '';
 
+        const sales = this.todaySalesByMachine.get(machine.machineId);
+
         list.push({
           machineId: machine.machineId,
           location,
@@ -238,6 +314,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           longitude: lng,
           status,
           owner: d?.ownerPhone ? String(d.ownerPhone) : 'Unknown',
+          qtyToday: sales?.qtyToday ?? 0,
+          amountToday: sales?.amountToday ?? 0,
         });
       });
 
@@ -278,12 +356,14 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     visible.forEach((m) => {
       const label = m.location || m.machineId;
       const statusClass = m.status === 'Online' ? 'online' : 'offline';
+      const salesLine = `${m.qtyToday || 0} pcs · ${this.formatAmount(m.amountToday)} LAK`;
 
       const icon = L.divIcon({
         className: 'machine-marker',
         html: `
           <div class="marker-wrap ${statusClass}">
             <div class="marker-label">${this.escapeHtml(label)}</div>
+            <div class="marker-sales">${this.escapeHtml(salesLine)}</div>
             <div class="marker-pin"></div>
           </div>
         `,
@@ -297,6 +377,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           <strong>${this.escapeHtml(m.machineId)}</strong><br/>
           ที่ตั้ง: ${this.escapeHtml(m.location || '-')}<br/>
           Status: ${m.status}<br/>
+          Today: ${this.escapeHtml(salesLine)}<br/>
           Lat: ${m.latitude}<br/>
           Lng: ${m.longitude}
         </div>

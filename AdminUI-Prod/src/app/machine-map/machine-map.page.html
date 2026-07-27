@@ -28,6 +28,14 @@
       <strong>{{ missingCount }}</strong>
       <span>ยังไม่มีพิกัด</span>
     </div>
+    <div class="stat sales">
+      <strong>{{ totalQtyToday }} pcs</strong>
+      <span>ยอดชิ้นวันนี้</span>
+    </div>
+    <div class="stat sales">
+      <strong>{{ formatAmount(totalAmountToday) }}</strong>
+      <span>ยอดเงินวันนี้ (LAK)</span>
+    </div>
     <div class="legend">
       <span class="dot online"></span> Online
       <span class="dot offline"></span> Offline
@@ -71,6 +79,7 @@
           <span class="machine-meta">
             <span class="machine-id">{{ m.machineId }}</span>
             <span class="machine-location">{{ m.location || 'ไม่มีชื่อที่ตั้ง' }}</span>
+            <span class="machine-sales">Today: {{ m.qtyToday || 0 }} pcs · {{ formatAmount(m.amountToday) }} LAK</span>
           </span>
         </label>
       </div>

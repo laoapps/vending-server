@@ -62,6 +62,12 @@ import {
     wsSendAdmins,
 } from "../services/service";
 import {
+    calcSaleQty,
+    loadTodaySalesSummary,
+    recordTodaySaleFireAndForget,
+    startTodaySalesSubscriber,
+} from "../services/todaySalesRedis";
+import {
     EClientCommand,
     EMACHINE_COMMAND,
     EMessage,
@@ -397,6 +403,7 @@ export class InventoryZDM8 implements IBaseClass {
                 wsSendAdmins
             );
 
+            startTodaySalesSubscriber(this.wss);
 
             router.get(this.path + "/", async (req, res) => {
                 console.log("TEST IS WORKING");
@@ -4797,6 +4804,46 @@ export class InventoryZDM8 implements IBaseClass {
 
             // REPORT
             router.post(
+                this.path + "/loadAllVendingMachinesTodaySalesSummary",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machines = await this.machineClientlist.findAll({
+                            where: { isActive: true },
+                            attributes: ['machineId', 'ownerUuid'],
+                        });
+
+                        const refs = machines
+                            .map((m: any) => ({
+                                machineId: m.machineId,
+                                ownerUuid: m.ownerUuid,
+                            }))
+                            .filter((m: any) => m.machineId && m.ownerUuid);
+
+                        const rows = await loadTodaySalesSummary(refs, SERVER_TIME_ZONE);
+                        res.send(
+                            PrintSucceeded(
+                                "loadAllVendingMachinesTodaySalesSummary",
+                                { rows, date: momenttz.tz(SERVER_TIME_ZONE).format('YYYY-MM-DD') },
+                                EMessage.succeeded,
+                                returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        res.send(
+                            PrintError(
+                                "loadAllVendingMachinesTodaySalesSummary",
+                                error,
+                                EMessage.error,
+                                returnLog(req, res, true)
+                            )
+                        );
+                    }
+                }
+            );
+
+            router.post(
                 this.path + "/loadVendingMachineSaleBillReport",
                 this.checkSuperAdmin,
 
@@ -6379,6 +6426,7 @@ export class InventoryZDM8 implements IBaseClass {
                             });
 
                             await bill.save();
+                            this.notifyTodaySale(ownerUuid, bill);
 
                             const resD = {} as IResModel;
                             resD.command = EMACHINE_COMMAND.waitingt;
@@ -6472,6 +6520,7 @@ export class InventoryZDM8 implements IBaseClass {
                             });
 
                             await bill.save();
+                            this.notifyTodaySale(ownerUuid, bill);
                             // console.log("*****callBackConfirmLaoQR", JSON.stringify(b));
 
                             // WebSocket response
@@ -8788,6 +8837,7 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
+                    this.notifyTodaySale(ownerUuid, bill);
                     // console.log("=====>callBackConfirmMmoney", b);
 
 
@@ -8962,6 +9012,7 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
+                    this.notifyTodaySale(ownerUuid, bill);
 
                     // mark bill as paid
                     await markPaymentAsPaid(bill.machineId, transactionID);
@@ -9162,6 +9213,7 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
+                    this.notifyTodaySale(ownerUuid, bill);
 
                     // mark bill as paid
                     await markPaymentAsPaid(bill.machineId, transactionID);
@@ -9790,6 +9842,7 @@ export class InventoryZDM8 implements IBaseClass {
                     });
 
                     await bill.save();
+                    this.notifyTodaySale(ownerUuid, bill);
                     // console.log("callBackConfirmLAAB", b);
                     // console.log(
                     //     `bill?.machineId`,
@@ -10774,6 +10827,17 @@ export class InventoryZDM8 implements IBaseClass {
     //     const res = await ent.findAndCountAll(condition);
     //     return res;
     // }
+
+    private notifyTodaySale(ownerUuid: string, bill: any): void {
+        try {
+            if (!ownerUuid || !bill?.machineId) return;
+            const qty = calcSaleQty(bill.vendingsales);
+            const amount = Number(bill.totalvalue) || 0;
+            recordTodaySaleFireAndForget(ownerUuid, String(bill.machineId), qty, amount, SERVER_TIME_ZONE);
+        } catch (err: any) {
+            console.error('[todaySales] notifyTodaySale failed:', err?.message || err);
+        }
+    }
 
     private async getReportSale(
         machineId: string,

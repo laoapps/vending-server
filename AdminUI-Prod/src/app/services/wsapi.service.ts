@@ -18,6 +18,13 @@ export class WsapiService {
 
 
   public refreshSubscription = new BehaviorSubject<boolean>(false);
+  public salesUpdateSubscription = new BehaviorSubject<{
+    ownerUuid: string;
+    machineId: string;
+    qtyToday: number;
+    amountToday: number;
+    timestamp: string;
+  } | null>(null);
 
   retry: any;
   constructor() {
@@ -104,6 +111,9 @@ export class WsapiService {
               break;
           case 'refresh':
             this.refreshSubscription.next(data.data);
+            break;
+          case 'sales_update':
+            this.salesUpdateSubscription.next(data);
             break;
           default:
             break;
