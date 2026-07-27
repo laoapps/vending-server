@@ -17,8 +17,12 @@
 <ion-content [fullscreen]="true">
   <div class="map-toolbar">
     <div class="stat">
-      <strong>{{ mappedCount }}</strong>
-      <span>ตู้บนแผนที่</span>
+      <strong>{{ visibleCount }}</strong>
+      <span>แสดงบนแผนที่</span>
+    </div>
+    <div class="stat muted">
+      <strong>{{ machines.length - visibleCount }}</strong>
+      <span>ซ่อนจากแผนที่</span>
     </div>
     <div class="stat muted">
       <strong>{{ missingCount }}</strong>
@@ -33,5 +37,52 @@
   <div *ngIf="errorMessage" class="map-error">{{ errorMessage }}</div>
   <div *ngIf="loading" class="map-loading">กำลังโหลด...</div>
 
-  <div id="machine-map" class="map-canvas"></div>
+  <div class="map-layout">
+    <aside class="machine-list-panel">
+      <div class="list-header">
+        <div class="list-title">
+          <strong>Machines</strong>
+          <span>{{ visibleCount }}/{{ machines.length }}</span>
+        </div>
+        <div class="list-actions">
+          <button type="button" class="link-btn" (click)="showAll()" [disabled]="!machines.length">แสดงทั้งหมด</button>
+          <button type="button" class="link-btn" (click)="hideAll()" [disabled]="!machines.length">ซ่อนทั้งหมด</button>
+        </div>
+        <input
+          class="list-search"
+          type="search"
+          [(ngModel)]="listFilter"
+          placeholder="ค้นหา machine / ที่ตั้ง..."
+        />
+      </div>
+
+      <div class="machine-list" *ngIf="filteredMachines.length; else emptyList">
+        <label
+          class="machine-item"
+          *ngFor="let m of filteredMachines"
+          [class.hidden-on-map]="!isVisible(m.machineId)"
+        >
+          <input
+            type="checkbox"
+            [checked]="isVisible(m.machineId)"
+            (change)="toggleMachine(m.machineId, $any($event.target).checked)"
+          />
+          <span class="status-dot" [class.online]="m.status === 'Online'" [class.offline]="m.status !== 'Online'"></span>
+          <span class="machine-meta">
+            <span class="machine-id">{{ m.machineId }}</span>
+            <span class="machine-location">{{ m.location || 'ไม่มีชื่อที่ตั้ง' }}</span>
+          </span>
+        </label>
+      </div>
+      <ng-template #emptyList>
+        <div class="list-empty">
+          {{ machines.length ? 'ไม่พบเครื่องที่ค้นหา' : 'ไม่มีตู้ที่มีพิกัด' }}
+        </div>
+      </ng-template>
+    </aside>
+
+    <div class="map-panel">
+      <div id="machine-map" class="map-canvas"></div>
+    </div>
+  </div>
 </ion-content>

@@ -15,6 +15,8 @@ interface MapMachine {
   owner: string;
 }
 
+const HIDDEN_STORAGE_KEY = 'machineMapHiddenIds';
+
 @Component({
   selector: 'app-machine-map',
   templateUrl: './machine-map.page.html',
@@ -23,9 +25,10 @@ interface MapMachine {
 export class MachineMapPage implements AfterViewInit, OnDestroy {
   private map: any;
   private markersLayer: any;
+  private hiddenIds = new Set<string>();
 
   machines: MapMachine[] = [];
-  mappedCount = 0;
+  listFilter = '';
   missingCount = 0;
   loading = false;
   errorMessage = '';
@@ -33,7 +36,23 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   constructor(
     private router: Router,
     public apiService: ApiService,
-  ) {}
+  ) {
+    this.hiddenIds = this.loadHiddenIds();
+  }
+
+  get filteredMachines(): MapMachine[] {
+    const q = this.listFilter.trim().toLowerCase();
+    if (!q) return this.machines;
+    return this.machines.filter(
+      (m) =>
+        m.machineId.toLowerCase().includes(q) ||
+        m.location.toLowerCase().includes(q),
+    );
+  }
+
+  get visibleCount(): number {
+    return this.machines.filter((m) => this.isVisible(m.machineId)).length;
+  }
 
   ngAfterViewInit() {
     this.initPage();
@@ -50,6 +69,32 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   async refresh() {
     await this.loadMachines();
     this.renderMarkers();
+  }
+
+  isVisible(machineId: string): boolean {
+    return !this.hiddenIds.has(machineId);
+  }
+
+  toggleMachine(machineId: string, visible: boolean) {
+    if (visible) {
+      this.hiddenIds.delete(machineId);
+    } else {
+      this.hiddenIds.add(machineId);
+    }
+    this.persistHiddenIds();
+    this.renderMarkers(false);
+  }
+
+  showAll() {
+    this.machines.forEach((m) => this.hiddenIds.delete(m.machineId));
+    this.persistHiddenIds();
+    this.renderMarkers();
+  }
+
+  hideAll() {
+    this.machines.forEach((m) => this.hiddenIds.add(m.machineId));
+    this.persistHiddenIds();
+    this.renderMarkers(false);
   }
 
   private async initPage() {
@@ -197,13 +242,12 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       });
 
       this.machines = list.sort((a, b) => a.machineId.localeCompare(b.machineId));
-      this.mappedCount = list.length;
       this.missingCount = Math.max(0, allMachines.length - list.length);
     } catch (err: any) {
       console.error('Load machines for map error:', err);
       this.errorMessage = err?.message || 'โหลดข้อมูลตู้ไม่สำเร็จ';
       this.machines = [];
-      this.mappedCount = 0;
+      this.missingCount = 0;
     } finally {
       this.loading = false;
     }
@@ -215,18 +259,23 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     return Number.isFinite(n) ? n : null;
   }
 
-  private renderMarkers() {
+  private renderMarkers(fitBounds = true) {
     if (!this.map || !this.markersLayer || typeof L === 'undefined') return;
 
     this.markersLayer.clearLayers();
-    if (!this.machines.length) {
-      this.map.setView([17.9757, 102.6331], 7);
+
+    const visible = this.machines.filter((m) => this.isVisible(m.machineId));
+    if (!visible.length) {
+      if (fitBounds) {
+        this.map.setView([17.9757, 102.6331], 7);
+      }
+      setTimeout(() => this.map?.invalidateSize(), 150);
       return;
     }
 
     const bounds = L.latLngBounds([]);
 
-    this.machines.forEach((m) => {
+    visible.forEach((m) => {
       const label = m.location || m.machineId;
       const statusClass = m.status === 'Online' ? 'online' : 'offline';
 
@@ -256,11 +305,27 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       bounds.extend([m.latitude, m.longitude]);
     });
 
-    if (bounds.isValid()) {
+    if (fitBounds && bounds.isValid()) {
       this.map.fitBounds(bounds.pad(0.2));
     }
 
     setTimeout(() => this.map?.invalidateSize(), 150);
+  }
+
+  private loadHiddenIds(): Set<string> {
+    try {
+      const raw = localStorage.getItem(HIDDEN_STORAGE_KEY);
+      if (!raw) return new Set();
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return new Set();
+      return new Set(parsed.filter((id) => typeof id === 'string'));
+    } catch {
+      return new Set();
+    }
+  }
+
+  private persistHiddenIds() {
+    localStorage.setItem(HIDDEN_STORAGE_KEY, JSON.stringify([...this.hiddenIds]));
   }
 
   private escapeHtml(text: string): string {

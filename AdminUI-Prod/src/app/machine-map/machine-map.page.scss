@@ -77,10 +77,185 @@ ion-content {
   background: #e3f2fd;
 }
 
-.map-canvas {
-  width: 100%;
+.map-layout {
+  display: flex;
   height: calc(100% - 58px);
   min-height: 420px;
+}
+
+.machine-list-panel {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid #e0e0e0;
+  z-index: 500;
+}
+
+.list-header {
+  padding: 12px;
+  border-bottom: 1px solid #eceff1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+
+  strong {
+    font-size: 0.95rem;
+    color: #263238;
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: #78909c;
+  }
+}
+
+.list-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.link-btn {
+  border: 0;
+  background: transparent;
+  color: #1565c0;
+  font-size: 0.78rem;
+  padding: 0;
+  cursor: pointer;
+
+  &:disabled {
+    color: #90a4ae;
+    cursor: default;
+  }
+
+  &:not(:disabled):hover {
+    text-decoration: underline;
+  }
+}
+
+.list-search {
+  width: 100%;
+  border: 1px solid #cfd8dc;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  outline: none;
+
+  &:focus {
+    border-color: #64b5f6;
+  }
+}
+
+.machine-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.machine-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:hover {
+    background: #f7fafc;
+  }
+
+  &.hidden-on-map {
+    opacity: 0.55;
+  }
+
+  input[type='checkbox'] {
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+
+  &.online {
+    background: #2e7d32;
+  }
+
+  &.offline {
+    background: #c62828;
+  }
+}
+
+.machine-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.machine-id {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #263238;
+  word-break: break-all;
+}
+
+.machine-location {
+  font-size: 0.75rem;
+  color: #607d8b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #90a4ae;
+  font-size: 0.85rem;
+}
+
+.map-panel {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+}
+
+@media (max-width: 768px) {
+  .map-layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .machine-list-panel {
+    width: 100%;
+    max-height: 240px;
+    border-right: 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .map-panel,
+  .map-canvas {
+    min-height: 360px;
+    height: 360px;
+  }
 }
 
 :host ::ng-deep {
