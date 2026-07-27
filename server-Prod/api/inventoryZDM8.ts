@@ -64,7 +64,7 @@ import {
 import {
     calcSaleQty,
     loadTodaySalesSummary,
-    recordTodaySaleFireAndForget,
+    recordTodaySaleAndPublish,
     startTodaySalesSubscriber,
 } from "../services/todaySalesRedis";
 import {
@@ -10106,6 +10106,7 @@ export class InventoryZDM8 implements IBaseClass {
 
                                 if (r) {
                                     ws['ownerUuid'] = r;
+                                    ws['adminlogin'] = true;
                                     this.machineClientlist
                                         .findAll({ where: { ownerUuid: r } })
                                         .then((ry) => {
@@ -10833,7 +10834,23 @@ export class InventoryZDM8 implements IBaseClass {
             if (!ownerUuid || !bill?.machineId) return;
             const qty = calcSaleQty(bill.vendingsales);
             const amount = Number(bill.totalvalue) || 0;
-            recordTodaySaleFireAndForget(ownerUuid, String(bill.machineId), qty, amount, SERVER_TIME_ZONE);
+            const machineId = String(bill.machineId);
+            // Fire-and-forget: incr Redis + publish, then also push WS directly
+            // so single-instance dashboards update even if pub/sub subscriber lags.
+            setImmediate(() => {
+                recordTodaySaleAndPublish(ownerUuid, machineId, qty, amount, SERVER_TIME_ZONE)
+                    .then((payload) => {
+                        if (!payload) return;
+                        try {
+                            wsSendAdmins(EMessage.all, this.wss, 'sales_update', payload, false);
+                        } catch (wsErr: any) {
+                            console.error('[todaySales] wsSendAdmins failed:', wsErr?.message || wsErr);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('[todaySales] recordTodaySaleAndPublish failed:', err?.message || err);
+                    });
+            });
         } catch (err: any) {
             console.error('[todaySales] notifyTodaySale failed:', err?.message || err);
         }

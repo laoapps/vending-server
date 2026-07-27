@@ -158,6 +158,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     if (m) {
       m.qtyToday = Number(qtyToday) || 0;
       m.amountToday = Number(amountToday) || 0;
+      // new array ref so toolbar getters + list refresh reliably
+      this.machines = [...this.machines];
       this.renderMarkers(false);
     }
   }

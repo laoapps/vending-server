@@ -113,6 +113,7 @@ export class WsapiService {
             this.refreshSubscription.next(data.data);
             break;
           case 'sales_update':
+            console.log('sales_update', data);
             this.salesUpdateSubscription.next(data);
             break;
           default:
