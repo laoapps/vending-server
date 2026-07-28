@@ -16,6 +16,8 @@ interface MapMachine {
   owner: string;
   qtyToday: number;
   amountToday: number;
+  qtyMonth: number;
+  amountMonth: number;
   /** ISO time of last live order (sales_update) for this machine */
   lastOrderAt?: string;
 }
@@ -52,6 +54,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   private salesUpdateSub?: Subscription;
   private todaySalesByMachine = new Map<string, { qtyToday: number; amountToday: number }>();
   private todaySalesHydrated = false;
+  private monthSalesByMachine = new Map<string, { qtyMonth: number; amountMonth: number }>();
+  private monthSalesHydrated = false;
   private flashingIds = new Set<string>();
   private flashClearTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private latestOrderBannerTimer?: ReturnType<typeof setTimeout>;
@@ -61,6 +65,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   machines: MapMachine[] = [];
   /** Shown briefly when a fresh live order arrives */
   latestOrder: LatestOrderFlash | null = null;
+  /** YYYY-MM from month sales API */
+  monthLabel = '';
   listFilter = '';
   sortMode: MachineSortMode = 'amountDesc';
   readonly sortOptions: Array<{ value: MachineSortMode; label: string }> = [
@@ -109,6 +115,14 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     return this.machines.reduce((sum, m) => sum + (Number(m.amountToday) || 0), 0);
   }
 
+  get totalQtyMonth(): number {
+    return this.machines.reduce((sum, m) => sum + (Number(m.qtyMonth) || 0), 0);
+  }
+
+  get totalAmountMonth(): number {
+    return this.machines.reduce((sum, m) => sum + (Number(m.amountMonth) || 0), 0);
+  }
+
   onSortModeChange() {
     this.persistSortMode();
   }
@@ -155,6 +169,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.initPage();
     this.hydrateTodaySalesOnce();
+    this.hydrateMonthSalesOnce();
     this.salesUpdateSub = this.apiService.wsapi.salesUpdateSubscription.subscribe((payload) => {
       if (!payload?.machineId) return;
       this.ngZone.run(() => {
@@ -211,6 +226,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   async refresh() {
     await this.loadMachines();
     this.applyTodaySalesToList();
+    this.applyMonthSalesToList();
     this.renderMarkers();
   }
 
@@ -264,6 +280,31 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       error: (err) => {
         console.error('today sales hydrate failed', err);
         this.todaySalesHydrated = false;
+      },
+    });
+  }
+
+  private hydrateMonthSalesOnce() {
+    if (this.monthSalesHydrated) return;
+    this.monthSalesHydrated = true;
+    this.apiService.loadAllVendingMachinesMonthSalesSummary().subscribe({
+      next: (res: any) => {
+        if (res?.status !== 1) return;
+        this.monthLabel = res?.data?.month || '';
+        const rows = res?.data?.rows || [];
+        for (const row of rows) {
+          if (!row?.machineId) continue;
+          this.monthSalesByMachine.set(row.machineId, {
+            qtyMonth: Number(row.qtyMonth) || 0,
+            amountMonth: Number(row.amountMonth) || 0,
+          });
+        }
+        this.applyMonthSalesToList();
+        this.renderMarkers(false);
+      },
+      error: (err) => {
+        console.error('month sales hydrate failed', err);
+        this.monthSalesHydrated = false;
       },
     });
   }
@@ -340,12 +381,23 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     }
   }
 
+  private applyMonthSalesToList() {
+    for (const m of this.machines) {
+      const s = this.monthSalesByMachine.get(m.machineId);
+      m.qtyMonth = s?.qtyMonth ?? 0;
+      m.amountMonth = s?.amountMonth ?? 0;
+    }
+    // new array ref so toolbar month totals refresh
+    this.machines = [...this.machines];
+  }
+
   private async initPage() {
     try {
       await this.ensureLeaflet();
       this.initMap();
       await this.loadMachines();
       this.applyTodaySalesToList();
+      this.applyMonthSalesToList();
       this.renderMarkers();
     } catch (err: any) {
       console.error('Map init error:', err);
@@ -481,6 +533,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           : '';
 
         const sales = this.todaySalesByMachine.get(machine.machineId);
+        const monthSales = this.monthSalesByMachine.get(machine.machineId);
 
         list.push({
           machineId: machine.machineId,
@@ -491,6 +544,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           owner: d?.ownerPhone ? String(d.ownerPhone) : 'Unknown',
           qtyToday: sales?.qtyToday ?? 0,
           amountToday: sales?.amountToday ?? 0,
+          qtyMonth: monthSales?.qtyMonth ?? 0,
+          amountMonth: monthSales?.amountMonth ?? 0,
           lastOrderAt: prevLastOrder.get(machine.machineId),
         });
       });
@@ -534,6 +589,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const statusClass = m.status === 'Online' ? 'online' : 'offline';
       const flashClass = this.isFlashing(m.machineId) ? 'order-flash' : '';
       const salesLine = `${m.qtyToday || 0} ຊິ້ນ · ${this.formatAmount(m.amountToday)} LAK`;
+      const monthLine = `ເດືອນນີ້: ${m.qtyMonth || 0} ຊິ້ນ · ${this.formatAmount(m.amountMonth)} LAK`;
       const lastOrderLine = m.lastOrderAt
         ? `ຄຳສັ່ງລ່າສຸດ: ${this.formatOrderTime(m.lastOrderAt)}`
         : '';
@@ -545,6 +601,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           <div class="marker-wrap ${statusClass} ${flashClass}">
             <div class="marker-label">${this.escapeHtml(label)}</div>
             <div class="marker-sales">${this.escapeHtml(salesLine)}</div>
+            <div class="marker-month">${this.escapeHtml(monthLine)}</div>
             ${lastOrderLine ? `<div class="marker-last-order">${this.escapeHtml(lastOrderLine)}</div>` : ''}
             <div class="marker-pin"></div>
           </div>
@@ -560,6 +617,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           ທີ່ຕັ້ງ: ${this.escapeHtml(m.location || '-')}<br/>
           ສະຖານະ: ${statusLabel}<br/>
           ມື້ນີ້: ${this.escapeHtml(salesLine)}<br/>
+          ${this.escapeHtml(monthLine)}<br/>
           ${lastOrderLine ? `${this.escapeHtml(lastOrderLine)}<br/>` : ''}
           Lat: ${m.latitude}<br/>
           Lng: ${m.longitude}

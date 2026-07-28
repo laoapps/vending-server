@@ -38,6 +38,10 @@ ion-content {
     color: #0d47a1;
     font-size: 0.95rem;
   }
+
+  &.sales.month strong {
+    color: #6a1b9a;
+  }
 }
 
 .legend {
@@ -332,6 +336,12 @@ ion-content {
   color: #1b5e20;
 }
 
+.machine-month {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6a1b9a;
+}
+
 .machine-last-order {
   font-size: 0.68rem;
   font-weight: 600;
@@ -424,6 +434,20 @@ ion-content {
     font-size: 11px;
     font-weight: 700;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 2px;
+  }
+
+  .marker-month {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #f3e5f5;
+    color: #6a1b9a;
+    font-size: 10px;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
     margin-bottom: 2px;
   }
 

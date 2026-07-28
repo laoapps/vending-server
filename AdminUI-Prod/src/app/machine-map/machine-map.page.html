@@ -36,6 +36,14 @@
       <strong>{{ formatAmount(totalAmountToday) }}</strong>
       <span>ຍອດເງິນມື້ນີ້ (LAK)</span>
     </div>
+    <div class="stat sales month">
+      <strong>{{ totalQtyMonth }} ຊິ້ນ</strong>
+      <span>ຍອດຊິ້ນເດືອນນີ້{{ monthLabel ? ' (' + monthLabel + ')' : '' }}</span>
+    </div>
+    <div class="stat sales month">
+      <strong>{{ formatAmount(totalAmountMonth) }}</strong>
+      <span>ຍອດເງິນເດືອນນີ້ (LAK)</span>
+    </div>
     <div class="legend">
       <span class="dot online"></span> ອອນລາຍ
       <span class="dot offline"></span> ອອບລາຍ
@@ -97,6 +105,7 @@
             <span class="machine-id">{{ m.machineId }}</span>
             <span class="machine-location">{{ m.location || 'ບໍ່ມີຊື່ທີ່ຕັ້ງ' }}</span>
             <span class="machine-sales">ມື້ນີ້: {{ m.qtyToday || 0 }} ຊິ້ນ · {{ formatAmount(m.amountToday) }} LAK</span>
+            <span class="machine-month">ເດືອນນີ້: {{ m.qtyMonth || 0 }} ຊິ້ນ · {{ formatAmount(m.amountMonth) }} LAK</span>
             <span class="machine-last-order" *ngIf="m.lastOrderAt">
               ຄຳສັ່ງລ່າສຸດ: {{ formatOrderTime(m.lastOrderAt) }}
               <em>({{ formatOrderRelative(m.lastOrderAt) }})</em>
