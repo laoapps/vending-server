@@ -648,6 +648,19 @@ export class ApiService {
         return this.http.post(this.url + '/loadAllVendingMachinesTodaySalesSummary', payload, { headers: this.headerBase() });
     }
 
+    loadAllVendingMachinesMonthSalesSummary(yearMonth?: string) {
+        const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
+        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const secret = localStorage.getItem('secretLocal');
+        const payload: any = {
+            token,
+            shopPhonenumber,
+            secret
+        };
+        if (yearMonth) payload.yearMonth = yearMonth;
+        return this.http.post(this.url + '/loadAllVendingMachinesMonthSalesSummary', payload, { headers: this.headerBase() });
+    }
+
     checkAndConfirmBillToDeliver(data: any) {
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');

@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Machine Map</ion-title>
+    <ion-title>ແຜນທີ່ຕູ້ຂາຍ</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="refresh()" [disabled]="loading">
         <ion-icon slot="icon-only" name="refresh"></ion-icon>
@@ -18,49 +18,65 @@
   <div class="map-toolbar">
     <div class="stat">
       <strong>{{ visibleCount }}</strong>
-      <span>แสดงบนแผนที่</span>
+      <span>ສະແດງເທິງແຜນທີ່</span>
     </div>
     <div class="stat muted">
       <strong>{{ machines.length - visibleCount }}</strong>
-      <span>ซ่อนจากแผนที่</span>
+      <span>ເຊື່ອງຈາກແຜນທີ່</span>
     </div>
     <div class="stat muted">
       <strong>{{ missingCount }}</strong>
-      <span>ยังไม่มีพิกัด</span>
+      <span>ຍັງບໍ່ມີພິກັດ</span>
     </div>
     <div class="stat sales">
-      <strong>{{ totalQtyToday }} pcs</strong>
-      <span>ยอดชิ้นวันนี้</span>
+      <strong>{{ totalQtyToday }} ຊິ້ນ</strong>
+      <span>ຍອດຊິ້ນມື້ນີ້</span>
     </div>
     <div class="stat sales">
       <strong>{{ formatAmount(totalAmountToday) }}</strong>
-      <span>ยอดเงินวันนี้ (LAK)</span>
+      <span>ຍອດເງິນມື້ນີ້ (LAK)</span>
     </div>
     <div class="legend">
-      <span class="dot online"></span> Online
-      <span class="dot offline"></span> Offline
+      <span class="dot online"></span> ອອນລາຍ
+      <span class="dot offline"></span> ອອບລາຍ
     </div>
   </div>
 
   <div *ngIf="errorMessage" class="map-error">{{ errorMessage }}</div>
-  <div *ngIf="loading" class="map-loading">กำลังโหลด...</div>
+  <div *ngIf="loading" class="map-loading">ກຳລັງໂຫຼດ...</div>
+
+  <div class="realtime-order-bar" *ngIf="latestOrder">
+    <span class="rt-badge">Real-time order</span>
+    <strong class="rt-machine">{{ latestOrder.machineId }}</strong>
+    <span class="rt-meta" *ngIf="latestOrder.location">{{ latestOrder.location }}</span>
+    <span class="rt-sales">
+      {{ latestOrder.qtyToday || 0 }} ຊິ້ນ · {{ formatAmount(latestOrder.amountToday) }} LAK
+    </span>
+    <span class="rt-time">ຄຳສັ່ງລ່າສຸດ {{ formatOrderTime(latestOrder.at) }}</span>
+  </div>
 
   <div class="map-layout">
     <aside class="machine-list-panel">
       <div class="list-header">
         <div class="list-title">
-          <strong>Machines</strong>
+          <strong>ລາຍການຕູ້</strong>
           <span>{{ visibleCount }}/{{ machines.length }}</span>
         </div>
         <div class="list-actions">
-          <button type="button" class="link-btn" (click)="showAll()" [disabled]="!machines.length">แสดงทั้งหมด</button>
-          <button type="button" class="link-btn" (click)="hideAll()" [disabled]="!machines.length">ซ่อนทั้งหมด</button>
+          <button type="button" class="link-btn" (click)="showAll()" [disabled]="!machines.length">ສະແດງທັງໝົດ</button>
+          <button type="button" class="link-btn" (click)="hideAll()" [disabled]="!machines.length">ເຊື່ອງທັງໝົດ</button>
         </div>
+        <label class="sort-label">
+          ຈັດຮຽງຕາມ
+          <select class="list-sort" [(ngModel)]="sortMode" (ngModelChange)="onSortModeChange()">
+            <option *ngFor="let opt of sortOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+          </select>
+        </label>
         <input
           class="list-search"
           type="search"
           [(ngModel)]="listFilter"
-          placeholder="ค้นหา machine / ที่ตั้ง..."
+          placeholder="ຄົ້ນຫາຕູ້ / ທີ່ຕັ້ງ..."
         />
       </div>
 
@@ -69,6 +85,7 @@
           class="machine-item"
           *ngFor="let m of filteredMachines"
           [class.hidden-on-map]="!isVisible(m.machineId)"
+          [class.order-flash]="isFlashing(m.machineId)"
         >
           <input
             type="checkbox"
@@ -78,14 +95,18 @@
           <span class="status-dot" [class.online]="m.status === 'Online'" [class.offline]="m.status !== 'Online'"></span>
           <span class="machine-meta">
             <span class="machine-id">{{ m.machineId }}</span>
-            <span class="machine-location">{{ m.location || 'ไม่มีชื่อที่ตั้ง' }}</span>
-            <span class="machine-sales">Today: {{ m.qtyToday || 0 }} pcs · {{ formatAmount(m.amountToday) }} LAK</span>
+            <span class="machine-location">{{ m.location || 'ບໍ່ມີຊື່ທີ່ຕັ້ງ' }}</span>
+            <span class="machine-sales">ມື້ນີ້: {{ m.qtyToday || 0 }} ຊິ້ນ · {{ formatAmount(m.amountToday) }} LAK</span>
+            <span class="machine-last-order" *ngIf="m.lastOrderAt">
+              ຄຳສັ່ງລ່າສຸດ: {{ formatOrderTime(m.lastOrderAt) }}
+              <em>({{ formatOrderRelative(m.lastOrderAt) }})</em>
+            </span>
           </span>
         </label>
       </div>
       <ng-template #emptyList>
         <div class="list-empty">
-          {{ machines.length ? 'ไม่พบเครื่องที่ค้นหา' : 'ไม่มีตู้ที่มีพิกัด' }}
+          {{ machines.length ? 'ບໍ່ພົບຕູ້ທີ່ຄົ້ນຫາ' : 'ບໍ່ມີຕູ້ທີ່ມີພິກັດ' }}
         </div>
       </ng-template>
     </aside>

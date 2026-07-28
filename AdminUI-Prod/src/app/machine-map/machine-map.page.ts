@@ -16,9 +16,29 @@ interface MapMachine {
   owner: string;
   qtyToday: number;
   amountToday: number;
+  /** ISO time of last live order (sales_update) for this machine */
+  lastOrderAt?: string;
 }
 
+interface LatestOrderFlash {
+  machineId: string;
+  location: string;
+  qtyToday: number;
+  amountToday: number;
+  at: string;
+}
+
+type MachineSortMode =
+  | 'amountDesc'
+  | 'amountAsc'
+  | 'qtyDesc'
+  | 'qtyAsc'
+  | 'nameAsc'
+  | 'nameDesc'
+  | 'onlineFirst';
+
 const HIDDEN_STORAGE_KEY = 'machineMapHiddenIds';
+const SORT_STORAGE_KEY = 'machineMapSortMode';
 
 @Component({
   selector: 'app-machine-map',
@@ -32,9 +52,26 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   private salesUpdateSub?: Subscription;
   private todaySalesByMachine = new Map<string, { qtyToday: number; amountToday: number }>();
   private todaySalesHydrated = false;
+  private flashingIds = new Set<string>();
+  private flashClearTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private latestOrderBannerTimer?: ReturnType<typeof setTimeout>;
+  private readonly flashDurationMs = 2800;
+  private readonly freshOrderWindowMs = 30000;
 
   machines: MapMachine[] = [];
+  /** Shown briefly when a fresh live order arrives */
+  latestOrder: LatestOrderFlash | null = null;
   listFilter = '';
+  sortMode: MachineSortMode = 'amountDesc';
+  readonly sortOptions: Array<{ value: MachineSortMode; label: string }> = [
+    { value: 'amountDesc', label: 'ຍອດເງິນຫຼາຍ → ໜ້ອຍ' },
+    { value: 'amountAsc', label: 'ຍອດເງິນໜ້ອຍ → ຫຼາຍ' },
+    { value: 'qtyDesc', label: 'ຈຳນວນຊິ້ນຫຼາຍ → ໜ້ອຍ' },
+    { value: 'qtyAsc', label: 'ຈຳນວນຊິ້ນໜ້ອຍ → ຫຼາຍ' },
+    { value: 'onlineFirst', label: 'ອອນລາຍກ່ອນ + ຍອດເງິນ' },
+    { value: 'nameAsc', label: 'ຊື່ຕູ້ A → Z' },
+    { value: 'nameDesc', label: 'ຊື່ຕູ້ Z → A' },
+  ];
   missingCount = 0;
   loading = false;
   errorMessage = '';
@@ -45,16 +82,19 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     private ngZone: NgZone,
   ) {
     this.hiddenIds = this.loadHiddenIds();
+    this.sortMode = this.loadSortMode();
   }
 
   get filteredMachines(): MapMachine[] {
     const q = this.listFilter.trim().toLowerCase();
-    if (!q) return this.machines;
-    return this.machines.filter(
-      (m) =>
-        m.machineId.toLowerCase().includes(q) ||
-        m.location.toLowerCase().includes(q),
-    );
+    const list = !q
+      ? [...this.machines]
+      : this.machines.filter(
+          (m) =>
+            m.machineId.toLowerCase().includes(q) ||
+            m.location.toLowerCase().includes(q),
+        );
+    return this.sortMachines(list);
   }
 
   get visibleCount(): number {
@@ -69,20 +109,99 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     return this.machines.reduce((sum, m) => sum + (Number(m.amountToday) || 0), 0);
   }
 
+  onSortModeChange() {
+    this.persistSortMode();
+  }
+
+  private sortMachines(list: MapMachine[]): MapMachine[] {
+    const byId = (a: MapMachine, b: MapMachine) => a.machineId.localeCompare(b.machineId);
+    return list.sort((a, b) => {
+      switch (this.sortMode) {
+        case 'amountAsc':
+          return (a.amountToday || 0) - (b.amountToday || 0) || byId(a, b);
+        case 'qtyDesc':
+          return (b.qtyToday || 0) - (a.qtyToday || 0) || byId(a, b);
+        case 'qtyAsc':
+          return (a.qtyToday || 0) - (b.qtyToday || 0) || byId(a, b);
+        case 'nameAsc':
+          return byId(a, b);
+        case 'nameDesc':
+          return byId(b, a);
+        case 'onlineFirst': {
+          const ao = a.status === 'Online' ? 0 : 1;
+          const bo = b.status === 'Online' ? 0 : 1;
+          return ao - bo || (b.amountToday || 0) - (a.amountToday || 0) || byId(a, b);
+        }
+        case 'amountDesc':
+        default:
+          return (b.amountToday || 0) - (a.amountToday || 0) || byId(a, b);
+      }
+    });
+  }
+
+  private loadSortMode(): MachineSortMode {
+    try {
+      const raw = localStorage.getItem(SORT_STORAGE_KEY) as MachineSortMode | null;
+      const allowed = this.sortOptions.map((o) => o.value);
+      if (raw && (allowed as string[]).includes(raw)) return raw;
+    } catch { /* ignore */ }
+    return 'amountDesc';
+  }
+
+  private persistSortMode() {
+    localStorage.setItem(SORT_STORAGE_KEY, this.sortMode);
+  }
+
   ngAfterViewInit() {
     this.initPage();
     this.hydrateTodaySalesOnce();
     this.salesUpdateSub = this.apiService.wsapi.salesUpdateSubscription.subscribe((payload) => {
       if (!payload?.machineId) return;
       this.ngZone.run(() => {
-        this.applyTodaySalesUpdate(payload.machineId, payload.qtyToday, payload.amountToday);
+        this.applyTodaySalesUpdate(
+          payload.machineId,
+          payload.qtyToday,
+          payload.amountToday,
+          payload.timestamp,
+        );
       });
     });
   }
 
   ngOnDestroy() {
     this.salesUpdateSub?.unsubscribe();
+    this.flashClearTimers.forEach((t) => clearTimeout(t));
+    this.flashClearTimers.clear();
+    if (this.latestOrderBannerTimer) clearTimeout(this.latestOrderBannerTimer);
     this.destroyMap();
+  }
+
+  isFlashing(machineId: string): boolean {
+    return this.flashingIds.has(machineId);
+  }
+
+  formatOrderTime(iso?: string): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  }
+
+  formatOrderRelative(iso?: string): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const diffSec = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
+    if (diffSec < 5) return 'ຫາກໍ່ນີ້';
+    if (diffSec < 60) return `${diffSec} ວິ ທີ່ແລ້ວ`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} ນາທີທີ່ແລ້ວ`;
+    return this.formatOrderTime(iso);
   }
 
   goBack() {
@@ -149,19 +268,68 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     });
   }
 
-  private applyTodaySalesUpdate(machineId: string, qtyToday: number, amountToday: number) {
-    this.todaySalesByMachine.set(machineId, {
-      qtyToday: Number(qtyToday) || 0,
-      amountToday: Number(amountToday) || 0,
-    });
+  private applyTodaySalesUpdate(
+    machineId: string,
+    qtyToday: number,
+    amountToday: number,
+    timestamp?: string,
+  ) {
+    const at = timestamp && !Number.isNaN(new Date(timestamp).getTime())
+      ? timestamp
+      : new Date().toISOString();
+    const qty = Number(qtyToday) || 0;
+    const amount = Number(amountToday) || 0;
+
+    this.todaySalesByMachine.set(machineId, { qtyToday: qty, amountToday: amount });
     const m = this.machines.find((x) => x.machineId === machineId);
     if (m) {
-      m.qtyToday = Number(qtyToday) || 0;
-      m.amountToday = Number(amountToday) || 0;
+      m.qtyToday = qty;
+      m.amountToday = amount;
+      m.lastOrderAt = at;
       // new array ref so toolbar getters + list refresh reliably
       this.machines = [...this.machines];
       this.renderMarkers(false);
     }
+
+    // Only animate for fresh live events (skip BehaviorSubject replay of old payload)
+    if (this.isFreshOrder(at)) {
+      this.triggerOrderFlash(machineId, m?.location || '', qty, amount, at);
+    }
+  }
+
+  private isFreshOrder(iso: string): boolean {
+    const t = new Date(iso).getTime();
+    if (Number.isNaN(t)) return false;
+    return Date.now() - t <= this.freshOrderWindowMs;
+  }
+
+  private triggerOrderFlash(
+    machineId: string,
+    location: string,
+    qtyToday: number,
+    amountToday: number,
+    at: string,
+  ) {
+    this.flashingIds.add(machineId);
+    const prev = this.flashClearTimers.get(machineId);
+    if (prev) clearTimeout(prev);
+    this.flashClearTimers.set(
+      machineId,
+      setTimeout(() => {
+        this.flashingIds.delete(machineId);
+        this.flashClearTimers.delete(machineId);
+        this.renderMarkers(false);
+      }, this.flashDurationMs),
+    );
+
+    this.latestOrder = { machineId, location, qtyToday, amountToday, at };
+    if (this.latestOrderBannerTimer) clearTimeout(this.latestOrderBannerTimer);
+    this.latestOrderBannerTimer = setTimeout(() => {
+      this.latestOrder = null;
+      this.latestOrderBannerTimer = undefined;
+    }, this.flashDurationMs + 1200);
+
+    this.renderMarkers(false);
   }
 
   private applyTodaySalesToList() {
@@ -181,7 +349,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       this.renderMarkers();
     } catch (err: any) {
       console.error('Map init error:', err);
-      this.errorMessage = err?.message || 'ไม่สามารถโหลดแผนที่ได้';
+      this.errorMessage = err?.message || 'ບໍ່ສາມາດໂຫຼດແຜນທີ່ໄດ້';
     }
   }
 
@@ -205,7 +373,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
       if (existing) {
         existing.addEventListener('load', () => resolve());
-        existing.addEventListener('error', () => reject(new Error('โหลด Leaflet ไม่สำเร็จ')));
+        existing.addEventListener('error', () => reject(new Error('ໂຫຼດແຜນທີ່ບໍ່ສຳເລັດ')));
         if (typeof L !== 'undefined') resolve();
         return;
       }
@@ -214,7 +382,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       script.id = scriptId;
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error('โหลด Leaflet ไม่สำเร็จ'));
+      script.onerror = () => reject(new Error('ໂຫຼດແຜນທີ່ບໍ່ສຳເລັດ'));
       document.body.appendChild(script);
     });
   }
@@ -246,8 +414,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     L.control
       .layers(
         {
-          'ดาวเทียม': satellite,
-          'แผนที่': street,
+          'ດາວທຽມ': satellite,
+          'ແຜນທີ່': street,
         },
         {},
         { position: 'topright' },
@@ -288,6 +456,11 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const now = new Date();
       const list: MapMachine[] = [];
       const allMachines = allRes?.data?.data || [];
+      const prevLastOrder = new Map(
+        this.machines
+          .filter((m) => m.lastOrderAt)
+          .map((m) => [m.machineId, m.lastOrderAt as string]),
+      );
 
       allMachines.forEach((machine: any) => {
         const d = machine?.data?.[0] || {};
@@ -318,6 +491,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           owner: d?.ownerPhone ? String(d.ownerPhone) : 'Unknown',
           qtyToday: sales?.qtyToday ?? 0,
           amountToday: sales?.amountToday ?? 0,
+          lastOrderAt: prevLastOrder.get(machine.machineId),
         });
       });
 
@@ -325,7 +499,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       this.missingCount = Math.max(0, allMachines.length - list.length);
     } catch (err: any) {
       console.error('Load machines for map error:', err);
-      this.errorMessage = err?.message || 'โหลดข้อมูลตู้ไม่สำเร็จ';
+      this.errorMessage = err?.message || 'ໂຫຼດຂໍ້ມູນຕູ້ບໍ່ສຳເລັດ';
       this.machines = [];
       this.missingCount = 0;
     } finally {
@@ -358,14 +532,20 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     visible.forEach((m) => {
       const label = m.location || m.machineId;
       const statusClass = m.status === 'Online' ? 'online' : 'offline';
-      const salesLine = `${m.qtyToday || 0} pcs · ${this.formatAmount(m.amountToday)} LAK`;
+      const flashClass = this.isFlashing(m.machineId) ? 'order-flash' : '';
+      const salesLine = `${m.qtyToday || 0} ຊິ້ນ · ${this.formatAmount(m.amountToday)} LAK`;
+      const lastOrderLine = m.lastOrderAt
+        ? `ຄຳສັ່ງລ່າສຸດ: ${this.formatOrderTime(m.lastOrderAt)}`
+        : '';
+      const statusLabel = m.status === 'Online' ? 'ອອນລາຍ' : 'ອອບລາຍ';
 
       const icon = L.divIcon({
         className: 'machine-marker',
         html: `
-          <div class="marker-wrap ${statusClass}">
+          <div class="marker-wrap ${statusClass} ${flashClass}">
             <div class="marker-label">${this.escapeHtml(label)}</div>
             <div class="marker-sales">${this.escapeHtml(salesLine)}</div>
+            ${lastOrderLine ? `<div class="marker-last-order">${this.escapeHtml(lastOrderLine)}</div>` : ''}
             <div class="marker-pin"></div>
           </div>
         `,
@@ -377,9 +557,10 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       marker.bindPopup(`
         <div class="map-popup">
           <strong>${this.escapeHtml(m.machineId)}</strong><br/>
-          ที่ตั้ง: ${this.escapeHtml(m.location || '-')}<br/>
-          Status: ${m.status}<br/>
-          Today: ${this.escapeHtml(salesLine)}<br/>
+          ທີ່ຕັ້ງ: ${this.escapeHtml(m.location || '-')}<br/>
+          ສະຖານະ: ${statusLabel}<br/>
+          ມື້ນີ້: ${this.escapeHtml(salesLine)}<br/>
+          ${lastOrderLine ? `${this.escapeHtml(lastOrderLine)}<br/>` : ''}
           Lat: ${m.latitude}<br/>
           Lng: ${m.longitude}
         </div>

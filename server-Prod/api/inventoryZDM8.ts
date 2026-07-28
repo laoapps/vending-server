@@ -67,6 +67,7 @@ import {
     recordTodaySaleAndPublish,
     startTodaySalesSubscriber,
 } from "../services/todaySalesRedis";
+import { loadMonthSalesSummary } from "../services/monthSalesSummary";
 import {
     EClientCommand,
     EMACHINE_COMMAND,
@@ -4834,6 +4835,54 @@ export class InventoryZDM8 implements IBaseClass {
                         res.send(
                             PrintError(
                                 "loadAllVendingMachinesTodaySalesSummary",
+                                error,
+                                EMessage.error,
+                                returnLog(req, res, true)
+                            )
+                        );
+                    }
+                }
+            );
+
+            // One-shot month sales per machine (no Redis / no realtime push)
+            router.post(
+                this.path + "/loadAllVendingMachinesMonthSalesSummary",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const yearMonth =
+                            typeof req.body?.yearMonth === 'string' ? req.body.yearMonth : undefined;
+
+                        const machines = await this.machineClientlist.findAll({
+                            where: { isActive: true },
+                            attributes: ['machineId', 'ownerUuid'],
+                        });
+
+                        const refs = machines
+                            .map((m: any) => ({
+                                machineId: m.machineId,
+                                ownerUuid: m.ownerUuid,
+                            }))
+                            .filter((m: any) => m.machineId && m.ownerUuid);
+
+                        const { rows, month } = await loadMonthSalesSummary(
+                            refs,
+                            SERVER_TIME_ZONE,
+                            yearMonth
+                        );
+                        res.send(
+                            PrintSucceeded(
+                                "loadAllVendingMachinesMonthSalesSummary",
+                                { rows, month },
+                                EMessage.succeeded,
+                                returnLog(req, res)
+                            )
+                        );
+                    } catch (error) {
+                        res.send(
+                            PrintError(
+                                "loadAllVendingMachinesMonthSalesSummary",
                                 error,
                                 EMessage.error,
                                 returnLog(req, res, true)
