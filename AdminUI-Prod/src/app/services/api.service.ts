@@ -615,7 +615,7 @@ export class ApiService {
         return this.http.post<IResModel>(this.url + '/readMachineSaleForAdmin', data, { headers: this.headerBase() });
     }
     loadVendingMachineSaleBillReport(data: any) {
-        const shopPhonenumber = localStorage.getItem('phoneNumberLocal');
+        const shopPhonenumber = data?.shopPhonenumber || localStorage.getItem('phoneNumberLocal');
         const secret = localStorage.getItem('secretLocal');
         const payload = {
             ...data,

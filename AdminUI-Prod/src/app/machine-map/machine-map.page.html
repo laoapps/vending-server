@@ -110,6 +110,13 @@
               ຄຳສັ່ງລ່າສຸດ: {{ formatOrderTime(m.lastOrderAt) }}
               <em>({{ formatOrderRelative(m.lastOrderAt) }})</em>
             </span>
+            <button
+              type="button"
+              class="sales-btn"
+              (click)="openSalesPanel(m, $event)"
+            >
+              ເບີ່ງຍອດຂາຍ
+            </button>
           </span>
         </label>
       </div>
@@ -124,4 +131,112 @@
       <div id="machine-map" class="map-canvas"></div>
     </div>
   </div>
+
+  <div class="sales-panel-backdrop" *ngIf="salesPanelOpen" (click)="closeSalesPanel()"></div>
+  <aside class="sales-panel" *ngIf="salesPanelOpen" [class.open]="salesPanelOpen">
+    <div class="sales-panel-header">
+      <div>
+        <strong>ເບີ່ງຍອດຂາຍ</strong>
+        <div class="sales-panel-sub">{{ salesMachine?.machineId }} · {{ salesMachine?.location || '-' }}</div>
+      </div>
+      <button type="button" class="sales-panel-close" (click)="closeSalesPanel()" aria-label="close">×</button>
+    </div>
+
+    <div class="sales-panel-filters">
+      <label>
+        ຈາກວັນທີ
+        <input type="date" [(ngModel)]="salesFromDate" />
+      </label>
+      <label>
+        ຫາວັນທີ
+        <input type="date" [(ngModel)]="salesToDate" />
+      </label>
+      <button type="button" class="sales-load-btn" (click)="loadSalesOrders()" [disabled]="salesLoading">
+        {{ salesLoading ? 'ກຳລັງໂຫຼດ...' : 'ດຶງຂໍ້ມູນ' }}
+      </button>
+    </div>
+
+    <div class="sales-panel-summary" *ngIf="!salesLoading && salesOrders.length">
+      <span>{{ salesOrderCount }} orders</span>
+      <span>{{ salesTotalQty }} ຊິ້ນ</span>
+      <span>{{ formatAmount(salesTotalAmount) }} LAK</span>
+    </div>
+
+    <div class="sales-tabs" *ngIf="!salesLoading && salesOrders.length">
+      <button
+        type="button"
+        class="sales-tab"
+        [class.active]="salesTab === 'orders'"
+        (click)="setSalesTab('orders')"
+      >
+        Orders
+      </button>
+      <button
+        type="button"
+        class="sales-tab"
+        [class.active]="salesTab === 'top5'"
+        (click)="setSalesTab('top5')"
+      >
+        Top 5 ສິນຄ້າຂາຍດີ
+      </button>
+    </div>
+
+    <div class="sales-panel-error" *ngIf="salesError">{{ salesError }}</div>
+    <div class="sales-panel-loading" *ngIf="salesLoading">ກຳລັງໂຫຼດ order...</div>
+    <div class="sales-panel-empty" *ngIf="!salesLoading && !salesError && !salesOrders.length">
+      ບໍ່ພົບ order ໃນຊ່ວງວັນທີ່ເລືອກ
+    </div>
+
+    <div class="sales-order-list" *ngIf="!salesLoading && salesOrders.length && salesTab === 'orders'">
+      <article class="sales-order" *ngFor="let order of salesOrders; let i = index">
+        <header class="sales-order-head">
+          <div>
+            <strong>#{{ i + 1 }}</strong>
+            <span class="sales-order-time">{{ formatDateTime(order.createdAt) }}</span>
+          </div>
+          <div class="sales-order-right">
+            <span class="sales-order-status" [attr.data-status]="order.paymentstatus">
+              {{ paymentStatusLabel(order.paymentstatus) }}
+            </span>
+            <strong class="sales-order-amount">{{ formatAmount(order.totalvalue) }} LAK</strong>
+          </div>
+        </header>
+        <div class="sales-order-meta" *ngIf="order.transactionID">
+          Tx: {{ order.transactionID }}
+        </div>
+        <ul class="sales-order-lines">
+          <li *ngFor="let line of order.lines">
+            <div class="line-main">
+              <span class="line-name">{{ line.name }}</span>
+              <span class="line-qty">x{{ line.qty }}</span>
+              <span class="line-price">{{ formatAmount(line.price) }}</span>
+              <span class="line-total">{{ formatAmount(line.total) }}</span>
+            </div>
+            <div class="line-drop" *ngIf="line.dropAt">
+              dropAt: {{ formatDateTime(line.dropAt) }}
+            </div>
+            <div class="line-drop muted" *ngIf="!line.dropAt">
+              dropAt: -
+            </div>
+          </li>
+          <li *ngIf="!order.lines.length" class="line-empty">ບໍ່ມີລາຍການສິນຄ້າ</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="sales-top-list" *ngIf="!salesLoading && salesOrders.length && salesTab === 'top5'">
+      <div class="sales-top-empty" *ngIf="!salesTopProducts.length">ບໍ່ມີຂໍ້ມູນສິນຄ້າ</div>
+      <article class="sales-top-item" *ngFor="let p of salesTopProducts">
+        <span class="top-rank">#{{ p.rank }}</span>
+        <div class="top-meta">
+          <strong>{{ p.name }}</strong>
+          <span>ລາຄາ {{ formatAmount(p.price) }} LAK</span>
+        </div>
+        <div class="top-stats">
+          <strong>{{ p.qty }} ຊິ້ນ</strong>
+          <span>{{ formatAmount(p.amount) }} LAK</span>
+        </div>
+      </article>
+    </div>
+  </aside>
 </ion-content>

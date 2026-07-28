@@ -30,6 +30,34 @@ interface LatestOrderFlash {
   at: string;
 }
 
+interface SaleOrderLine {
+  stockId?: string | number;
+  name: string;
+  qty: number;
+  price: number;
+  total: number;
+  position?: number | string;
+  dropAt?: string;
+}
+
+interface SaleOrderBill {
+  id?: number | string;
+  createdAt: string;
+  paymentstatus: string;
+  totalvalue: number;
+  transactionID?: string;
+  lines: SaleOrderLine[];
+  lineQty: number;
+}
+
+interface TopSaleProduct {
+  rank: number;
+  name: string;
+  qty: number;
+  amount: number;
+  price: number;
+}
+
 type MachineSortMode =
   | 'amountDesc'
   | 'amountAsc'
@@ -82,6 +110,18 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   loading = false;
   errorMessage = '';
 
+  // Sale bill report panel (loadVendingMachineSaleBillReport)
+  salesPanelOpen = false;
+  salesMachine: MapMachine | null = null;
+  salesFromDate = '';
+  salesToDate = '';
+  salesLoading = false;
+  salesError = '';
+  salesOrders: SaleOrderBill[] = [];
+  salesOrderCount = 0;
+  salesTab: 'orders' | 'top5' = 'orders';
+  salesTopProducts: TopSaleProduct[] = [];
+
   constructor(
     private router: Router,
     public apiService: ApiService,
@@ -121,6 +161,14 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
 
   get totalAmountMonth(): number {
     return this.machines.reduce((sum, m) => sum + (Number(m.amountMonth) || 0), 0);
+  }
+
+  get salesTotalAmount(): number {
+    return this.salesOrders.reduce((sum, o) => sum + (Number(o.totalvalue) || 0), 0);
+  }
+
+  get salesTotalQty(): number {
+    return this.salesOrders.reduce((sum, o) => sum + (Number(o.lineQty) || 0), 0);
   }
 
   onSortModeChange() {
@@ -232,6 +280,171 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
 
   formatAmount(amount?: number): string {
     return (Number(amount) || 0).toLocaleString('en-US');
+  }
+
+  openSalesPanel(m: MapMachine, event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.salesMachine = m;
+    this.salesOrders = [];
+    this.salesTopProducts = [];
+    this.salesOrderCount = 0;
+    this.salesTab = 'orders';
+    this.salesError = '';
+    const today = this.toDateInputValue(new Date());
+    const monthStart = this.toDateInputValue(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    this.salesFromDate = monthStart;
+    this.salesToDate = today;
+    this.salesPanelOpen = true;
+    this.loadSalesOrders();
+  }
+
+  closeSalesPanel() {
+    this.salesPanelOpen = false;
+    this.salesMachine = null;
+    this.salesOrders = [];
+    this.salesTopProducts = [];
+    this.salesError = '';
+    this.salesLoading = false;
+    this.salesTab = 'orders';
+  }
+
+  setSalesTab(tab: 'orders' | 'top5') {
+    this.salesTab = tab;
+  }
+
+  loadSalesOrders() {
+    if (!this.salesMachine?.machineId) return;
+    if (!this.salesFromDate || !this.salesToDate) {
+      this.salesError = 'ເລືອກວັນທີ່ເລີ່ມ ແລະ ວັນທີ່ສິ້ນສຸດ';
+      return;
+    }
+    if (this.salesFromDate > this.salesToDate) {
+      this.salesError = 'ວັນທີ່ເລີ່ມຕ້ອງບໍ່ຫຼາຍກວ່າວັນທີ່ສິ້ນສຸດ';
+      return;
+    }
+
+    this.salesLoading = true;
+    this.salesError = '';
+    this.salesOrders = [];
+    this.salesTopProducts = [];
+
+    const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
+    const ownerPhone = String(this.salesMachine.owner || '');
+    const shopPhonenumber = ownerPhone.replace(/\D/g, '').slice(-8);
+
+    this.apiService
+      .loadVendingMachineSaleBillReport({
+        machineId: this.salesMachine.machineId,
+        fromDate: this.salesFromDate,
+        toDate: this.salesToDate,
+        token,
+        shopPhonenumber: shopPhonenumber || undefined,
+      })
+      .subscribe({
+        next: (res: any) => {
+          this.salesLoading = false;
+          if (res?.status !== 1) {
+            this.salesError = res?.message || 'ໂຫຼດຍອດຂາຍບໍ່ສຳເລັດ';
+            return;
+          }
+          const rows = res?.data?.rows || [];
+          this.salesOrderCount = Number(res?.data?.count) || rows.length;
+          this.salesOrders = this.mapSaleBills(rows);
+          this.salesTopProducts = this.buildTopProducts(this.salesOrders, 5);
+        },
+        error: (err) => {
+          console.error('load sales orders failed', err);
+          this.salesLoading = false;
+          this.salesError = err?.message || 'ໂຫຼດຍອດຂາຍບໍ່ສຳເລັດ';
+        },
+      });
+  }
+
+  paymentStatusLabel(status?: string): string {
+    if (status === 'paid') return 'ຈ່າຍແລ້ວ';
+    if (status === 'delivered') return 'ເຄື່ອງຕົກແລ້ວ';
+    return status || '-';
+  }
+
+  formatDateTime(value?: string): string {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  }
+
+  private toDateInputValue(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private mapSaleBills(rows: any[]): SaleOrderBill[] {
+    return (rows || []).map((bill) => {
+      const lines: SaleOrderLine[] = (Array.isArray(bill?.vendingsales) ? bill.vendingsales : []).map(
+        (vs: any) => {
+          const qty = Number(vs?.stock?.qtty) || 1;
+          const price = Number(vs?.stock?.price) || 0;
+          return {
+            stockId: vs?.stock?.id ?? vs?.stock?.uuid,
+            name: vs?.stock?.name || '-',
+            qty,
+            price,
+            total: qty * price,
+            position: vs?.position,
+            dropAt: vs?.dropAt || undefined,
+          };
+        },
+      );
+      const lineQty = lines.reduce((s, l) => s + (l.qty || 0), 0);
+      return {
+        id: bill?.id,
+        createdAt: bill?.createdAt,
+        paymentstatus: bill?.paymentstatus,
+        totalvalue: Number(bill?.totalvalue) || 0,
+        transactionID: bill?.transactionID,
+        lines,
+        lineQty: lineQty || lines.length || 1,
+      };
+    });
+  }
+
+  private buildTopProducts(orders: SaleOrderBill[], limit = 5): TopSaleProduct[] {
+    const map = new Map<string, { name: string; qty: number; amount: number; price: number }>();
+    for (const order of orders) {
+      for (const line of order.lines) {
+        const key = String(line.stockId ?? `${line.name}|${line.price}`);
+        const cur = map.get(key) || {
+          name: line.name,
+          qty: 0,
+          amount: 0,
+          price: line.price,
+        };
+        cur.qty += Number(line.qty) || 0;
+        cur.amount += Number(line.total) || 0;
+        map.set(key, cur);
+      }
+    }
+    return Array.from(map.values())
+      .sort((a, b) => b.qty - a.qty || b.amount - a.amount)
+      .slice(0, limit)
+      .map((p, i) => ({
+        rank: i + 1,
+        name: p.name,
+        qty: p.qty,
+        amount: p.amount,
+        price: p.price,
+      }));
   }
 
   isVisible(machineId: string): boolean {
