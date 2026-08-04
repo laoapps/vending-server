@@ -1,257 +1,359 @@
-<!-- <ion-header>
-  <ion-toolbar>
-    <ion-icon name="close-circle-sharp" (click)="close()"></ion-icon>
-
-    <ion-title>machine</ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content>
-  <ion-button (click)="new()">New</ion-button>
-<ion-grid>
-  <ion-row>
-    <ion-col><ion-label>Image</ion-label></ion-col>
-    <ion-col><ion-label>Machine Id</ion-label></ion-col>
-    <ion-col><ion-label>OTP</ion-label></ion-col>
-    <ion-col></ion-col>
-    <ion-col></ion-col>
-  </ion-row>
-
-  <ion-row *ngFor="let p of _l">
-    <ion-col><ion-img class="product_image"[src]="showImage(p.photo)"></ion-img></ion-col>
-    <ion-col><ion-label>{{p.machineId}}<ion-button (click)="sale(p.machineId)">Sale</ion-button></ion-label></ion-col>
-    <ion-col><ion-label>{{p.otp}}</ion-label></ion-col>
-    <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
-    <ion-col> <ion-toggle  [(ngModel)]="p.isActive" (click)="disable(p.id)" ></ion-toggle></ion-col>
-    <ion-col><ion-button (click)="edit(p.id)">edit</ion-button></ion-col>
-
-  </ion-row>
-</ion-grid>
-</ion-content> -->
-
-
 <ion-content>
 
   <div class="section-navbar">
     <div class="left">
-      <a (click)="close()" href="javascript:void(0)" class="btn-back"><i class="fa-solid fa-arrow-left"></i></a>
+      <a (click)="close()" href="javascript:void(0)" class="btn-back" aria-label="Back">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
       <div class="item-text">My Machine</div>
     </div>
-    <div class="right">
-
-    </div>
+    <div class="right"></div>
   </div>
 
   <div class="space"></div>
 
-  <ion-grid class="ion-no-padding">
-    <ion-row>
-      <ion-col size="12">
+  <div class="machine-page">
+    <div class="item-card">
 
-        <div class="item-card">
+      <div class="item-card-header">
+        <div class="left">
+          <a (click)="new()" href="javascript:void(0)" class="btn-item-new">
+            <i class="fa-solid fa-circle-plus"></i>
+            Create new machine
+          </a>
+          <a (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new">
+            <i class="fa-solid fa-file"></i>
+            All sale report
+          </a>
+        </div>
+        <div class="right">
+          <a (click)="loadMachine()" href="javascript:void(0)" class="btn-item-reload">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            Reload
+          </a>
+        </div>
+      </div>
 
-          <div class="item-card-header">
-            <div class="left">
-              <!-- <a  *ngIf="readonly == false" (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i> Create new machine</a>
-              <a  *ngIf="readonly == false" (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-file"></i> All sale report</a> -->
-              <!-- <a (click)="epinManagement()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-qrcode"></i> EPIN Management</a> -->
+      <div class="item-card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered machine-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Image</th>
+                <th>Machine ID</th>
+                <th>OTP</th>
+                <th>Time</th>
+                <th>Active</th>
+                <th>Action</th>
+              </tr>
+            </thead>
 
-              <a (click)="new()" href="javascript:void(0)" class="btn-item-new"><i class="fa-solid fa-circle-plus"></i>
-                Create new machine</a>
-              <a (click)="allSaleReport()" href="javascript:void(0)" class="btn-item-new"><i
-                  class="fa-solid fa-file"></i> All sale report</a>
-            </div>
-            <div class="right">
-              <a (click)="loadMachine()" href="javascript:void(0)" class="btn-item-reload"><i
-                  class="fa-solid fa-arrows-rotate"></i> Reload</a>
-            </div>
-          </div>
+            <tbody class="machine-group" *ngFor="let p of _l; let i = index">
+              <tr class="machine-row">
+                <td class="col-no">{{ i + 1 }}</td>
+                <td class="col-image">
+                  <img class="display_machine_image" src="{{ p.photo }}" alt="">
+                </td>
+                <td class="col-id">
+                  <span class="machine-id">{{ p.machineId }}</span>
+                </td>
+                <td class="col-otp">{{ p.otp }}</td>
+                <td class="col-time">{{ p.updatedAt | date:dateformat:'offsettz||420' }}</td>
+                <td class="col-active">
+                  <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p.id)"></ion-toggle>
+                </td>
+                <td class="col-actions">
+                  <div class="action-btns">
+                    <button type="button" (click)="machineWallet(p.id)" class="btn btn-action">
+                      <i class="fa-solid fa-wallet"></i>
+                      <span>Machine Wallet</span>
+                    </button>
+                    <button type="button" (click)="edit(p.id)" class="btn btn-action">
+                      <i class="fa-solid fa-pencil"></i>
+                      <span>Edit</span>
+                    </button>
+                    <button type="button" (click)="sale(p.machineId, p.otp)" class="btn btn-action">
+                      <i class="fa-solid fa-chart-line"></i>
+                      <span>Sale</span>
+                    </button>
+                    <button type="button" (click)="refreshMachine(p.machineId)" class="btn btn-action">
+                      <i class="fa-solid fa-rotate"></i>
+                      <span>Refresh</span>
+                    </button>
+                    <button type="button" (click)="billNotPaid(p.machineId, p.otp, p.ownerUuid)" class="btn btn-action">
+                      <i class="fa-solid fa-qrcode"></i>
+                      <span>ບິນບໍ່ທັນຈ່າຍ</span>
+                    </button>
+                    <button type="button" (click)="resetCashing(p.machineId)" class="btn btn-action">
+                      <i class="fa-solid fa-rotate"></i>
+                      <span>Reset Cashing</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
 
+              <tr class="settings-row" *ngIf="settings[p.machineId]">
+                <td colspan="7">
+                  <div class="machine-panel">
 
-          <div class="item-card-body">
-            <div class="table-responsive">
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <td>No</td>
-                    <td>Image</td>
-                    <td>Machince ID</td>
-                    <td>OTP</td>
-                    <td>Time</td>
-                    <td>Active</td>
-                    <td>Action</td>
-                  </tr>
-                </thead>
-                <tbody *ngFor="let p of _l; let i = index">
-                  <tr>
-                    <td>{{ i+1 }}</td>
-                    <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
-                    <td>{{p.machineId}}</td>
-                    <td>{{p.otp}}</td>
-                    <td>{{p.updatedAt|date:dateformat:'offsettz||420'}}</td>
-                    <td><ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p.id)"></ion-toggle></td>
-                    <td>
-                      <button (click)="machineWallet(p.id)" class="btn btn-light border border-1 "><i
-                          class="fa-solid fa-wallet"></i> Machine Wallet</button>
-                      <button (click)="edit(p.id)" class="btn btn-light border border-1"><i
-                          class="fa-solid fa-pencil"></i> Edit</button>
-                      <button (click)="sale(p.machineId, p.otp)" class="btn btn-light border border-1"><i
-                          class="fa-solid fa-pencil"></i> Sale</button>
-                      <button (click)="refreshMachine(p.machineId)" class="btn btn-light border border-1"><i
-                          class="fa-solid fa-rotate"></i> Refresh</button>
-                      <button (click)="billNotPaid(p.machineId,p.otp,p.ownerUuid)"
-                        class="btn btn-light border border-1"><i class="fa-solid fa-qrcode"></i> ບິນບໍ່ທັນຈ່າຍ </button>
-                      <button (click)="resetCashing(p.machineId)" class="btn btn-light border border-1"><i
-                          class="fa-solid fa-rotate"></i> Reset Cashing</button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="settings[p.machineId]">
-                    <td colspan="6">
-                      <div>Setting </div>
-                      <div style="float: left;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
-                          class="custominput" type="number" label="imei" placeholder="enter imei"
-                          [(ngModel)]="settings[p.machineId].imei"></ion-input> </div>
-
-                      <div style="float: left;"> <ion-icon name="arrow-redo-circle-outline"></ion-icon> <ion-input
-                          class="custominput" type="number" label="limit value" placeholder="100000"
-                          [(ngModel)]="settings[p.machineId].limiter"></ion-input> </div>
-                      <div style="float: left;"> <ion-icon name="storefront-sharp"></ion-icon> <ion-checkbox
-                          [(ngModel)]="settings[p.machineId].allowVending"></ion-checkbox> </div>
-                      <div style="float: left;"> <ion-icon name="cash-sharp"></ion-icon><ion-checkbox
-                          [(ngModel)]="settings[p.machineId].allowCashIn"></ion-checkbox> </div>
-
-
-                      <div style="float: left;"> <ion-icon name="snow-outline"></ion-icon> <ion-input type="number"
-                          [(ngModel)]="settings[p.machineId].lowTemp"></ion-input> </div>
-                      <div style="float: left;"> <ion-icon name="thermometer-outline"></ion-icon> <ion-input
-                          type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input> </div>
-
-                      <div style="float: left;"> <ion-icon name="flash-outline"></ion-icon> <ion-input type="number"
-                          [(ngModel)]="settings[p.machineId].light.start"></ion-input> </div>
-
-                      <div style="float: left;"> <ion-icon name="flash-off-outline"></ion-icon> <ion-input type="number"
-                          [(ngModel)]="settings[p.machineId].light.end"></ion-input> </div>
-
-                      <div style="float: left;"> <ion-icon name="image-outline"></ion-icon>Photo header<ion-input
-                          type="text" [(ngModel)]="settings[p.machineId].imgHeader"></ion-input> </div>
-                      <div style="float: left;"> <ion-icon name="images-outline"></ion-icon>Photo Footer<ion-input
-                          type="text" [(ngModel)]="settings[p.machineId].imgFooter"></ion-input></div>
-                      <div style="float: left;"> <ion-icon name="camera-outline"></ion-icon>Logo<ion-input type="text"
-                          [(ngModel)]="settings[p.machineId].imgLogo"></ion-input></div>
-
-                      <!-- <div style="float: left;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
-                          class="custominput" type="text" label="imei" placeholder="enter imei"
-                          [(ngModel)]="settings[p.machineId].imei"></ion-input> </div> -->
-
-                      <div style="float: left;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
-                          class="custominput" type="text" label="owner" placeholder="enter owner"
-                          [(ngModel)]="settings[p.machineId].owner"></ion-input> </div>
-                      <div style="float: right;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
-                          class="custominput" type="number" label="owner phone" placeholder="enter owner phone"
-                          [(ngModel)]="settings[p.machineId].ownerPhone"></ion-input> </div>
-
-                      <div style="float: left;"> <ion-icon name="megaphone-sharp"></ion-icon> <ion-checkbox
-                          [(ngModel)]="settings[p.machineId].isAds"></ion-checkbox> </div>
-                      <div style="float: left;"> <ion-icon name="volume-mute-sharp"></ion-icon> <ion-checkbox
-                          [(ngModel)]="settings[p.machineId].isMusicMuted"></ion-checkbox> </div>
-                      <div style="float: left;">
-                        <div style="position: relative; display: inline-block;">
-                          <ion-icon name="logo-electron" style="font-size: 24px;"></ion-icon>
-                          <ion-icon name="volume-mute-sharp"
-                            style="position: absolute; top: 0; right: 0; font-size: 15px; color: black;"></ion-icon>
-                        </div>
-                        <ion-checkbox [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox>
+                    <div class="panel-header">
+                      <div class="panel-title">Setting</div>
+                      <div class="panel-actions">
+                        <ion-button size="small" (click)="updateSetting(p.machineId)">Update Setting</ion-button>
+                        <ion-button size="small" (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
+                        <ion-button size="small" color="warning" (click)="exitMachine(p.machineId)">Exit Machine</ion-button>
+                        <ion-button size="small" color="medium" (click)="clearMachine(p.machineId)">Clear Bill</ion-button>
                       </div>
+                    </div>
 
-                      <div style="float: right;"> <ion-icon name="barcode-outline"></ion-icon> <ion-input
-                          class="custominput" type="text" label="version" placeholder="enter version"
-                          [(ngModel)]="settings[p.machineId].versionId"></ion-input> </div>
-                      <div style="float: left;"> <ion-icon name="qr-code-outline"></ion-icon><ion-checkbox
-                          [(ngModel)]="settings[p.machineId].qrPayment"></ion-checkbox> </div>
-                      <div style="float: left;"> <ion-icon name="trophy-outline"></ion-icon><ion-checkbox
-                          [(ngModel)]="settings[p.machineId].isTopUp"></ion-checkbox> </div>
-                      <div style="float: left;"> <ion-icon name="briefcase-outline"></ion-icon><ion-checkbox
-                          [(ngModel)]="settings[p.machineId].isFranciseMode"></ion-checkbox> </div>
-                      <div style="float: left;"> <ion-icon name="time-outline"></ion-icon> <ion-input type="number"
-                          [(ngModel)]="settings[p.machineId].dropDelay"></ion-input> </div>
-                      <div style="float: left;"> <ion-icon name="sunny-outline"></ion-icon> <ion-input type="number"
-                          [(ngModel)]="settings[p.machineId].brightness"></ion-input> </div>
-                      <div style="float: left;"> <ion-icon name="location-outline"></ion-icon> <ion-input
-                          class="custominput" type="text" label="ที่ตั้ง" placeholder="enter location"
-                          [(ngModel)]="settings[p.machineId].location"></ion-input> </div>
-                    </td>
-                    <ion-button (click)="updateSetting(p.machineId)">Update Setting</ion-button>
+                    <div class="settings-grid">
 
-                    <ion-button (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
-                    <ion-button (click)="exitMachine(p.machineId)">Exit Machine</ion-button>
-                    <ion-button (click)="clearMachine(p.machineId)">Clear Bill</ion-button>
-                    <td>
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="barcode-outline"></ion-icon>
+                          IMEI
+                        </span>
+                        <ion-input class="custominput" type="number" label="imei" placeholder="enter imei"
+                          [(ngModel)]="settings[p.machineId].imei"></ion-input>
+                      </label>
 
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colspan="7">
-                      <!-- <tr *ngIf="settings[p.machineId]"> -->
-                      <ion-range [(ngModel)]="settings[p.machineId].musicVolume" min="0" max="100"
-                        aria-label="Range with pin" [pin]="true" [pinFormatter]="pinFormatter"></ion-range>
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="arrow-redo-circle-outline"></ion-icon>
+                          Limit value
+                        </span>
+                        <ion-input class="custominput" type="number" label="limit value" placeholder="100000"
+                          [(ngModel)]="settings[p.machineId].limiter"></ion-input>
+                      </label>
 
-                      <div>
-                        <ion-icon name="barcode-outline"></ion-icon>
-                        <ion-textarea class="custominput" rows="2" auto-grow="true" placeholder="enter Ads List"
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="storefront-sharp"></ion-icon>
+                          Allow Vending
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].allowVending"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="cash-sharp"></ion-icon>
+                          Allow Cash In
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].allowCashIn"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="snow-outline"></ion-icon>
+                          Low Temp
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].lowTemp"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="thermometer-outline"></ion-icon>
+                          High Temp
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].highTemp"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="flash-outline"></ion-icon>
+                          Light Start
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].light.start"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="flash-off-outline"></ion-icon>
+                          Light End
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].light.end"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="image-outline"></ion-icon>
+                          Photo header
+                        </span>
+                        <ion-input type="text" [(ngModel)]="settings[p.machineId].imgHeader"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="images-outline"></ion-icon>
+                          Photo Footer
+                        </span>
+                        <ion-input type="text" [(ngModel)]="settings[p.machineId].imgFooter"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="camera-outline"></ion-icon>
+                          Logo
+                        </span>
+                        <ion-input type="text" [(ngModel)]="settings[p.machineId].imgLogo"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="barcode-outline"></ion-icon>
+                          Owner
+                        </span>
+                        <ion-input class="custominput" type="text" label="owner" placeholder="enter owner"
+                          [(ngModel)]="settings[p.machineId].owner"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="barcode-outline"></ion-icon>
+                          Owner phone
+                        </span>
+                        <ion-input class="custominput" type="number" label="owner phone" placeholder="enter owner phone"
+                          [(ngModel)]="settings[p.machineId].ownerPhone"></ion-input>
+                      </label>
+
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="megaphone-sharp"></ion-icon>
+                          Ads
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].isAds"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="volume-mute-sharp"></ion-icon>
+                          Music Muted
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].isMusicMuted"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <span class="icon-stack">
+                            <ion-icon name="logo-electron"></ion-icon>
+                            <ion-icon name="volume-mute-sharp" class="icon-badge"></ion-icon>
+                          </span>
+                          Robot Muted
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].isRobotMuted"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="barcode-outline"></ion-icon>
+                          Version
+                        </span>
+                        <ion-input class="custominput" type="text" label="version" placeholder="enter version"
+                          [(ngModel)]="settings[p.machineId].versionId"></ion-input>
+                      </label>
+
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="qr-code-outline"></ion-icon>
+                          QR Payment
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].qrPayment"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="trophy-outline"></ion-icon>
+                          Top Up
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].isTopUp"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="briefcase-outline"></ion-icon>
+                          Franchise Mode
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].isFranciseMode"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="time-outline"></ion-icon>
+                          Drop Delay
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].dropDelay"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="sunny-outline"></ion-icon>
+                          Brightness
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].brightness"></ion-input>
+                      </label>
+
+                      <label class="setting-field setting-wide">
+                        <span class="field-label">
+                          <ion-icon name="location-outline"></ion-icon>
+                          ที่ตั้ง
+                        </span>
+                        <ion-input class="custominput" type="text" label="ที่ตั้ง" placeholder="enter location"
+                          [(ngModel)]="settings[p.machineId].location"></ion-input>
+                      </label>
+
+                    </div>
+
+                    <div class="media-block">
+                      <div class="media-title">Music Volume</div>
+                      <ion-range
+                        [(ngModel)]="settings[p.machineId].musicVolume"
+                        min="0"
+                        max="100"
+                        aria-label="Range with pin"
+                        [pin]="true"
+                        [pinFormatter]="pinFormatter">
+                      </ion-range>
+
+                      <label class="setting-field setting-full">
+                        <span class="field-label">
+                          <ion-icon name="barcode-outline"></ion-icon>
+                          Ads List
+                        </span>
+                        <ion-textarea
+                          class="custominput"
+                          rows="2"
+                          auto-grow="true"
+                          placeholder="enter Ads List"
                           [(ngModel)]="settings[p.machineId].adsList">
                         </ion-textarea>
+                      </label>
+                    </div>
+
+                    <div class="status-block">
+                      <div class="status-title">Status</div>
+                      <div class="status-items">
+                        <div class="status-item">
+                          <span class="status-label">Temp</span>
+                          <span class="status-value">{{ findMachine(p?.machineId)?.temperature }}</span>
+                        </div>
+                        <div class="status-item">
+                          <span class="status-label">Last Update</span>
+                          <span class="status-value">{{ findMachine(p?.machineId)?.lastUpdate | date:dateformat:'offsettz||420' }}</span>
+                        </div>
                       </div>
-                      <!-- </tr> -->
+                    </div>
 
-                      <div>Status </div>
-                      <p>temp:{{findMachine(p?.machineId)?.temperature}}</p>
-                      <p>last Update:{{findMachine(p?.machineId)?.lastUpdate|date:dateformat:'offsettz||420'}}</p>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
 
-
-
-
-          <!-- <div *ngIf="readonly == true" class="item-card-body">
-            <div class="table-responsive">
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <td>No</td>
-                    <td>Image</td>
-                    <td>Machince ID</td>
-                    <td>OTP</td>
-                  </tr>
-                </thead>
-                <tbody *ngFor="let p of _l; let i = index">
-                  <tr>
-                    <td>{{ i+1 }}</td>
-                    <td><img class="display_machine_image" src="{{ p.photo }}" alt=""></td>
-                    <td>{{p.machineId}}</td>
-                    <td>{{p.otp}}</td>
-                    <td>
-                      <button (click)="sale(p.machineId, p.otp)" class="btn btn-light border border-1"><i class="fa-solid fa-pencil"></i> Sale</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div> -->
-
+          </table>
         </div>
+      </div>
 
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    </div>
+  </div>
 
 </ion-content>
-
-<!-- <ion-content>
-
-  <button *ngFor="let list of fakeList; let i = index;" class="btn btn-primary">{{ list.uuid }}</button>
-
-</ion-content> -->
