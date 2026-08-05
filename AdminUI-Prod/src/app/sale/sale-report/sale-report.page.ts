@@ -76,6 +76,167 @@ export class SaleReportPage implements OnInit {
       .then((modal) => modal.present());
   }
 
+  printSaleReport() {
+    if (!this.saleSumerizeList?.length) {
+      this.apiService.simpleMessage('ບໍ່ມີຂໍ້ມູນຍອດຂາຍໃຫ້ພິມ');
+      return;
+    }
+
+    const formatNumber = (value: number) =>
+      value != null ? Number(value).toLocaleString('en-US') : '0';
+
+    const formatDate = (value: string) => {
+      if (!value) return '';
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return value;
+      const pad = (n: number) => String(n).padStart(2, '0');
+      // Display in UTC+7 to match table pipe
+      const local = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+      return `${local.getUTCFullYear()}-${pad(local.getUTCMonth() + 1)}-${pad(local.getUTCDate())} ${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}:${pad(local.getUTCSeconds())}`;
+    };
+
+    const rows = this.saleSumerizeList.map((sale, i) => {
+      const status = sale.paymentstatus == 'paid' ? 'ຈ່າຍແລ້ວ' : 'ເຄື່ອງຕົກແລ້ວ';
+      return `
+        <tr>
+          <td class="col-num">${i + 1}</td>
+          <td>${sale.stock?.name ?? ''}</td>
+          <td class="col-right">${formatNumber(sale.stock?.price)}</td>
+          <td class="col-center">${formatNumber(sale.stock?.qtty)}</td>
+          <td class="col-right">${formatNumber(sale.stock?.total)}</td>
+          <td class="col-center">${status}</td>
+          <td>${formatDate(sale.createdAt)}</td>
+        </tr>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Sale Report - ${this.machineId || ''}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans Lao', 'Phetsarath OT', 'DokChampa', Arial, sans-serif;
+      font-size: 12px;
+      color: #000;
+      background: #fff;
+      padding: 12mm 10mm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    @page { size: A4; margin: 10mm; }
+    .title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .sub-title {
+      text-align: center;
+      font-size: 12px;
+      margin-bottom: 14px;
+      color: #333;
+    }
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border: 1px solid #333;
+    }
+    .summary-item .label { font-size: 11px; color: #444; }
+    .summary-item .value { font-size: 13px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      border: 1px solid #333;
+      padding: 5px 6px;
+      font-size: 11px;
+      vertical-align: top;
+    }
+    thead th {
+      background: #4a90d9 !important;
+      color: #fff !important;
+      font-weight: 700;
+      text-align: center;
+    }
+    .col-num { width: 36px; text-align: center; }
+    .col-center { text-align: center; }
+    .col-right { text-align: right; white-space: nowrap; }
+    tfoot td {
+      font-weight: 800;
+      background: #f5d76e !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">ລາຍງານຍອດຂາຍ / Sale Report</div>
+  <div class="sub-title">Vending Machine Report</div>
+  <div class="summary">
+    <div class="summary-item">
+      <div class="label">Machine</div>
+      <div class="value">${this.machineId || '-'}</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">Date</div>
+      <div class="value">${this.currentdate || '-'}</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">SubQTY</div>
+      <div class="value">${formatNumber(this.sum_qtty)}</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">Subtotal</div>
+      <div class="value">${formatNumber(this.sum_total)}</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product</th>
+        <th>Price</th>
+        <th>QTY</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="col-right">ລວມ / Total</td>
+        <td class="col-center">${formatNumber(this.sum_qtty)}</td>
+        <td class="col-right">${formatNumber(this.sum_total)}</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
+  </table>
+  <script>
+    document.fonts.ready.then(function() {
+      setTimeout(function() {
+        window.print();
+        window.onafterprint = function() { window.close(); };
+      }, 400);
+    });
+  <\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=960,height=760');
+    if (!win) {
+      this.apiService.simpleMessage('Please allow popups for this site.');
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+  }
+
   close() {
     this.apiService.modal.dismiss();
   }
