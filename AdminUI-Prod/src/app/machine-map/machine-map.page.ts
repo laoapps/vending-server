@@ -78,6 +78,7 @@ const SORT_STORAGE_KEY = 'machineMapSortMode';
 export class MachineMapPage implements AfterViewInit, OnDestroy {
   private map: any;
   private markersLayer: any;
+  private markersById = new Map<string, any>();
   private hiddenIds = new Set<string>();
   private salesUpdateSub?: Subscription;
   private todaySalesByMachine = new Map<string, { qtyToday: number; amountToday: number }>();
@@ -96,6 +97,9 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   /** YYYY-MM from month sales API */
   monthLabel = '';
   listFilter = '';
+  mapSearch = '';
+  mapSearchHint = '';
+  selectedMachineId: string | null = null;
   sortMode: MachineSortMode = 'amountDesc';
   readonly sortOptions: Array<{ value: MachineSortMode; label: string }> = [
     { value: 'amountDesc', label: 'ຍອດເງິນຫຼາຍ → ໜ້ອຍ' },
@@ -173,6 +177,58 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
 
   onSortModeChange() {
     this.persistSortMode();
+  }
+
+  onListSearchKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const first = this.filteredMachines[0];
+    if (first) this.focusMachine(first);
+  }
+
+  onMapSearchSubmit() {
+    const q = this.mapSearch.trim().toLowerCase();
+    if (!q) {
+      this.mapSearchHint = '';
+      return;
+    }
+
+    const matches = this.machines.filter(
+      (m) =>
+        m.machineId.toLowerCase().includes(q) ||
+        (m.location || '').toLowerCase().includes(q),
+    );
+
+    if (!matches.length) {
+      this.mapSearchHint = 'ບໍ່ພົບຕູ້ທີ່ຄົ້ນຫາ';
+      return;
+    }
+
+    const exactId = matches.find((m) => m.machineId.toLowerCase() === q);
+    const exactLocation = matches.find((m) => (m.location || '').toLowerCase() === q);
+    const target = exactId || exactLocation || matches[0];
+
+    this.mapSearchHint =
+      matches.length > 1 && !exactId && !exactLocation
+        ? `ພົບ ${matches.length} ຕູ້ — ໄປທີ່ ${target.machineId}`
+        : '';
+    this.listFilter = this.mapSearch.trim();
+    this.focusMachine(target);
+  }
+
+  focusMachine(m: MapMachine, event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (!m) return;
+
+    if (!this.isVisible(m.machineId)) {
+      this.hiddenIds.delete(m.machineId);
+      this.persistHiddenIds();
+    }
+
+    this.selectedMachineId = m.machineId;
+    this.renderMarkers(false);
+    this.flyToMachine(m);
   }
 
   private sortMachines(list: MapMachine[]): MapMachine[] {
@@ -781,10 +837,22 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     return Number.isFinite(n) ? n : null;
   }
 
+  private flyToMachine(m: MapMachine) {
+    if (!this.map || typeof L === 'undefined') return;
+    const latLng: [number, number] = [m.latitude, m.longitude];
+    this.map.flyTo(latLng, Math.max(this.map.getZoom(), 16), { duration: 0.75 });
+    setTimeout(() => {
+      const marker = this.markersById.get(m.machineId);
+      marker?.openPopup();
+      this.map?.invalidateSize();
+    }, 800);
+  }
+
   private renderMarkers(fitBounds = true) {
     if (!this.map || !this.markersLayer || typeof L === 'undefined') return;
 
     this.markersLayer.clearLayers();
+    this.markersById.clear();
 
     const visible = this.machines.filter((m) => this.isVisible(m.machineId));
     if (!visible.length) {
@@ -801,6 +869,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const label = m.location || m.machineId;
       const statusClass = m.status === 'Online' ? 'online' : 'offline';
       const flashClass = this.isFlashing(m.machineId) ? 'order-flash' : '';
+      const selectedClass = this.selectedMachineId === m.machineId ? 'selected' : '';
       const salesLine = `${m.qtyToday || 0} ຊິ້ນ · ${this.formatAmount(m.amountToday)} LAK`;
       const monthLine = `ເດືອນນີ້: ${m.qtyMonth || 0} ຊິ້ນ · ${this.formatAmount(m.amountMonth)} LAK`;
       const lastOrderLine = m.lastOrderAt
@@ -811,7 +880,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const icon = L.divIcon({
         className: 'machine-marker',
         html: `
-          <div class="marker-wrap ${statusClass} ${flashClass}">
+          <div class="marker-wrap ${statusClass} ${flashClass} ${selectedClass}">
             <div class="marker-label">${this.escapeHtml(label)}</div>
             <div class="marker-sales">${this.escapeHtml(salesLine)}</div>
             <div class="marker-month">${this.escapeHtml(monthLine)}</div>
@@ -836,7 +905,13 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           Lng: ${m.longitude}
         </div>
       `);
+      marker.on('click', () => {
+        this.ngZone.run(() => {
+          this.selectedMachineId = m.machineId;
+        });
+      });
       marker.addTo(this.markersLayer);
+      this.markersById.set(m.machineId, marker);
       bounds.extend([m.latitude, m.longitude]);
     });
 

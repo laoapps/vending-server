@@ -84,24 +84,27 @@
           class="list-search"
           type="search"
           [(ngModel)]="listFilter"
-          placeholder="ຄົ້ນຫາຕູ້ / ທີ່ຕັ້ງ..."
+          (keydown)="onListSearchKeydown($event)"
+          placeholder="ຄົ້ນຫາຕູ້ / ທີ່ຕັ້ງ... (Enter ເພື່ອໄປທີ່ແຜນທີ່)"
         />
       </div>
 
       <div class="machine-list" *ngIf="filteredMachines.length; else emptyList">
-        <label
+        <div
           class="machine-item"
           *ngFor="let m of filteredMachines"
           [class.hidden-on-map]="!isVisible(m.machineId)"
           [class.order-flash]="isFlashing(m.machineId)"
+          [class.selected]="selectedMachineId === m.machineId"
         >
           <input
             type="checkbox"
             [checked]="isVisible(m.machineId)"
             (change)="toggleMachine(m.machineId, $any($event.target).checked)"
+            (click)="$event.stopPropagation()"
           />
           <span class="status-dot" [class.online]="m.status === 'Online'" [class.offline]="m.status !== 'Online'"></span>
-          <span class="machine-meta">
+          <button type="button" class="machine-meta" (click)="focusMachine(m, $event)">
             <span class="machine-id">{{ m.machineId }}</span>
             <span class="machine-location">{{ m.location || 'ບໍ່ມີຊື່ທີ່ຕັ້ງ' }}</span>
             <span class="machine-sales">ມື້ນີ້: {{ m.qtyToday || 0 }} ຊິ້ນ · {{ formatAmount(m.amountToday) }} LAK</span>
@@ -110,15 +113,15 @@
               ຄຳສັ່ງລ່າສຸດ: {{ formatOrderTime(m.lastOrderAt) }}
               <em>({{ formatOrderRelative(m.lastOrderAt) }})</em>
             </span>
-            <button
-              type="button"
-              class="sales-btn"
-              (click)="openSalesPanel(m, $event)"
-            >
-              ເບີ່ງຍອດຂາຍ
-            </button>
-          </span>
-        </label>
+          </button>
+          <button
+            type="button"
+            class="sales-btn"
+            (click)="openSalesPanel(m, $event)"
+          >
+            ເບີ່ງຍອດຂາຍ
+          </button>
+        </div>
       </div>
       <ng-template #emptyList>
         <div class="list-empty">
@@ -128,6 +131,17 @@
     </aside>
 
     <div class="map-panel">
+      <div class="map-search-bar">
+        <input
+          class="map-search-input"
+          type="search"
+          [(ngModel)]="mapSearch"
+          (keydown.enter)="onMapSearchSubmit()"
+          placeholder="ຄົ້ນຫາ machineId / ທີ່ຕັ້ງ ແລ້ວໄປທີ່ແຜນທີ່..."
+        />
+        <button type="button" class="map-search-btn" (click)="onMapSearchSubmit()">ໄປ</button>
+      </div>
+      <div class="map-search-hint" *ngIf="mapSearchHint">{{ mapSearchHint }}</div>
       <div id="machine-map" class="map-canvas"></div>
     </div>
   </div>

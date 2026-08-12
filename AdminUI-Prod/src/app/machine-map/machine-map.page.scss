@@ -256,9 +256,9 @@ ion-content {
 .machine-item {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px 12px;
-  cursor: pointer;
   border-bottom: 1px solid #f5f5f5;
   transition: background 0.2s ease;
 
@@ -270,6 +270,11 @@ ion-content {
     opacity: 0.55;
   }
 
+  &.selected {
+    background: #e3f2fd;
+    box-shadow: inset 3px 0 0 #1976d2;
+  }
+
   &.order-flash {
     animation: order-flash-row 0.9s ease-in-out 3;
     background: #fff8e1;
@@ -279,6 +284,10 @@ ion-content {
   input[type='checkbox'] {
     margin-top: 3px;
     flex-shrink: 0;
+  }
+
+  .sales-btn {
+    margin-left: 24px;
   }
 }
 
@@ -311,8 +320,22 @@ ion-content {
 .machine-meta {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   min-width: 0;
+  flex: 1;
   gap: 2px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+
+  &:hover .machine-id {
+    color: #1565c0;
+    text-decoration: underline;
+  }
 }
 
 .machine-id {
@@ -383,6 +406,69 @@ ion-content {
   flex: 1;
   min-width: 0;
   position: relative;
+}
+
+.map-search-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 56px;
+  z-index: 1000;
+  display: flex;
+  gap: 6px;
+  max-width: 420px;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+.map-search-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #cfd8dc;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  outline: none;
+
+  &:focus {
+    border-color: #64b5f6;
+  }
+}
+
+.map-search-btn {
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: #1565c0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+
+  &:hover {
+    background: #0d47a1;
+  }
+}
+
+.map-search-hint {
+  position: absolute;
+  top: 54px;
+  left: 12px;
+  z-index: 1000;
+  max-width: 420px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  color: #bf360c;
+  background: rgba(255, 243, 224, 0.96);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .map-canvas {
@@ -518,6 +604,20 @@ ion-content {
 
     .marker-pin {
       box-shadow: 0 0 0 6px rgba(255, 152, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  .marker-wrap.selected {
+    z-index: 1000;
+
+    .marker-label {
+      border-color: #1976d2;
+      background: #e3f2fd;
+      color: #0d47a1;
+    }
+
+    .marker-pin {
+      box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.3), 0 2px 4px rgba(0, 0, 0, 0.35);
     }
   }
 
