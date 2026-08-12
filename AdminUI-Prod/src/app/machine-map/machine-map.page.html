@@ -14,7 +14,8 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" [scrollY]="!insightOpen">
+  <div class="page-shell" [class.insight-mode]="insightOpen">
   <div class="map-toolbar">
     <div class="stat">
       <strong>{{ visibleCount }}</strong>
@@ -63,8 +64,8 @@
     <span class="rt-time">ຄຳສັ່ງລ່າສຸດ {{ formatOrderTime(latestOrder.at) }}</span>
   </div>
 
-  <div class="map-layout">
-    <aside class="machine-list-panel">
+  <div class="map-layout" [class.insight-open]="insightOpen">
+    <aside class="machine-list-panel" *ngIf="!insightOpen">
       <div class="list-header">
         <div class="list-title">
           <strong>ລາຍການຕູ້</strong>
@@ -144,6 +145,249 @@
       <div class="map-search-hint" *ngIf="mapSearchHint">{{ mapSearchHint }}</div>
       <div id="machine-map" class="map-canvas"></div>
     </div>
+
+    <aside class="insight-panel" *ngIf="insightOpen">
+      <div class="insight-header">
+        <div>
+          <strong>CEO Insight</strong>
+          <div class="insight-sub">
+            {{ insightMachine?.machineId }} · {{ insightMachine?.location || '-' }}
+            <span class="insight-status" [class.online]="insightMachine?.status === 'Online'">
+              {{ insightMachine?.status === 'Online' ? 'ອອນລາຍ' : 'ອອບລາຍ' }}
+            </span>
+          </div>
+        </div>
+        <div class="insight-header-actions">
+          <button type="button" class="insight-refresh" (click)="refreshInsight()" [disabled]="insightLoading">ຣີເຟຣຊ</button>
+          <button type="button" class="insight-orders" (click)="openSalesPanel(insightMachine!, $event)" [disabled]="!insightMachine">Orders</button>
+          <button type="button" class="insight-close" (click)="closeInsightPanel()" aria-label="close">×</button>
+        </div>
+      </div>
+
+      <div class="insight-body">
+      <div class="insight-live" *ngIf="insightMachine">
+        <span class="live-badge">LIVE</span>
+        <strong>{{ insightMachine.qtyToday || 0 }} ຊິ້ນ</strong>
+        <span>{{ formatAmount(insightMachine.amountToday) }} LAK ມື້ນີ້</span>
+        <em *ngIf="insightMachine.lastOrderAt">ລ່າສຸດ {{ formatOrderTime(insightMachine.lastOrderAt) }}</em>
+      </div>
+
+      <div class="insight-loading" *ngIf="insightLoading">ກຳລັງໂຫຼດຂໍ້ມູນຍອດຂາຍ...</div>
+      <div class="insight-error" *ngIf="insightError">{{ insightError }}</div>
+
+      <div class="insight-kpis">
+        <button
+          type="button"
+          class="kpi-card"
+          *ngFor="let p of insightPeriods"
+          [class.active]="insightActivePeriod === p.key"
+          [class.loading]="p.loading"
+          (click)="setInsightPeriod(p.key)"
+        >
+          <span class="kpi-label">{{ p.label }}</span>
+          <strong class="kpi-amount">{{ formatAmount(p.amount) }}</strong>
+          <span class="kpi-meta">{{ p.qty }} ຊິ້ນ · {{ p.orderCount }} orders</span>
+          <span class="kpi-range">{{ p.rangeLabel }}</span>
+        </button>
+      </div>
+
+      <div class="insight-top5-active" *ngIf="insightActive && !insightActive.loading">
+        <div class="top5-title">
+          Top 5 ສິນຄ້າຂາຍດີ · {{ insightActive.label }}
+        </div>
+        <div class="period-empty" *ngIf="!insightActive.topProducts.length">ບໍ່ມີຂໍ້ມູນສິນຄ້າໃນຊ່ວງນີ້</div>
+        <div class="top5-list" *ngIf="insightActive.topProducts.length">
+          <article class="top5-item" *ngFor="let prod of insightActive.topProducts">
+            <span class="top5-rank">#{{ prod.rank }}</span>
+            <div class="top5-meta">
+              <strong>{{ prod.name }}</strong>
+              <span>{{ formatAmount(prod.price) }} LAK / ຊິ້ນ</span>
+            </div>
+            <div class="top5-stats">
+              <strong>{{ prod.qty }} ຊິ້ນ</strong>
+              <span>{{ formatAmount(prod.amount) }} LAK</span>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="insight-pattern" *ngIf="!insightLoading">
+        <div class="pattern-head">
+          <strong>ພາບລວມພຶດຕິກຳການຊື້</strong>
+          <span *ngIf="insightPatternRangeLabel">ຂໍ້ມູນຈາກ {{ insightPatternRangeLabel }} (ເດືອນນີ້+ເດືອນກ່ອນ)</span>
+        </div>
+
+        <div class="pattern-empty" *ngIf="!insightWeekdayStats.length || !insightBestDay">
+          ຍັງບໍ່ພົບຂໍ້ມູນພຽງພໍສຳລັບວິເຄາະພຶດຕິກຳ
+        </div>
+
+        <ng-container *ngIf="insightBestDay">
+          <div class="pattern-highlights">
+            <div class="pattern-card">
+              <span class="pattern-card-label">ມື້ທີ່ຄົນຊື້ຫຼາຍສຸດ</span>
+              <strong>{{ insightBestDay.label }}</strong>
+              <span>{{ insightBestDay.qty }} ຊິ້ນ · {{ formatAmount(insightBestDay.amount) }} LAK</span>
+            </div>
+            <div class="pattern-card" *ngIf="insightBestSlot">
+              <span class="pattern-card-label">ຊ່ວງເວລາທີ່ຄົນຊື້ຫຼາຍສຸດ</span>
+              <strong>{{ insightBestSlot.label }}</strong>
+              <span>{{ insightBestSlot.qty }} ຊິ້ນ · {{ formatAmount(insightBestSlot.amount) }} LAK</span>
+            </div>
+            <div class="pattern-card" *ngIf="insightBestHour">
+              <span class="pattern-card-label">ຊົ່ວໂມງທີ່ຄົນຊື້ຫຼາຍສຸດ</span>
+              <strong>{{ insightBestHour.label }}</strong>
+              <span>{{ insightBestHour.qty }} ຊິ້ນ · {{ formatAmount(insightBestHour.amount) }} LAK</span>
+            </div>
+          </div>
+
+          <div class="pattern-slots">
+            <button
+              type="button"
+              class="slot-chip"
+              *ngFor="let s of insightSlotStats; trackBy: trackBySlotKey"
+              [class.best]="insightBestSlot?.key === s.key"
+              [class.active]="insightSelectedSlotKey === s.key"
+              (click)="selectInsightSlot(s.key, $event)"
+            >
+              <span>{{ s.label }}</span>
+              <strong>{{ s.qty }} ຊິ້ນ</strong>
+            </button>
+          </div>
+
+          <div class="slot-products" *ngIf="insightSelectedSlot">
+            <div class="top5-title">
+              Top 10 ສິນຄ້າໃນ {{ insightSelectedSlot.label }}
+              <em *ngIf="insightSelectedSlotKey === insightBestSlot?.key">(ຊ່ວງຂາຍດີສຸດ)</em>
+            </div>
+            <div class="period-empty" *ngIf="!insightSlotProductRankings.length">ບໍ່ມີສິນຄ້າໃນຊ່ວງນີ້</div>
+            <div class="top5-list" *ngIf="insightSlotProductRankings.length">
+              <article
+                class="top5-item"
+                *ngFor="let prod of insightSlotProductRankings; let i = index; trackBy: trackByName"
+              >
+                <span class="top5-rank">#{{ i + 1 }}</span>
+                <div class="top5-meta">
+                  <strong>{{ prod.name }}</strong>
+                  <span>ມື້ທີ່ມັກ: {{ prod.bestDay }} ({{ prod.bestDayQty }} ຊິ້ນ)</span>
+                </div>
+                <div class="top5-stats">
+                  <strong>{{ prod.qty }} ຊິ້ນ</strong>
+                  <span>ໃນຊ່ວງນີ້</span>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="insight-charts pattern-charts">
+            <div class="chart-box">
+              <canvas id="insight-weekday-chart"></canvas>
+            </div>
+            <div class="chart-box">
+              <canvas id="insight-hour-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="product-pattern-block" *ngIf="insightProductPatternsView.length">
+            <div class="top5-title">ແຕ່ລະສິນຄ້າ · ມື້/ເວລາທີ່ຄົນມັກຊື້ (Top 20)</div>
+            <div class="product-pattern-table">
+              <div class="product-pattern-head">
+                <span>ສິນຄ້າ</span>
+                <span>ລວມ</span>
+                <span>ມື້ທີ່ມັກ</span>
+                <span>ຊ່ວງເວລາທີ່ມັກ</span>
+              </div>
+              <div
+                class="product-pattern-row"
+                *ngFor="let p of insightProductPatternsView; trackBy: trackByName"
+              >
+                <div class="pp-name">
+                  <strong>{{ p.name }}</strong>
+                  <span>{{ formatAmount(p.amount) }} LAK</span>
+                </div>
+                <span class="pp-qty">{{ p.qty }} ຊິ້ນ</span>
+                <div class="pp-best">
+                  <strong>{{ p.bestDay }}</strong>
+                  <span>{{ p.bestDayQty }} ຊິ້ນ</span>
+                </div>
+                <div class="pp-best">
+                  <strong>{{ p.bestSlot }}</strong>
+                  <span>{{ p.bestSlotQty }} ຊິ້ນ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="insight-charts" *ngIf="insightPeriods.length">
+        <div class="chart-box">
+          <canvas id="insight-period-chart"></canvas>
+        </div>
+        <div class="chart-box tall">
+          <canvas id="insight-product-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="insight-periods">
+        <section class="period-block" *ngFor="let p of insightPeriods" [class.active]="insightActivePeriod === p.key">
+          <header class="period-head" (click)="setInsightPeriod(p.key)">
+            <div>
+              <strong>{{ p.label }}</strong>
+              <span>{{ p.rangeLabel }}</span>
+            </div>
+            <div class="period-totals">
+              <strong>{{ formatAmount(p.amount) }} LAK</strong>
+              <span>{{ p.qty }} ຊິ້ນ · {{ p.orderCount }} orders</span>
+            </div>
+          </header>
+
+          <div class="period-error" *ngIf="p.error">{{ p.error }}</div>
+          <div class="period-loading" *ngIf="p.loading">ກຳລັງໂຫຼດ...</div>
+          <div class="period-empty" *ngIf="!p.loading && !p.error && !p.products.length">ບໍ່ມີຍອດຂາຍໃນຊ່ວງນີ້</div>
+
+          <div class="top5-block" *ngIf="!p.loading && p.topProducts.length">
+            <div class="top5-title">Top 5 ສິນຄ້າຂາຍດີ</div>
+            <div class="top5-list">
+              <article class="top5-item" *ngFor="let prod of p.topProducts">
+                <span class="top5-rank">#{{ prod.rank }}</span>
+                <div class="top5-meta">
+                  <strong>{{ prod.name }}</strong>
+                  <span>{{ formatAmount(prod.price) }} LAK / ຊິ້ນ</span>
+                </div>
+                <div class="top5-stats">
+                  <strong>{{ prod.qty }} ຊິ້ນ</strong>
+                  <span>{{ formatAmount(prod.amount) }} LAK</span>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="product-table" *ngIf="!p.loading && p.products.length">
+            <div class="product-table-head">
+              <span>#</span>
+              <span>ສິນຄ້າທັງໝົດ (ນ້ອຍ → ຫຼາຍ)</span>
+              <span>ຈຳນວນ</span>
+              <span>ຍອດເງິນ</span>
+            </div>
+            <div class="product-row" *ngFor="let prod of p.products">
+              <span class="prod-rank">{{ prod.rank }}</span>
+              <span class="prod-name">{{ prod.name }}</span>
+              <span class="prod-qty">{{ prod.qty }}</span>
+              <span class="prod-amount">{{ formatAmount(prod.amount) }}</span>
+            </div>
+            <div class="product-foot">
+              <span>ລວມ</span>
+              <span></span>
+              <strong>{{ p.qty }}</strong>
+              <strong>{{ formatAmount(p.amount) }}</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+      </div>
+    </aside>
+  </div>
+
   </div>
 
   <div class="sales-panel-backdrop" *ngIf="salesPanelOpen" (click)="closeSalesPanel()"></div>
