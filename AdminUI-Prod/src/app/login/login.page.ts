@@ -5,7 +5,6 @@ import { LoginProcess } from './processes/login.process';
 import { IENMessage } from '../models/base.model';
 import { LAAB_Login } from '../models/laab.model';
 import { VendingAPIService } from '../services/vending-api.service';
-import { PhoneTokenDialogComponent } from '../phone-token-dialog/phone-token-dialog.component';
 
 @Component({
   selector: 'app-login',
@@ -52,28 +51,21 @@ export class LoginPage implements OnInit {
         // this.apiService.router.navigate(['/template']);
         // this.apiService.router.navigate(['/tabs/tab1']);
         const result = await this.apiService.presentPhoneSecretDialog();
-        if (result) {
-          localStorage.setItem('lva_ownerUuid', run.data[0].owneruuid);
-          localStorage.setItem('lva_name', run.data[0].name);
-          localStorage.setItem('lva_token', run.data[0].token);
-          localStorage.setItem('token', run.data[0].token);
-
-          if (result.secret) {
-            localStorage.setItem('secretLocal', result.secret);
-          }
-          localStorage.setItem('phoneNumberLocal', result.phoneNumber);
-          localStorage.setItem('secretLocal', result.secret);
-          this.apiService.router.navigate(['/tabs/onlinemachines']);
-          // if(this.apiService.logPlatformInfo() === 'ios'|| this.apiService.logPlatformInfo() === 'android'){
-          //   localStorage.setItem('secretLocal', result.secret);
-          //   this.apiService.router.navigate(['/tabs/onlinemachines']);
-          // }else{
-          //   this.apiService.router.navigate(['/tabs/tab1']);
-          // }
+        if (!result) {
           resolve(IENMessage.success);
+          return;
         }
-        console.log('-----> result', result);
 
+        localStorage.setItem('lva_ownerUuid', run.data[0].owneruuid);
+        localStorage.setItem('lva_name', run.data[0].name);
+        localStorage.setItem('lva_token', run.data[0].token);
+        localStorage.setItem('token', run.data[0].token);
+        localStorage.setItem('phoneNumberLocal', result.phoneNumber);
+        if (result.secret) {
+          localStorage.setItem('secretLocal', result.secret);
+        }
+
+        await this.apiService.router.navigate(['/onlinemachines']);
         resolve(IENMessage.success);
 
       } catch (error) {

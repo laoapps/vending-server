@@ -167,56 +167,20 @@ export class ApiService {
     }
 
     public async presentPhoneSecretDialog(): Promise<{ phoneNumber: string; secret: string } | null> {
-        const alert = await this.alert.create({
-            header: 'ป้อนข้อมูล',
-            inputs: [
-                {
-                    name: 'phoneNumber',
-                    type: 'tel',
-                    placeholder: 'เบอร์โทรศัพท์',
-                },
-                {
-                    name: 'secret',
-                    type: 'password',
-                    placeholder: 'รหัสลับ',
-                }
-            ],
-            buttons: [
-                {
-                    text: 'ยกเลิก',
-                    role: 'cancel',
-                },
-                {
-                    text: 'ตกลง',
-                    handler: (data) => {
-                        const secretLocal = localStorage.getItem('secretLocal');
-                        if (secretLocal) {
-                            if (data.phoneNumber) {
-                                return data; // ✅ ส่งข้อมูลกลับ
-                            } else {
-                                // ❌ ไม่กรอกให้แสดงข้อความ
-                                alert.message = 'กรุณากรอกให้ครบทุกช่อง';
-                                return false;
-                            }
-                        } else {
-                            if (data.phoneNumber && data.secret) {
-                                return data; // ✅ ส่งข้อมูลกลับ
-                            } else {
-                                // ❌ ไม่กรอกให้แสดงข้อความ
-                                alert.message = 'กรุณากรอกให้ครบทุกช่อง';
-                                return false;
-                            }
-                        }
-
-                    }
-                }
-            ]
+        const { PhoneSecretDialogComponent } = await import(
+            '../modals/phone-secret-dialog/phone-secret-dialog.component'
+        );
+        const modal = await this.modal.create({
+            component: PhoneSecretDialogComponent,
+            backdropDismiss: false,
+            cssClass: 'phone-secret-dialog-modal',
         });
-
-        await alert.present();
-
-        const result = await alert.onDidDismiss();
-        return result.role === 'cancel' ? null : result.data?.values ?? null;
+        await modal.present();
+        const { data, role } = await modal.onDidDismiss();
+        if (role === 'cancel' || !data) {
+            return null;
+        }
+        return data as { phoneNumber: string; secret: string };
     }
 
 
