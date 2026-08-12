@@ -110,6 +110,17 @@
   }
 }
 
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #A41D4F;
+  margin: 8px 0 12px;
+}
+
+.top5-section {
+  margin-bottom: 24px;
+}
+
 .table-wrapper {
   overflow-x: auto;
 }
@@ -124,6 +135,11 @@
   padding: 10px;
   border: 1px solid #eee;
   text-align: left;
+}
+
+.top5-table thead th {
+  background: #A41D4F;
+  color: #fff;
 }
 
 .btn-view {

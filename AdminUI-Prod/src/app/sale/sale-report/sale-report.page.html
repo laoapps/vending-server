@@ -49,6 +49,10 @@
         <i class="fa-solid fa-print text-primary"></i>
         <span>Print A4</span>
       </button>
+      <button class="export-btn" (click)="downloadSaleReportPDF()">
+        <i class="fa-solid fa-download text-danger"></i>
+        <span>Download PDF</span>
+      </button>
     </div>
 
     <div class="sum-data">
@@ -63,6 +67,33 @@
       </div>
     </div>
 
+    <div class="top5-section" *ngIf="top5List?.length">
+      <div class="section-title">Top 5 ສິນຄ້າຂາຍດີ</div>
+      <div class="table-wrapper">
+        <table class="table top5-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Product</th>
+              <th>Price</th>
+              <th>QTY</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let sale of top5List; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ sale.stock.name }}</td>
+              <td>{{ sale.stock.price | number }}</td>
+              <td>{{ sale.stock.qtty | number }}</td>
+              <td>{{ sale.stock.total | number }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-title">ລາຍການຍອດຂາຍທັງໝົດ</div>
     <div class="table-wrapper">
       <table class="table">
         <thead>

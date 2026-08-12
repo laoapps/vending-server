@@ -101,11 +101,13 @@ export class LoadVendingMachineSaleBillReportProcess {
         this.parsefromDate = new Date(this.fromDate).getTime();
         this.parseToDate = new Date(this.toDate).getTime();
 
+        // Allow toDate up to +1 day past today (API buffer for UTC / UTC+7 edge cases)
+        const oneDayMs = 24 * 60 * 60 * 1000;
         if (this.parsefromDate == this.parseToDate) {
-            if (this.parsefromDate > this.currentdate) return IENMessage.invalidFromDate;
+            if (this.parsefromDate > this.currentdate + oneDayMs) return IENMessage.invalidFromDate;
         } else {
             if (this.parsefromDate > this.parseToDate) return IENMessage.invalidFromDate;
-            if (this.parseToDate > this.currentdate) return IENMessage.invalidateToDate;
+            if (this.parseToDate > this.currentdate + oneDayMs) return IENMessage.invalidateToDate;
         }
 
         return IENMessage.success;

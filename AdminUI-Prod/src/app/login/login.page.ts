@@ -56,6 +56,8 @@ export class LoginPage implements OnInit {
           localStorage.setItem('lva_ownerUuid', run.data[0].owneruuid);
           localStorage.setItem('lva_name', run.data[0].name);
           localStorage.setItem('lva_token', run.data[0].token);
+          localStorage.setItem('token', run.data[0].token);
+
           if (result.secret) {
             localStorage.setItem('secretLocal', result.secret);
           }
