@@ -1734,3 +1734,18 @@ ion-content {
     font-weight: 700;
   }
 }
+
+
+
+
+ion-fab.fab-align-left {
+  position: absolute;  /* ยึดตามกล่องแม่ .insight-periods */
+  left: 0;             /* ชิดขอบซ้ายสุดของกล่อง */
+  top: 50%;            /* ดันลงมาตรงกลางแนวตั้ง */
+  transform: translate(-50%, -50%); /* ดึงกลับมาครึ่งหนึ่ง เพื่อให้ปุ่มทับอยู่บนเส้นขอบพอดี */
+  
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 99999;         /* มั่นใจว่าปุ่มอยู่เหนือเนื้อหาภายใน */
+}

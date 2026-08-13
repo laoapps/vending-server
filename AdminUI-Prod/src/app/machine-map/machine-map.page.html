@@ -54,7 +54,7 @@
   <div *ngIf="errorMessage" class="map-error">{{ errorMessage }}</div>
   <div *ngIf="loading" class="map-loading">ກຳລັງໂຫຼດ...</div>
 
-  <div class="realtime-order-bar" *ngIf="latestOrder">
+  <div  class="realtime-order-bar" *ngIf="latestOrder">
     <span class="rt-badge">Real-time order</span>
     <strong class="rt-machine">{{ latestOrder.machineId }}</strong>
     <span class="rt-meta" *ngIf="latestOrder.location">{{ latestOrder.location }}</span>
@@ -148,7 +148,7 @@
 
     <aside class="insight-panel" *ngIf="insightOpen">
       <div class="insight-header">
-        <div>
+        <div id="s1">
           <strong>CEO Insight</strong>
           <div class="insight-sub">
             {{ insightMachine?.machineId }} · {{ insightMachine?.location || '-' }}
@@ -165,7 +165,7 @@
       </div>
 
       <div class="insight-body">
-      <div class="insight-live" *ngIf="insightMachine">
+      <div id="s2" class="insight-live" *ngIf="insightMachine">
         <span class="live-badge">LIVE</span>
         <strong>{{ insightMachine.qtyToday || 0 }} ຊິ້ນ</strong>
         <span>{{ formatAmount(insightMachine.amountToday) }} LAK ມື້ນີ້</span>
@@ -211,7 +211,7 @@
         </div>
       </div>
 
-      <div class="insight-pattern" *ngIf="!insightLoading">
+      <div id="s3" class="insight-pattern" *ngIf="!insightLoading">
         <div class="pattern-head">
           <strong>ພາບລວມພຶດຕິກຳການຊື້</strong>
           <span *ngIf="insightPatternRangeLabel">ຂໍ້ມູນຈາກ {{ insightPatternRangeLabel }} (ເດືອນນີ້+ເດືອນກ່ອນ)</span>
@@ -287,7 +287,7 @@
             </div>
           </div>
 
-          <div class="product-pattern-block" *ngIf="insightProductPatternsView.length">
+          <div id="s4" class="product-pattern-block" *ngIf="insightProductPatternsView.length">
             <div class="top5-title">ແຕ່ລະສິນຄ້າ · ມື້/ເວລາທີ່ຄົນມັກຊື້ (Top 20)</div>
             <div class="product-pattern-table">
               <div class="product-pattern-head">
@@ -329,6 +329,12 @@
       </div>
 
       <div class="insight-periods">
+        <ion-fab class="fab-align-left">
+          <ion-fab-button (click)="scrollToTarget('s1')"><ion-icon name="add"></ion-icon></ion-fab-button>
+          <ion-fab-button (click)="scrollToTarget('s2')"><ion-icon name="add"></ion-icon></ion-fab-button>
+          <ion-fab-button (click)="scrollToTarget('s3')"><ion-icon name="add"></ion-icon></ion-fab-button>
+          <ion-fab-button (click)="scrollToTarget('s4')"><ion-icon name="add"></ion-icon></ion-fab-button>
+        </ion-fab>
         <section class="period-block" *ngFor="let p of insightPeriods" [class.active]="insightActivePeriod === p.key">
           <header class="period-head" (click)="setInsightPeriod(p.key)">
             <div>

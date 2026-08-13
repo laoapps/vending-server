@@ -1,17 +1,24 @@
-import { AfterViewInit, Component, NgZone, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 import { registerables } from 'chart.js';
+import * as moment from 'moment-timezone';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiService } from '../services/api.service';
+import { IonContent } from '@ionic/angular';
 
 declare const L: any;
+
+/** Wall-clock format after converting API UTC → Asia/Vientiane (+7). */
+const TZ7_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+const TZ7_ZONE = 'Asia/Vientiane';
 
 interface MapMachine {
   machineId: string;
   location: string;
+  shopPhone: string;
   latitude: number;
   longitude: number;
   status: 'Online' | 'Broken' | 'Unknown';
@@ -122,6 +129,8 @@ Chart.register(...registerables);
   styleUrls: ['./machine-map.page.scss'],
 })
 export class MachineMapPage implements AfterViewInit, OnDestroy {
+  @ViewChild(IonContent, { static: false }) content!: IonContent;
+
   private map: any;
   private markersLayer: any;
   private markersById = new Map<string, any>();
@@ -526,8 +535,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     this.salesTopProducts = [];
 
     const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
-    const ownerPhone = String(this.salesMachine.owner || '');
-    const shopPhonenumber = ownerPhone.replace(/\D/g, '').slice(-8);
+    const shopPhonenumber = this.resolveShopPhonenumber(this.salesMachine);
 
     this.apiService
       .loadVendingMachineSaleBillReport({
@@ -565,17 +573,12 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
 
   formatDateTime(value?: string): string {
     if (!value) return '-';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleString('en-GB', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
+    // Prefer already-converted TZ+7 wall clock from mapSaleBills
+    const tz7 = moment(value, TZ7_FORMAT, true);
+    if (tz7.isValid()) return tz7.format('DD/MM/YYYY, HH:mm:ss');
+    const m = moment.utc(value).tz(TZ7_ZONE);
+    if (!m.isValid()) return String(value);
+    return m.format('DD/MM/YYYY, HH:mm:ss');
   }
 
   private toDateInputValue(d: Date): string {
@@ -583,6 +586,19 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  }
+
+  /** Use setting.shopPhone for API shopPhonenumber (last 8 digits). */
+  private resolveShopPhonenumber(machine?: MapMachine | null): string {
+    const raw = String(machine?.shopPhone || '').replace(/\D/g, '');
+    return raw.slice(-8);
+  }
+
+  /** Convert API timezone-0 (UTC) datetime → Asia/Vientiane (+7) wall clock. */
+  private convertUtcToTz7(value?: string | null): string {
+    if (value == null || String(value).trim() === '') return '';
+    const m = moment.utc(value).tz(TZ7_ZONE);
+    return m.isValid() ? m.format(TZ7_FORMAT) : String(value);
   }
 
   private mapSaleBills(rows: any[]): SaleOrderBill[] {
@@ -598,14 +614,14 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
             price,
             total: qty * price,
             position: vs?.position,
-            dropAt: vs?.dropAt || undefined,
+            dropAt: vs?.dropAt ? this.convertUtcToTz7(vs.dropAt) : undefined,
           };
         },
       );
       const lineQty = lines.reduce((s, l) => s + (l.qty || 0), 0);
       return {
         id: bill?.id,
-        createdAt: bill?.createdAt,
+        createdAt: this.convertUtcToTz7(bill?.createdAt),
         paymentstatus: bill?.paymentstatus,
         totalvalue: Number(bill?.totalvalue) || 0,
         transactionID: bill?.transactionID,
@@ -642,7 +658,18 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
         price: p.price,
       }));
   }
-
+  scrollToTarget(elementId: string) {
+    // ค้นหา Element ปลายทางด้วย ID
+    const targetElement = document.getElementById(elementId);
+    
+    if (targetElement) {
+      // สั่งให้เลื่อนมาแสดงผลในมุมมองปัจจุบันทันที
+      targetElement.scrollIntoView({ 
+        behavior: 'smooth', // เลื่อนแบบอนิเมชันนุ่มนวล
+        block: 'start'      // ให้ขอบบนของเป้าหมายชิดขอบบนของกล่อง
+      });
+    }
+  }
   private buildProductsAscending(orders: SaleOrderBill[]): TopSaleProduct[] {
     const map = new Map<string, { name: string; qty: number; amount: number; price: number }>();
     for (const order of orders) {
@@ -726,8 +753,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     this.insightError = '';
 
     const authToken = localStorage.getItem('token') || localStorage.getItem('lva_token');
-    const ownerPhone = String(machine.owner || '');
-    const shopPhonenumber = ownerPhone.replace(/\D/g, '').slice(-8);
+    const shopPhonenumber = this.resolveShopPhonenumber(machine);
     const patternOrders: SaleOrderBill[] = [];
     let patternFrom = '';
     let patternTo = '';
@@ -799,8 +825,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
 
     const machine = this.insightMachine;
     const authToken = localStorage.getItem('token') || localStorage.getItem('lva_token');
-    const ownerPhone = String(machine.owner || '');
-    const shopPhonenumber = ownerPhone.replace(/\D/g, '').slice(-8);
+    const shopPhonenumber = this.resolveShopPhonenumber(machine);
     period.loading = true;
 
     try {
@@ -933,10 +958,11 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     const productMap = new Map<string, ProdAgg>();
 
     for (const order of orders) {
-      const dt = new Date(order.createdAt);
-      if (Number.isNaN(dt.getTime())) continue;
-      const day = dt.getDay();
-      const hour = dt.getHours();
+      // createdAt already converted to TZ+7 wall clock in mapSaleBills
+      const dt = moment(order.createdAt, TZ7_FORMAT, true);
+      if (!dt.isValid()) continue;
+      const day = dt.day();
+      const hour = dt.hour();
       const slot = this.timeSlotForHour(hour);
       const orderQty = Number(order.lineQty) || order.lines.reduce((s, l) => s + (l.qty || 0), 0) || 1;
       const orderAmount = Number(order.totalvalue) || 0;
@@ -1523,6 +1549,9 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
         const location = (d?.location != null && String(d.location).trim() !== '')
           ? String(d.location).trim()
           : '';
+        const shopPhone = (d?.shopPhone != null && String(d.shopPhone).trim() !== '')
+          ? String(d.shopPhone).trim()
+          : '';
 
         const sales = this.todaySalesByMachine.get(machine.machineId);
         const monthSales = this.monthSalesByMachine.get(machine.machineId);
@@ -1530,6 +1559,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
         list.push({
           machineId: machine.machineId,
           location,
+          shopPhone,
           latitude: lat,
           longitude: lng,
           status,
