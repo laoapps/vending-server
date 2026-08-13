@@ -41,6 +41,7 @@ interface MachineData {
   imei?: string;
   createdAt?: string;
   location?: string;
+  shopPhone?: string;
   latitude?: string | number | null;
   longitude?: string | number | null;
   savingLocation?: boolean;
@@ -157,6 +158,9 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         const location = (d?.location != null && String(d.location).trim() !== '')
           ? String(d.location).trim()
           : '';
+        const shopPhone = (d?.shopPhone != null && String(d.shopPhone).trim() !== '')
+          ? String(d.shopPhone).trim()
+          : '';
         const latitude = (d?.latitude != null && d?.latitude !== '' && Number.isFinite(Number(d.latitude)))
           ? Number(d.latitude)
           : '';
@@ -180,6 +184,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           imei: d?.imei ? String(d.imei) : 'Unknown',
           createdAt: machine?.createdAt,
           location,
+          shopPhone,
           latitude,
           longitude,
         });
@@ -235,6 +240,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     if (!machine?.machineId || machine.savingLocation) return;
 
     const location = (machine.location != null) ? String(machine.location).trim() : '';
+    const shopPhone = (machine.shopPhone != null) ? String(machine.shopPhone).trim() : '';
     const latitudeRaw = machine.latitude;
     const longitudeRaw = machine.longitude;
     const latitude = (latitudeRaw != null && latitudeRaw !== '' && Number.isFinite(Number(latitudeRaw)))
@@ -245,6 +251,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       : null;
 
     machine.location = location;
+    machine.shopPhone = shopPhone;
     machine.latitude = latitude ?? '';
     machine.longitude = longitude ?? '';
     machine.savingLocation = true;
@@ -259,6 +266,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         data: {
           machineId: machine.machineId,
           location,
+          shopPhone,
           latitude,
           longitude,
         },
@@ -267,6 +275,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       if (response?.data?.status === 1) {
         if (!machine.settings) machine.settings = {};
         machine.settings.location = location;
+        machine.settings.shopPhone = shopPhone;
         machine.settings.latitude = latitude;
         machine.settings.longitude = longitude;
         this.apiService.alertSuccess('ອັບເດດທີ່ຕັ້ງສຳເຫຼັດ');

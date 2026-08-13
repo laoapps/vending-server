@@ -59,7 +59,7 @@
                   [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
               </ion-button>
             </ion-card-title>
-            <div class="machine-location-block" [class.has-location]="!!machine.location || machine.latitude !== '' || machine.longitude !== ''">
+            <div class="machine-location-block" [class.has-location]="!!machine.location || !!machine.shopPhone || machine.latitude !== '' || machine.longitude !== ''">
               <div class="machine-location">
                 <ion-icon name="location"></ion-icon>
                 <ion-input
@@ -77,6 +77,17 @@
                   (click)="updateLocation(machine)">
                   <ion-icon slot="icon-only" [name]="machine.savingLocation ? 'hourglass-outline' : 'save-outline'"></ion-icon>
                 </ion-button>
+              </div>
+              <div class="machine-location machine-shop-phone">
+                <ion-icon name="call"></ion-icon>
+                <ion-input
+                  class="location-input"
+                  type="tel"
+                  inputmode="tel"
+                  placeholder="ປ້ອນເບີໂທຮ້ານ (shopPhone)"
+                  [(ngModel)]="machine.shopPhone"
+                  [disabled]="machine.savingLocation">
+                </ion-input>
               </div>
               <div class="machine-coords">
                 <ion-input
@@ -253,7 +264,7 @@
                   [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
               </ion-button>
             </ion-card-title>
-            <div class="machine-location-block" [class.has-location]="!!machine.location || machine.latitude !== '' || machine.longitude !== ''">
+            <div class="machine-location-block" [class.has-location]="!!machine.location || !!machine.shopPhone || machine.latitude !== '' || machine.longitude !== ''">
               <div class="machine-location">
                 <ion-icon name="location"></ion-icon>
                 <ion-input
@@ -271,6 +282,17 @@
                   (click)="updateLocation(machine)">
                   <ion-icon slot="icon-only" [name]="machine.savingLocation ? 'hourglass-outline' : 'save-outline'"></ion-icon>
                 </ion-button>
+              </div>
+              <div class="machine-location machine-shop-phone">
+                <ion-icon name="call"></ion-icon>
+                <ion-input
+                  class="location-input"
+                  type="tel"
+                  inputmode="tel"
+                  placeholder="ປ້ອນເບີໂທຮ້ານ (shopPhone)"
+                  [(ngModel)]="machine.shopPhone"
+                  [disabled]="machine.savingLocation">
+                </ion-input>
               </div>
               <div class="machine-coords">
                 <ion-input

@@ -1749,6 +1749,9 @@ export class InventoryZDM8 implements IBaseClass {
                         const location = (req?.body?.data?.location != null)
                             ? String(req.body.data.location).trim()
                             : '';
+                        const shopPhone = (req?.body?.data?.shopPhone != null)
+                            ? String(req.body.data.shopPhone).trim()
+                            : '';
                         const latitudeRaw = req?.body?.data?.latitude;
                         const longitudeRaw = req?.body?.data?.longitude;
                         const latitude = (latitudeRaw != null && latitudeRaw !== '' && Number.isFinite(Number(latitudeRaw)))
@@ -1772,10 +1775,11 @@ export class InventoryZDM8 implements IBaseClass {
 
                         let a = r.data.find((v: any) => v?.settingName == 'setting');
                         if (!a) {
-                            a = { settingName: 'setting', location, latitude, longitude };
+                            a = { settingName: 'setting', location, shopPhone, latitude, longitude };
                             r.data.push(a);
                         } else {
                             a.location = location;
+                            a.shopPhone = shopPhone;
                             a.latitude = latitude;
                             a.longitude = longitude;
                         }
@@ -1820,7 +1824,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                         });
 
-                        res.send(PrintSucceeded("updateMachineLocationAdmin", { machineId, location, latitude, longitude }, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("updateMachineLocationAdmin", { machineId, location, shopPhone, latitude, longitude }, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log("Error updateMachineLocationAdmin", error);
                         res.send(PrintError("updateMachineLocationAdmin", error, EMessage.error, returnLog(req, res, true)));
