@@ -199,6 +199,27 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   insightProductPatterns: ProductPurchasePattern[] = [];
   /** Top products shown in overview table (capped for UI performance) */
   insightProductPatternsView: ProductPurchasePattern[] = [];
+  fabActive = 's1';
+  readonly fabNavItems: Array<{
+    id: string;
+    icon: string;
+    label: string;
+    title: string;
+    action?: 'orders' | 'refresh';
+  }> = [
+    { id: 's1', icon: 'stats-chart-outline', label: 'ພາບລວມ', title: 'ຂ້າມໄປຫົວຂໍ້ CEO Insight' },
+    { id: 's2', icon: 'flash-outline', label: 'LIVE', title: 'ຍອດຂາຍມື້ນີ້ (Real-time)' },
+    { id: 's-kpi', icon: 'grid-outline', label: 'KPI', title: 'ກາດສະຫຼຸບຕາມຊ່ວງເວລາ' },
+    { id: 's-top5', icon: 'trophy-outline', label: 'Top 5', title: 'Top 5 ສິນຄ້າຂາຍດີ' },
+    { id: 's3', icon: 'analytics-outline', label: 'ພຶດຕິກຳ', title: 'ພາບລວມພຶດຕິກຳການຊື້' },
+    { id: 's-slots', icon: 'time-outline', label: 'ຊ່ວງ', title: 'ຊ່ວງເວລາທີ່ຄົນຊື້' },
+    { id: 's-charts-pattern', icon: 'bar-chart-outline', label: 'ກຣາຟ', title: 'ກຣາຟມື້ / ຊົ່ວໂມງ' },
+    { id: 's4', icon: 'cube-outline', label: 'ສິນຄ້າ', title: 'ຕາຕະລາງສິນຄ້າ · ມື້/ເວລາ' },
+    { id: 's-charts', icon: 'pie-chart-outline', label: 'ສົມທຽບ', title: 'ກຣາຟສົມທຽບຊ່ວງເວລາ' },
+    { id: 's-periods', icon: 'list-outline', label: 'ລາຍລະອຽດ', title: 'ລາຍລະອຽດຕາມຊ່ວງເວລາ' },
+    { id: 'orders', icon: 'receipt-outline', label: 'Orders', title: 'ເປີດລາຍການ Orders', action: 'orders' },
+    { id: 'refresh', icon: 'refresh-outline', label: 'ຣີເຟຣຊ', title: 'ຣີເຟຣຊຂໍ້ມູນ Insight', action: 'refresh' },
+  ];
   /** Top products in selected time slot (capped, cached — not a getter) */
   insightSlotProductRankings: Array<{
     name: string;
@@ -323,6 +344,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     this.insightOpen = true;
     this.insightError = '';
     this.insightActivePeriod = 'today';
+    this.fabActive = 's1';
     this.insightPeriods = this.buildEmptyInsightPeriods();
     this.resetPurchasePatterns();
     this.loadInsightData();
@@ -659,16 +681,40 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       }));
   }
   scrollToTarget(elementId: string) {
-    // ค้นหา Element ปลายทางด้วย ID
-    const targetElement = document.getElementById(elementId);
-    
-    if (targetElement) {
-      // สั่งให้เลื่อนมาแสดงผลในมุมมองปัจจุบันทันที
-      targetElement.scrollIntoView({ 
-        behavior: 'smooth', // เลื่อนแบบอนิเมชันนุ่มนวล
-        block: 'start'      // ให้ขอบบนของเป้าหมายชิดขอบบนของกล่อง
-      });
+    const item = this.fabNavItems.find((f) => f.id === elementId);
+    if (item?.action === 'orders') {
+      this.fabActive = elementId;
+      if (this.insightMachine) this.openSalesPanel(this.insightMachine);
+      return;
     }
+    if (item?.action === 'refresh') {
+      this.fabActive = elementId;
+      this.refreshInsight();
+      return;
+    }
+
+    this.fabActive = elementId;
+
+    const scrollRoot = document.querySelector('.insight-panel .insight-body') as HTMLElement | null;
+
+    // Header section lives outside the scroll body — jump to top
+    if (elementId === 's1') {
+      scrollRoot?.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const targetElement = document.getElementById(elementId);
+    if (!targetElement) return;
+
+    if (scrollRoot) {
+      const rootRect = scrollRoot.getBoundingClientRect();
+      const targetRect = targetElement.getBoundingClientRect();
+      const nextTop = scrollRoot.scrollTop + (targetRect.top - rootRect.top) - 8;
+      scrollRoot.scrollTo({ top: Math.max(0, nextTop), behavior: 'smooth' });
+      return;
+    }
+
+    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   private buildProductsAscending(orders: SaleOrderBill[]): TopSaleProduct[] {
     const map = new Map<string, { name: string; qty: number; amount: number; price: number }>();

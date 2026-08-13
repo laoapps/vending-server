@@ -147,6 +147,21 @@
     </div>
 
     <aside class="insight-panel" *ngIf="insightOpen">
+      <nav class="insight-fab-nav" aria-label="ຂ້າມໄປສ່ວນ CEO Insight">
+        <button
+          type="button"
+          class="fab-item"
+          *ngFor="let item of fabNavItems"
+          [class.active]="fabActive === item.id"
+          [class.fab-action]="!!item.action"
+          (click)="scrollToTarget(item.id)"
+          [title]="item.title"
+          [attr.aria-label]="item.title">
+          <ion-icon [name]="item.icon"></ion-icon>
+          <span>{{ item.label }}</span>
+        </button>
+      </nav>
+
       <div class="insight-header">
         <div id="s1">
           <strong>CEO Insight</strong>
@@ -175,7 +190,7 @@
       <div class="insight-loading" *ngIf="insightLoading">ກຳລັງໂຫຼດຂໍ້ມູນຍອດຂາຍ...</div>
       <div class="insight-error" *ngIf="insightError">{{ insightError }}</div>
 
-      <div class="insight-kpis">
+      <div id="s-kpi" class="insight-kpis">
         <button
           type="button"
           class="kpi-card"
@@ -191,7 +206,7 @@
         </button>
       </div>
 
-      <div class="insight-top5-active" *ngIf="insightActive && !insightActive.loading">
+      <div id="s-top5" class="insight-top5-active" *ngIf="insightActive && !insightActive.loading">
         <div class="top5-title">
           Top 5 ສິນຄ້າຂາຍດີ · {{ insightActive.label }}
         </div>
@@ -240,7 +255,7 @@
             </div>
           </div>
 
-          <div class="pattern-slots">
+          <div id="s-slots" class="pattern-slots">
             <button
               type="button"
               class="slot-chip"
@@ -278,7 +293,7 @@
             </div>
           </div>
 
-          <div class="insight-charts pattern-charts">
+          <div id="s-charts-pattern" class="insight-charts pattern-charts">
             <div class="chart-box">
               <canvas id="insight-weekday-chart"></canvas>
             </div>
@@ -319,7 +334,7 @@
         </ng-container>
       </div>
 
-      <div class="insight-charts" *ngIf="insightPeriods.length">
+      <div id="s-charts" class="insight-charts" *ngIf="insightPeriods.length">
         <div class="chart-box">
           <canvas id="insight-period-chart"></canvas>
         </div>
@@ -328,13 +343,7 @@
         </div>
       </div>
 
-      <div class="insight-periods">
-        <ion-fab class="fab-align-left">
-          <ion-fab-button (click)="scrollToTarget('s1')"><ion-icon name="add"></ion-icon></ion-fab-button>
-          <ion-fab-button (click)="scrollToTarget('s2')"><ion-icon name="add"></ion-icon></ion-fab-button>
-          <ion-fab-button (click)="scrollToTarget('s3')"><ion-icon name="add"></ion-icon></ion-fab-button>
-          <ion-fab-button (click)="scrollToTarget('s4')"><ion-icon name="add"></ion-icon></ion-fab-button>
-        </ion-fab>
+      <div id="s-periods" class="insight-periods">
         <section class="period-block" *ngFor="let p of insightPeriods" [class.active]="insightActivePeriod === p.key">
           <header class="period-head" (click)="setInsightPeriod(p.key)">
             <div>
