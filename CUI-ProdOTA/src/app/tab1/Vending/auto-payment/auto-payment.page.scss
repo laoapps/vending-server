@@ -655,4 +655,36 @@ ion-content {
   100% { transform: rotate(360deg); }
 }
 
+.qr-retry-btn {
+  width: 220px;
+  height: 220px;
+  border: 2px dashed #ffffff;
+  border-radius: 12px;
+  background: rgba(203, 67, 53, 0.9);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 16px;
+  text-align: center;
+
+  .qr-retry-title {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .qr-retry-sub {
+    font-size: 16px;
+    opacity: 0.95;
+  }
+
+  .qr-retry-count {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+}
+
 

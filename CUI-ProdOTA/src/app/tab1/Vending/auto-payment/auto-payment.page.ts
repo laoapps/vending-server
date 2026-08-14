@@ -41,6 +41,20 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   isPayment: boolean = false;
   // isLoading: boolean = false;
 
+  // QR generate retry (vending: unlimited retries within window, always auto-close)
+  showQrRetry: boolean = false;
+  isQrGenerating: boolean = false;
+  qrRetryCount: number = 0;
+  readonly qrGenTimeoutSec: number = 60;
+  readonly qrRetryWindowSec: number = 60;
+  readonly pageHardCloseSec: number = 240; // absolute max — never leave this modal open forever
+  countdownQrGen: number = 60;
+  countdownQrRetry: number = 60;
+  countdownQrRetryTimer: any = {} as any;
+  countdownQrGenTimer: any = {} as any;
+  pageHardCloseTimer: any = {} as any;
+  private qrRequestId: number = 0;
+
 
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
   questionIcon: string = `../../../../assets/logo/question-logo.png`;
@@ -296,6 +310,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       this.close();
     });
 
+    // Absolute safety: this modal must never stay open forever on a vending machine
+    this.startPageHardClose();
+
     await this.loadCountDownBillNew();
 
 
@@ -328,6 +345,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownLAABDestroyTimer);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
+    clearInterval(this.countdownQrRetryTimer);
+    clearInterval(this.countdownQrGenTimer);
+    clearTimeout(this.countdownCheckGenQrResTimer);
+    clearTimeout(this.pageHardCloseTimer);
     // if (this.WSAPIService.waitingDelivery) this.WSAPIService.waitingDelivery.unsubscribe();
 
   }
@@ -379,8 +400,102 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownDestroyTimer);
     clearInterval(this.countdownLAABDestroyTimer);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
+    clearInterval(this.countdownQrRetryTimer);
+    clearInterval(this.countdownQrGenTimer);
+    clearTimeout(this.countdownCheckGenQrResTimer);
+    clearTimeout(this.pageHardCloseTimer);
+    this.showQrRetry = false;
+    this.isQrGenerating = false;
 
     this.modalCtrl.dismiss();
+  }
+
+  /** Customer taps QR area to retry generate after fail/timeout */
+  retryGenerateQr(): void {
+    if (!this.showQrRetry) return;
+    // Unlimited retries — page still always closes via retry window / hard close
+    clearInterval(this.countdownQrRetryTimer);
+    this.showQrRetry = false;
+    this.qrRetryCount++;
+    this._processLoopDestroyLastest();
+  }
+
+  /** Absolute max lifetime for this payment page — never hang forever */
+  private startPageHardClose(): void {
+    clearTimeout(this.pageHardCloseTimer);
+    this.pageHardCloseTimer = setTimeout(() => {
+      this.exitAfterQrFail('PAGE HARD CLOSE timeout');
+    }, this.pageHardCloseSec * 1000);
+  }
+
+  private startQrGenCountdown(requestId: number): void {
+    clearInterval(this.countdownQrGenTimer);
+    clearTimeout(this.countdownCheckGenQrResTimer);
+    this.isQrGenerating = true;
+    this.countdownQrGen = this.qrGenTimeoutSec;
+    this.countdownQrGenTimer = setInterval(() => {
+      this.countdownQrGen--;
+      if (this.countdownQrGen <= 0) {
+        clearInterval(this.countdownQrGenTimer);
+        if (requestId !== this.qrRequestId) return;
+        this.handleQrGenerateFailed(`TIMEOUT Generate QR requestId=${requestId}`);
+      }
+    }, 1000);
+  }
+
+  private stopQrGenCountdown(): void {
+    clearInterval(this.countdownQrGenTimer);
+    clearTimeout(this.countdownCheckGenQrResTimer);
+    this.isQrGenerating = false;
+  }
+
+  private startQrRetryCountdown(): void {
+    clearInterval(this.countdownQrRetryTimer);
+    this.countdownQrRetry = this.qrRetryWindowSec;
+    this.countdownQrRetryTimer = setInterval(() => {
+      this.countdownQrRetry--;
+      if (this.countdownQrRetry <= 0) {
+        clearInterval(this.countdownQrRetryTimer);
+        this.exitAfterQrFail('retry window expired');
+      }
+    }, 1000);
+  }
+
+  private handleQrGenerateFailed(errorLog?: string, reconnectWs: boolean = false): void {
+    this.stopQrGenCountdown();
+    clearInterval(this.countdownDestroyTimer);
+    this.countdownDestroy = 60;
+    this.resetMessage();
+    this.isPayment = false;
+
+    if (errorLog) {
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: errorLog });
+    }
+    if (reconnectWs) {
+      this.WSAPIService.reconnect();
+    }
+
+    // Already showing retry UI (e.g. timeout then late error) — keep current window
+    if (this.showQrRetry) {
+      return;
+    }
+
+    this.showQrRetry = true;
+    this.startQrRetryCountdown();
+  }
+
+  private exitAfterQrFail(reason: string = 'qr fail exit'): void {
+    clearInterval(this.countdownQrRetryTimer);
+    this.stopQrGenCountdown();
+    clearTimeout(this.pageHardCloseTimer);
+    this.showQrRetry = false;
+    this.isQrGenerating = false;
+    try {
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `EXIT QR FAIL: ${reason}` });
+    } catch (e) { }
+    this.apiService.myTab1.clearStockAfterLAABGo();
+    this.close();
+    this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
   }
 
 
@@ -393,23 +508,34 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         this.countdownBillTimer = setTimeout(async () => {
 
+          // Activate payment UI first — never block on qrlogo (offline can hang logo load)
+          try {
+            if (this.apiService.cash.value >= this.getTotalSale.t) {
+              AutoPaymentPage.btnLAABGo?.classList.add('active');
+            }
+          } catch (e) { }
 
+          try {
+            if (AutoPaymentPage.orderlistElement) {
+              this.checkOrders(AutoPaymentPage.orderlistElement);
+              AutoPaymentPage.orderlistElement.className = 'order-list fit';
+            }
+            AutoPaymentPage.laabCardFooter?.classList.add('active');
+            this.loadBillWave();
+          } catch (e) { }
 
-          if (this.apiService.cash.value < this.getTotalSale.t) {
-
-
-          } else {
-            // AutoPaymentPage.laabqrimgElement.classList.remove('active');
-            AutoPaymentPage.btnLAABGo.classList.add('active');
+          // Decorative placeholder QR — must not block payment flow when offline
+          try {
+            const questqrcode = await Promise.race([
+              new qrlogo({ logo: this.questionIcon, content: 'choose any payment method' }).getCanvas(),
+              new Promise((_, rej) => setTimeout(() => rej(new Error('quest qr timeout')), 3000))
+            ]) as any;
+            if (AutoPaymentPage.qrimgElement && questqrcode) {
+              AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
+            }
+          } catch (e) {
+            console.warn('quest qrlogo skipped', e);
           }
-
-          const questqrcode = await new qrlogo({ logo: this.questionIcon, content: 'choose any payment method' }).getCanvas();
-          if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = questqrcode.toDataURL();
-
-          this.checkOrders(AutoPaymentPage.orderlistElement);
-          AutoPaymentPage.orderlistElement.className = 'order-list fit';
-          AutoPaymentPage.laabCardFooter.classList.add('active');
-          this.loadBillWave();
 
           if (!list) return resolve(await this._processLoopPayment());
 
@@ -468,88 +594,74 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     return new Promise<any>(async (resolve, reject) => {
       try {
 
-        let title: string = 'Destroy all orders';
-        let text: string = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
         let cls: string = `countdownDestroy`;
+        this.showQrRetry = false;
+        this.isPayment = false;
+        const requestId = ++this.qrRequestId;
 
-        const params: IPaymentStation = {
-          orders: this.parseorders,
-          getTotalSale: this.parseGetTotalSale,
-          paymentmethod: this.paymentmethod
-        }
         console.log('START GENERATE LAOQR');
 
-        // this.workload = this.apiService.load.create({ message: 'loading...' });
-        // (await this.workload).present();
-
-        clearInterval(this.countdownCheckGenQrResTimer);
-        this.countdownCheckGenQrResTimer = setTimeout(async () => {
-          clearInterval(this.countdownCheckGenQrResTimer);
-          // (await this.workload).dismiss();
-          clearInterval(this.countdownDestroyTimer);
-          this.countdownDestroy = 60;
-          if (AutoPaymentPage.message) AutoPaymentPage.message.close();
-          AutoPaymentPage.message = undefined;
-
-          // this.apiService.myTab1.clearStockAfterLAABGo();
-          this.close();
-          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
+        // Offline: show retry immediately — do not hang on HTTP / qrlogo
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          this.handleQrGenerateFailed('OFFLINE before Generate QR');
           return resolve(IENMessage.success);
-        }, 60000);
+        }
 
+        this.startQrGenCountdown(requestId);
 
         this.apiService.buyLaoQRQ(this.parseorders, this.parseGetTotalSale.t).then(async rx => {
+          if (requestId !== this.qrRequestId) return resolve(IENMessage.success);
+
           const r = rx.data;
-          clearInterval(this.countdownCheckGenQrResTimer);
-          // (await this.workload).dismiss();
+          this.stopQrGenCountdown();
           const response: any = r;
 
           console.log(`response generate LaoQR`, response);
           if (response.status != 1) {
-
-            clearInterval(this.countdownDestroyTimer);
-            this.countdownDestroy = 60;
-            if (AutoPaymentPage.message) AutoPaymentPage.message.close();
-            AutoPaymentPage.message = undefined;
-
-            // this.apiService.myTab1.clearStockAfterLAABGo();
-            this.close();
-            this.WSAPIService.reconnect();
-            this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
-            this.apiService.IndexedLogDB.addBillProcess({ errorData: `ERR Generate QR :${JSON.stringify(response)}` });
+            this.handleQrGenerateFailed(`ERR Generate QR :${JSON.stringify(response)}`, true);
             return resolve(IENMessage.success);
-
           }
-
-          // this.setLastClick();
 
           const run = response.data;
           console.log('-----> SUCCESS GENERATE:', run);
 
-
-          // this.qrcode = run.data[0].mmoneyQRCode.qr;
-
           const transactionID = run.transactionID;
-          // console.log('transactionID', transactionID);
-          // console.log('QR CODE :', run.qr);
-
-
           localStorage.setItem('transactionID', transactionID);
 
-          const qrcode = await new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas();
-          AutoPaymentPage.qrimgElement.src = qrcode.toDataURL();
+          // qrlogo with logo can hang offline — fallback to plain QR
+          let dataUrl = '';
+          try {
+            const qrcode = await Promise.race([
+              new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas(),
+              new Promise((_, rej) => setTimeout(() => rej(new Error('qrlogo timeout')), 5000))
+            ]) as any;
+            dataUrl = qrcode.toDataURL();
+          } catch (e) {
+            try {
+              const qrcode = await Promise.race([
+                new qrlogo({ content: run.qr }).getCanvas(),
+                new Promise((_, rej) => setTimeout(() => rej(new Error('qrlogo plain timeout')), 5000))
+              ]) as any;
+              dataUrl = qrcode.toDataURL();
+            } catch (e2) {
+              this.handleQrGenerateFailed(`ERROR render QR :${e2}`);
+              return resolve(IENMessage.success);
+            }
+          }
+
+          if (requestId !== this.qrRequestId) return resolve(IENMessage.success);
+
+          if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = dataUrl;
+          clearInterval(this.countdownQrRetryTimer);
+          this.showQrRetry = false;
+          this.isQrGenerating = false;
           this.isPayment = true;
-          // this.isLoading = false;
           this.billDate = new Date();
           console.log('END GENERATE LAOQR AND SUCCESS');
-          // console.log('=====>RUN', run);
-          // const transactionID = localStorage.getItem('transactionID');
           console.log('QR CODE :');
 
           this.countdownDestroyTimer = setInterval(async () => {
             this.countdownDestroy--;
-
-
 
             if (this.countdownDestroy <= 0) {
               clearInterval(this.countdownDestroyTimer);
@@ -559,18 +671,15 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
               this.apiService.myTab1.clearStockAfterLAABGo();
               this.close();
-              // this.checkLastGenQR();
 
               setTimeout(() => {
                 this.apiService?.myTab1?.loadPaidBills();
               }, 5000);
 
-              // this.apiService.alertTimeout('ຖ້າຫາກທ່ານໄດ້ຈ່າຍເງິນໄປແລ້ວ ກະລຸນາລໍຖ້າອີກ 30 ວິນາທີເພື່ອຮັບເຄື່ອງ.\nຫຼືຕິດຕໍ່ Call Center: 020-5551-6321\n\nIf you have already made the payment, please wait 30 seconds to receive your product.\nOr contact Call Center: 020-5551-6321\n\n如果您已经完成付款，请等待30秒以领取您的商品。  如有问题，请联系客服电话：020-5551-6321');
               return resolve(IENMessage.success);
             } else {
               AutoPaymentPage.messageCount = (document.querySelector(`#${cls}`) as HTMLDivElement);
               if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `System will destroy all order and qrcode in ${this.countdownDestroy}`;
-              // if (AutoPaymentPage.messageCount) AutoPaymentPage.messageCount.textContent = `Test`;
             }
 
           }, 1000);
@@ -578,17 +687,8 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
           return resolve(IENMessage.success);
         }, async error => {
-          clearInterval(this.countdownCheckGenQrResTimer);
-          // (await this.workload).dismiss();
-          clearInterval(this.countdownDestroyTimer);
-          this.countdownDestroy = 60;
-          if (AutoPaymentPage.message) AutoPaymentPage.message.close();
-          AutoPaymentPage.message = undefined;
-
-          // this.apiService.myTab1.clearStockAfterLAABGo();
-          this.close();
-          this.apiService.IndexedLogDB.addBillProcess({ errorData: `ERROR Generate QR :${JSON.stringify(error)}` })
-          this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາລອງໃໝ່ພາຍຫຼັງ');
+          if (requestId !== this.qrRequestId) return resolve(IENMessage.success);
+          this.handleQrGenerateFailed(`ERROR Generate QR :${JSON.stringify(error)}`);
           return resolve(IENMessage.success);
         });
 
@@ -596,13 +696,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
 
       } catch (error) {
-        // this.apiService.alertError(error.message);
-
-        // when choose payment method and it does not work this process will auto loop check laab balance
-        const transactionID = localStorage.getItem('transactionID');
-        // this._processLoopCheckLaoQRPaid(transactionID ?? '');;
-        // this._processLoopPayment();
-
+        this.handleQrGenerateFailed(`CATCH Generate QR :${error?.message || error}`);
         resolve(error.message);
       }
     });
@@ -1078,6 +1172,9 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       AutoPaymentPage.laabCardFooter.classList.remove('active');
       AutoPaymentPage.qrimgElement.src = '';
       this.isPayment = false;
+      this.showQrRetry = false;
+      this.qrRetryCount = 0;
+      clearInterval(this.countdownQrRetryTimer);
       // this.isLoading = true;
       this.paymentText = '';
       this.paymentmethod = undefined;
@@ -1100,6 +1197,10 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
         this.paymentmethod = list.value;
         this.isPayment = false;
+        this.showQrRetry = false;
+        this.qrRetryCount = 0;
+        clearInterval(this.countdownQrRetryTimer);
+        this.qrRequestId++;
         // this.isLoading = true;
 
         if (AutoPaymentPage.message) AutoPaymentPage.message.close();

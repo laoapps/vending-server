@@ -160,15 +160,29 @@
               <span *ngFor="let item of drawCircle; let i = index" class="shape"></span>
             </div>
             <div class="bill-header">
-              <img src="" alt="" id="qr-img" [ngStyle]="{ 'display': isPayment == true ? 'block' : 'none' }"
-                class="qr-img">
-              <div *ngIf="isPayment == false" class="loader"></div>
+              <img src="" alt="" id="qr-img"
+                [ngStyle]="{ 'display': (isPayment == true && !showQrRetry) ? 'block' : 'none' }" class="qr-img">
+              <div *ngIf="isPayment == false && !showQrRetry" class="loader"></div>
+
+              <button *ngIf="showQrRetry" type="button" class="qr-retry-btn" (click)="retryGenerateQr()">
+                <div class="qr-retry-title">ລອງອີກຄັ້ງ</div>
+                <div class="qr-retry-sub">ສ້າງ QR ບໍ່ສຳເຫຼັດ</div>
+                <div class="qr-retry-count">ປິດໃນ {{ countdownQrRetry }} ວິນາທີ · ລອງແລ້ວ {{ qrRetryCount }} ຄັ້ງ</div>
+              </button>
 
               <div class="total">{{ parseGetTotalSale.t | number }}</div>
-              <div *ngIf="isPayment == true"
+              <div *ngIf="isPayment == false && !showQrRetry"
+                style="margin-top: 15px;font-size: 22px;margin-bottom: -10px;font-weight: bold;">
+                ກຳລັງສ້າງ QR… {{ countdownQrGen }} ວິນາທີ
+              </div>
+              <div *ngIf="isPayment == true && !showQrRetry"
                 style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;">
                 ໜ້ານີ້ຈະປິດພາຍໃນ {{
                 countdownDestroy }} ວິນາທີ </div>
+              <div *ngIf="showQrRetry"
+                style="margin-top: 15px;font-size: 20px;margin-bottom: -10px;font-weight: bold;">
+                ກົດປຸ່ມເພື່ອລອງໃໝ່ ຫຼືປິດອັດຕະໂນມັດໃນ {{ countdownQrRetry }} ວິນາທີ
+              </div>
             </div>
             <div *ngIf="isPayment == false" class="bill-body">
 

@@ -222,7 +222,7 @@
 
               <!-- ==================== QR PAYMENT UI (UNCHANGED) ==================== -->
               <div class="qr-container"
-                [ngStyle]="{ 'display': (isPayment && paymentmethod !== 'cash') ? 'block' : 'none' }">
+                [ngStyle]="{ 'display': (isPayment && paymentmethod !== 'cash' && !showQrRetry) ? 'block' : 'none' }">
                 <div class="fire-aura"></div>
                 <div class="fire-aura fire-aura-2"></div>
                 <div class="fire-aura fire-aura-3"></div>
@@ -231,7 +231,14 @@
               </div>
 
               <!-- Loader for QR modes when still generating -->
-              <div *ngIf="!isPayment && paymentmethod !== 'cash'" class="loader"></div>
+              <div *ngIf="!isPayment && paymentmethod !== 'cash' && !showQrRetry" class="loader"></div>
+
+              <!-- Retry QR after fail/timeout -->
+              <button *ngIf="showQrRetry" type="button" class="qr-retry-btn" (click)="retryGenerateQr()">
+                <div class="qr-retry-title">ລອງອີກຄັ້ງ</div>
+                <div class="qr-retry-sub">ສ້າງ QR ບໍ່ສຳເຫຼັດ</div>
+                <div class="qr-retry-count">ປິດໃນ {{ countdownQrRetry }} ວິນາທີ · ລອງແລ້ວ {{ qrRetryCount }} ຄັ້ງ</div>
+              </button>
 
               <!-- Total Amount - Always visible -->
               <div class="total"
@@ -239,10 +246,20 @@
                 {{ parseGetTotalSale.t | number }}
               </div>
 
+              <!-- Generating countdown (prevents looking stuck forever) -->
+              <div *ngIf="!isPayment && paymentmethod !== 'cash' && !showQrRetry"
+                style="margin-top: 15px; font-size: 22px; margin-bottom: -10px; font-weight: bold; color: black; background-color: white; padding: 8px;">
+                ກຳລັງສ້າງ QR… {{ countdownQrGen }} ວິນາທີ
+              </div>
+
               <!-- Countdown for QR payments only -->
-              <div *ngIf="isPayment && paymentmethod !== 'cash'"
+              <div *ngIf="isPayment && paymentmethod !== 'cash' && !showQrRetry"
                 style="margin-top: 15px; font-size: 25px; margin-bottom: -10px; font-weight: bold; color: black; background-color: white; padding: 8px;">
                 ໜ້ານີ້ຈະປິດພາຍໃນ {{ countdownDestroy }} ວິນາທີ
+              </div>
+              <div *ngIf="showQrRetry"
+                style="margin-top: 15px; font-size: 18px; margin-bottom: -10px; font-weight: bold; color: black; background-color: white; padding: 8px;">
+                ກົດປຸ່ມເພື່ອລອງໃໝ່ ຫຼືປິດອັດຕະໂນມັດໃນ {{ countdownQrRetry }} ວິນາທີ
               </div>
 
             </div>
