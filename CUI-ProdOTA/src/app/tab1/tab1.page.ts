@@ -4456,6 +4456,10 @@ export class Tab1Page implements OnDestroy {
     return this.saleList.filter(sl => sl.stock.qtty - this.checkCartCount(sl.position) > 0);
   }
 
+  trackByPosition(_index: number, sl: IVendingMachineSale): number {
+    return sl?.position;
+  }
+
   // Calculate the starting index for each row based on filtered list
   getRowStart(rowIndex: number): number {
     return this.rows.slice(0, rowIndex).reduce((sum, count) => sum + count, 0);
