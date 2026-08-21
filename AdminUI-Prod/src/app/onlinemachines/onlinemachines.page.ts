@@ -18,25 +18,27 @@ import { ReportClientPage } from '../report-client/report-client.page';
 import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
 import { SaleReportPage } from '../sale/sale-report/sale-report.page';
 import { StockReportPage } from '../sale/stock-report/stock-report.page';
-import { IonContent, ModalController } from '@ionic/angular'; // <-- ADD THIS
+import { IonContent, ModalController } from '@ionic/angular';
 import { ReportCallbacklogPage } from '../report-callbacklog/report-callbacklog.page';
 import { PaidOrdersModalComponent } from '../modals/paid-orders-modal/paid-orders-modal.component';
 import { PickLocationModalComponent } from '../modals/pick-location-modal/pick-location-modal.component';
 import { TicketListPage } from '../ticket-list/ticket-list.page';
 import { SettingConfigPage } from '../setting-config/setting-config.page';
 import { CompareExcelPage } from '../compare-excel/compare-excel.page';
+
 interface MachineData {
   machineId: string;
   owner: string;
   temperature?: number;
   status: 'Online' | 'Broken';
   lastUpdate?: string;
+  lastOnline?: string | null;
   versionId: string;
   device: string;
   data: string;
   otp: string;
   settings: any;
-  showSecrets?: boolean; // Track visibility for each machine
+  showSecrets?: boolean;
   ownerUuid: string;
   imei?: string;
   createdAt?: string;
@@ -47,23 +49,42 @@ interface MachineData {
   savingLocation?: boolean;
 }
 
+interface OwnerGroup {
+  owner: string;
+  machines: MachineData[];
+  onlineCount: number;
+  offlineCount: number;
+  lastOnline: string | null;
+  expanded: boolean;
+}
+
 @Component({
   selector: 'app-onlinemachines',
   templateUrl: './onlinemachines.page.html',
   styleUrls: ['./onlinemachines.page.scss'],
 })
 export class OnlinemachinesPage implements OnInit, OnDestroy {
-  @ViewChild(IonContent, { static: false }) content!: IonContent; // <-- ADD THIS
+  @ViewChild(IonContent, { static: false }) content!: IonContent;
 
   onlineMachines: MachineData[] = [];
   brokenMachines: MachineData[] = [];
+  ownerGroups: OwnerGroup[] = [];
+
+  totalCount = 0;
+  onlineCount = 0;
+  offlineCount = 0;
+
+  viewMode: 'owners' | 'cards' = 'owners';
+
   private allMachinesUrl = `${environment.url}/getAllMachines`;
   private onlineMachinesUrl = `${environment.url}/getOnlineMachines`;
   private intervalId!: NodeJS.Timeout;
+  private lastOnlineCache = new Map<string, string>();
+  private expandedOwners = new Set<string>();
 
   showAllSecrets = true;
-  isRefreshing = false;        // For flash effect
-  flashClass = '';             // 'flash' class trigger
+  isRefreshing = false;
+  flashClass = '';
 
   constructor(public apiService: ApiService, private modalCtrl: ModalController) { }
 
@@ -75,11 +96,35 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.intervalId) clearInterval(this.intervalId);
   }
-  trackByMachine(index: number, item: MachineData): string {
-    return item.machineId; // Or item.machineId + item.status if you want to be stricter
+
+  trackByMachine(_index: number, item: MachineData): string {
+    return item.machineId;
   }
 
-  // Manual refresh with flash + scroll to top
+  trackByOwner(_index: number, item: OwnerGroup): string {
+    return item.owner;
+  }
+
+  setViewMode(event: Event) {
+    const customEvent = event as CustomEvent;
+    const mode = customEvent?.detail?.value;
+    if (mode === 'owners' || mode === 'cards') {
+      this.viewMode = mode;
+    }
+  }
+
+  toggleOwner(owner: string) {
+    if (this.expandedOwners.has(owner)) {
+      this.expandedOwners.delete(owner);
+    } else {
+      this.expandedOwners.add(owner);
+    }
+    this.ownerGroups = this.ownerGroups.map(g => ({
+      ...g,
+      expanded: this.expandedOwners.has(g.owner),
+    }));
+  }
+
   async refreshData() {
     this.isRefreshing = true;
     await this.loadData();
@@ -87,7 +132,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     this.scrollToTop();
     setTimeout(() => this.isRefreshing = false, 600);
   }
-
 
   async testGenerateQR() {
     try {
@@ -113,8 +157,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   }
 
   private async loadData() {
-    const previousCount = this.onlineMachines.length + this.brokenMachines.length;
-
     try {
       const token = localStorage.getItem('token');
       const shopPhonenumber = '';
@@ -138,11 +180,17 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         const onlineData = onlineMap.get(machine.machineId);
         let status: 'Online' | 'Broken' = 'Broken';
         let lastUpdate: string | undefined;
+        let lastOnline: string | null = null;
         let temperature: number | undefined;
         let device = 'Unknown';
         let data = '{}';
 
+        // Keep last-seen even when the cabinet is currently offline.
+        // If this poll has no timestamp, reuse the previous value so the
+        // Last online slot stays reserved instead of disappearing.
         if (onlineData?.status?.t) {
+          lastOnline = onlineData.status.t;
+          this.lastOnlineCache.set(machine.machineId, lastOnline);
           const lastTime = new Date(onlineData.status.t);
           const diffMin = (now.getTime() - lastTime.getTime()) / 60000;
           if (diffMin <= 5) {
@@ -152,6 +200,8 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
             device = onlineData.status.b?.device ?? 'Unknown';
             data = JSON.stringify(onlineData.status.b?.data || {});
           }
+        } else if (this.lastOnlineCache.has(machine.machineId)) {
+          lastOnline = this.lastOnlineCache.get(machine.machineId) || null;
         }
 
         const d = machine?.data?.[0] || null;
@@ -174,6 +224,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           temperature,
           status,
           lastUpdate,
+          lastOnline,
           versionId: d?.versionId || 'N/A',
           device,
           data,
@@ -194,21 +245,58 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
       this.onlineMachines = machines.filter(m => m.status === 'Online');
       this.brokenMachines = machines.filter(m => m.status === 'Broken');
-
-      // Trigger flash only if count changed (new data!)
-      // const newCount = this.onlineMachines.length + this.brokenMachines.length;
-      // if (newCount !== previousCount && !this.isRefreshing) {
-      //   this.triggerFlash();
-      // }
+      this.onlineCount = this.onlineMachines.length;
+      this.offlineCount = this.brokenMachines.length;
+      this.totalCount = machines.length;
+      this.ownerGroups = this.buildOwnerGroups(machines);
 
     } catch (err) {
       console.error('Load error:', err);
       this.onlineMachines = [];
       this.brokenMachines = [];
+      this.ownerGroups = [];
+      this.totalCount = 0;
+      this.onlineCount = 0;
+      this.offlineCount = 0;
     }
   }
 
-
+  private buildOwnerGroups(machines: MachineData[]): OwnerGroup[] {
+    const map = new Map<string, OwnerGroup>();
+    for (const m of machines) {
+      const key = m.owner || 'Unknown';
+      let g = map.get(key);
+      if (!g) {
+        g = {
+          owner: key,
+          machines: [],
+          onlineCount: 0,
+          offlineCount: 0,
+          lastOnline: null,
+          expanded: this.expandedOwners.has(key),
+        };
+        map.set(key, g);
+      }
+      g.machines.push(m);
+      if (m.status === 'Online') g.onlineCount += 1;
+      else g.offlineCount += 1;
+      if (m.lastOnline) {
+        if (!g.lastOnline || new Date(m.lastOnline) > new Date(g.lastOnline)) {
+          g.lastOnline = m.lastOnline;
+        }
+      }
+    }
+    for (const g of map.values()) {
+      g.machines.sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'Online' ? -1 : 1;
+        return a.machineId.localeCompare(b.machineId);
+      });
+    }
+    return [...map.values()].sort((a, b) => {
+      if (b.onlineCount !== a.onlineCount) return b.onlineCount - a.onlineCount;
+      return a.owner.localeCompare(b.owner);
+    });
+  }
 
   async openPickLocation(machine: MachineData) {
     if (!machine || machine.savingLocation) return;
@@ -313,7 +401,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     }
   }
 
-
   async clearLogTemp() {
     try {
       const token = localStorage.getItem('token');
@@ -324,13 +411,11 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       }).catch(err => {
         this.apiService.alertError(err);
       });
-
     } catch (error) {
       console.error('Error clearLogTemp:', error);
       alert(`Error clearLogTemp: ${error.message}`);
     }
   }
-
 
   async clearClientLogs() {
     try {
@@ -342,13 +427,11 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       }).catch(err => {
         this.apiService.alertError(err);
       });
-
     } catch (error) {
       console.error('Error clearLogTemp:', error);
       alert(`Error clearLogTemp: ${error.message}`);
     }
   }
-
 
   async clearCallbackLogs() {
     try {
@@ -360,7 +443,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       }).catch(err => {
         this.apiService.alertError(err);
       });
-
     } catch (error) {
       console.error('Error clearLogTemp:', error);
       alert(`Error clearLogTemp: ${error.message}`);
@@ -401,8 +483,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       .then((modal) => modal.present());
   }
 
-
-
   showClientLog(machineId: string) {
     this.apiService.modal
       .create({
@@ -413,7 +493,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       })
       .then((modal) => modal.present());
   }
-
 
   showCallbackLogs() {
     this.apiService.modal
@@ -437,9 +516,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       .then((modal) => modal.present());
   }
 
-
   showBilling(machineId: string, phoneNumber: string, ownerPhone: string) {
-    console.log('machineId :', machineId);
     localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
     localStorage.setItem('phoneMmoney', ownerPhone.slice(-8));
 
@@ -454,90 +531,36 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   }
 
   showBillNotPaid(machineId: string, otp: string, ownerUuid: any) {
-    // console.log('machineId :', machineId);
-    // localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
-    // this.apiService.modal
-    //   .create({
-    //     component: BillingPage,
-    //     componentProps: { machineId: machineId },
-    //     cssClass: 'custom-modal-full',
-    //     backdropDismiss: true,
-    //   })
-    //   .then((modal) => modal.present());
-    // console.log('-----> phoneNumber :', JSON.stringify(ownerUuid));
-
-    // console.log('-----> OnlineMachine :', this.onlineMachines);
-
-
-
     this.apiService.showModal(BillnotPaidPage, { machineId: machineId, otp: otp, ownerUuid: ownerUuid }).then(r => {
       r.present();
-      r.onDidDismiss().then(() => {
-
-      });
-    })
+      r.onDidDismiss().then(() => { });
+    });
   }
 
   showReportSale(machineId: string, otp: string) {
-    // console.log('machineId :', machineId);
-    // localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
-    // this.apiService.modal
-    //   .create({
-    //     component: BillingPage,
-    //     componentProps: { machineId: machineId },
-    //     cssClass: 'custom-modal-full',
-    //     backdropDismiss: true,
-    //   })
-    //   .then((modal) => modal.present());
-
-    const props = {
-      machineId: machineId,
-      otp: otp
-    }
+    const props = { machineId: machineId, otp: otp };
     this.apiService.showModal(SaleReportPage, props).then(r => {
       r.present();
     });
   }
 
   showReportStock(machineId: string, otp: string) {
-    const props = {
-      machineId: machineId,
-      otp: otp
-    }
+    const props = { machineId: machineId, otp: otp };
     this.apiService.showModal(StockReportPage, props).then(r => {
       r.present();
     });
   }
 
   manage(phoneNumber: string, i: number = 1) {
-    console.log('Manage action for owner:', phoneNumber, phoneNumber.slice(-8));
     localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
     this.apiService.router.navigate(['/tabs/tab1']);
-    // const pages = [
-    //   null,
-    //   MyaccountPage,
-    //   MachinePage,
-    //   ProductsPage,
-    //   SalePage,
-    //   EpinAdminPage,
-    //   FindMyEpinPage,
-    //   AdvertisementPage,
-    //   VersionControlPage,
-    //   ImagesproductPage,
-    // ];
-
-    // if (pages[i]) {
-    //   this.apiService.showModal(pages[i], {}).then((r) => r?.present());
-    // }
   }
 
-  // Flash effect
   triggerFlash() {
     this.flashClass = 'flash';
     setTimeout(() => this.flashClass = '', 600);
   }
 
-  // Smooth scroll to top
   scrollToTop() {
     this.content?.scrollToTop(300);
   }
@@ -554,32 +577,28 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   async openPaidOrdersModal() {
     const modal = await this.modalCtrl.create({
       component: PaidOrdersModalComponent,
-      cssClass: 'full-screen-modal',     // ← Important
+      cssClass: 'full-screen-modal',
       backdropDismiss: true,
       showBackdrop: true,
-      breakpoints: [0.95],              // Makes it almost full screen (95%)
+      breakpoints: [0.95],
       initialBreakpoint: 0.95,
-      handle: false,                    // Hide the drag handle
+      handle: false,
     });
-
     await modal.present();
   }
-
 
   async openConfigMachine() {
     const modal = await this.modalCtrl.create({
       component: SettingConfigPage,
-      cssClass: 'full-screen-modal',     // ← Important
+      cssClass: 'full-screen-modal',
       backdropDismiss: true,
       showBackdrop: true,
-      breakpoints: [0.95],              // Makes it almost full screen (95%)
+      breakpoints: [0.95],
       initialBreakpoint: 0.95,
-      handle: false,                    // Hide the drag handle
+      handle: false,
     });
-
     await modal.present();
   }
-
 
   openMachineMap() {
     this.apiService.router.navigate(['/machine-map']);
@@ -588,14 +607,13 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   async openCompareExecl() {
     const modal = await this.modalCtrl.create({
       component: CompareExcelPage,
-      cssClass: 'full-screen-modal',     // ← Important
+      cssClass: 'full-screen-modal',
       backdropDismiss: true,
       showBackdrop: true,
-      breakpoints: [0.95],              // Makes it almost full screen (95%)
+      breakpoints: [0.95],
       initialBreakpoint: 0.95,
-      handle: false,                    // Hide the drag handle
+      handle: false,
     });
-
     await modal.present();
   }
 
@@ -603,14 +621,13 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     const modal = await this.modalCtrl.create({
       component: TicketListPage,
       componentProps: { machineId },
-      cssClass: 'full-screen-modal',     // ← Important
+      cssClass: 'full-screen-modal',
       backdropDismiss: true,
       showBackdrop: true,
-      breakpoints: [0.95],              // Makes it almost full screen (95%)
+      breakpoints: [0.95],
       initialBreakpoint: 0.95,
-      handle: false,                    // Hide the drag handle
+      handle: false,
     });
-
     await modal.present();
   }
 }

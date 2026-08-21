@@ -26,401 +26,302 @@
         <ion-icon slot="icon-only" name="qr-code"></ion-icon>
       </ion-button>
     </ion-buttons>
-
   </ion-toolbar>
 </ion-header>
 
-<ion-content #content [ngClass]="flashClass"> <!-- Online Machines Section -->
-  <ion-grid>
-    <div class="flash-overlay" [ngClass]="flashClass"></div>
-    <ion-row>
-      <ion-col size="12">
-        <ion-text color="success">
-          <h2>
-            <ion-icon name="wifi"></ion-icon>
-            Online Machines ({{ onlineMachines.length }})
-          </h2>
-        </ion-text>
-      </ion-col>
-    </ion-row>
-    <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
-        *ngFor="let machine of onlineMachines; trackBy: trackByMachine">
-        <ion-card class="machine-card"
-          [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon name="cube-outline"></ion-icon>
-              <span *ngIf="machine.showSecrets && showAllSecrets">{{ machine.machineId }}</span>
-              <span *ngIf="!machine.showSecrets || !showAllSecrets">****</span>
-              <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
-              <ion-button fill="clear" size="small" (click)="toggleMachineSecrets(machine)">
-                <ion-icon slot="icon-only"
-                  [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-              </ion-button>
-            </ion-card-title>
-            <div class="machine-location-block" [class.has-location]="!!machine.location || !!machine.shopPhone || machine.latitude !== '' || machine.longitude !== ''">
-              <div class="machine-location">
-                <ion-icon name="location"></ion-icon>
-                <ion-input
-                  class="location-input"
-                  type="text"
-                  placeholder="ປ້ອນທີ່ຕັ້ງຕູ້"
-                  [(ngModel)]="machine.location"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-                <ion-button
-                  size="small"
-                  fill="solid"
-                  color="warning"
-                  [disabled]="machine.savingLocation"
-                  (click)="updateLocation(machine)">
-                  <ion-icon slot="icon-only" [name]="machine.savingLocation ? 'hourglass-outline' : 'save-outline'"></ion-icon>
-                </ion-button>
-              </div>
-              <div class="machine-location machine-shop-phone">
-                <ion-icon name="call"></ion-icon>
-                <ion-input
-                  class="location-input"
-                  type="tel"
-                  inputmode="tel"
-                  placeholder="ປ້ອນເບີໂທຮ້ານ (shopPhone)"
-                  [(ngModel)]="machine.shopPhone"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-              </div>
-              <div class="machine-coords">
-                <ion-input
-                  class="coord-input"
-                  type="number"
-                  inputmode="decimal"
-                  placeholder="Latitude"
-                  [(ngModel)]="machine.latitude"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-                <ion-input
-                  class="coord-input"
-                  type="number"
-                  inputmode="decimal"
-                  placeholder="Longitude"
-                  [(ngModel)]="machine.longitude"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-                <ion-button
-                  size="small"
-                  fill="solid"
-                  color="tertiary"
-                  [disabled]="machine.savingLocation"
-                  (click)="openPickLocation(machine)"
-                  title="เลือกพิกัดบนแผนที่ดาวเทียม">
-                  <ion-icon slot="icon-only" name="map-outline"></ion-icon>
-                </ion-button>
-              </div>
-            </div>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list lines="none">
-              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
-                <ion-icon name="person-outline" slot="start"></ion-icon>
-                <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
-              </ion-item>
-              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
-                <ion-icon name="key-outline" slot="start"></ion-icon>
-                <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="thermometer-outline" slot="start"></ion-icon>
-                <ion-label>
-                  <strong>Temperature:</strong>
-                  <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
-                </ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="wifi-outline" slot="start"></ion-icon>
-                <ion-label><strong>Status:</strong> {{ machine.status }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="code-outline" slot="start"></ion-icon>
-                <ion-label><strong>Version:</strong> {{ machine.versionId }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
-                <ion-label><strong>Device:</strong> {{ machine.device }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>Data:</strong> {{ machine.data }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>ວັນທີສ້າງ:</strong> {{machine.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}
-                </ion-label>
-              </ion-item>
-            </ion-list>
-            <ion-grid class="button-grid">
-              <ion-row>
-                <ion-col size="4">
-                  <ion-button expand="block" color="primary" (click)="showTickets(machine.machineId)">
-                    <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
-                    Show Tickets
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="danger" (click)="exitApp(machine.machineId)">
-                    <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
-                    Exit
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="warning" (click)="refreshMachine(machine.machineId)">
-                    <ion-icon slot="start" name="sync-circle-outline"></ion-icon>
-                    Refresh
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
-                    <ion-icon slot="start" name="thermometer-outline"></ion-icon>
-                    Logs
-                  </ion-button>
-                </ion-col>
+<ion-content #content [ngClass]="flashClass">
+  <div class="flash-overlay" [ngClass]="flashClass"></div>
 
-                <ion-col size="4">
-                  <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
-                    <ion-icon slot="start" name="thermometer-outline"></ion-icon>
-                    Client Logs
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="primary" (click)="manage(machine.imei, 1)">
-                    <ion-icon slot="start" name="laptop-outline"></ion-icon>
-                    My Account
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
-                    <ion-icon slot="start" name="settings-outline"></ion-icon>
-                    Settings
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="tertiary"
-                    (click)="showBilling(machine.machineId,machine.imei,machine.owner)">
-                    <ion-icon slot="start" name="bill"></ion-icon>
-                    Billing
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="tertiary"
-                    (click)="showBillNotPaid(machine.machineId,machine.otp,machine.ownerUuid)">
-                    <ion-icon slot="start" name="bill"></ion-icon>
-                    ບິນບໍ່ທັນຈ່າຍ
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="tertiary" (click)="showReportSale(machine.machineId,machine.otp)">
-                    <ion-icon slot="start" name="bill"></ion-icon>
-                    ລາຍງານການຂາຍ
-                  </ion-button>
-                </ion-col>
-                <ion-col size="4">
-                  <ion-button expand="block" color="tertiary" (click)="showReportStock(machine.machineId,machine.otp)">
-                    <ion-icon slot="start" name="bill"></ion-icon>
-                    ລາຍງານ stock
-                  </ion-button>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
-          </ion-card-content>
-        </ion-card>
+  <!-- Fleet totals -->
+  <ion-grid class="stats-grid">
+    <ion-row>
+      <ion-col size="4">
+        <div class="stat-card">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ totalCount }}</span>
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="stat-card stat-online">
+          <span class="stat-label">Online</span>
+          <span class="stat-value">{{ onlineCount }}</span>
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="stat-card stat-offline">
+          <span class="stat-label">Offline</span>
+          <span class="stat-value">{{ offlineCount }}</span>
+        </div>
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <!-- Broken Machines Section -->
-  <ion-grid class="ion-margin-top">
-    <ion-row>
+  <div class="view-toggle">
+    <ion-segment [value]="viewMode" (ionChange)="setViewMode($event)">
+      <ion-segment-button value="owners">
+        <ion-label>By owner</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cards">
+        <ion-label>Machines</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </div>
+
+  <!-- Owner groups -->
+  <ion-grid *ngIf="viewMode === 'owners'">
+    <ion-row *ngIf="ownerGroups.length === 0">
       <ion-col size="12">
-        <ion-text color="danger">
-          <h2>
-            <ion-icon name="alert-circle"></ion-icon>
-            Offline / Broken ({{ brokenMachines.length }})
-          </h2>
-        </ion-text>
+        <p class="empty-hint">No machines loaded.</p>
       </ion-col>
     </ion-row>
-    <ion-row class="machine-row">
-      <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
-        *ngFor="let machine of brokenMachines; trackBy: trackByMachine">
-        <ion-card class="machine-card"
-          [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
-          <ion-card-header>
-            <ion-card-title>
-              <ion-icon name="cube-outline"></ion-icon>
-              <span *ngIf="machine.showSecrets && showAllSecrets">{{ machine.machineId }}</span>
-              <span *ngIf="!machine.showSecrets || !showAllSecrets">****</span>
-              <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
-              <ion-button fill="clear" size="small" (click)="toggleMachineSecrets(machine)">
-                <ion-icon slot="icon-only"
-                  [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-              </ion-button>
-            </ion-card-title>
-            <div class="machine-location-block" [class.has-location]="!!machine.location || !!machine.shopPhone || machine.latitude !== '' || machine.longitude !== ''">
-              <div class="machine-location">
-                <ion-icon name="location"></ion-icon>
-                <ion-input
-                  class="location-input"
-                  type="text"
-                  placeholder="ປ້ອນທີ່ຕັ້ງຕູ້"
-                  [(ngModel)]="machine.location"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-                <ion-button
-                  size="small"
-                  fill="solid"
-                  color="warning"
-                  [disabled]="machine.savingLocation"
-                  (click)="updateLocation(machine)">
-                  <ion-icon slot="icon-only" [name]="machine.savingLocation ? 'hourglass-outline' : 'save-outline'"></ion-icon>
-                </ion-button>
-              </div>
-              <div class="machine-location machine-shop-phone">
-                <ion-icon name="call"></ion-icon>
-                <ion-input
-                  class="location-input"
-                  type="tel"
-                  inputmode="tel"
-                  placeholder="ປ້ອນເບີໂທຮ້ານ (shopPhone)"
-                  [(ngModel)]="machine.shopPhone"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-              </div>
-              <div class="machine-coords">
-                <ion-input
-                  class="coord-input"
-                  type="number"
-                  inputmode="decimal"
-                  placeholder="Latitude"
-                  [(ngModel)]="machine.latitude"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-                <ion-input
-                  class="coord-input"
-                  type="number"
-                  inputmode="decimal"
-                  placeholder="Longitude"
-                  [(ngModel)]="machine.longitude"
-                  [disabled]="machine.savingLocation">
-                </ion-input>
-                <ion-button
-                  size="small"
-                  fill="solid"
-                  color="tertiary"
-                  [disabled]="machine.savingLocation"
-                  (click)="openPickLocation(machine)"
-                  title="เลือกพิกัดบนแผนที่ดาวเทียม">
-                  <ion-icon slot="icon-only" name="map-outline"></ion-icon>
-                </ion-button>
-              </div>
+
+    <ion-row *ngFor="let group of ownerGroups; trackBy: trackByOwner">
+      <ion-col size="12">
+        <button type="button" class="owner-row" (click)="toggleOwner(group.owner)" [attr.aria-expanded]="group.expanded">
+          <div class="owner-row-main">
+            <ion-icon name="call-outline"></ion-icon>
+            <div class="owner-id">
+              <strong *ngIf="showAllSecrets">{{ group.owner }}</strong>
+              <strong *ngIf="!showAllSecrets">•••• ••••</strong>
+              <span class="owner-count">{{ group.machines.length }} machines</span>
             </div>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-list lines="none">
-              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
-                <ion-icon name="person-outline" slot="start"></ion-icon>
-                <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
-              </ion-item>
-              <ion-item *ngIf="machine.showSecrets && showAllSecrets">
-                <ion-icon name="key-outline" slot="start"></ion-icon>
-                <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="thermometer-outline" slot="start"></ion-icon>
-                <ion-label>
-                  <strong>Temperature:</strong>
-                  <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
-                </ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="warning-outline" slot="start"></ion-icon>
-                <ion-label><strong>Status:</strong> <span class="offline">{{ machine.status }}</span></ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="code-outline" slot="start"></ion-icon>
-                <ion-label><strong>Version:</strong> {{ machine.versionId }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
-                <ion-label><strong>Device:</strong> {{ machine.device }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>Data:</strong> {{ machine.data }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon name="document-text-outline" slot="start"></ion-icon>
-                <ion-label><strong>ວັນທີສ້າງ:</strong> {{ machine.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7'
-                  }}</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
-                  <ion-icon slot="start" name="thermometer-outline"></ion-icon>
-                  Logs
-                </ion-button>
-              </ion-item>
-              <ion-item>
-                <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
-                  <ion-icon slot="start" name="thermometer-outline"></ion-icon>
-                  Client Logs
-                </ion-button>
-              </ion-item>
-              <ion-item>
-                <ion-button expand="block" color="primary" (click)="manage(machine.imei, 1)">
-                  <ion-icon slot="start" name="laptop-outline"></ion-icon>
-                  My Account
-                </ion-button>
-              </ion-item>
-              <ion-item>
-                <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
-                  <ion-icon slot="start" name="settings-outline"></ion-icon>
-                  Settings
-                </ion-button>
-              </ion-item>
-              <ion-col size="4">
-                <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
-                  <ion-icon slot="start" name="thermometer-outline"></ion-icon>
-                  Client Logs
-                </ion-button>
-              </ion-col>
-              <ion-col size="4">
-                <ion-button expand="block" color="tertiary"
-                  (click)="showBilling(machine.machineId,machine.imei,machine.owner)">
-                  <ion-icon slot="start" name="bill"></ion-icon>
-                  Billing
-                </ion-button>
-              </ion-col>
-              <ion-col size="4">
-                <ion-button expand="block" color="tertiary"
-                  (click)="showBillNotPaid(machine.machineId,machine.otp,machine.ownerUuid)">
-                  <ion-icon slot="start" name="bill"></ion-icon>
-                  ບິນບໍ່ທັນຈ່າຍ
-                </ion-button>
-              </ion-col>
-              <ion-col size="4">
-                <ion-button expand="block" color="tertiary" (click)="showReportSale(machine.machineId,machine.otp)">
-                  <ion-icon slot="start" name="bill"></ion-icon>
-                  ລາຍງານການຂາຍ
-                </ion-button>
-              </ion-col>
-              <ion-col size="4">
-                <ion-button expand="block" color="tertiary" (click)="showReportStock(machine.machineId,machine.otp)">
-                  <ion-icon slot="start" name="bill"></ion-icon>
-                  ລາຍງານ stock
-                </ion-button>
-              </ion-col>
-            </ion-list>
-          </ion-card-content>
-        </ion-card>
+          </div>
+          <div class="owner-counts">
+            <span class="count-pill online">{{ group.onlineCount }} online</span>
+            <span class="count-pill offline">{{ group.offlineCount }} offline</span>
+          </div>
+          <div class="last-online-slot last-online-slot--compact">
+            <span class="last-online-label">Last online</span>
+            <span class="last-online-value" *ngIf="group.lastOnline">
+              {{ group.lastOnline | date: 'yyyy-MM-dd HH:mm':'+7' }}
+            </span>
+            <span class="last-online-value is-empty" *ngIf="!group.lastOnline">—</span>
+          </div>
+          <ion-icon class="owner-chevron" [name]="group.expanded ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+        </button>
+
+        <ion-row class="machine-row" *ngIf="group.expanded">
+          <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
+            *ngFor="let machine of group.machines; trackBy: trackByMachine">
+            <ng-container *ngTemplateOutlet="machineCard; context: { machine: machine }"></ng-container>
+          </ion-col>
+        </ion-row>
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <!-- Original card mode -->
+  <ng-container *ngIf="viewMode === 'cards'">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12">
+          <ion-text color="success">
+            <h2>
+              <ion-icon name="wifi"></ion-icon>
+              Online Machines ({{ onlineMachines.length }})
+            </h2>
+          </ion-text>
+        </ion-col>
+      </ion-row>
+      <ion-row class="machine-row">
+        <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
+          *ngFor="let machine of onlineMachines; trackBy: trackByMachine">
+          <ng-container *ngTemplateOutlet="machineCard; context: { machine: machine }"></ng-container>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-grid class="ion-margin-top">
+      <ion-row>
+        <ion-col size="12">
+          <ion-text color="danger">
+            <h2>
+              <ion-icon name="alert-circle"></ion-icon>
+              Offline / Broken ({{ brokenMachines.length }})
+            </h2>
+          </ion-text>
+        </ion-col>
+      </ion-row>
+      <ion-row class="machine-row">
+        <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
+          *ngFor="let machine of brokenMachines; trackBy: trackByMachine">
+          <ng-container *ngTemplateOutlet="machineCard; context: { machine: machine }"></ng-container>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ng-container>
 </ion-content>
+
+<!-- Shared machine card (used by both views) -->
+<ng-template #machineCard let-machine="machine">
+  <ion-card class="machine-card"
+    [ngClass]="{'online-card': machine.status === 'Online', 'broken-card': machine.status === 'Broken'}">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="cube-outline"></ion-icon>
+        <span *ngIf="machine.showSecrets && showAllSecrets">{{ machine.machineId }}</span>
+        <span *ngIf="!machine.showSecrets || !showAllSecrets">****</span>
+        <ion-badge color="medium" *ngIf="machine.lastUpdate">{{ machine.lastUpdate | date:'short' }}</ion-badge>
+        <ion-button fill="clear" size="small" (click)="toggleMachineSecrets(machine)">
+          <ion-icon slot="icon-only"
+            [name]="machine.showSecrets && showAllSecrets ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        </ion-button>
+      </ion-card-title>
+
+      <!-- Reserved last-online slot: always rendered, even when API has no timestamp yet -->
+      <div class="last-online-slot">
+        <span class="last-online-label">Last online</span>
+        <span class="last-online-value" *ngIf="machine.lastOnline">
+          {{ machine.lastOnline | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}
+        </span>
+        <span class="last-online-value is-empty" *ngIf="!machine.lastOnline">—</span>
+      </div>
+
+      <div class="machine-location-block"
+        [class.has-location]="!!machine.location || !!machine.shopPhone || machine.latitude !== '' || machine.longitude !== ''">
+        <div class="machine-location">
+          <ion-icon name="location"></ion-icon>
+          <ion-input class="location-input" type="text" placeholder="ປ້ອນທີ່ຕັ້ງຕູ້"
+            [(ngModel)]="machine.location" [disabled]="machine.savingLocation">
+          </ion-input>
+          <ion-button size="small" fill="solid" color="warning" [disabled]="machine.savingLocation"
+            (click)="updateLocation(machine)">
+            <ion-icon slot="icon-only" [name]="machine.savingLocation ? 'hourglass-outline' : 'save-outline'"></ion-icon>
+          </ion-button>
+        </div>
+        <div class="machine-location machine-shop-phone">
+          <ion-icon name="call"></ion-icon>
+          <ion-input class="location-input" type="tel" inputmode="tel" placeholder="ປ້ອນເບີໂທຮ້ານ (shopPhone)"
+            [(ngModel)]="machine.shopPhone" [disabled]="machine.savingLocation">
+          </ion-input>
+        </div>
+        <div class="machine-coords">
+          <ion-input class="coord-input" type="number" inputmode="decimal" placeholder="Latitude"
+            [(ngModel)]="machine.latitude" [disabled]="machine.savingLocation">
+          </ion-input>
+          <ion-input class="coord-input" type="number" inputmode="decimal" placeholder="Longitude"
+            [(ngModel)]="machine.longitude" [disabled]="machine.savingLocation">
+          </ion-input>
+          <ion-button size="small" fill="solid" color="tertiary" [disabled]="machine.savingLocation"
+            (click)="openPickLocation(machine)" title="เลือกพิกัดบนแผนที่ดาวเทียม">
+            <ion-icon slot="icon-only" name="map-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item *ngIf="machine.showSecrets && showAllSecrets">
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-label><strong>Owner Phone:</strong> {{ machine.owner }}</ion-label>
+        </ion-item>
+        <ion-item *ngIf="machine.showSecrets && showAllSecrets">
+          <ion-icon name="key-outline" slot="start"></ion-icon>
+          <ion-label><strong>OTP:</strong> {{ machine.otp }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="thermometer-outline" slot="start"></ion-icon>
+          <ion-label>
+            <strong>Temperature:</strong>
+            <span [ngClass]="{'warning': !machine.temperature}">{{ machine.temperature || 'N/A' }} °C</span>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon [name]="machine.status === 'Online' ? 'wifi-outline' : 'warning-outline'" slot="start"></ion-icon>
+          <ion-label>
+            <strong>Status:</strong>
+            <span [class.offline]="machine.status === 'Broken'">{{ machine.status }}</span>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="code-outline" slot="start"></ion-icon>
+          <ion-label><strong>Version:</strong> {{ machine.versionId }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
+          <ion-label><strong>Device:</strong> {{ machine.device }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="document-text-outline" slot="start"></ion-icon>
+          <ion-label><strong>Data:</strong> {{ machine.data }}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="document-text-outline" slot="start"></ion-icon>
+          <ion-label><strong>ວັນທີສ້າງ:</strong> {{ machine.createdAt | date: 'yyyy-MM-dd HH:mm:ss':'+7' }}</ion-label>
+        </ion-item>
+      </ion-list>
+      <ion-grid class="button-grid">
+        <ion-row>
+          <ion-col size="4">
+            <ion-button expand="block" color="primary" (click)="showTickets(machine.machineId)">
+              <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
+              Show Tickets
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="danger" (click)="exitApp(machine.machineId)">
+              <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
+              Exit
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="warning" (click)="refreshMachine(machine.machineId)">
+              <ion-icon slot="start" name="sync-circle-outline"></ion-icon>
+              Refresh
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
+              <ion-icon slot="start" name="thermometer-outline"></ion-icon>
+              Logs
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
+              <ion-icon slot="start" name="thermometer-outline"></ion-icon>
+              Client Logs
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="primary" (click)="manage(machine.imei, 1)">
+              <ion-icon slot="start" name="laptop-outline"></ion-icon>
+              My Account
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
+              <ion-icon slot="start" name="settings-outline"></ion-icon>
+              Settings
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="tertiary"
+              (click)="showBilling(machine.machineId,machine.imei,machine.owner)">
+              <ion-icon slot="start" name="bill"></ion-icon>
+              Billing
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="tertiary"
+              (click)="showBillNotPaid(machine.machineId,machine.otp,machine.ownerUuid)">
+              <ion-icon slot="start" name="bill"></ion-icon>
+              ບິນບໍ່ທັນຈ່າຍ
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="tertiary" (click)="showReportSale(machine.machineId,machine.otp)">
+              <ion-icon slot="start" name="bill"></ion-icon>
+              ລາຍງານການຂາຍ
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="tertiary" (click)="showReportStock(machine.machineId,machine.otp)">
+              <ion-icon slot="start" name="bill"></ion-icon>
+              ລາຍງານ stock
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+</ng-template>
