@@ -81,7 +81,7 @@
           <div class="owner-row-main">
             <ion-icon name="call-outline"></ion-icon>
             <div class="owner-id">
-              <strong *ngIf="showAllSecrets">{{ group.owner }}</strong>
+              <strong *ngIf="showAllSecrets">{{ group.owner +' == '+group.location}}</strong>
               <strong *ngIf="!showAllSecrets">•••• ••••</strong>
               <span class="owner-count">{{ group.machines.length }} machines</span>
             </div>

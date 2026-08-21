@@ -51,6 +51,7 @@ interface MachineData {
 
 interface OwnerGroup {
   owner: string;
+  location:string;
   machines: MachineData[];
   onlineCount: number;
   offlineCount: number;
@@ -269,6 +270,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       if (!g) {
         g = {
           owner: key,
+          location:m.location,
           machines: [],
           onlineCount: 0,
           offlineCount: 0,
