@@ -1634,3 +1634,144 @@ export enum EEntity {
     machineclientid = "machineclientid"
 }
 
+
+
+
+
+
+
+
+
+export interface MapMachine {
+  machineId: string;
+  location: string;
+  shopPhone: string;
+  latitude: number;
+  longitude: number;
+  status: 'Online' | 'Broken' | 'Unknown';
+  owner: string;
+  qtyToday: number;
+  amountToday: number;
+  qtyMonth: number;
+  amountMonth: number;
+  /** ISO time of last live order (sales_update) for this machine */
+  lastOrderAt?: string;
+}
+
+export interface LatestOrderFlash {
+  machineId: string;
+  location: string;
+  qtyToday: number;
+  amountToday: number;
+  at: string;
+}
+
+export interface SaleOrderLine {
+  stockId?: string | number;
+  name: string;
+  qty: number;
+  price: number;
+  total: number;
+  position?: number | string;
+  dropAt?: string;
+}
+
+export interface SaleOrderBill {
+  id?: number | string;
+  createdAt: string;
+  paymentstatus: string;
+  totalvalue: number;
+  transactionID?: string;
+  lines: SaleOrderLine[];
+  lineQty: number;
+}
+
+export interface TopSaleProduct {
+  rank: number;
+  name: string;
+  qty: number;
+  amount: number;
+  price: number;
+}
+
+export interface PatternBucket {
+  key: string;
+  label: string;
+  qty: number;
+  amount: number;
+  orderCount: number;
+}
+
+export interface ProductPurchasePattern {
+  name: string;
+  qty: number;
+  amount: number;
+  bestDay: string;
+  bestDayQty: number;
+  bestSlot: string;
+  bestSlotQty: number;
+  days: PatternBucket[];
+  slots: PatternBucket[];
+}
+
+export type InsightPeriodKey =
+  | 'today'
+  | 'yesterday'
+  | 'thisWeek'
+  | 'lastWeek'
+  | 'thisMonth'
+  | 'lastMonth';
+
+export interface InsightPeriod {
+  key: InsightPeriodKey;
+  label: string;
+  rangeLabel: string;
+  fromDate: string;
+  toDate: string;
+  loading: boolean;
+  error: string;
+  orderCount: number;
+  qty: number;
+  amount: number;
+  products: TopSaleProduct[];
+  topProducts: TopSaleProduct[];
+}
+
+export type MachineSortMode =
+  | 'amountDesc'
+  | 'amountAsc'
+  | 'qtyDesc'
+  | 'qtyAsc'
+  | 'nameAsc'
+  | 'nameDesc'
+  | 'onlineFirst';
+
+
+export type MachineListView = 'machine' | 'location' | 'owner';
+
+
+
+
+export const LIST_VIEW_STORAGE_KEY = 'machineMapListView';
+
+export interface SharedGroup {
+  location: string;
+  machines: MapMachine[];
+  qtyToday: number;
+  amountToday: number;
+  qtyMonth: number;
+  amountMonth: number;
+  onlineCount: number;
+}
+
+
+export interface MachineGroup {
+  key: string;
+  label: string;
+  machines: MapMachine[];
+  qtyToday: number;
+  amountToday: number;
+  qtyMonth: number;
+  amountMonth: number;
+  onlineCount: number;
+}
