@@ -3,122 +3,18 @@ import { Router } from '@angular/router';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
 import { registerables } from 'chart.js';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiService } from '../services/api.service';
 import { IonContent } from '@ionic/angular';
+import { InsightPeriod, MachineGroup, InsightPeriodKey, LatestOrderFlash, LIST_VIEW_STORAGE_KEY, SharedGroup, MachineListView, MachineSortMode, MapMachine, PatternBucket, ProductPurchasePattern, SaleOrderBill, SaleOrderLine, TopSaleProduct } from '../services/syste.model';
 
 declare const L: any;
 
 /** Wall-clock format after converting API UTC → Asia/Vientiane (+7). */
 const TZ7_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const TZ7_ZONE = 'Asia/Vientiane';
-
-interface MapMachine {
-  machineId: string;
-  location: string;
-  shopPhone: string;
-  latitude: number;
-  longitude: number;
-  status: 'Online' | 'Broken' | 'Unknown';
-  owner: string;
-  qtyToday: number;
-  amountToday: number;
-  qtyMonth: number;
-  amountMonth: number;
-  /** ISO time of last live order (sales_update) for this machine */
-  lastOrderAt?: string;
-}
-
-interface LatestOrderFlash {
-  machineId: string;
-  location: string;
-  qtyToday: number;
-  amountToday: number;
-  at: string;
-}
-
-interface SaleOrderLine {
-  stockId?: string | number;
-  name: string;
-  qty: number;
-  price: number;
-  total: number;
-  position?: number | string;
-  dropAt?: string;
-}
-
-interface SaleOrderBill {
-  id?: number | string;
-  createdAt: string;
-  paymentstatus: string;
-  totalvalue: number;
-  transactionID?: string;
-  lines: SaleOrderLine[];
-  lineQty: number;
-}
-
-interface TopSaleProduct {
-  rank: number;
-  name: string;
-  qty: number;
-  amount: number;
-  price: number;
-}
-
-interface PatternBucket {
-  key: string;
-  label: string;
-  qty: number;
-  amount: number;
-  orderCount: number;
-}
-
-interface ProductPurchasePattern {
-  name: string;
-  qty: number;
-  amount: number;
-  bestDay: string;
-  bestDayQty: number;
-  bestSlot: string;
-  bestSlotQty: number;
-  days: PatternBucket[];
-  slots: PatternBucket[];
-}
-
-type InsightPeriodKey =
-  | 'today'
-  | 'yesterday'
-  | 'thisWeek'
-  | 'lastWeek'
-  | 'thisMonth'
-  | 'lastMonth';
-
-interface InsightPeriod {
-  key: InsightPeriodKey;
-  label: string;
-  rangeLabel: string;
-  fromDate: string;
-  toDate: string;
-  loading: boolean;
-  error: string;
-  orderCount: number;
-  qty: number;
-  amount: number;
-  products: TopSaleProduct[];
-  topProducts: TopSaleProduct[];
-}
-
-type MachineSortMode =
-  | 'amountDesc'
-  | 'amountAsc'
-  | 'qtyDesc'
-  | 'qtyAsc'
-  | 'nameAsc'
-  | 'nameDesc'
-  | 'onlineFirst';
-
 const HIDDEN_STORAGE_KEY = 'machineMapHiddenIds';
 const SORT_STORAGE_KEY = 'machineMapSortMode';
 
@@ -130,7 +26,11 @@ Chart.register(...registerables);
 })
 export class MachineMapPage implements AfterViewInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) content!: IonContent;
-
+  readonly listViewOptions: Array<{ value: MachineListView; label: string }> = [
+    { value: 'machine', label: 'ຕາມຕູ້' },
+    { value: 'location', label: 'ຕາມທີ່ຕັ້ງ' },
+    { value: 'owner', label: 'ຕາມເຈົ້າຂອງ' },
+  ];
   private map: any;
   private markersLayer: any;
   private markersById = new Map<string, any>();
@@ -207,19 +107,19 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     title: string;
     action?: 'orders' | 'refresh';
   }> = [
-    { id: 's1', icon: 'stats-chart-outline', label: 'ພາບລວມ', title: 'ຂ້າມໄປຫົວຂໍ້ CEO Insight' },
-    { id: 's2', icon: 'flash-outline', label: 'LIVE', title: 'ຍອດຂາຍມື້ນີ້ (Real-time)' },
-    { id: 's-kpi', icon: 'grid-outline', label: 'KPI', title: 'ກາດສະຫຼຸບຕາມຊ່ວງເວລາ' },
-    { id: 's-top5', icon: 'trophy-outline', label: 'Top 5', title: 'Top 5 ສິນຄ້າຂາຍດີ' },
-    { id: 's3', icon: 'analytics-outline', label: 'ພຶດຕິກຳ', title: 'ພາບລວມພຶດຕິກຳການຊື້' },
-    { id: 's-slots', icon: 'time-outline', label: 'ຊ່ວງ', title: 'ຊ່ວງເວລາທີ່ຄົນຊື້' },
-    { id: 's-charts-pattern', icon: 'bar-chart-outline', label: 'ກຣາຟ', title: 'ກຣາຟມື້ / ຊົ່ວໂມງ' },
-    { id: 's4', icon: 'cube-outline', label: 'ສິນຄ້າ', title: 'ຕາຕະລາງສິນຄ້າ · ມື້/ເວລາ' },
-    { id: 's-charts', icon: 'pie-chart-outline', label: 'ສົມທຽບ', title: 'ກຣາຟສົມທຽບຊ່ວງເວລາ' },
-    { id: 's-periods', icon: 'list-outline', label: 'ລາຍລະອຽດ', title: 'ລາຍລະອຽດຕາມຊ່ວງເວລາ' },
-    { id: 'orders', icon: 'receipt-outline', label: 'Orders', title: 'ເປີດລາຍການ Orders', action: 'orders' },
-    { id: 'refresh', icon: 'refresh-outline', label: 'ຣີເຟຣຊ', title: 'ຣີເຟຣຊຂໍ້ມູນ Insight', action: 'refresh' },
-  ];
+      { id: 's1', icon: 'stats-chart-outline', label: 'ພາບລວມ', title: 'ຂ້າມໄປຫົວຂໍ້ CEO Insight' },
+      { id: 's2', icon: 'flash-outline', label: 'LIVE', title: 'ຍອດຂາຍມື້ນີ້ (Real-time)' },
+      { id: 's-kpi', icon: 'grid-outline', label: 'KPI', title: 'ກາດສະຫຼຸບຕາມຊ່ວງເວລາ' },
+      { id: 's-top5', icon: 'trophy-outline', label: 'Top 5', title: 'Top 5 ສິນຄ້າຂາຍດີ' },
+      { id: 's3', icon: 'analytics-outline', label: 'ພຶດຕິກຳ', title: 'ພາບລວມພຶດຕິກຳການຊື້' },
+      { id: 's-slots', icon: 'time-outline', label: 'ຊ່ວງ', title: 'ຊ່ວງເວລາທີ່ຄົນຊື້' },
+      { id: 's-charts-pattern', icon: 'bar-chart-outline', label: 'ກຣາຟ', title: 'ກຣາຟມື້ / ຊົ່ວໂມງ' },
+      { id: 's4', icon: 'cube-outline', label: 'ສິນຄ້າ', title: 'ຕາຕະລາງສິນຄ້າ · ມື້/ເວລາ' },
+      { id: 's-charts', icon: 'pie-chart-outline', label: 'ສົມທຽບ', title: 'ກຣາຟສົມທຽບຊ່ວງເວລາ' },
+      { id: 's-periods', icon: 'list-outline', label: 'ລາຍລະອຽດ', title: 'ລາຍລະອຽດຕາມຊ່ວງເວລາ' },
+      { id: 'orders', icon: 'receipt-outline', label: 'Orders', title: 'ເປີດລາຍການ Orders', action: 'orders' },
+      { id: 'refresh', icon: 'refresh-outline', label: 'ຣີເຟຣຊ', title: 'ຣີເຟຣຊຂໍ້ມູນ Insight', action: 'refresh' },
+    ];
   /** Top products in selected time slot (capped, cached — not a getter) */
   insightSlotProductRankings: Array<{
     name: string;
@@ -232,6 +132,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   private insightWeekdayChart: Chart | null = null;
   private insightHourChart: Chart | null = null;
   private insightLoadToken = 0;
+  listView: MachineListView = 'machine';
 
   constructor(
     private router: Router,
@@ -240,6 +141,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   ) {
     this.hiddenIds = this.loadHiddenIds();
     this.sortMode = this.loadSortMode();
+    this.listView = this.loadListView();
   }
 
   get filteredMachines(): MapMachine[] {
@@ -247,10 +149,12 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     const list = !q
       ? [...this.machines]
       : this.machines.filter(
-          (m) =>
-            m.machineId.toLowerCase().includes(q) ||
-            m.location.toLowerCase().includes(q),
-        );
+        (m) =>
+          m.machineId.toLowerCase().includes(q) ||
+          m.location.toLowerCase().includes(q) ||
+          (m.owner || '').toLowerCase().includes(q),
+
+      );
     return this.sortMachines(list);
   }
 
@@ -303,7 +207,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     const matches = this.machines.filter(
       (m) =>
         m.machineId.toLowerCase().includes(q) ||
-        (m.location || '').toLowerCase().includes(q),
+        (m.location || '').toLowerCase().includes(q)||
+        (m.owner || '').toLowerCase().includes(q),
     );
 
     if (!matches.length) {
@@ -1745,5 +1650,138 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+
+
+
+  /// BY: TOUYARA 30082026
+
+  onListViewChange() {
+    this.persistListView();
+  }
+  get sharedGroups(): SharedGroup[] {
+    const map = new Map<string, MapMachine[]>();
+    for (const m of this.filteredMachines) {
+      const loc = (m.location || '').trim() || 'ບໍ່ມີຊື່ທີ່ຕັ້ງ';
+      const arr = map.get(loc) || [];
+      arr.push(m);
+      map.set(loc, arr);
+    }
+
+    const groups: SharedGroup[] = Array.from(map.entries()).map(([location, machines]) => ({
+      location,
+      machines,
+      qtyToday: machines.reduce((s, x) => s + (Number(x.qtyToday) || 0), 0),
+      amountToday: machines.reduce((s, x) => s + (Number(x.amountToday) || 0), 0),
+      qtyMonth: machines.reduce((s, x) => s + (Number(x.qtyMonth) || 0), 0),
+      amountMonth: machines.reduce((s, x) => s + (Number(x.amountMonth) || 0), 0),
+      onlineCount: machines.filter((x) => x.status === 'Online').length,
+    }));
+
+    const byName = (a: SharedGroup, b: SharedGroup) =>
+      a.location.localeCompare(b.location, 'lo');
+
+    return groups.sort((a, b) => {
+      switch (this.sortMode) {
+        case 'amountAsc':
+          return a.amountToday - b.amountToday || byName(a, b);
+        case 'qtyDesc':
+          return b.qtyToday - a.qtyToday || byName(a, b);
+        case 'qtyAsc':
+          return a.qtyToday - b.qtyToday || byName(a, b);
+        case 'nameAsc':
+          return byName(a, b);
+        case 'nameDesc':
+          return byName(b, a);
+        case 'onlineFirst':
+          return (b.onlineCount - a.onlineCount) || (b.amountToday - a.amountToday) || byName(a, b);
+        case 'amountDesc':
+        default:
+          return b.amountToday - a.amountToday || byName(a, b);
+      }
+    });
+  }
+
+  focusLocationGroup(g: SharedGroup, event?: Event) {
+    const first = g.machines[0];
+    if (first) this.focusMachine(first, event);
+  }
+
+  trackByLocation(_i: number, g: SharedGroup): string {
+    return g.location;
+  }
+
+  trackByMachineId(_i: number, m: MapMachine): string {
+    return m.machineId;
+  }
+
+  private loadListView(): MachineListView {
+    try {
+      const raw = localStorage.getItem(LIST_VIEW_STORAGE_KEY);
+      if (raw === 'machine' || raw === 'location' || raw === 'owner') return raw;
+    } catch { /* ignore */ }
+    return 'machine';
+  }
+
+  private persistListView() {
+    localStorage.setItem(LIST_VIEW_STORAGE_KEY, this.listView);
+  }
+  z
+
+  /// BY: TOUYARA 30082026
+  private buildGroups(getKey: (m: MapMachine) => string): MachineGroup[] {
+    const map = new Map<string, MapMachine[]>();
+    for (const m of this.filteredMachines) {
+      const key = getKey(m);
+      const arr = map.get(key) || [];
+      arr.push(m);
+      map.set(key, arr);
+    }
+
+    const groups: MachineGroup[] = Array.from(map.entries()).map(([key, machines]) => ({
+      key,
+      label: key,
+      machines,
+      qtyToday: machines.reduce((s, x) => s + (Number(x.qtyToday) || 0), 0),
+      amountToday: machines.reduce((s, x) => s + (Number(x.amountToday) || 0), 0),
+      qtyMonth: machines.reduce((s, x) => s + (Number(x.qtyMonth) || 0), 0),
+      amountMonth: machines.reduce((s, x) => s + (Number(x.amountMonth) || 0), 0),
+      onlineCount: machines.filter((x) => x.status === 'Online').length,
+    }));
+
+    const byName = (a: MachineGroup, b: MachineGroup) => a.label.localeCompare(b.label, 'lo');
+
+    return groups.sort((a, b) => {
+      switch (this.sortMode) {
+        case 'amountAsc': return a.amountToday - b.amountToday || byName(a, b);
+        case 'qtyDesc': return b.qtyToday - a.qtyToday || byName(a, b);
+        case 'qtyAsc': return a.qtyToday - b.qtyToday || byName(a, b);
+        case 'nameAsc': return byName(a, b);
+        case 'nameDesc': return byName(b, a);
+        case 'onlineFirst':
+          return (b.onlineCount - a.onlineCount) || (b.amountToday - a.amountToday) || byName(a, b);
+        case 'amountDesc':
+        default:
+          return b.amountToday - a.amountToday || byName(a, b);
+      }
+    });
+  }
+
+  get locationGroups(): MachineGroup[] {
+    return this.buildGroups((m) => (m.location || '').trim() || 'ບໍ່ມີຊື່ທີ່ຕັ້ງ');
+  }
+
+  get ownerGroups(): MachineGroup[] {
+    return this.buildGroups((m) => (m.owner || '').trim() || 'Unknown');
+  }
+
+  focusGroup(g: MachineGroup, event?: Event) {
+    const first = g.machines[0];
+    if (first) this.focusMachine(first, event);
+  }
+
+  trackByGroupKey(_i: number, g: MachineGroup): string {
+    return g.key;
   }
 }
