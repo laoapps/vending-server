@@ -1,5 +1,4 @@
-<ion-content class="auto-payment-page">
-
+<ng-template #paymentBody>
   <div class="laab-card">
     <div class="laab-card-options">
       <div class="left"></div>
@@ -11,10 +10,11 @@
     </div>
 
     <div class="laab-card-body">
+      <div *ngIf="embedInTab" class="embed-orders-title">ສິນຄ້າທີ່ເລືອກ · Selected items</div>
 
       <div class="order-list">
 
-        <div (click)="close()" class="item-buymore">
+        <div *ngIf="!embedInTab" (click)="close()" class="item-buymore">
           <div class="icon">
             <!-- <i class="fa-solid fa-plus"></i> -->
             <ion-icon style="font-size:90px;color: white;" name="add"></ion-icon>
@@ -60,7 +60,7 @@
           </div>
           <!-- src/app/components/payment-message/payment-message.component.html -->
 
-          <div class="marquee-container">
+          <div *ngIf="!embedInTab" class="marquee-container">
             <!-- ซ้าย: GIF คงที่ -->
             <div class="marquee-left">
               <img src="../../../../assets/logo/Mee.gif" alt="payment-gif" />
@@ -170,17 +170,14 @@
                 <div class="qr-retry-count">ປິດໃນ {{ countdownQrRetry }} ວິນາທີ · ລອງແລ້ວ {{ qrRetryCount }} ຄັ້ງ</div>
               </button>
 
-              <div class="total">{{ parseGetTotalSale.t | number }}</div>
-              <div *ngIf="isPayment == false && !showQrRetry"
-                style="margin-top: 15px;font-size: 22px;margin-bottom: -10px;font-weight: bold;">
+              <div class="total">{{ parseGetTotalSale.t | number }} <span class="total-unit">LAK</span></div>
+              <div *ngIf="isPayment == false && !showQrRetry" class="qr-status">
                 ກຳລັງສ້າງ QR… {{ countdownQrGen }} ວິນາທີ
               </div>
-              <div *ngIf="isPayment == true && !showQrRetry"
-                style="margin-top: 15px;font-size: 25px;margin-bottom: -10px;font-weight: bold;">
-                ໜ້ານີ້ຈະປິດພາຍໃນ {{
-                countdownDestroy }} ວິນາທີ </div>
-              <div *ngIf="showQrRetry"
-                style="margin-top: 15px;font-size: 20px;margin-bottom: -10px;font-weight: bold;">
+              <div *ngIf="isPayment == true && !showQrRetry" class="qr-status">
+                ໜ້ານີ້ຈະປິດພາຍໃນ {{ countdownDestroy }} ວິນາທີ
+              </div>
+              <div *ngIf="showQrRetry" class="qr-status">
                 ກົດປຸ່ມເພື່ອລອງໃໝ່ ຫຼືປິດອັດຕະໂນມັດໃນ {{ countdownQrRetry }} ວິນາທີ
               </div>
             </div>
@@ -232,5 +229,11 @@
     </div>
 
   </div>
+</ng-template>
 
+<ion-content *ngIf="!embedInTab" class="auto-payment-page">
+  <ng-container *ngTemplateOutlet="paymentBody"></ng-container>
 </ion-content>
+<div *ngIf="embedInTab" class="auto-payment-page auto-payment-embedded">
+  <ng-container *ngTemplateOutlet="paymentBody"></ng-container>
+</div>

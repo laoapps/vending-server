@@ -509,6 +509,19 @@ ion-content {
                     font-size: 35px;
                     font-weight: bold;
                     padding-top: 15px;
+
+                    .total-unit {
+                        font-size: 16px;
+                        font-weight: 700;
+                        margin-left: 6px;
+                    }
+                }
+
+                .qr-status {
+                    margin-top: 15px;
+                    font-size: 22px;
+                    margin-bottom: -10px;
+                    font-weight: bold;
                 }
             }
             .bill-body {
@@ -686,5 +699,308 @@ ion-content {
     opacity: 0.9;
   }
 }
+
+.auto-payment-embedded {
+  position: relative;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+
+  .laab-card {
+    margin: 0;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 430px;
+    grid-template-rows: 196px minmax(0, 1fr);
+    gap: 14px;
+    padding: 18px;
+    overflow: hidden;
+    border-radius: 24px;
+    box-shadow: none;
+    background: linear-gradient(160deg, #ff6a5c 0%, #ee3124 42%, #c91812 100%);
+  }
+
+  .laab-card-options {
+    display: none;
+  }
+
+  .embed-orders-title {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  }
+
+  .laab-card-body {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: 0;
+
+    .order-list,
+    .order-list.fit,
+    .order-list.order-7,
+    .order-list.order-11,
+    .order-list.order-15,
+    .order-list.order-19,
+    .order-list.order-19-full {
+      display: flex;
+      grid-template-columns: none;
+      overflow-x: auto;
+      overflow-y: hidden;
+      min-height: 0;
+      max-height: none;
+      height: 160px;
+      margin-top: 0;
+      padding: 4px 2px 8px;
+      gap: 12px;
+
+      .item {
+        min-width: 138px;
+        max-width: 138px;
+        max-height: none;
+        height: 148px;
+        padding: 8px;
+        flex: 0 0 auto;
+        background: #fff;
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+
+        .content {
+          width: 100%;
+
+          .icon img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+          }
+
+          .detail {
+            margin-top: 2px;
+
+            .position {
+              font-size: 11px;
+              color: #8a8a8a;
+            }
+
+            .name {
+              font-size: 14px;
+              font-weight: 700;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 122px;
+            }
+
+            .price {
+              font-size: 15px;
+              font-weight: 800;
+              color: #ee3124;
+            }
+          }
+
+          .btn-epin {
+            margin-top: 4px;
+            height: 28px;
+            border-radius: 8px;
+
+            ion-icon {
+              font-size: 18px !important;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .laab-card-footer,
+  .laab-card-footer.active {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    height: auto !important;
+    min-height: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .laab-card-footer .payment-list {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) 400px;
+    grid-gap: 8px 18px;
+    margin: 16px;
+    height: calc(100% - 32px);
+    align-items: stretch;
+  }
+
+  .laab-card-footer .payment-list .payment-list-left {
+    grid-column: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px;
+
+    .title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      margin-bottom: 14px;
+      color: #1f1f1f;
+    }
+
+    .item-list {
+      display: flex;
+      flex-wrap: wrap;
+      grid-template-columns: none;
+      gap: 14px;
+
+      .item {
+        width: 132px;
+        min-height: 140px;
+        background: #f6f7f9;
+        border-radius: 16px;
+        padding: 12px 8px 10px;
+        box-shadow: none;
+        border: 1px solid #ececec;
+
+        .icon img {
+          width: 76px;
+          height: 76px;
+          border-radius: 14px;
+          background: #fff;
+        }
+
+        .text {
+          font-size: 16px;
+          font-weight: 800;
+          padding-top: 8px;
+          color: #222;
+        }
+      }
+
+      .item.active .icon img {
+        background: #fff;
+      }
+    }
+
+    .marquee-container {
+      margin-top: auto;
+      max-height: 64px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+  }
+
+  .laab-card-footer .payment-list .payment-list-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .laab-card-footer .payment-list .payment-list-right .bill-container {
+    height: 100%;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 18px;
+    padding: 12px 12px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(180deg, #ee3124 0%, #d21d16 100%);
+
+    .bill-header {
+      margin-top: 0;
+      flex: 1;
+      justify-content: center;
+
+      .qr-img {
+        width: 340px;
+        height: 340px;
+        max-width: 100%;
+        background: #fff;
+        padding: 18px;
+        border-radius: 16px;
+        object-fit: contain;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+      }
+
+      .loader {
+        width: 84px;
+        height: 84px;
+        margin: 40px auto;
+      }
+
+      .qr-retry-btn {
+        width: 320px;
+        max-width: 100%;
+        min-height: 160px;
+      }
+
+      .total {
+        font-size: 34px;
+        font-weight: 800;
+        padding-top: 10px;
+        letter-spacing: 0.02em;
+        color: #fff;
+
+        .total-unit {
+          font-size: 15px;
+          font-weight: 700;
+          opacity: 0.9;
+          margin-left: 6px;
+        }
+      }
+
+      .qr-status {
+        margin-top: 6px !important;
+        margin-bottom: 0 !important;
+        font-size: 18px !important;
+        font-weight: 700;
+        color: #fff;
+      }
+    }
+
+    .bill-body {
+      margin-top: 4px;
+
+      .group {
+        height: 30px;
+        font-size: 15px;
+      }
+    }
+
+    .bill-footer {
+      position: relative;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      margin-top: 4px;
+
+      .text {
+        font-size: 13px;
+      }
+    }
+
+    .bill-wave-top,
+    .bill-wave-bottom {
+      display: none;
+    }
+  }
+}
+
 
 

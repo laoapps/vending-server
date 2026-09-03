@@ -487,6 +487,7 @@ export class ApiService {
   allowTopUp = false;
   isQrPayment = false;
   allowCashIn = false;
+  checkoutUiVersion: 'default' | 'v2' = localStorage.getItem('checkoutUiVersion') === 'v2' ? 'v2' : 'default';
 
   isFranciseMode: boolean = false;
 

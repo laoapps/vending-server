@@ -8,6 +8,7 @@ import { ExploreContainerComponentModule } from '../explore-container/explore-co
 import { Tab1PageRoutingModule } from './tab1-routing.module';
 // import { NotifierModule } from 'angular-notifier';
 import { OrderModule } from 'ngx-order-pipe';
+import { AutoPaymentPageModule } from './Vending/auto-payment/auto-payment.module';
 
 import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/hangmi-store-segment.page';
 @NgModule({
@@ -17,8 +18,8 @@ import { HangmiStoreSegmentPage } from './VendingSegment/hangmi-store-segment/ha
     FormsModule,
     ExploreContainerComponentModule,
     Tab1PageRoutingModule,
-     OrderModule
-     
+    OrderModule,
+    AutoPaymentPageModule
   ],
   declarations: [Tab1Page]
 })

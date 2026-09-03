@@ -986,6 +986,29 @@ ion-header {
 
 }
 
+.inline-checkout {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 720px;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 0 0 24px 24px;
+    z-index: 1000000;
+    box-shadow: 0 16px 36px rgba(26, 29, 33, 0.22);
+
+    app-auto-payment {
+        display: block;
+        height: 100%;
+    }
+}
+
+.tab1-checkout-open {
+    --background: #f4f5f7;
+    --padding-top: 732px;
+}
+
 .spacious-container {
     overflow: auto;
     width: 100%;

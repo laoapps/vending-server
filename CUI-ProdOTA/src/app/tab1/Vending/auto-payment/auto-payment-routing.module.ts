@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { AutoPaymentPage } from './auto-payment.page';
+import { AutoPaymentPageModule } from './auto-payment.module';
 
 const routes: Routes = [
   {
@@ -11,7 +12,10 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [
+    AutoPaymentPageModule,
+    RouterModule.forChild(routes)
+  ],
   exports: [RouterModule],
 })
 export class AutoPaymentPageRoutingModule {}
