@@ -6,6 +6,7 @@ import {
   NgZone,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import {
@@ -268,6 +269,18 @@ export class Tab1Page implements OnDestroy {
   loadingPercent: number = 0;
 
   otherModalAreOpening: boolean = false;
+  inlineCheckout: boolean = false;
+  cartRevision: number = 0;
+  private pendingInlineCartSync: boolean = false;
+  private _autoPaymentCmp?: AutoPaymentPage;
+  @ViewChild(AutoPaymentPage)
+  set autoPaymentCmp(cmp: AutoPaymentPage | undefined) {
+    this._autoPaymentCmp = cmp;
+    if (cmp && this.pendingInlineCartSync) {
+      this.pendingInlineCartSync = false;
+      cmp.onCartUpdated();
+    }
+  }
 
   lastUpdate: number = Date.now();
   lastAction: number = Date.now();
@@ -3046,7 +3059,8 @@ export class Tab1Page implements OnDestroy {
 
       this.getSummarizeOrder();
       // setTimeout(() => {
-      this.showMyOrdersModal();
+      this.showMyOrdersModal({ cartChanged: true });
+      this.refreshCartView();
     } catch (error) {
       console.log('error', error);
       alert(JSON.stringify(error));
@@ -3171,7 +3185,8 @@ export class Tab1Page implements OnDestroy {
       this.getSummarizeOrder();
       // setTimeout(() => {
       // this.apiService.dismissLoading();
-      this.showMyOrdersModal();
+      this.showMyOrdersModal({ cartChanged: true });
+      this.refreshCartView();
     } catch (error) {
       console.log('error', error);
       alert(JSON.stringify(error));
@@ -3179,14 +3194,32 @@ export class Tab1Page implements OnDestroy {
   }
 
 
-  showMyOrdersModal() {
+  showMyOrdersModal(opts?: { cartChanged?: boolean }) {
     try {
-      if (this.otherModalAreOpening == true) return;
       if (this.orders != undefined && Object.entries(this.orders).length == 0) return;
       clearInterval(this.autoShowMyOrderTimer);
       this.autoShowMyOrdersCounter = 15;
 
-      // const component = OrderCartPage;
+      if (this.apiService.checkoutUiVersion === 'v2') {
+        if (this.inlineCheckout) {
+          if (opts?.cartChanged) {
+            this.pendingInlineCartSync = true;
+            if (this._autoPaymentCmp) {
+              this.pendingInlineCartSync = false;
+              this._autoPaymentCmp.onCartUpdated();
+            }
+          }
+          return;
+        }
+
+        if (this.otherModalAreOpening == true) return;
+        this.inlineCheckout = true;
+        this.otherModalAreOpening = true;
+        return;
+      }
+
+      if (this.otherModalAreOpening == true) return;
+
       const props_data = {
         orders: this.orders,
         getTotalSale: this.getTotalSale,
@@ -3195,36 +3228,37 @@ export class Tab1Page implements OnDestroy {
       const currentValue = this.currentBalance.value || 0;
 
       console.log('props_data', props_data);
-      const that = this;
       this.apiService.modalCtrl.create({ component: AutoPaymentPage, componentProps: props_data, cssClass: 'dialog-fullscreen' }).then(r => {
         r.present();
         console.log('props_data', r);
 
         this.otherModalAreOpening = true;
-        // this.apiService.allModals.push(this.apiService.modal);
         r.onDidDismiss().then(async cb => {
           this.otherModalAreOpening = false;
           this.processedQRPaid = false;
           AutoPaymentPage.message?.close();
           AutoPaymentPage.message = undefined;
-          if (this.orders != undefined && Object.entries(this.orders).length > 0 && this.checkAppUpdate == false) {
-            // this.loadAutoShowMyOrders();
-          }
-          // await this._processLoopCheckLaoQRPaid();
 
           if (currentValue != this.currentBalance.value) {
             this.updateBalance(this.currentBalance.value - currentValue);
           }
-
         });
-        //5s
-
-
       });
     } catch (error) {
 
     }
 
+  }
+
+  dismissInlineCheckout() {
+    const wasInline = this.inlineCheckout;
+    this.inlineCheckout = false;
+    this.pendingInlineCartSync = false;
+    if (!wasInline) return;
+    this.otherModalAreOpening = false;
+    this.processedQRPaid = false;
+    AutoPaymentPage.message?.close();
+    AutoPaymentPage.message = undefined;
   }
 
 
@@ -3277,7 +3311,15 @@ export class Tab1Page implements OnDestroy {
 
 
   checkCartCount(position: number) {
-    return this.orders.find((v) => v.position == position)?.stock?.qtty || 0;
+    if (!this.orders?.length) return 0;
+    return this.orders.reduce((sum, v) => {
+      return sum + (v.position == position ? (Number(v.stock?.qtty) || 0) : 0);
+    }, 0);
+  }
+
+  refreshCartView() {
+    this.cartRevision++;
+    this.ref.detectChanges();
   }
   getSummarizeOrder() {
     // this.summarizeOrder=new Array<IVendingMachineSale>();
@@ -3358,10 +3400,13 @@ export class Tab1Page implements OnDestroy {
     this.getTotalSale.q = 0;
     this.getTotalSale.t = 0;
     this.localClear();
+    this.dismissInlineCheckout();
+    this.refreshCartView();
   }
   removeCart(i: number) {
     const x = this.orders.splice(i, 1);
     this.getSummarizeOrder();
+    this.refreshCartView();
     // const y = this.orders.findIndex(v => x[0]?.position == v.position);
     // if (y != -1) {
     //   this.orders.splice(y, 1);

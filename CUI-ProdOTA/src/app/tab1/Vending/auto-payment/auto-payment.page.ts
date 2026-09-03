@@ -25,6 +25,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
 
   @Input() orders: Array<any>;
   @Input() getTotalSale: any;
+  @Input() embedInTab: boolean = false;
   contact = localStorage.getItem('contact') || '55516321';
 
   // @Input() serial: ISerialService;
@@ -54,6 +55,7 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
   countdownQrGenTimer: any = {} as any;
   pageHardCloseTimer: any = {} as any;
   private qrRequestId: number = 0;
+  private cartUpdateTimer: any = {} as any;
 
 
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
@@ -349,13 +351,14 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownQrGenTimer);
     clearTimeout(this.countdownCheckGenQrResTimer);
     clearTimeout(this.pageHardCloseTimer);
+    clearTimeout(this.cartUpdateTimer);
     // if (this.WSAPIService.waitingDelivery) this.WSAPIService.waitingDelivery.unsubscribe();
 
   }
 
   loadDOMs() {
+    let tries = 0;
     this.reloadElement = setInterval(() => {
-      clearInterval(this.reloadElement);
       AutoPaymentPage.orderlistElement = (document.querySelector('.order-list') as HTMLDivElement);
       AutoPaymentPage.laabCardFooter = (document.querySelector('.laab-card-footer') as HTMLDivElement);
       AutoPaymentPage.billWaveElement = (document.querySelector('.bill-wave') as HTMLDivElement);
@@ -363,8 +366,15 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
       AutoPaymentPage.btnLAABGo = (document.querySelector('#btn-laab-go') as HTMLHRElement);
       AutoPaymentPage.laabqrimgElement = (document.querySelector('#laab-qr-img') as HTMLImageElement);
       AutoPaymentPage.ionbackdropElement = (document.querySelectorAll('ion-backdrop') as NodeListOf<HTMLIonBackdropElement>);
-      this.checkOrders(AutoPaymentPage.orderlistElement);
-    });
+      if (!AutoPaymentPage.orderlistElement && tries < 20) {
+        tries++;
+        return;
+      }
+      clearInterval(this.reloadElement);
+      if (AutoPaymentPage.orderlistElement) {
+        this.checkOrders(AutoPaymentPage.orderlistElement);
+      }
+    }, 50);
   }
 
   loadFakeOrder() {
@@ -404,10 +414,59 @@ export class AutoPaymentPage implements OnInit, OnDestroy {
     clearInterval(this.countdownQrGenTimer);
     clearTimeout(this.countdownCheckGenQrResTimer);
     clearTimeout(this.pageHardCloseTimer);
+    clearTimeout(this.cartUpdateTimer);
     this.showQrRetry = false;
     this.isQrGenerating = false;
 
+    if (this.embedInTab) {
+      this.apiService.myTab1?.dismissInlineCheckout?.();
+      return;
+    }
     this.modalCtrl.dismiss();
+  }
+
+  /** Keep the same QR/payment engine when cart changes on tab1 (add more items). */
+  onCartUpdated(): void {
+    clearTimeout(this.cartUpdateTimer);
+    this.cartUpdateTimer = setTimeout(() => this.applyCartUpdate(), 350);
+  }
+
+  private applyCartUpdate(): void {
+    this.refreshOrder();
+    if (!this.parseorders || Object.entries(this.parseorders).length == 0) {
+      this.resetMessage();
+      this.close();
+      return;
+    }
+
+    this.qrRequestId++;
+    this.resetMessage();
+    this.stopQrGenCountdown();
+    try {
+      if (AutoPaymentPage.orderlistElement) {
+        AutoPaymentPage.orderlistElement.className = 'order-list';
+        this.checkOrders(AutoPaymentPage.orderlistElement);
+      }
+      AutoPaymentPage.laabCardFooter?.classList.remove('active');
+      if (AutoPaymentPage.qrimgElement) AutoPaymentPage.qrimgElement.src = '';
+    } catch (e) { }
+
+    this.isPayment = false;
+    this.showQrRetry = false;
+    this.qrRetryCount = 0;
+    clearInterval(this.countdownQrRetryTimer);
+    this.paymentText = '';
+    this.paymentmethod = undefined;
+
+    this.resetCountDownBillTimer();
+    this.resetCountDownPaymentTimer();
+    this.resetCountDownDestroyTimer();
+    this.resetCountDownCheckLAABTimer();
+    this.resetCountDownLAABDestroyTimer();
+
+    this.countdownBill = 1;
+    this.startPageHardClose();
+    this.loadCountDownBillNew();
   }
 
   /** Customer taps QR area to retry generate after fail/timeout */

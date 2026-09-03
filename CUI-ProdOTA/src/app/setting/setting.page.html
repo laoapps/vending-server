@@ -85,6 +85,13 @@
       <ion-checkbox [(ngModel)]="qrMode"></ion-checkbox>
     </ion-item>
     <ion-item>
+      <ion-label>Checkout UI</ion-label>
+      <ion-select [(ngModel)]="checkoutUiVersion" interface="popover">
+        <ion-select-option value="default">Default</ion-select-option>
+        <ion-select-option value="v2">v2</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
       <ion-label>Offline Mode</ion-label>
       <ion-checkbox [(ngModel)]="offlineMode"></ion-checkbox>
     </ion-item>

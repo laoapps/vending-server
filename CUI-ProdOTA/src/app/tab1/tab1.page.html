@@ -17,7 +17,15 @@
   </div>
 </div>
 
-<ion-header (click)="reloadAutoPayment()">
+<div *ngIf="inlineCheckout" class="inline-checkout">
+  <app-auto-payment
+    [orders]="orders"
+    [getTotalSale]="getTotalSale"
+    [embedInTab]="true">
+  </app-auto-payment>
+</div>
+
+<ion-header *ngIf="!inlineCheckout" (click)="reloadAutoPayment()">
 
   <div class="box" [ngStyle]="apiService._cuiSetting.imgHeader">
     <div>
@@ -26,7 +34,7 @@
     </div>
   </div>
 
-  <div *ngIf="isShowLaabTabEnabled" class="menu-options">
+  <div *ngIf="isShowLaabTabEnabled && !inlineCheckout" class="menu-options">
 
     <!-- <a (click)="showBills2()" href="javascript:void(0)" class="item control-menu menu-ticket active">
       <svg class="svg-top" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
@@ -96,7 +104,7 @@
 </ion-header>
 
 <ion-content (click)="reloadAutoPayment()" [scrollEvents]="true" (ionScroll)="toggleWebviewTab($event)"
-  [fullscreen]="true" class="tab1-container">
+  [fullscreen]="true" class="tab1-container" [class.tab1-checkout-open]="inlineCheckout">
   <span class="btn-abs-list">
     <!-- <a *ngIf="apiService.isDropStock == true" (click)="showBills()" href="javascript:void(0)"
       class="item-deep-blue menu-shopping-cart attention-grabber">
@@ -198,7 +206,7 @@
     <div class="product-shelf">
       <div class="product-shelf__hint">ແຕະເລືອກສິນຄ້າ · Tap to select</div>
 
-      <div class="product-grid">
+      <div class="product-grid" [attr.data-cart]="cartRevision">
         <article
           *ngFor="let sl of filteredSaleList; let i = index; trackBy: trackByPosition"
           class="product-card"
