@@ -1,0 +1,230 @@
+.kiosk {
+  --vm-red: #ee3124;
+  --vm-red-dark: #c6281c;
+  --vm-ink: #14181d;
+  --vm-muted: #6b7280;
+  --dock-w: 32%;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #f7f8fa 0%, #eef1f4 100%);
+}
+
+.kiosk-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid rgba(20, 24, 29, 0.06);
+  z-index: 20;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.brand__name {
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--vm-ink);
+}
+
+.brand__hint {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vm-muted);
+}
+
+.kiosk-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.chip,
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #f0f2f5;
+  color: var(--vm-ink);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.icon-btn {
+  width: 40px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.chip--temp { background: #e8f4ff; color: #0b6e99; }
+.chip--wa { background: #e9f9ee; color: #0a8f32; }
+.chip--cash { background: #1c1c1e; color: #fff; }
+
+.kiosk-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, var(--dock-w));
+  min-height: 0;
+}
+
+.shelf { overflow: auto; padding: 16px; }
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(20, 24, 29, 0.06);
+}
+
+.product-card--buyable { cursor: pointer; }
+.product-card--in-cart { outline: 2px solid var(--vm-red); }
+
+.product-card__slot {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px 0;
+}
+
+.slot-num {
+  min-width: 40px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vm-red);
+  color: #fff;
+  font-size: 16px;
+}
+
+.product-card__media {
+  position: relative;
+  height: 168px;
+  margin: 8px 10px 0;
+  border-radius: 14px;
+  background: #eceff3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-card__img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+}
+
+.product-card__qty {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: var(--vm-ink);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.product-card__body { padding: 10px 12px 12px; flex: 1; }
+
+.product-card__name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  min-height: 2.5em;
+}
+
+.product-card__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.price-value { font-size: 20px; color: var(--vm-red); font-weight: 800; }
+.price-unit { font-size: 11px; font-weight: 700; color: var(--vm-muted); }
+
+.product-card__stock {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f0f2f5;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--vm-muted);
+}
+
+.product-card__stock--low {
+  background: rgba(238, 49, 36, 0.12);
+  color: var(--vm-red);
+}
+
+.product-card__tap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  background: var(--vm-red);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dock-host {
+  min-height: 0;
+  display: block;
+  background: #fff;
+  border-left: 1px solid rgba(20, 24, 29, 0.08);
+}
+
+@media (max-width: 900px) {
+  .kiosk-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 34vh;
+  }
+  .dock-host { border-left: 0; border-top: 1px solid rgba(20, 24, 29, 0.08); }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.shelf {
+  min-width: 0;
+  overflow: auto;
+  padding: 16px;
+}
+
+.shelf-scroll {
+  display: none;
+}

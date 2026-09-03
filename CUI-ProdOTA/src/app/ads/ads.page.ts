@@ -74,7 +74,7 @@ export class AdsPage implements OnInit {
 
       video.load();
 
-      video.play();
+      video.play()
 
     }, 100);
 

@@ -83,26 +83,28 @@ export class CachingService {
     const w = await this.getBase64ImageFromUrl(k); // check caching then load from server and save
     return this.caching.set(k, w);
   }
-  async getBase64ImageFromUrl(imageUrl: string) {
-    // const url = environment.serverFile+'file/download/' + imageUrl; // file manager
-    const url = localStorage.getItem('url') || environment.url;
-    var res = await fetch(url);
-    var blob = await res.blob();
 
-    return new Promise((resolve, reject) => {
-      var reader = new FileReader();
-      reader.addEventListener(
-        'load',
-        function () {
-          resolve(reader.result);
-        },
-        false
-      );
+  /** Replace getBase64ImageFromUrl in caching.service.ts — it currently ignores imageUrl. */
 
-      reader.onerror = () => {
-        return reject(this);
-      };
-      reader.readAsDataURL(blob);
-    });
-  }
+async getBase64ImageFromUrl(imageUrl: string) {
+  const base = (localStorage.getItem('url') || environment.url || '').replace(/\/?$/, '/');
+  const fm = (localStorage.getItem('filemanagerurl') || environment.filemanagerurl || '').replace(
+    /\/?$/,
+    '/',
+  );
+  const url = imageUrl?.startsWith('http')
+    ? imageUrl
+    : imageUrl?.startsWith('data:')
+      ? imageUrl
+      : (fm || base) + (imageUrl.includes('/') ? imageUrl.replace(/^\//, '') : 'DATA/' + imageUrl);
+
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => resolve(reader.result), false);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
 }

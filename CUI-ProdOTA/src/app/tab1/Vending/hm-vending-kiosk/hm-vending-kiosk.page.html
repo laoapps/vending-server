@@ -1,0 +1,123 @@
+<ion-content class="kiosk-page" [fullscreen]="true" [scrollY]="false">
+<div class="kiosk" [class.kiosk--paying]="getTotalSale?.q > 0">
+
+  <header class="kiosk-top">
+    <div class="brand">
+      <img
+        class="brand__logo"
+        [src]="apiService._cuiSetting?.imgLogo || hmLogo"
+        alt="HM Vending" />
+      <div class="brand__copy">
+        <div class="brand__name">HM Vending</div>
+        <div class="brand__hint">ແຕະເລືອກສິນຄ້າ · Tap a product</div>
+      </div>
+    </div>
+
+    <div class="kiosk-status">
+      <button type="button" class="chip chip--temp" (click)="openTestMotor()">
+        <ion-icon name="thermometer-outline"></ion-icon>
+        <span>{{ _machineStatus?.status?.temp || '—' }}</span>
+      </button>
+
+      <a class="chip chip--wa" href="javascript:void(0)">
+        <ion-icon name="logo-whatsapp"></ion-icon>
+        <span>{{ contact }}</span>
+      </a>
+
+      <button
+        *ngIf="isShowLaabTabEnabled"
+        type="button"
+        class="chip chip--cash"
+        (click)="topUpEwallet()">
+        <span>{{ currentBalance.value | number }} <small>LAK</small></span>
+      </button>
+
+      <button type="button" class="chip" (click)="loadPaidBills()">
+        <ion-icon name="cube-outline"></ion-icon>
+        <span>ເຄື່ອງບໍ່ທັນຕົກ</span>
+      </button>
+
+      <button type="button" class="icon-btn" title="Reload stock" (click)="handleRefresh($event)">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </button>
+
+      <button type="button" class="icon-btn" title="Settings" (click)="showSetting()">
+        <ion-icon name="settings-outline"></ion-icon>
+      </button>
+
+      <button type="button" class="icon-btn" title="QR config" (click)="showQrConfig()">
+        <ion-icon name="qr-code-outline"></ion-icon>
+      </button>
+    </div>
+  </header>
+
+  <div class="kiosk-body">
+    <section class="shelf" id="shelf">
+      <div class="product-grid">
+        <article
+          *ngFor="let sl of filteredSaleList; let i = index; trackBy: trackByPosition"
+          class="product-card"
+          [class.product-card--free]="sl.stock.price == 0"
+          [class.product-card--buyable]="sl.stock.price != 0"
+          [class.product-card--in-cart]="checkCartCount(sl.position) > 0"
+          [style.animation-delay]="(i % 12) * 40 + 'ms'"
+          (click)="sl.stock.price != 0 && addOrder(sl)">
+
+          <div class="product-card__slot">
+            <span class="slot-num">{{ sl.position + compensation }}</span>
+            <span class="slot-machine">***{{ sl.machineId.substring(4) }}</span>
+          </div>
+
+          <div class="product-card__media">
+            <img
+              class="product-card__img"
+              [src]="photoOf(sl, 256)"
+              [alt]="sl.stock.name"
+              loading="lazy" />
+            <span *ngIf="checkCartCount(sl.position) > 0" class="product-card__qty">
+              ×{{ checkCartCount(sl.position) }}
+            </span>
+          </div>
+
+          <div class="product-card__body">
+            <h3 class="product-card__name">{{ sl.stock.name }}</h3>
+            <div class="product-card__meta">
+              <div class="product-card__price">
+                <span class="price-value">{{ sl.stock.price | number }}</span>
+                <span class="price-unit">LAK</span>
+              </div>
+              <div
+                class="product-card__stock"
+                [class.product-card__stock--low]="(sl.stock.qtty - checkCartCount(sl.position)) <= 2">
+                <ion-icon name="cube-sharp"></ion-icon>
+                <span>{{ sl.stock.qtty - checkCartCount(sl.position) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card__tap" *ngIf="sl.stock.price != 0">
+            <ion-icon name="add-circle"></ion-icon>
+            ເພີ່ມກະຕ່າ
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <app-hm-checkout-dock
+      class="dock-host"
+      [orders]="orders"
+      [getTotalSale]="getTotalSale"
+      [contact]="contact"
+      [machineId]="machineId"
+      [cashValue]="apiService.cash?.value || 0"
+      [localBalance]="apiService.localBalance || 0"
+      [allowCashIn]="apiService.allowCashIn"
+      [isQrPayment]="apiService.isQrPayment"
+      (removeAt)="removeCart($event)"
+      (buyMore)="focusShelf()"
+      (cartCleared)="clearCart()"
+      (paid)="onCheckoutPaid($event)">
+    </app-hm-checkout-dock>
+  </div>
+</div>
+</ion-content>

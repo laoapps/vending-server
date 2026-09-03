@@ -487,6 +487,8 @@ export class Tab1Page implements OnDestroy {
     private alertCtrl: AlertController,
     private modalCtrl: ModalController
   ) {
+    this.router.navigate(['/hm-vending-kiosk']);
+    return;
 
     // this.refreshAllEveryHour();
 
