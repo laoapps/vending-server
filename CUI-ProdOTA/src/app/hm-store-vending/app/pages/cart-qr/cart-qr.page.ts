@@ -46,13 +46,13 @@ export class CartQrPage implements OnInit {
 
     // set first video
     player.src = this.videos[this.currentIndex];
-    player.play();
+    player.play?.().catch(() => {});;
 
     // when one video ends, play the next
     player.onended = () => {
       this.currentIndex = (this.currentIndex + 1) % this.videos.length;
       player.src = this.videos[this.currentIndex];
-      player.play();
+      player.play?.().catch(() => {});;
     };
   }
 

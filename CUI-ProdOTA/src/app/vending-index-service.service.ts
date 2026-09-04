@@ -12,6 +12,7 @@ import { MT102Service } from './mt102.service';
 import { ADH815Service } from './adh815.service';
 import { ADH814Service } from './adh814.service';
 import { Toast } from '@capacitor/toast';
+import { Capacitor } from '@capacitor/core';
 
 
 
@@ -30,12 +31,12 @@ export class VendingIndexServiceService {
 
 
   constructor(
-    public vmc: VmcService, 
-    public zdm8: Zdm8Service, 
+    public vmc: VmcService,
+    public zdm8: Zdm8Service,
     //  public tp773b: Tp77PulseService, 
     //  public essp: EsspService, 
     //  public cctalk: CCTALKTb74Service, 
-     public m102: MT102Service, 
+    public m102: MT102Service,
     //  public adh815: ADH815Service,
     public adh814: ADH814Service) {
     App.addListener('appStateChange', async ({ isActive }) => {
@@ -44,7 +45,8 @@ export class VendingIndexServiceService {
       }
       // The app state has been changed to inactive.
       // Start the background task by calling `beforeExit`.
-      const taskId = await BackgroundTask.beforeExit(async () => {
+      if (Capacitor.getPlatform() !== 'web') {
+         const taskId = await BackgroundTask.beforeExit(async () => {
         // Run your code...
         // Finish the background task as soon as everything is done.
         if (this.task) {
@@ -53,6 +55,8 @@ export class VendingIndexServiceService {
         }
         BackgroundTask.finish({ taskId });
       });
+      }
+    
     });
   }
   async initZDM8(portName: string = '/dev/ttyS1', baudRate: number = 9600, machineId = '11111111', otp = '111111', isNative = ESerialPortType.Serial): Promise<ISerialService> {
@@ -175,7 +179,7 @@ export class VendingIndexServiceService {
       this.baudRate = baudRate;
       const x = await this.adh814.initializeSerialPort(portName, baudRate, this.log, machineId, otp, isNative);
       if (x != this.portName) {
-        console.log('vendingindex service  initADH814 NULL',x);
+        console.log('vendingindex service  initADH814 NULL', x);
         Toast.show({ text: 'vendingindex service  initADH814 NULL' });
         return reject(null);
 

@@ -470,6 +470,7 @@ export class ApiService {
   wsAlive = {} as IAlive;
   autopilot = { auto: 0 };
   public static vendingOnSale = new Array<IVendingMachineSale>();
+  
   vendingBill = new Array<IVendingMachineBill>();
   vendingBillPaid = new Array<IVendingMachineBill>();
   onlineMachines = new Array<IMachineClientID>();
@@ -2755,7 +2756,7 @@ export class ApiService {
         this.backGroundMusicElement.src = path;
         this.backGroundMusicElement.loop = true;
         this.backGroundMusicElement.volume = this.musicVolume / 100;
-        this.backGroundMusicElement.play();
+        this.backGroundMusicElement.play?.().catch(() => {});;
       }
     } catch (error) {
       console.log(error);
@@ -2767,7 +2768,7 @@ export class ApiService {
       if (this.muteSound) return;
       this.audioElement.src = path;
       this.audioElement.volume = this.musicVolume / 100;
-      this.audioElement.play();
+      this.audioElement.play?.().catch(() => {});;
     } catch (error) {
       console.log(error);
 
@@ -2820,7 +2821,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2839,7 +2840,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2856,7 +2857,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2878,7 +2879,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2898,7 +2899,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2915,7 +2916,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2932,7 +2933,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2949,7 +2950,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2966,7 +2967,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -2983,7 +2984,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3000,7 +3001,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3017,7 +3018,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3034,7 +3035,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3051,7 +3052,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3068,7 +3069,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3086,7 +3087,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3103,7 +3104,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3120,7 +3121,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3137,7 +3138,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3154,7 +3155,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3171,7 +3172,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error) {
@@ -3188,7 +3189,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error: any) {
@@ -3205,7 +3206,7 @@ export class ApiService {
         if (this.muteSound) return;
         this.playSound(arr[Math.floor(Math.random() * arr.length)]);
         this.audioElement.volume = this.musicVolume / 100;
-        this.audioElement.play();
+        this.audioElement.play?.().catch(() => {});;
 
         resolve(IENMessage.success);
       } catch (error: any) {

@@ -83,7 +83,7 @@ export class HowToPage implements OnInit {
             if (this.currentPlaying == false) {
               howToPlayerCover.classList.remove('active');
               howToPlayer.classList.add('active');
-              howToPlayer.play();
+              howToPlayer.play?.().catch(() => {});;
             }
           });
 
@@ -96,7 +96,7 @@ export class HowToPage implements OnInit {
               this.currentPlaying = true;
             }, 1000);
 
-            howToPlayer.play();
+            howToPlayer.play?.().catch(() => {});;
           }
           clearInterval(i);
 
@@ -127,7 +127,7 @@ export class HowToPage implements OnInit {
         howToPlayerCover.src = this.currentPlay.cover;
         howToPlayer.src = this.currentPlay.video;
         howToPlayer.load();
-        howToPlayer.play();
+        howToPlayer.play?.().catch(() => {});;
         
         setTimeout(() => {
           howToPlayer.classList.add('active');
@@ -151,7 +151,7 @@ export class HowToPage implements OnInit {
     } else {
       this.autoPlayVideo = true;
       localStorage.setItem('vending_guid', JSON.stringify({ auto_play_video: true }));
-      (document.querySelector('#how-to-player') as HTMLVideoElement).play();
+      (document.querySelector('#how-to-player') as HTMLVideoElement).play?.().catch(() => {});;
     }
   }
 }
