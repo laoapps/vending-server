@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   inject,
   NgZone,
   OnDestroy,
@@ -79,6 +80,7 @@ import { TestmotorPage } from '../testmotor/testmotor.page';
 import { VendingIndexServiceService } from '../vending-index-service.service';
 import { SerialServiceService } from '../services/serialservice.service';
 import { Toast } from '@capacitor/toast';
+import { Capacitor } from '@capacitor/core';
 import { RemainingbilllocalPage } from '../remainingbilllocal/remainingbilllocal.page';
 import { GenerateLaoQRCodeProcess } from './LaoQR_processes/generateLaoQRCode.process';
 import dayjs from 'dayjs';
@@ -281,6 +283,18 @@ export class Tab1Page implements OnDestroy {
       cmp.onCartUpdated();
     }
   }
+  private _v2AdPlayer?: ElementRef<HTMLVideoElement>;
+  @ViewChild('v2AdPlayer')
+  set v2AdPlayer(el: ElementRef<HTMLVideoElement> | undefined) {
+    this._v2AdPlayer = el;
+  }
+  v2AdSrc: string | null = null;
+  v2AdKind: 'video' | 'image' | null = null;
+  private v2AdIndex = 0;
+  private v2AdRequestId = 0;
+  private v2ImageTimer: any = null;
+  private v2AdPollTimer: any = null;
+  private v2TriedAltKind = false;
 
   lastUpdate: number = Date.now();
   lastAction: number = Date.now();
@@ -494,8 +508,7 @@ export class Tab1Page implements OnDestroy {
     private vendingIndex: VendingIndexServiceService,
     private dbService: DatabaseService,
     private alertController: AlertController,
-    // private videoCacheService: VideoCacheService,
-    // public router: Router
+    private videoCacheService: VideoCacheService,
     public blockchainDbService: BlockchainDbService,
     private alertCtrl: AlertController,
     private modalCtrl: ModalController
@@ -730,6 +743,9 @@ export class Tab1Page implements OnDestroy {
     if (localStorage.getItem('startTestMotor')) {
       this.startTestMotor();
       return;
+    }
+    if (this.isV2CheckoutUi) {
+      setTimeout(() => this.startV2IdleAds(), 400);
     }
     // try {
     //   await ScreenBrightness.setBrightness({ brightness: 1 });
@@ -1394,6 +1410,7 @@ export class Tab1Page implements OnDestroy {
     clearInterval(this.installingPecent);
     clearInterval(this.refreshAll);
     clearInterval(this.countdownCheckLaoQRPaidTimer);
+    this.stopV2IdleAds();
 
     // if (this.subscription) {
     //   this.subscription.unsubscribe();
@@ -3215,6 +3232,7 @@ export class Tab1Page implements OnDestroy {
         }
 
         if (this.otherModalAreOpening == true) return;
+        this.stopV2IdleAds();
         this.inlineCheckout = true;
         this.otherModalAreOpening = true;
         return;
@@ -3252,6 +3270,171 @@ export class Tab1Page implements OnDestroy {
 
   }
 
+  get isV2CheckoutUi(): boolean {
+    return this.apiService.checkoutUiVersion === 'v2';
+  }
+
+  private getV2AdsPlaylist(): string[] {
+    try {
+      let raw: any = this.apiService.adsList;
+      if (!raw) {
+        const stored = localStorage.getItem('adsList');
+        raw = stored || [];
+      }
+      if (typeof raw === 'string') {
+        const text = raw.trim();
+        if (!text || text === '[]') return [];
+        try {
+          raw = JSON.parse(text);
+        } catch {
+          raw = text.includes(',') ? text.split(',') : [text];
+        }
+      }
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .map((item: any) => {
+          if (!item) return '';
+          if (typeof item === 'string') return this.resolveV2AdUrl(item.trim());
+          return this.resolveV2AdUrl((item.url || item.src || item.file || '').toString().trim());
+        })
+        .filter((url: string) => !!url);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  private resolveV2AdUrl(item: string): string {
+    const s = (item || '').trim();
+    if (!s) return '';
+    if (/^(https?:|blob:|data:|capacitor:|file:)/i.test(s)) return s;
+    const base = (this.filemanagerURL || '').replace(/\/?$/, '/');
+    if (s.startsWith('download/')) return base + s;
+    return `${base}download/${s.replace(/^\//, '')}`;
+  }
+
+  private isV2ImageAd(url: string): boolean {
+    const clean = (url || '').split('?')[0].toLowerCase();
+    return /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(clean);
+  }
+
+  private async toPlayableAdSrc(remoteUrl: string): Promise<string> {
+    if (!remoteUrl) return '';
+    if (!Capacitor.isNativePlatform()) return remoteUrl;
+    try {
+      const localPath = await Promise.race([
+        this.videoCacheService.downloadIfNotExist(remoteUrl),
+        new Promise<string>((_, reject) => setTimeout(() => reject(new Error('ads cache timeout')), 1800))
+      ]);
+      const playable = localPath ? this.videoCacheService.getPlayableUrl(localPath) : '';
+      if (!playable) return remoteUrl;
+      if (playable.indexOf('/DATA/') >= 0 || playable.indexOf('localhost:') >= 0) return remoteUrl;
+      return playable;
+    } catch (e) {
+      return remoteUrl;
+    }
+  }
+
+  private startV2IdleAds(): void {
+    if (!this.isV2CheckoutUi || this.inlineCheckout) return;
+    this.playV2Ad(this.v2AdIndex || 0);
+    clearInterval(this.v2AdPollTimer);
+    this.v2AdPollTimer = setInterval(() => {
+      if (!this.isV2CheckoutUi || this.inlineCheckout) {
+        clearInterval(this.v2AdPollTimer);
+        return;
+      }
+      if (!this.v2AdSrc) this.playV2Ad(0);
+    }, 8000);
+  }
+
+  private stopV2IdleAds(): void {
+    this.v2AdRequestId++;
+    clearTimeout(this.v2ImageTimer);
+    clearInterval(this.v2AdPollTimer);
+    const video = this._v2AdPlayer?.nativeElement;
+    if (video) {
+      try {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+      } catch (e) { }
+    }
+    this.v2AdSrc = null;
+    this.v2AdKind = null;
+  }
+
+  async playV2Ad(index: number): Promise<void> {
+    if (!this.isV2CheckoutUi || this.inlineCheckout) return;
+    const playlist = this.getV2AdsPlaylist();
+    if (!playlist.length) {
+      this.v2AdSrc = null;
+      this.v2AdKind = null;
+      return;
+    }
+    const requestId = ++this.v2AdRequestId;
+    this.v2TriedAltKind = false;
+    this.v2AdIndex = ((index % playlist.length) + playlist.length) % playlist.length;
+    const url = playlist[this.v2AdIndex];
+    const kind: 'video' | 'image' = this.isV2ImageAd(url) ? 'image' : 'video';
+    const src = await this.toPlayableAdSrc(url);
+
+    if (requestId !== this.v2AdRequestId || this.inlineCheckout) return;
+    this.v2AdKind = kind;
+    this.v2AdSrc = src;
+    this.ref.detectChanges();
+
+    if (kind === 'video') {
+      setTimeout(() => {
+        if (requestId !== this.v2AdRequestId || this.inlineCheckout) return;
+        const video = this._v2AdPlayer?.nativeElement;
+        if (!video) {
+          setTimeout(() => {
+            if (requestId !== this.v2AdRequestId || this.inlineCheckout) return;
+            this._v2AdPlayer?.nativeElement?.play?.().catch(() => this.onV2AdError());
+          }, 200);
+          return;
+        }
+        try {
+          video.muted = true;
+          video.load();
+          video.play()?.catch(() => this.onV2AdError());
+        } catch (e) {
+          this.onV2AdError();
+        }
+      }, 120);
+    } else {
+      clearTimeout(this.v2ImageTimer);
+      this.v2ImageTimer = setTimeout(() => {
+        if (requestId !== this.v2AdRequestId || this.inlineCheckout) return;
+        this.onV2AdEnded();
+      }, 8000);
+    }
+  }
+
+  onV2AdEnded(): void {
+    if (!this.isV2CheckoutUi || this.inlineCheckout) return;
+    this.playV2Ad(this.v2AdIndex + 1);
+  }
+
+  onV2AdError(): void {
+    if (!this.isV2CheckoutUi || this.inlineCheckout) return;
+    if (!this.v2TriedAltKind && this.v2AdKind === 'video' && this.v2AdSrc) {
+      this.v2TriedAltKind = true;
+      this.v2AdKind = 'image';
+      this.ref.detectChanges();
+      clearTimeout(this.v2ImageTimer);
+      this.v2ImageTimer = setTimeout(() => {
+        if (this.inlineCheckout) return;
+        this.onV2AdEnded();
+      }, 8000);
+      return;
+    }
+    setTimeout(() => {
+      if (!this.isV2CheckoutUi || this.inlineCheckout) return;
+      this.playV2Ad(this.v2AdIndex + 1);
+    }, 1200);
+  }
+
   dismissInlineCheckout() {
     const wasInline = this.inlineCheckout;
     this.inlineCheckout = false;
@@ -3261,6 +3444,9 @@ export class Tab1Page implements OnDestroy {
     this.processedQRPaid = false;
     AutoPaymentPage.message?.close();
     AutoPaymentPage.message = undefined;
+    if (this.isV2CheckoutUi) {
+      setTimeout(() => this.startV2IdleAds(), 200);
+    }
   }
 
 
