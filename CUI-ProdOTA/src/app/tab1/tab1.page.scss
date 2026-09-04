@@ -994,14 +994,78 @@ ion-header {
     height: 720px;
     margin: 0;
     overflow: hidden;
-    border-radius: 0 0 24px 24px;
+    border-radius: 0 0 28px 28px;
     z-index: 1000000;
-    box-shadow: 0 16px 36px rgba(26, 29, 33, 0.22);
+    box-shadow: 0 18px 40px rgba(26, 29, 33, 0.18);
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 255, 255, 0.18), transparent 55%),
+      linear-gradient(180deg, #f04a3c 0%, #ee3124 48%, #c91812 100%);
 
     app-auto-payment {
         display: block;
         height: 100%;
     }
+}
+
+.v2-idle-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 22px 22px 20px;
+}
+
+.v2-idle-kicker {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.v2-idle-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+}
+
+.v2-idle-ads {
+    position: relative;
+    background: #1a1a1a;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.v2-idle-media,
+.v2-idle-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.v2-idle-fallback {
+    background-size: cover;
+    background-position: center;
+}
+
+.v2-idle-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 22px;
+    padding: 18px;
+}
+
+.v2-idle-brand img {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.22));
 }
 
 .tab1-checkout-open {

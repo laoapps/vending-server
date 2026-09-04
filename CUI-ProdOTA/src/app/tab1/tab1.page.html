@@ -17,15 +17,46 @@
   </div>
 </div>
 
-<div *ngIf="inlineCheckout" class="inline-checkout">
+<div *ngIf="isV2CheckoutUi" class="inline-checkout">
   <app-auto-payment
+    *ngIf="inlineCheckout"
     [orders]="orders"
     [getTotalSale]="getTotalSale"
     [embedInTab]="true">
   </app-auto-payment>
+
+  <div *ngIf="!inlineCheckout" class="v2-idle-shell">
+    <div class="v2-idle-kicker">ແຕະເລືອກສິນຄ້າດ້ານລຸ່ມ · TAP TO SELECT</div>
+    <div class="v2-idle-body">
+      <div class="v2-idle-ads">
+        <video
+          *ngIf="v2AdKind === 'video'"
+          #v2AdPlayer
+          class="v2-idle-media"
+          [src]="v2AdSrc"
+          (ended)="onV2AdEnded()"
+          (error)="onV2AdError()"
+          autoplay
+          muted
+          playsinline>
+        </video>
+        <img
+          *ngIf="v2AdKind === 'image'"
+          class="v2-idle-media"
+          [src]="v2AdSrc"
+          alt=""
+          (error)="onV2AdError()" />
+        <div *ngIf="!v2AdSrc" class="v2-idle-fallback" [ngStyle]="apiService._cuiSetting.imgHeader"></div>
+      </div>
+      <div class="v2-idle-brand">
+        <img [src]="apiService._cuiSetting.imgLogo||hmLogo" (press)="holdCount()" (touchend)="endCount()"
+          (click)="manageStock()" />
+      </div>
+    </div>
+  </div>
 </div>
 
-<ion-header *ngIf="!inlineCheckout" (click)="reloadAutoPayment()">
+<ion-header *ngIf="!isV2CheckoutUi" (click)="reloadAutoPayment()">
 
   <div class="box" [ngStyle]="apiService._cuiSetting.imgHeader">
     <div>
@@ -34,7 +65,7 @@
     </div>
   </div>
 
-  <div *ngIf="isShowLaabTabEnabled && !inlineCheckout" class="menu-options">
+  <div *ngIf="isShowLaabTabEnabled" class="menu-options">
 
     <!-- <a (click)="showBills2()" href="javascript:void(0)" class="item control-menu menu-ticket active">
       <svg class="svg-top" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
@@ -104,7 +135,7 @@
 </ion-header>
 
 <ion-content (click)="reloadAutoPayment()" [scrollEvents]="true" (ionScroll)="toggleWebviewTab($event)"
-  [fullscreen]="true" class="tab1-container" [class.tab1-checkout-open]="inlineCheckout">
+  [fullscreen]="true" class="tab1-container" [class.tab1-checkout-open]="isV2CheckoutUi">
   <span class="btn-abs-list">
     <!-- <a *ngIf="apiService.isDropStock == true" (click)="showBills()" href="javascript:void(0)"
       class="item-deep-blue menu-shopping-cart attention-grabber">
