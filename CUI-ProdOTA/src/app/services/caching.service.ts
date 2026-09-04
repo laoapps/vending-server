@@ -1,110 +1,66 @@
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { AppcachingserviceService } from './appcachingservice.service';
-
+import { downloadPhotoUrl } from '../filemanager-url';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CachingService {
-
-  constructor(private caching: AppcachingserviceService) { }
+  constructor(private caching: AppcachingserviceService) {}
 
   async getPhoto(k: string) {
-    return await this.caching.get(k); // {v,d}
+    return await this.caching.get(k);
   }
 
   async clearStorage() {
     return await this.caching.clear();
   }
 
-  async saveCachingPhoto(k: string, d: Date,id:string) {
-    const x = await this.getPhoto(k+id); //{v,d}
+  async saveCachingPhoto(k: string, d: Date, id: string) {
+    const x = await this.getPhoto(k + id);
 
     if (x) {
-      const y = JSON.parse(x); //{v,d}
+      const y = JSON.parse(x);
 
       if (new Date(y.d).getTime() != d.getTime()) {
-
         const w = await this.getBase64ImageFromUrl(k);
-
-        console.log("a", new Date(y.d).getTime(), d.getTime());
-
-        // return this.caching.set(k, w);
-        return this.caching.setWithdate(k+id, w, d);
-      } else {
-
-        console.log("b");
-
-        if(JSON.parse(x).v.indexOf('data:application/octet-stream') !== -1){
-          return x;
-        }
-
-        console.log("b but add new");
-
-        const w = await this.getBase64ImageFromUrl(k);
-
-        return this.caching.setWithdate(k+id, w, d);
+        return this.caching.setWithdate(k + id, w, d);
       }
-    } else {
 
-      const w = await this.getBase64ImageFromUrl(k);
-
-      console.log("c");
-
-      // return this.caching.set(k, w);
-      return this.caching.setWithdate(k+id, w, d);
+      if (typeof y.v === 'string' && y.v.indexOf('data:application/octet-stream') !== -1) {
+        const w = await this.getBase64ImageFromUrl(k);
+        return this.caching.setWithdate(k + id, w, d);
+      }
+      return x;
     }
 
+    const w = await this.getBase64ImageFromUrl(k);
+    return this.caching.setWithdate(k + id, w, d);
   }
 
-  // async saveCachingPhoto(k: string, v: any, d: Date) {
-  //   const x = await this.getPhoto(k); //{v,d}
-  //   const y = JSON.parse(x); //{v,d}
-  //   if (new Date(y.d).getTime() != d.getTime()) {
-  //     const w = await this.getBase64ImageFromUrl(k); // check caching then load from server and save
-  //     return this.caching.set(k, w);
-  //   }
-  //   return null;
-  // }
-
-  // async saveCachingPhoto(k: string, d: Date) {
-  //   let x = await this.getPhoto(k); //{v,d}
-  //   if(!x)x=  this.caching.set(k, '');
-  //   const y = JSON.parse(x); //{v,d}
-  //   if (new Date(y.d).getTime() != d.getTime()) {
-  //     const w = await this.getBase64ImageFromUrl(k); // check caching then load from server and save
-  //     return this.caching.set(k, w);
-  //   }
-  //   return new Promise<any>((resolve,reject)=>resolve(null));
-  // }
-
   async saveCachingPhoto2(k: string, v: any) {
-    const w = await this.getBase64ImageFromUrl(k); // check caching then load from server and save
+    const w = await this.getBase64ImageFromUrl(k);
     return this.caching.set(k, w);
   }
 
-  /** Replace getBase64ImageFromUrl in caching.service.ts — it currently ignores imageUrl. */
+  async getBase64ImageFromUrl(imageUrl: string) {
+    const url =
+      imageUrl?.startsWith('http') || imageUrl?.startsWith('data:')
+        ? imageUrl
+        : downloadPhotoUrl(imageUrl, 256, 256);
 
-async getBase64ImageFromUrl(imageUrl: string) {
-  const base = (localStorage.getItem('url') || environment.url || '').replace(/\/?$/, '/');
-  const fm = (localStorage.getItem('filemanagerurl') || environment.filemanagerurl || '').replace(
-    /\/?$/,
-    '/',
-  );
-  const url = imageUrl?.startsWith('http')
-    ? imageUrl
-    : imageUrl?.startsWith('data:')
-      ? imageUrl
-      : (fm || base) + (imageUrl.includes('/') ? imageUrl.replace(/^\//, '') : 'DATA/' + imageUrl);
+    const res = await fetch(url);
+    let blob = await res.blob();
+    if (!blob.type || blob.type === 'application/octet-stream') {
+      blob = new Blob([blob], { type: 'image/jpeg' });
+    }
 
-  const res = await fetch(url);
-  const blob = await res.blob();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => resolve(reader.result), false);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
 }

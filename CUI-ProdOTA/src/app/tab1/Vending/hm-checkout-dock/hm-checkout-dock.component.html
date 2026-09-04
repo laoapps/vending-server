@@ -1,42 +1,41 @@
-<aside class="dock" [class.dock--empty]="!parseGetTotalSale?.q" [class.dock--live]="isPayment">
+<aside class="dock" [class.dock--empty]="!getTotalSale?.q" [class.dock--live]="!!qrDataUrl">
 
   <header class="dock__head">
     <div>
       <div class="dock__kicker">ກະຕ່າ · Checkout</div>
-      <div class="dock__title">{{ parseGetTotalSale?.q || 0 }} ລາຍການ</div>
+      <div class="dock__title">{{ getTotalSale?.q || 0 }} ລາຍການ</div>
     </div>
-    <button *ngIf="parseGetTotalSale?.q" type="button" class="dock__clear" (click)="close()">
+    <button *ngIf="getTotalSale?.q" type="button" class="dock__clear" (click)="clearCartOnly()">
       ລ້າງ
     </button>
   </header>
 
-  <div class="dock__cart" *ngIf="parseGetTotalSale?.q; else emptyCart">
-    <button type="button" class="cart-add" (click)="buyMore.emit()">
-      <ion-icon name="add"></ion-icon>
-      ເພີ່ມສິນຄ້າ
-    </button>
-
-    <article class="cart-row" *ngFor="let order of parseorders; let i = index">
-      <img [src]="photoOf(order, 96)" (error)="onPhotoError($event, order)" />
+  <div class="dock__cart order-list" *ngIf="getTotalSale?.q; else emptyCart">
+    <article class="cart-row" *ngFor="let order of orders; let i = index">
+      <img
+        [src]="photoOf(order, 96)"
+        [alt]="order.stock.name"
+        (error)="onPhotoError($event, order)" />
       <div class="cart-row__meta">
         <div class="cart-row__slot">#{{ order?.position }}</div>
         <div class="cart-row__name">{{ order?.stock?.name }}</div>
         <div class="cart-row__price">{{ order?.stock?.price | number }} LAK</div>
       </div>
-      <button type="button" class="cart-row__del" (click)="removeOrder(i)" aria-label="Remove">
+      <button type="button" class="cart-row__del" (click)="removeOrder(i); $event.stopPropagation()">
         <ion-icon name="trash-outline"></ion-icon>
       </button>
     </article>
   </div>
 
   <ng-template #emptyCart>
-    <div class="dock__empty">
+    <div class="dock__ads">
+      <p class="dock__ads-kicker">HM Vending</p>
       <p>ແຕະສິນຄ້າທາງຊ້າຍເພື່ອເລີ່ມສັ່ງ</p>
-      <p class="dock__empty-en">Tap a product to start</p>
+      <p class="dock__empty-en">Tap a product on the left</p>
     </div>
   </ng-template>
 
-  <section class="dock__pay" *ngIf="parseGetTotalSale?.q">
+  <section class="dock__pay" *ngIf="getTotalSale?.q">
     <div class="title">Payment Options</div>
     <div class="methods">
       <button
@@ -50,58 +49,21 @@
       </button>
     </div>
 
-    <div class="methods" *ngIf="parseGetTotalSale.t <= apiService.localBalance">
-      <button
-        *ngFor="let list of paymentOptions"
-        type="button"
-        class="method"
-        (click)="chooseLocalPaymentMethod()">
-        <img [src]="list.image" [alt]="list.name" />
-        <span>{{ list.name }}</span>
-      </button>
-    </div>
-
-    <div class="methods" *ngIf="isPayment == true">
-      <button
-        *ngFor="let list of paymentCheck"
-        type="button"
-        class="method"
-        (click)="checkCallbackMMoney()">
-        <img [src]="list.image" [alt]="list.name" />
-        <span>{{ list.name }}</span>
-      </button>
-    </div>
-
     <div class="ticket">
       <div class="ticket__qr">
-        <img
-          *ngIf="isPayment && !showQrRetry && qrDataUrl"
-          [src]="qrDataUrl"
-          alt="Payment QR"
-          id="qr-img" />
-
-        <div *ngIf="!isPayment && !showQrRetry" class="ticket__loader">
-          ກຳລັງສ້າງ QR… {{ countdownQrGen }}s
+        <img *ngIf="qrDataUrl && !showQrRetry" [src]="qrDataUrl" alt="Payment QR" id="qr-img" />
+        <div *ngIf="isQrGenerating && !qrDataUrl && !showQrRetry" class="ticket__loader">
+          ກຳລັງສ້າງ QR…
         </div>
-
         <button *ngIf="showQrRetry" type="button" class="ticket__retry" (click)="retryGenerateQr()">
           <strong>ລອງອີກຄັ້ງ</strong>
-          <span>ປິດໃນ {{ countdownQrRetry }}s · {{ qrRetryCount }}×</span>
+          <span>{{ qrRetryCount }}×</span>
         </button>
       </div>
-
       <div class="ticket__sum">
-        <div class="ticket__total">{{ parseGetTotalSale.t | number }}</div>
+        <div class="ticket__total">{{ getTotalSale.t | number }}</div>
         <div class="ticket__unit">LAK</div>
       </div>
-
-      <p class="ticket__timer" *ngIf="isPayment && !showQrRetry">
-        ໜ້າ QR ຈະໝົດອາຍຸໃນ {{ countdownDestroy }}s
-      </p>
     </div>
-
-    <p class="dock__help">
-      ຢ່າປິດຈໍນີ້ຖ້າຈ່າຍແລ້ວ · WhatsApp {{ contact }}
-    </p>
   </section>
 </aside>

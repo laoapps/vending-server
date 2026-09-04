@@ -1,212 +1,119 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  inject,
-} from '@angular/core';
-import { Router } from '@angular/router';
-import {
-  AlertController,
-  LoadingController,
-  ModalController,
-  Platform,
-} from '@ionic/angular';
-import { Toast } from '@capacitor/toast';
-import cryptojs from 'crypto-js';
-import { ApiService } from '../../../services/api.service';
-import {
-  EMACHINE_COMMAND,
-  ESerialPortType,
-  IBillProcess,
-  ICreditData,
-  IlogSerial,
-  IMachineClientID,
-  IMachineId,
-  ISerialService,
-  IVendingMachineBill,
-  IVendingMachineSale,
-  addLogMessage,
-} from '../../../services/syste.model';
-import { IENMessage } from '../../../models/base.model';
-import { IonicStorageService } from '../../../ionic-storage.service';
-import { CachingService } from '../../../services/caching.service';
-import { VendingAPIService } from '../../../services/vending-api.service';
-import { WsapiService } from '../../../services/wsapi.service';
-import { AppcachingserviceService } from '../../../services/appcachingservice.service';
-import { VendingIndexServiceService } from '../../../vending-index-service.service';
-import { DatabaseService } from '../../../database.service';
-import { BlockchainDbService } from '../../../blockchain-db';
-import { LiveupdateService } from '../../../liveupdate.service';
-import { GenerateLaoQRCodeProcess } from '../../LaoQR_processes/generateLaoQRCode.process';
-import { LoadStockListProcess } from '../../Vending_processes/loadStockList.process';
-import { RemainingbillsPage } from '../../../remainingbills/remainingbills.page';
-import { RemainingbilllocalPage } from '../../../remainingbilllocal/remainingbilllocal.page';
-import { SettingPage } from '../../../setting/setting.page';
-import { QrconfigMachinePage } from '../../../qrconfig-machine/qrconfig-machine.page';
-import { HowToPage } from '../how-to/how-to.page';
-import { PlayGamesPage } from '../play-games/play-games.page';
-import { GetCouponPromotionPage } from '../../../get-coupon-promotion/get-coupon-promotion.page';
-import { IMachineStatus } from '../../../services/service';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IonicModule, ModalController, Platform } from '@ionic/angular';
+import { Subscription } from 'rxjs';
+import { ApiService } from 'src/app/services/api.service';
+import { IMachineId, IVendingMachineSale } from 'src/app/services/syste.model';
+import { IonicStorageService } from 'src/app/ionic-storage.service';
+import { BlockchainDbService } from 'src/app/blockchain-db';
+import { CachingService } from 'src/app/services/caching.service';
+import { IdleService } from 'src/app/services/idle.service';
+import { WsapiService } from 'src/app/services/wsapi.service';
+import { SettingPage } from 'src/app/setting/setting.page';
+import { QrconfigMachinePage } from 'src/app/qrconfig-machine/qrconfig-machine.page';
 import { environment } from 'src/environments/environment';
-import { IBankNote, IHashBankNote } from '../../../vmc.service';
 import { downloadPhotoUrl } from '../../../filemanager-url';
 
 
-/**
- * Standalone customer kiosk (not Tab1).
- * Serial / NV9 / drop still use the same ApiService + serial port
- * so Auto Payment dock can call myTab1.serial / loadPaidBills / localLoad.
- */
 @Component({
   selector: 'app-hm-vending-kiosk',
   templateUrl: './hm-vending-kiosk.page.html',
   styleUrls: ['./hm-vending-kiosk.page.scss'],
 })
 export class HmVendingKioskPage implements OnInit, OnDestroy {
-  private router = inject(Router);
-
-  readyState = false;
-  contact = localStorage.getItem('contact') || '55516321';
   hmLogo = 'assets/icon/logo.png';
-  redemgif = 'assets/redeemqr.gif';
-  production = environment.production;
-  filemanagerURL = environment.filemanagerurl;
+  contact = localStorage.getItem('contact') || '55516321';
+  filemanagerURL = (environment as any).filemanagerurl || '';
   url = environment.url;
 
-  serial: ISerialService | null = null;
-  connecting = false;
-  selectedDevice = localStorage.getItem('device') || 'adh814';
-  NV9USB = localStorage.getItem('NV9USB') || 'false';
-  portName = localStorage.getItem('portName') || '/dev/ttyS1';
-  baudRate = localStorage.getItem('baudRate') || 38400;
-  isSerial: ESerialPortType = ESerialPortType.Serial;
-  platforms: { label: string; value: ESerialPortType }[] = [];
-
-  offlineMode: Boolean = true;
-  allowCashIn = false;
-  allowVending = true;
-  isShowLaabTabEnabled = false;
-  qrMode = localStorage.getItem('qrMode') ? true : false;
-  isRobotMuted = localStorage.getItem('isRobotMuted') ? true : false;
-  isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
-  musicVolume = localStorage.getItem('musicVolume')
-    ? Number(localStorage.getItem('musicVolume'))
-    : 6;
-
   machineId = {} as IMachineId;
-  vendingOnSale = new Array<IVendingMachineSale>();
-  vendingBill = new Array<IVendingMachineBill>();
-  vendingBillPaid = new Array<IVendingMachineBill>();
-  onlineMachines = new Array<IMachineClientID>();
-  saleList = new Array<IVendingMachineSale>();
-  orders = new Array<IVendingMachineSale>();
-  summarizeOrder = new Array<IVendingMachineSale>();
+  saleList: IVendingMachineSale[] = [];
+  orders: IVendingMachineSale[] = [];
   getTotalSale = { q: 0, t: 0 };
-  bills = {} as IVendingMachineBill;
-  notes = new Array<IBankNote>();
-  compensation = 0;
-  otherModalAreOpening = false;
-  processedQRPaid = false;
-  lastUpdate = Date.now();
-  lastAction = Date.now();
-  lastCallTime: number | null = null;
-  timeoutId: NodeJS.Timeout | null = null;
-  queues = new Array<{ data: any; command: string }>();
-  creditPending: ICreditData[] = [];
-  vlog = { log: { data: '', limit: 50 } as IlogSerial };
-  _machineStatus = { status: {} as IMachineStatus };
-  tempStatus = { lowTemp: 5, highTemp: 10 };
-  light = { start: 3, end: 2 };
   currentBalance = { value: 0, currency: 'LAK' };
-  isNV9Ready = false;
-  isNV9Enabled = false;
-  isCashboxPresent = true;
-  isReadingNote = false;
-  currentReadingChannel = -1;
-  nv9SerialNumber = '';
-  nv9ChannelValues: number[] = [];
-  transactions: any[] = [];
-  shouldAutoEnable = true;
+  isShowLaabTabEnabled = false;
+  compensation = 0;
+  _machineStatus: { status?: { temp?: string | number } } = { status: {} };
+  serial: any = null;
 
-  private generateLaoQRCodeProcess: GenerateLaoQRCodeProcess;
-  private loadStockListProcess: LoadStockListProcess;
   private tapCount = 6;
   private tapTimer: any = null;
-  private ownerUuid: string | undefined;
+  private loginSub: Subscription | null = null;
+  private aliveSub: Subscription | null = null;
+  lastUpdate = Date.now();
 
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
-    private liveUpdateService: LiveupdateService,
     public platform: Platform,
     public modal: ModalController,
     public storage: IonicStorageService,
     public appCaching: CachingService,
-    private vendingAPIService: VendingAPIService,
-    private WSAPIService: WsapiService,
-    private cashingService: AppcachingserviceService,
-    public loading: LoadingController,
-    private vendingIndex: VendingIndexServiceService,
-    private dbService: DatabaseService,
-    private alertController: AlertController,
     public blockchainDbService: BlockchainDbService,
-    private alertCtrl: AlertController,
-    private modalCtrl: ModalController,
+    private idleService: IdleService,
+    private WSAPIService: WsapiService,
   ) {
     this.machineId = this.apiService.machineId;
-    this.url = this.apiService.url;
-    this.generateLaoQRCodeProcess = new GenerateLaoQRCodeProcess(this.apiService);
-    this.loadStockListProcess = new LoadStockListProcess(
-      this.apiService,
-      this.cashingService,
-    );
   }
 
-  async ngOnInit() {
+  ngOnInit(): void {
+    // Dock still calls apiService.myTab1.* — this PAGE is the host, not Tab1.
     this.apiService.myTab1 = this as any;
-
-    this.isShowLaabTabEnabled =
-      JSON.parse(
-        localStorage.getItem(this.apiService.controlMenuService.localname) ||
-          '{}',
-      ).find?.((x: any) => x.name == 'menu-showlaabtab')?.status ?? false;
-
-    this.vendingOnSale = ApiService.vendingOnSale;
-    this.vendingBillPaid = this.apiService.vendingBillPaid;
-    this.vendingBill = this.apiService.vendingBill;
-    this.onlineMachines = this.apiService.onlineMachines;
-    this.saleList = this.vendingOnSale || [];
-
-    this.ownerUuid = localStorage.getItem('machineId') || '';
+    this.bindWebsocket();
+    this.saleList = ApiService.vendingOnSale || [];
     this.localLoad();
-    this.bindWsLogin();
-    this.bindAlive();
-    this.bindDeductOrder();
-
-    try {
-      await this.blockchainDbService.initialize(this.machineId.machineId);
-      await this.loadBalance();
-    } catch (err) {
-      console.error('SQLite init failed at kiosk start:', err);
-    }
-
-    try {
-      await this.connect();
-    } catch (errorSerial) {
-      console.log('errorSerial', errorSerial);
-    }
-
-    this.readyState = true;
-    this.checkLastClick();
     this.loadStock();
+    this.loadBalance();
+    this.loadPhotos();
+    this.connect();
   }
 
   ngOnDestroy(): void {
     if (this.tapTimer) clearTimeout(this.tapTimer);
-    if (this.timeoutId !== null) clearTimeout(this.timeoutId);
-    if (this.serial) {
-      this.serial.close().catch((e) => console.log('serial close', e));
+    this.loginSub?.unsubscribe();
+    this.aliveSub?.unsubscribe();
+  }
+
+  /** Subscribe only. AppComponent already owns connect/ping. Do not reconnect if OPEN. */
+  private bindWebsocket(): void {
+    const wsapi: any = this.apiService.wsapi || this.WSAPIService;
+
+    this.loginSub = wsapi?.loginSubscription?.subscribe((rxx: any) => {
+      if (!rxx) return;
+      const data = rxx.data?.data || rxx.data || rxx;
+      const clientId = data?.clientId || rxx.clientId;
+      if (clientId && this.apiService.clientId) {
+        this.apiService.clientId.clientId = clientId;
+      }
+      if (this.apiService.wsAlive) {
+        this.apiService.wsAlive.time = new Date();
+        this.apiService.wsAlive.isAlive = true;
+      }
+      this.loadStock();
+      this.ref.detectChanges();
+    });
+
+    this.aliveSub = this.WSAPIService.aliveSubscription?.subscribe((res: any) => {
+      this.lastUpdate = Date.now();
+      if (this.apiService.wsAlive) {
+        this.apiService.wsAlive.time = new Date();
+        this.apiService.wsAlive.isAlive = true;
+      }
+      const r = res?.data?.setting;
+      if (r?.refresh) this.apiService.reloadPage?.();
+    });
+
+    const socket: WebSocket | undefined =
+      wsapi?.socket || wsapi?.ws || this.WSAPIService?.webSocket || (this.WSAPIService as any)?.ws;
+    const open = socket?.readyState === WebSocket.OPEN || this.apiService.wsAlive?.isAlive;
+    if (open) {
+      return; // already logged in — ping is owned by wsapi.service.ts
+    }
+    try {
+      if (typeof this.WSAPIService.reconnect === 'function') this.WSAPIService.reconnect();
+      else if (typeof wsapi?.reconnect === 'function') wsapi.reconnect();
+    } catch (e) {
+      console.warn('WS reconnect', e);
     }
   }
 
@@ -216,7 +123,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     );
   }
 
-  trackByPosition(_index: number, sl: IVendingMachineSale): number {
+  trackByPosition(_i: number, sl: IVendingMachineSale) {
     return sl?.position;
   }
 
@@ -224,483 +131,137 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     return this.orders.filter((o) => o.position == position).length;
   }
 
+  addOrder(sl: IVendingMachineSale): void {
+    try {
+      this.idleService?.closeAds?.();
+    } catch {}
+    if (!sl?.stock || sl.stock.price == 0) return;
+    if (this.checkCartCount(sl.position) >= sl.stock.qtty) return;
+    if (this.getTotalSale.q >= 10) return;
 
+    const line = JSON.parse(JSON.stringify(sl)) as IVendingMachineSale;
+    line.stock.qtty = 1;
+    this.orders = [...this.orders, line];
+    this.recalcTotals();
+    this.localSave();
+    this.ref.detectChanges();
+  }
 
   removeCart(index: number): void {
     if (index < 0 || index >= this.orders.length) return;
-    this.orders.splice(index, 1);
-    this.getSummarizeOrder();
+    this.orders = this.orders.filter((_, i) => i !== index);
+    this.recalcTotals();
     this.localSave();
     this.ref.detectChanges();
   }
 
   clearCart(): void {
-    this.orders.length = 0;
-    this.summarizeOrder.length = 0;
+    this.orders = [];
     this.getTotalSale = { q: 0, t: 0 };
     this.localSave();
     this.ref.detectChanges();
   }
 
-  clearStockAfterLAABGo(): void {
-    this.clearCart();
-  }
-
-  refreshBalanceFromAnotherModal(balance: number): void {
-    this.apiService.cash.value = balance;
-    this.currentBalance.value = balance;
-  }
-
-  getSummarizeOrder(): void {
-    const o = new Array<IVendingMachineSale>();
-    const ord = JSON.parse(JSON.stringify(this.orders)) as Array<IVendingMachineSale>;
-    ord.forEach((v) => {
-      const x = o.find((x) => x.stock.id == v.stock.id && x.position == v.position);
-      if (!x) o.push(v);
-      else x.stock.qtty += 1;
-    });
-    this.summarizeOrder = o;
-    const t = this.getTotal();
-    this.getTotalSale.q = t.q;
-    this.getTotalSale.t = t.t;
-  }
-
-  getTotal() {
-    const o = this.orders;
-    const q = o.reduce((a, b) => a + (b.stock?.qtty || 1), 0);
-    const t = o.reduce((a, b) => a + (b.stock?.qtty || 1) * (b.stock?.price || 0), 0);
-    return { q, t };
+  recalcTotals(): void {
+    this.getTotalSale = {
+      q: this.orders.reduce((a, b) => a + (b.stock?.qtty || 1), 0),
+      t: this.orders.reduce(
+        (a, b) => a + (b.stock?.qtty || 1) * (b.stock?.price || 0),
+        0,
+      ),
+    };
   }
 
   localSave(): void {
     try {
-      localStorage.setItem(
-        IENMessage.vendingPendingOrders as any,
-        JSON.stringify(this.orders),
-      );
-      localStorage.setItem(
-        IENMessage.vendingPendingSum as any,
-        JSON.stringify(this.getTotalSale),
-      );
       localStorage.setItem('vendingPendingOrders', JSON.stringify(this.orders));
       localStorage.setItem('vendingPendingSum', JSON.stringify(this.getTotalSale));
-    } catch (e) {
-      console.log('localSave', e);
-    }
+    } catch {}
   }
 
   localLoad(): { orders: IVendingMachineSale[]; sum: { q: number; t: number } } {
     try {
-      const rawOrders =
-        localStorage.getItem(IENMessage.vendingPendingOrders as any) ||
-        localStorage.getItem('vendingPendingOrders') ||
-        '[]';
-      const rawSum =
-        localStorage.getItem(IENMessage.vendingPendingSum as any) ||
-        localStorage.getItem('vendingPendingSum') ||
-        '{"q":0,"t":0}';
-      const orders = JSON.parse(rawOrders);
-      const sum = JSON.parse(rawSum);
-      this.orders = Array.isArray(orders) ? orders : [];
-      this.getTotalSale = sum?.q != null ? sum : { q: 0, t: 0 };
-      this.getSummarizeOrder();
-    } catch (e) {
-      console.log('localLoad', e);
+      const orders = JSON.parse(localStorage.getItem('vendingPendingOrders') || '[]');
+      const sum = JSON.parse(localStorage.getItem('vendingPendingSum') || '{"q":0,"t":0}');
+      this.orders = Array.isArray(orders) ? [...orders] : [];
+      this.getTotalSale = { q: sum?.q || 0, t: sum?.t || 0 };
+      this.recalcTotals();
+    } catch {
       this.orders = [];
       this.getTotalSale = { q: 0, t: 0 };
     }
+    this.ref.detectChanges();
     return { orders: this.orders, sum: this.getTotalSale };
   }
 
   loadStock(): void {
     this.storage.get('saleStock', 'stock').then((s) => {
       try {
-        const saleitems = JSON.parse(
-          JSON.stringify(s?.v ? s.v : this.vendingOnSale || []),
-        ) as Array<IVendingMachineSale>;
-        this.saleList = saleitems;
-        this.vendingOnSale = saleitems;
+        const items = JSON.parse(JSON.stringify(s?.v ? s.v : ApiService.vendingOnSale || []));
+        this.saleList = items;
         this.ref.detectChanges();
-      } catch (error) {
-        console.log('loadStock', error);
-      }
+      } catch {}
     });
   }
 
-
-  focusShelf(): void {
-    const el = document.querySelector('.shelf') as HTMLElement | null;
-    el?.scrollTo({ top: 0, behavior: 'smooth' });
+  photoOf(sl: any, size = 256): string {
+    const id = sl?.stock?.image;
+    if (!id) return this.hmLogo;
+    const cached = this.apiService?.imageList?.[id];
+    if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
+    if (typeof cached === 'string' && cached.startsWith('http')) return cached;
+    return downloadPhotoUrl(id, size, size) || this.hmLogo;
   }
 
-  onCheckoutPaid(_bill: any): void {
-    this.clearCart();
-    setTimeout(() => this.loadPaidBills(), 500);
+  onPhotoError(ev: Event, sl: any): void {
+    const img = ev.target as HTMLImageElement;
+    if (!img) return;
+    const id = sl?.stock?.image;
+    if (id && img.dataset['step'] !== '1') {
+      img.dataset['step'] = '1';
+      img.src = downloadPhotoUrl(id, 64, 64);
+    }
   }
 
-  public _processLoopCheckLaoQRPaid(transactionID?: string): Promise<any> {
-    return new Promise<any>(async (resolve) => {
-      try {
-        const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
-        Toast.show({
-          text: `CHECK LAOQR SERVER ${JSON.stringify(run)}`,
-          duration: 'long',
-        });
-        if (run.status == 1) {
-          await this.apiService.waitingDelivery(
-            run.message['data']['bill'],
-            this.serial,
-          );
-        }
-        resolve(IENMessage.success);
-      } catch (error) {
-        this.apiService.IndexedLogDB.addBillProcess({
-          errorData: `Error _processLoopCheckLaoQRPaid :${JSON.stringify(error)}`,
-        });
-        resolve(error);
+  async loadPhotos(): Promise<void> {
+    if (!this.apiService.imageList) this.apiService.imageList = {};
+    for (const sl of this.saleList || []) {
+      const id = sl?.stock?.image;
+      if (!id) continue;
+      const cur = this.apiService.imageList[id];
+      if (typeof cur === 'string' && (cur.startsWith('data:image') || cur.startsWith('http'))) {
+        continue;
       }
-    });
-  }
-
-  loadPaidBills(): void {
-    this.showBills();
-  }
-
-  showBills(): void {
-    this.apiService
-      .loadDeliveryingBillsNew()
-      .then((r) => {
-        try {
-          if (r.length > 0) {
-            this.apiService.pb = r as Array<IBillProcess>;
-            if (this.apiService.pb.length) {
-              this.apiService.isDropStock = true;
-              if (!this.apiService.isRemainingBillsModalOpen) {
-                if (this.serial) {
-                  this.apiService
-                    .showModal(
-                      RemainingbillsPage,
-                      { r: this.apiService.pb, serial: this.serial },
-                      false,
-                    )
-                    .then((modal: any) => {
-                      this.apiService.isRemainingBillsModalOpen = true;
-                      this.apiService.IndexedLogDB.addBillProcess({
-                        errorData: `RemainingbillsPage Open In Kiosk`,
-                      });
-                      modal.present();
-                      modal.onDidDismiss().then(() => {
-                        this.apiService.isRemainingBillsModalOpen = false;
-                      });
-                    });
-                } else {
-                  this.apiService.exitApp();
-                }
-              }
-            }
-          } else {
-            this.apiService.isDropStock = false;
-          }
-        } catch (error: any) {
-          this.apiService.toast
-            .create({ message: error.message, duration: 5000 })
-            .then((t) => t.present());
-        }
-      })
-      .catch((e) => {
-        Toast.show({
-          text: 'Error showBills ' + JSON.stringify(e),
-          duration: 'long',
-        });
-      });
-  }
-
-  async connect() {
-    if (!this.selectedDevice) {
-      return Toast.show({ text: 'Please select setting', duration: 'long' });
+      this.apiService.imageList[id] = downloadPhotoUrl(id, 256, 256);
     }
-    if (this.connecting) return Toast.show({ text: 'Connecting' });
-    this.connecting = true;
-    if (this.selectedDevice == 'VMC') {
-      this.serial = await this.vendingIndex.initVMC(
-        this.portName,
-        Number(this.baudRate),
-        '',
-        '',
-        this.isSerial,
-      );
-    } else if (this.selectedDevice == 'adh814') {
-      this.serial = await (this.vendingIndex as any).initADH814?.(
-        this.portName,
-        Number(this.baudRate),
-      );
-    }
-    this.connecting = false;
-    if (this.serial) this.apiService.serialPort = this.serial;
+    this.ref.detectChanges();
   }
 
-  enableCash() {
-    this.serial
-      ?.nv9Command(EMACHINE_COMMAND.NV9_ENABLE, { enable: true }, 1)
-      .then(async (r) => {
-        await Toast.show({ text: 'enableCash' + JSON.stringify(r) });
-      })
-      .catch((e) => {
-        Toast.show({ text: 'enableCash error' + JSON.stringify(e) });
-      });
-  }
-
-  disableCash() {
-    this.serial
-      ?.nv9Command(EMACHINE_COMMAND.NV9_DISABLE, { enable: false }, 1)
-      .catch((e) => console.error('disableCash error', e));
-  }
-
-  sendStatus(
-    b: string,
-    t: number,
-    c: EMACHINE_COMMAND = EMACHINE_COMMAND.MACHINE_STATUS,
-  ) {
-    this.lastCallTime = Date.now();
-    if (this.timeoutId !== null) clearTimeout(this.timeoutId);
-    if (this.queues.find((v) => v.command == c && v.data == b)) return;
-    this.queues.push({ data: b, command: c });
-    const timeOut = this.queues.length;
-    const that = this;
-    setTimeout(() => {
-      that.apiService
-        .updateStatus({ data: b, transactionID: t, command: c })
-        .then(async (rx) => {
-          const r = rx.data;
-          that.queues.shift();
-          if (r.command === EMACHINE_COMMAND.CREDIT_NOTE) {
-            if (r.transactionID) {
-              const x = that.creditPending.find(
-                (v) => v.transactionID === r.transactionID,
-              );
-              if (x) {
-                await that.deleteCredit(x.id);
-                that.creditPending = that.creditPending.filter(
-                  (v) => v.transactionID !== r.transactionID,
-                );
-              }
-            } else {
-              setTimeout(() => that.sendStatus(b, t, c), 5000);
-            }
-          }
-        });
-    }, 1000 * timeOut);
-  }
-
-  async deleteCredit(id: number) {
-    await this.dbService.deleteItem(id);
-    return await this.loadCredits();
-  }
-
-  async loadCredits() {
-    return await this.dbService.getItems();
-  }
-
-  async addOrUpdateCredit(data: ICreditData) {
-    if (data.id >= 0) {
-      await this.dbService.updateItem(
-        data.id,
-        data.name,
-        data.data,
-        data.transactionID,
-        data.description,
-      );
-    } else {
-      await this.dbService.createItem(
-        data.name,
-        data.data,
-        data.transactionID,
-        data.description,
-      );
-    }
-    return await this.loadCredits();
-  }
-
-  private async loadBalance() {
+  async loadBalance(): Promise<void> {
     try {
-      this.currentBalance.value = await this.blockchainDbService.getLocalBalance(
-        this.machineId.machineId,
-      );
+      const id = this.machineId?.machineId;
+      if (!id) return;
+      this.currentBalance.value = await this.blockchainDbService.getLocalBalance(id);
       this.currentBalance.currency = localStorage.getItem('currency') || 'LAK';
-    } catch (e) {
+    } catch {
       this.currentBalance.value = 0;
     }
   }
 
-  async loadOnlineBalance(): Promise<number> {
-    try {
-      const machineId = this.machineId?.machineId;
-      if (!machineId) return 0;
-      let localBalance = await this.blockchainDbService.getLocalBalance(machineId);
-      const offlineMode = localStorage.getItem('offlineMode') === 'true';
-      if (!offlineMode) {
-        try {
-          const res = await this.apiService.getBlockChainBalance(machineId);
-          if (res?.status === 1 && res.data) {
-            const serverBalance = Number(res.data.data.currentBalance ?? 0);
-            if (Math.abs(serverBalance - localBalance) > 0.01) {
-              localBalance = serverBalance;
-            }
-          }
-        } catch (err) {
-          console.warn('Server balance fetch failed, using local balance', err);
-        }
-      }
-      this.currentBalance.value = localBalance;
-      return localBalance;
-    } catch (err) {
-      return 0;
-    }
+  handleRefresh(ev?: any): void {
+    this.loadStock();
+    this.localLoad();
+    this.loadBalance();
+    this.loadPhotos();
+    setTimeout(() => ev?.target?.complete?.(), 600);
   }
 
-  private async updateBalance(amount: number) {
-    if (amount === 0) return;
-    try {
-      const isInsert = amount > 0;
-      const absAmount = Math.abs(amount);
-      const latest = await this.blockchainDbService.getLatestBlock(
-        this.machineId.machineId,
-      );
-      const prevHash =
-        latest?.hash ||
-        '0000000000000000000000000000000000000000000000000000000000000000';
-      const nextIndex = (latest?.block_index ?? 0) + 1;
-      const txData = {
-        type: isInsert ? 'insert' : 'withdrawal',
-        amount: absAmount,
-        timestamp: new Date().toISOString(),
-        note: isInsert
-          ? 'Banknote accepted'
-          : 'Cash reset / transferred to e-wallet',
-      };
-      const blockString = JSON.stringify({
-        prevHash,
-        index: nextIndex,
-        data: txData,
-        timestamp: txData.timestamp,
-      });
-      const newHash = cryptojs.SHA256(blockString).toString();
-      await this.blockchainDbService.addBlock({
-        machineId: this.machineId.machineId,
-        prevHash,
-        hash: newHash,
-        data: txData,
-        isReset: !isInsert,
-        signature: '',
-        needsSync: true,
-      });
-      this.currentBalance.value += amount;
-    } catch (err) {
-      console.error('Failed to update balance / log transaction:', err);
-    }
+  focusShelf(): void {
+    document.getElementById('shelf')?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  private async syncToServer(LaabXWallet: string = ''): Promise<void> {
-    const offlineMode = localStorage.getItem('offlineMode') === 'true';
-    if (offlineMode) return;
-    const unsynced = await this.blockchainDbService.getUnsyncedBlocks(
-      this.machineId.machineId,
-      200,
-    );
-    if (!unsynced.length) return;
-    const res = await this.apiService.blockChainSync(unsynced, LaabXWallet);
-    if (res?.status === 1) {
-      const blockIds = unsynced.map((b) => b.id);
-      await this.blockchainDbService.markAsSynced(blockIds);
-      if (unsynced.length === 200) {
-        setTimeout(() => this.syncToServer(LaabXWallet), 1500);
-      }
-    } else {
-      throw new Error('Server returned non-success status');
-    }
-  }
-
-  public async topUpEwallet() {
-    try {
-      const currentDbBalance = await this.blockchainDbService.getLocalBalance(
-        this.machineId?.machineId,
-      );
-      if (currentDbBalance <= 0) return;
-      await this.updateBalance(-currentDbBalance);
-      const offlineMode = localStorage.getItem('offlineMode') === 'true';
-      if (!offlineMode) {
-        try {
-          await this.syncToServer();
-          this.currentBalance.value = 0;
-        } catch (syncErr) {
-          console.error('Sync to server failed after local withdrawal:', syncErr);
-        }
-      } else {
-        this.currentBalance.value = 0;
-      }
-    } catch (error) {
-      console.error('Failed to top up e-wallet:', error);
-    }
-  }
-
-  initHashBankNotes(machineId: string) {
-    const hashNotes = Array<IHashBankNote>();
-    for (let i = 0; i < this.notes.length; i++) {
-      const x = JSON.parse(JSON.stringify(this.notes[i])) as IHashBankNote;
-      x.hash = cryptojs
-        .SHA256(machineId + this.notes[i].value * 100)
-        .toString(cryptojs.enc.Hex);
-      hashNotes.push(x);
-    }
-    return hashNotes;
-  }
-
-  checkLastClick() {
-    try {
-      const lastClick = this.getStoredLastClick();
-      if (!lastClick) return false;
-      const targetTime = new Date(lastClick).getTime();
-      if (isNaN(targetTime)) {
-        this.clearInvalidLastClick();
-        return false;
-      }
-      setTimeout(() => {
-        this.loadPaidBills();
-        localStorage.setItem('lastClickCheck', '');
-      }, 30000);
-    } catch (error) {
-      this.apiService.IndexedLogDB.addBillProcess({
-        errorData: `Error checkLastClick ${JSON.stringify(error)}`,
-      });
-      return false;
-    }
-  }
-
-  private getStoredLastClick(): string | null {
-    try {
-      const stored = localStorage.getItem('lastClickCheck');
-      if (!stored) return null;
-      try {
-        return JSON.parse(stored);
-      } catch {
-        if (stored.startsWith('"') && stored.endsWith('"')) {
-          return stored.slice(1, -1);
-        }
-        return stored;
-      }
-    } catch {
-      return null;
-    }
-  }
-
-  private clearInvalidLastClick() {
-    localStorage.removeItem('lastClickCheck');
-  }
-
-  setLastClick() {
-    try {
-      localStorage.setItem('lastClickCheck', JSON.stringify(new Date().toISOString()));
-    } catch {}
+  onCheckoutPaid(_bill: any): void {
+    this.clearCart();
   }
 
   showSetting(): void {
@@ -732,233 +293,33 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     }
   }
 
-  showGetCouponPromotion(): void {
-    this.apiService.showModal(GetCouponPromotionPage).then((r) => r?.present());
+  topUpEwallet(): void {}
+  openTestMotor(): void {}
+
+  /** Host API the dock still calls via apiService.myTab1 */
+
+  clearStockAfterLAABGo(): void {
+    this.clearCart();
+    this.loadStock();
   }
 
-  openHowToPage(): void {
-    this.apiService.modalCtrl
-      .create({
-        component: HowToPage,
-        componentProps: {},
-        cssClass: 'dialog-fullscreen',
-      })
-      .then((r) => r.present());
+  refreshBalanceFromAnotherModal(n: number): void {
+    this.currentBalance.value = Number(n) || 0;
+    this.apiService.localBalance = this.currentBalance.value;
+    this.ref.detectChanges();
   }
 
-  openGameServices(): void {
-    this.apiService.modalCtrl
-      .create({
-        component: PlayGamesPage,
-        cssClass: 'dialog-fullscreen',
-      })
-      .then((r) => r.present());
-  }
-
-  openSmartCB(): void {
-    this.router.navigate(['/smartcb']);
-  }
-
-  openHMStoreVending(): void {
-    this.router.navigate(['/HM-store-vending']);
-  }
-
-  openTestMotor(): void {
-    this.armTap(7, () => {
-      localStorage.setItem('startTestMotor', 'true');
-      this.apiService.reloadPage();
-    });
-  }
-
-  showMenu(m: string): boolean {
-    return localStorage.getItem('menu-' + m) == 'true';
-  }
-
-  private bindWsLogin() {
+  async connect(): Promise<void> {
     try {
-      this.apiService.wsapi.loginSubscription.subscribe((rxx) => {
-        if (!rxx) return;
-        this.apiService.myTab1 = this as any;
-        this.apiService.clientId.clientId = rxx.clientId;
-        this.apiService.wsAlive.time = new Date();
-        this.apiService.wsAlive.isAlive = this.apiService.checkOnlineStatus();
-        this.loadStock();
-      });
+      this.serial = this.apiService.serialPort || this.serial;
     } catch {}
   }
 
-  private bindDeductOrder() {
-    this.apiService.onDeductOrderUpdate((position) => {
-      try {
-        const ind = this.orders.findIndex((v) => v.position == position);
-        if (ind != -1) this.orders.splice(ind, 1);
-        this.getSummarizeOrder();
-        this.localSave();
-      } catch (error) {
-        console.log(' error on event emitter');
-      }
-    });
+  async loadPaidBills(): Promise<void> {
+    // copy body from Tab1.loadPaidBills if remaining-drop modal is needed
   }
 
-  private bindAlive() {
-    this.WSAPIService.aliveSubscription.subscribe(async (res) => {
-      try {
-        this.lastUpdate = Date.now();
-        const r = res?.data?.setting;
-        if (!r || !this.readyState) return;
-
-        if (r?.refresh) return this.apiService.reloadPage();
-        if (r?.exit) {
-          setTimeout(() => this.apiService.exitApp(), 5000);
-          return;
-        }
-        if (r?.reboot) {
-          setTimeout(() => this.apiService.rebootMachine(), 5000);
-          return;
-        }
-        if (r?.recoverSale) {
-          this.storage.set('saleStock', [], 'stock');
-          setTimeout(() => this.apiService.reloadPage(), 1000);
-          return;
-        }
-
-        if (this.allowVending !== r.allowVending) {
-          this.allowVending = r.allowVending;
-        }
-        if (this.offlineMode != r.offlineMode) {
-          this.offlineMode = r.offlineMode;
-          localStorage.setItem('offlineMode', this.offlineMode ? 'true' : 'false');
-        }
-        if (this.isMusicMuted != r.isMusicMuted) {
-          this.isMusicMuted = r.isMusicMuted;
-          localStorage.setItem('isMusicMuted', this.isMusicMuted ? 'yes' : '');
-        }
-        if (this.isRobotMuted != r.isRobotMuted) {
-          this.isRobotMuted = r.isRobotMuted;
-          localStorage.setItem('isRobotMuted', this.isRobotMuted ? 'yes' : '');
-        }
-        if (this.musicVolume != r.musicVolume) {
-          this.musicVolume = r.musicVolume;
-          localStorage.setItem('musicVolume', this.musicVolume.toString());
-        }
-
-        if (this.NV9USB) {
-          if (this.allowCashIn != r.allowCashIn) {
-            this.allowCashIn = r.allowCashIn;
-            if (this.allowCashIn) this.enableCash();
-            else this.disableCash();
-          }
-        }
-      } catch (error) {
-        Toast.show({
-          text: 'Error alive ' + JSON.stringify(error || '{}'),
-          duration: 'long',
-        });
-      }
-    });
+  async _processLoopCheckLaoQRPaid(): Promise<void> {
+    // dock already polls QR; keep for old call sites
   }
-
-  private addLogMessage(log: IlogSerial, message: string, consoleMessage?: string): void {
-    addLogMessage(log, message, consoleMessage);
-  }
-
-
-
-  /**
- * Paste these methods into HmVendingKioskPage.
- * Replace addOrder / refreshOrder if they call apiService.reloadPage().
- */
-
-
-
-
-
-
-
-
-
-
-async ngOnInitPhotosHook() {
-  // call at end of ngOnInit:
-  await this.loadPhotos();
-}
-
-
-photoOf(sl: any, size = 256): string {
-  const id = sl?.stock?.image;
-  if (!id) return this.hmLogo;
-  const cached = this.apiService?.imageList?.[id];
-  if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
-  return downloadPhotoUrl(id, size, size) || this.hmLogo;
-}
-
-onPhotoError(ev: Event, sl: any): void {
-  const img = ev.target as HTMLImageElement;
-  if (!img) return;
-  const step = Number(img.dataset['step'] || '0');
-  const id = sl?.stock?.image;
-  if (step === 0 && id) {
-    img.dataset['step'] = '1';
-    img.src = downloadPhotoUrl(id, 64, 64);
-    return;
-  }
-  img.dataset['step'] = '2';
-  img.src = this.hmLogo;
-}
-
-async loadPhotos(): Promise<void> {
-  if (!this.apiService.imageList) this.apiService.imageList = {};
-  for (const sl of this.saleList || []) {
-    const id = sl?.stock?.image;
-    if (!id || this.apiService.imageList[id]) continue;
-    try {
-      const d = sl.updatedAt ? new Date(sl.updatedAt) : new Date();
-      const saved: any = await this.appCaching.saveCachingPhoto(
-        downloadPhotoUrl(id, 256, 256),
-        d,
-        String(sl.stock?.id ?? id),
-      );
-      const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved;
-      let v = parsed?.v || parsed;
-      if (typeof v === 'string' && v.indexOf('data:application/octet-stream') !== -1) {
-        v = v.replace('data:application/octet-stream', 'data:image/jpeg');
-      }
-      if (typeof v === 'string' && v.startsWith('data:image')) {
-        this.apiService.imageList[id] = v;
-      } else {
-        this.apiService.imageList[id] = downloadPhotoUrl(id, 256, 256);
-      }
-    } catch {
-      this.apiService.imageList[id] = downloadPhotoUrl(id, 256, 256);
-    }
-  }
-  this.ref.detectChanges();
-}
-
-addOrder(sl: IVendingMachineSale): void {
-  if (!sl?.stock || sl.stock.price == 0) return;
-  const remaining = sl.stock.qtty - this.checkCartCount(sl.position);
-  if (remaining <= 0) return;
-  if (this.getTotalSale.q >= 10) {
-    this.apiService.toast
-      ?.create({ message: 'ສູງສຸດ 10 ລາຍການ', duration: 1500 })
-      .then((t) => t.present());
-    return;
-  }
-  const line = JSON.parse(JSON.stringify(sl)) as IVendingMachineSale;
-  line.stock.qtty = 1;
-  this.orders.push(line);
-  this.getSummarizeOrder();
-  this.localSave();
-  this.setLastClick();
-  this.ref.detectChanges();
-}
-
-handleRefresh(ev?: any): void {
-  this.loadStock();
-  this.localLoad();
-  this.loadBalance();
-  this.loadPhotos();
-  setTimeout(() => ev?.target?.complete?.(), 800);
-}
 }

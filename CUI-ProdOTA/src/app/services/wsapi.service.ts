@@ -15,9 +15,9 @@ import { environment } from 'src/environments/environment';
 })
 export class WsapiService implements OnDestroy {
   private wsurl = 'ws://localhost:9009';
-  private webSocket: WebSocket | null = null;
-  private machineId: string;
-  private otp: string;
+  public webSocket: WebSocket | null = null;
+  private machineId: string='';
+  private otp: string='';
   retries = 1;
 
   private reconnectAttempts = 0;

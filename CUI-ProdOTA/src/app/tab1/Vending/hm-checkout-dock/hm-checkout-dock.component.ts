@@ -17,6 +17,9 @@ import { BlockchainDbService } from 'src/app/blockchain-db';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { downloadPhotoUrl } from '../../../filemanager-url';
+import { IdleService } from 'src/app/services/idle.service';
+
+
 @Component({
   selector: 'app-hm-checkout-dock',
   templateUrl: './hm-checkout-dock.component.html',
@@ -29,8 +32,8 @@ import { downloadPhotoUrl } from '../../../filemanager-url';
 export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
 
-  @Input() orders: Array<any>;
-  @Input() getTotalSale: any;
+  @Input() orders: Array<IVendingMachineSale>=[];
+  @Input() getTotalSale = { q: 0, t: 0 };
   @Input() contact = localStorage.getItem('contact') || '55516321';
   @Input() machineId = {} as IMachineId;
   @Input() cashValue = 0;
@@ -52,10 +55,10 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
   lists: Array<any> = [];
   drawCircle: Array<any> = [];
-  billDate: Date;
-  paymentmethod: string;
-  paymentText: string;
-  paymentLogo: string;
+  billDate: Date = new Date();
+  paymentmethod: string='';
+  paymentText: string='';
+  paymentLogo: string='';
   isPayment: boolean = false;
   // isLoading: boolean = false;
 
@@ -230,6 +233,8 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     public vendingAPIService: VendingAPIService,
     public WSAPIService: WsapiService,
     public blockchainDbService: BlockchainDbService,
+    public idleService: IdleService
+
 
   ) {
     this.apiService.___AutoPaymentPage = this.modalCtrl;
@@ -330,34 +335,18 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
       this.close();
     });
 
-    // Absolute safety: this modal must never stay open forever on a vending machine
-    this.startPageHardClose();
-
-    await this.loadCountDownBillNew();
+this.scheduleGenerate(); 
+this.bumpIdle();
 
 
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (!changes['orders'] && !changes['getTotalSale']) return;
-    if (!this.apiService?.myTab1) return;
-    this.refreshOrder();
-  }
 
   enableClickMethod() {
 
   }
 
-  refreshOrder() {
-    const local = this.apiService.myTab1.localLoad();
-    this.parseorders = local.orders;
-    this.parseGetTotalSale = local.sum;
-    this.orders = local.orders;
-    this.getTotalSale = local.sum;
-    if (this.parseGetTotalSale.q > 10) {
-      this.apiService.reloadPage();
-    }
-  }
+
 
 
   ngOnDestroy(): void {
@@ -427,15 +416,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     } catch (e) { }
   }
 
-  /** Customer taps QR area to retry generate after fail/timeout */
-  retryGenerateQr(): void {
-    if (!this.showQrRetry) return;
-    // Unlimited retries — page still always closes via retry window / hard close
-    clearInterval(this.countdownQrRetryTimer);
-    this.showQrRetry = false;
-    this.qrRetryCount++;
-    this._processLoopDestroyLastest();
-  }
+
 
   /** Absolute max lifetime for this payment page — never hang forever */
   private startPageHardClose(): void {
@@ -563,7 +544,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
         }, 1000);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -598,7 +579,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
           }
         }, 1000);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -713,7 +694,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-      } catch (error) {
+      } catch (error:any) {
         this.handleQrGenerateFailed(`CATCH Generate QR :${error?.message || error}`);
         resolve(error.message);
       }
@@ -925,7 +906,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-      } catch (error) {
+      } catch (error:any) {
         // this.apiService.alertError(error.message);
 
         // when choose payment method and it does not work this process will auto loop check laab balance
@@ -1021,7 +1002,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
         }, 1000);
 
-      } catch (error) {
+      } catch (error:any) {
         // this.apiService.alertError(error.message);
 
         // when choose payment method and it does not work this process will auto loop check laab balance
@@ -1110,7 +1091,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
           }
         }, 1000);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1122,7 +1103,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isPayment = false;
         // this.isLoading = true;
-        this.paymentmethod = undefined;
+        this.paymentmethod = '';
 
         this.countdownLAABDestroyTimer = setInterval(async () => {
           this.countdownLAABDestroy--;
@@ -1138,7 +1119,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
           }
         }, 1000);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1161,7 +1142,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1219,7 +1200,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
         // resolve(await this._processLoopDestroyNew());
 
 
-      } catch (error) {
+      } catch (error:any) {
 
         this.apiService.alertError(error.message);
         resolve(error.message);
@@ -1251,7 +1232,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
             this.apiService
               .showModal(RemainingbilllocalPage, { r: this.apiService.pb, serial: this.apiService.myTab1.serial }, false)
               .then((r) => {
-                r.present();
+                r?.present();
               });
           } else {
             this.apiService.toast.create({
@@ -1269,7 +1250,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
         } else {
           this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກຕົວເລືອກອື່ນແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
         }
-      } catch (error) {
+      } catch (error:any) {
 
         this.apiService.alertError(error.message);
         resolve(error.message);
@@ -1295,7 +1276,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
         setTimeout(() => {
           this.isEnableCheckCallback = true;
         }, 5000);
-      } catch (error) {
+      } catch (error:any) {
 
         this.apiService.alertError(error.message);
         resolve(error.message);
@@ -1305,30 +1286,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-  // DOM section
-  private checkOrders(orderlistElement: HTMLDivElement) {
-    const lists: Array<any> = this.orders;
-    // const lists: Array<any> = this.lists;
-    const height7Order: boolean = lists != undefined && Object.entries(lists).length > 0 && Object.entries(lists).length <= 7;
-    const height11Order: boolean = lists != undefined && Object.entries(lists).length > 7 && Object.entries(lists).length <= 11;
-    const height15Order: boolean = lists != undefined && Object.entries(lists).length > 11 && Object.entries(lists).length <= 15;
-    const height19Order: boolean = lists != undefined && Object.entries(lists).length > 15 && Object.entries(lists).length <= 19;
 
-
-    if (height7Order) {
-      console.log(`7 orders`);
-      orderlistElement.classList.add('order-7');
-    } else if (height11Order) {
-      console.log(`11 orders`);
-      orderlistElement.classList.add('order-11');
-    } else if (height15Order) {
-      console.log(`15 orders`);
-      orderlistElement.classList.add('order-15');
-    } else {
-      console.log(`19 orders`);
-      orderlistElement.classList.add('order-19');
-    }
-  }
 
 
   // refactor section
@@ -1395,6 +1353,201 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     if (HmCheckoutDockComponent.message) HmCheckoutDockComponent.message.close();
     HmCheckoutDockComponent.message = undefined;
   }
+
+
+
+  refreshOrder() {
+    const local = this.apiService.myTab1?.localLoad?.() || {
+      orders: this.orders || [],
+      sum: this.getTotalSale || { q: 0, t: 0 },
+    };
+    this.parseorders = local.orders;
+    this.parseGetTotalSale = local.sum;
+    this.orders = local.orders;
+    this.getTotalSale = local.sum;
+  }
+
+  private checkOrders(orderlistElement: HTMLDivElement) {
+    if (!orderlistElement) return;
+    const n = Object.entries(this.orders || {}).length;
+    if (n <= 7) orderlistElement.classList.add('order-7');
+    else if (n <= 11) orderlistElement.classList.add('order-11');
+    else if (n <= 15) orderlistElement.classList.add('order-15');
+    else orderlistElement.classList.add('order-19');
+  }
+
+  loadDOMs() {
+    this.reloadElement = setInterval(() => {
+      clearInterval(this.reloadElement);
+      HmCheckoutDockComponent.orderlistElement = document.querySelector(
+        '.order-list, .dock__cart',
+      ) as HTMLDivElement;
+      HmCheckoutDockComponent.laabCardFooter = document.querySelector(
+        '.laab-card-footer, .dock__pay',
+      ) as HTMLDivElement;
+      HmCheckoutDockComponent.billWaveElement = document.querySelector('.bill-wave') as HTMLDivElement;
+      HmCheckoutDockComponent.qrimgElement = document.querySelector('#qr-img') as HTMLImageElement;
+      HmCheckoutDockComponent.btnLAABGo = document.querySelector('#btn-laab-go') as HTMLHRElement;
+      HmCheckoutDockComponent.laabqrimgElement = document.querySelector(
+        '#laab-qr-img',
+      ) as HTMLImageElement;
+      HmCheckoutDockComponent.ionbackdropElement = document.querySelectorAll(
+        'ion-backdrop',
+      ) as NodeListOf<HTMLIonBackdropElement>;
+      this.checkOrders(HmCheckoutDockComponent.orderlistElement);
+    });
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+private onIdle() {
+  this.clearCartOnly();
+  this.openAds();
+}
+
+
+
+
+
+
+
+
+
+
+private qrDebounce: any;
+private idleTimer: any;
+private qrAbort: AbortController | null = null;
+readonly idleMs = 5 * 60 * 1000;
+
+photoOf(order: any, size = 96): string {
+  const id = order?.stock?.image;
+  if (!id) return '';
+  const cached = this.apiService?.imageList?.[id];
+  if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
+  if (typeof cached === 'string' && cached.startsWith('http')) return cached;
+  return downloadPhotoUrl(id, size, size);
+}
+
+onPhotoError(ev: Event, order: any): void {
+  const img = ev.target as HTMLImageElement;
+  if (!img) return;
+  const id = order?.stock?.image;
+  if (id && img.dataset['step'] !== '1') {
+    img.dataset['step'] = '1';
+    img.src = downloadPhotoUrl(id, 64, 64);
+  }
+}
+
+ngOnChanges(changes: SimpleChanges): void {
+  if (!changes['orders'] && !changes['getTotalSale']) return;
+  this.invalidateQr();
+  this.scheduleGenerate();
+  this.bumpIdle();
+}
+
+removeOrder(index: number) {
+  this.removeAt.emit(index);
+}
+
+clearCartOnly() {
+  this.invalidateQr();
+  this.qrDataUrl = '';
+  this.isPayment = false;
+  this.isQrGenerating = false;
+  this.showQrRetry = false;
+  this.cartCleared.emit();
+}
+
+invalidateQr() {
+  this.qrRequestId++;
+  try {
+    this.qrAbort?.abort();
+  } catch {}
+  this.qrAbort = new AbortController();
+  clearTimeout(this.qrDebounce);
+}
+
+scheduleGenerate() {
+  if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
+    this.qrDataUrl = '';
+    this.isQrGenerating = false;
+    this.isPayment = false;
+    return;
+  }
+  this.isQrGenerating = true;
+  this.showQrRetry = false;
+  const requestId = this.qrRequestId;
+  const signal = this.qrAbort?.signal;
+  this.qrDebounce = setTimeout(() => this.generateLaoQr(requestId, signal), 120);
+}
+
+retryGenerateQr() {
+  this.qrRetryCount++;
+  this.invalidateQr();
+  this.scheduleGenerate();
+}
+
+private generateLaoQr(requestId: number, signal?: AbortSignal) {
+  if (requestId !== this.qrRequestId || signal?.aborted) return;
+  this.isQrGenerating = true;
+  this.showQrRetry = false;
+  const orders = this.orders;
+  const total = this.getTotalSale.t;
+  this.apiService
+    .buyLaoQRQ(orders, total)
+    .then(async (rx) => {
+      if (requestId !== this.qrRequestId || signal?.aborted) return;
+      const response: any = rx?.data;
+      if (response?.status != 1 || !response?.data?.qr) {
+        this.showQrRetry = true;
+        this.isQrGenerating = false;
+        return;
+      }
+      const run = response.data;
+      localStorage.setItem('transactionID', run.transactionID);
+      try {
+        const canvas: any = await Promise.race([
+          new qrlogo({ content: run.qr }).getCanvas(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
+        ]);
+        if (requestId !== this.qrRequestId || signal?.aborted) return;
+        this.qrDataUrl = canvas.toDataURL();
+        this.isPayment = true;
+        this.isQrGenerating = false;
+      } catch {
+        if (requestId !== this.qrRequestId) return;
+        this.showQrRetry = true;
+        this.isQrGenerating = false;
+      }
+    })
+    .catch(() => {
+      if (requestId !== this.qrRequestId || signal?.aborted) return;
+      this.showQrRetry = true;
+      this.isQrGenerating = false;
+    });
+}
+
+bumpIdle() {
+  clearTimeout(this.idleTimer);
+  this.idleTimer = setTimeout(() => this.clearCartOnly(), this.idleMs);
+}
+
+openAds() {
+  this.idleService?.closeAds?.();
+}
 }
 
 enum IPaymentMethod {
@@ -1423,16 +1576,16 @@ class PaymentStation {
   // paramters
   private orders: Array<any> = [];
   private getTotalSale: any = {} as any;
-  private paymentmethod: string;
+  private paymentmethod: string='';
 
   // props
   refund: number = 0;
-  qrcode: string;
+  qrcode: string ='';
 
 
   constructor(
     apiService: ApiService,
-    vendingAPIService: VendingAPIService
+    vendingAPIService: VendingAPIService,
   ) {
     this.apiService = apiService;
     this.vendingAPIService = vendingAPIService;
@@ -1466,7 +1619,7 @@ class PaymentStation {
         // (await this.workload).dismiss();
         resolve(this.Commit());
 
-      } catch (error) {
+      } catch (error:any) {
         // (await this.workload).dismiss();
         resolve(error.message);
       }
@@ -1492,7 +1645,7 @@ class PaymentStation {
         // (await this.workload).dismiss();
         resolve(this.Commit());
 
-      } catch (error) {
+      } catch (error:any) {
         // (await this.workload).dismiss();
         resolve(error.message);
       }
@@ -1531,7 +1684,7 @@ class PaymentStation {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1558,7 +1711,7 @@ class PaymentStation {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1588,7 +1741,7 @@ class PaymentStation {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1627,7 +1780,7 @@ class LAABPayment {
 
   private orders: Array<any> = [];
   private getTotalSale: any = {} as any;
-  private amount: number;
+  private amount: number=-1;
 
   // props
   private data: Array<any> = [];
@@ -1660,7 +1813,7 @@ class LAABPayment {
 
         resolve(this.Commit());
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1713,7 +1866,7 @@ class LAABPayment {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1764,7 +1917,7 @@ class LaoQRPayment {
   private data: Array<any> = [];
   private qtty: number = 0;
   private total: number = 0;
-  private qrcode: string;
+  private qrcode: string='';
 
   constructor(
     apiService: ApiService,
@@ -1795,7 +1948,7 @@ class LaoQRPayment {
 
         resolve(this.Commit());
 
-      } catch (error) {
+      } catch (error :any) {
         resolve(error.message);
       }
     });
@@ -1806,7 +1959,7 @@ class LaoQRPayment {
       try {
         const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
         resolve(run);
-      } catch (error) {
+      } catch (error :any) {
         resolve({ status: 0, message: error.message });
       }
     }
@@ -1877,7 +2030,7 @@ class LaoQRPayment {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error :any) {
         resolve(error.message);
       }
     });
@@ -1922,7 +2075,7 @@ class MMoneyPayment {
   private data: Array<any> = [];
   private qtty: number = 0;
   private total: number = 0;
-  private qrcode: string;
+  private qrcode: string='';
 
   constructor(
     apiService: ApiService,
@@ -1954,7 +2107,7 @@ class MMoneyPayment {
 
         resolve(this.Commit());
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -2025,7 +2178,7 @@ class MMoneyPayment {
 
         resolve(IENMessage.success);
 
-      } catch (error) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -2058,92 +2211,5 @@ class MMoneyPayment {
 
 
 
-
-
-  refreshOrder() {
-    const local = this.apiService.myTab1?.localLoad?.() || {
-      orders: this.orders || [],
-      sum: this.getTotalSale || { q: 0, t: 0 },
-    };
-    this.parseorders = local.orders;
-    this.parseGetTotalSale = local.sum;
-    this.orders = local.orders;
-    this.getTotalSale = local.sum;
-  }
-
-  private checkOrders(orderlistElement: HTMLDivElement) {
-    if (!orderlistElement) return;
-    const n = Object.entries(this.orders || {}).length;
-    if (n <= 7) orderlistElement.classList.add('order-7');
-    else if (n <= 11) orderlistElement.classList.add('order-11');
-    else if (n <= 15) orderlistElement.classList.add('order-15');
-    else orderlistElement.classList.add('order-19');
-  }
-
-  loadDOMs() {
-    this.reloadElement = setInterval(() => {
-      clearInterval(this.reloadElement);
-      HmCheckoutDockComponent.orderlistElement = document.querySelector(
-        '.order-list, .dock__cart',
-      ) as HTMLDivElement;
-      HmCheckoutDockComponent.laabCardFooter = document.querySelector(
-        '.laab-card-footer, .dock__pay',
-      ) as HTMLDivElement;
-      HmCheckoutDockComponent.billWaveElement = document.querySelector('.bill-wave') as HTMLDivElement;
-      HmCheckoutDockComponent.qrimgElement = document.querySelector('#qr-img') as HTMLImageElement;
-      HmCheckoutDockComponent.btnLAABGo = document.querySelector('#btn-laab-go') as HTMLHRElement;
-      HmCheckoutDockComponent.laabqrimgElement = document.querySelector(
-        '#laab-qr-img',
-      ) as HTMLImageElement;
-      HmCheckoutDockComponent.ionbackdropElement = document.querySelectorAll(
-        'ion-backdrop',
-      ) as NodeListOf<HTMLIonBackdropElement>;
-      this.checkOrders(HmCheckoutDockComponent.orderlistElement);
-    });
-  }
-
-
-
-  photoOf(order: any, size = 96): string {
-    const id = order?.stock?.image;
-    if (!id) return '';
-    const cached = this.apiService?.imageList?.[id];
-    if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
-    return downloadPhotoUrl(id, size, size);
-  }
-
-  onPhotoError(ev: Event, order: any): void {
-    const img = ev.target as HTMLImageElement;
-    if (!img) return;
-    const id = order?.stock?.image;
-    if (id && img.dataset['step'] !== '1') {
-      img.dataset['step'] = '1';
-      img.src = downloadPhotoUrl(id, 64, 64);
-    }
-  }
-
-  /** Parent owns the cart — emit once, do not splice+removeCart+refresh (double delete). */
-  removeOrder(index: number) {
-    if (index == null || index < 0) return;
-    const last = (this.parseorders?.length || 0) <= 1;
-    this.removeAt.emit(index);
-    if (last) {
-      this.parseorders = [];
-      this.parseGetTotalSale = { q: 0, t: 0 };
-      this.qrDataUrl = '';
-      this.isPayment = false;
-      this.showQrRetry = false;
-      this.cartCleared.emit();
-    }
-  }
-
-  clearCartOnly() {
-    this.parseorders = [];
-    this.parseGetTotalSale = { q: 0, t: 0 };
-    this.qrDataUrl = '';
-    this.isPayment = false;
-    this.showQrRetry = false;
-    this.cartCleared.emit();
-  }
 
 }
