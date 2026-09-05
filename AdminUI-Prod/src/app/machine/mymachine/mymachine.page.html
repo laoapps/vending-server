@@ -140,6 +140,16 @@
           </ion-range>
         </ion-item>
 
+        <ion-item>
+          <ion-label>Checkout UI</ion-label>
+          <ion-select slot="end" interface="popover" [(ngModel)]="settings[p.machineId].checkoutUiVersion"
+            placeholder="default">
+            <ion-select-option value="default">Default</ion-select-option>
+            <ion-select-option value="v2">v2</ion-select-option>
+            <ion-select-option value="v3">v3 (Kiosk)</ion-select-option>
+          </ion-select>
+        </ion-item>
+
         <ion-button expand="block" (click)="updateSetting(p.machineId)">Update Setting</ion-button>
         <ion-button expand="block" color="medium" (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
       </div>

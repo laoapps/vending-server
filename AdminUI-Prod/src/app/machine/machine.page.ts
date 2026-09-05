@@ -249,6 +249,12 @@ export class MachinePage implements OnInit {
           if (setting.adsList == undefined || setting.adsList == null) {
             setting.adsList = [];
           }
+          if (!setting.checkoutUiVersion) {
+            setting.checkoutUiVersion = 'default';
+          }
+          if (setting.checkoutUiVersion === 'kiosk') {
+            setting.checkoutUiVersion = 'v3';
+          }
           setting.adsList = setting.adsList?.join(',')
 
 

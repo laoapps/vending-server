@@ -34,7 +34,7 @@ export class SettingPage implements OnInit, OnDestroy {
   isHMVending = localStorage.getItem('isHMVending') ? true : false;
   francisemode = localStorage.getItem('francisemode') ? true : false;
   qrMode = localStorage.getItem('qrMode') ? true : false;
-  checkoutUiVersion: 'default' | 'v2' = localStorage.getItem('checkoutUiVersion') === 'v2' ? 'v2' : 'default';
+  checkoutUiVersion: 'default' | 'v2' | 'v3' = ApiService.readCheckoutUiVersion();
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
   productFallLimit = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
@@ -102,8 +102,12 @@ export class SettingPage implements OnInit, OnDestroy {
     localStorage.setItem('isAds', this.isAds ? 'yes' : '');
     localStorage.setItem('francisemode', this.francisemode ? 'yes' : '');
     localStorage.setItem('qrMode', this.qrMode ? 'yes' : '');
-    localStorage.setItem('checkoutUiVersion', this.checkoutUiVersion === 'v2' ? 'v2' : 'default');
-    this.apiService.checkoutUiVersion = this.checkoutUiVersion === 'v2' ? 'v2' : 'default';
+    const version: 'default' | 'v2' | 'v3' =
+      this.checkoutUiVersion === 'v2' || this.checkoutUiVersion === 'v3'
+        ? this.checkoutUiVersion
+        : 'default';
+    localStorage.setItem('checkoutUiVersion', version);
+    this.apiService.checkoutUiVersion = version;
     localStorage.setItem('musicVolume', this.musicVolume + '');
 
     localStorage.setItem('portName', this.portName);
