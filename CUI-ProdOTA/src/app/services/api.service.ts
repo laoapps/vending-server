@@ -487,7 +487,47 @@ export class ApiService {
   allowTopUp = false;
   isQrPayment = false;
   allowCashIn = false;
-  checkoutUiVersion: 'default' | 'v2' = localStorage.getItem('checkoutUiVersion') === 'v2' ? 'v2' : 'default';
+  checkoutUiVersion: 'default' | 'v2' | 'v3' = ApiService.readCheckoutUiVersion();
+  private checkoutUiApplyBusy = false;
+
+  static readCheckoutUiVersion(): 'default' | 'v2' | 'v3' {
+    return ApiService.normalizeCheckoutUiVersion(localStorage.getItem('checkoutUiVersion')) || 'default';
+  }
+
+  static normalizeCheckoutUiVersion(raw: any): 'default' | 'v2' | 'v3' | null {
+    const v = (raw ?? '').toString().trim();
+    if (!v) return null;
+    if (v === 'v2' || v === 'v3') return v;
+    if (v === 'kiosk') return 'v3';
+    if (v === 'default') return 'default';
+    return null;
+  }
+
+  /** Apply remote setting; returns true when value changed (caller may reload). */
+  applyRemoteCheckoutUiVersion(raw: any): boolean {
+    const next = ApiService.normalizeCheckoutUiVersion(raw);
+    if (!next) return false;
+    if (this.checkoutUiVersion === next) return false;
+    this.checkoutUiVersion = next;
+    localStorage.setItem('checkoutUiVersion', next);
+    console.log('Update checkoutUiVersion to', next);
+    return true;
+  }
+
+  applyRemoteCheckoutUiVersionAndReload(raw: any): void {
+    if (this.checkoutUiApplyBusy) return;
+    if (!this.applyRemoteCheckoutUiVersion(raw)) return;
+    this.checkoutUiApplyBusy = true;
+    try {
+      this.reloadPage();
+    } catch (e) {
+      this.checkoutUiApplyBusy = false;
+    }
+  }
+
+  checkoutUiRoute(): string {
+    return this.checkoutUiVersion === 'v3' ? '/hm-vending-kiosk' : '/tabs/tab1';
+  }
 
   isFranciseMode: boolean = false;
 
@@ -621,6 +661,9 @@ export class ApiService {
         if (this.isAds !== s.isAds) this.isAds = s.isAds ?? false;
         if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
         if (this.dropDelay !== s.dropDelay) this.dropDelay = s.dropDelay ?? 10;
+        if (s?.checkoutUiVersion != null && s?.checkoutUiVersion !== '') {
+          this.applyRemoteCheckoutUiVersionAndReload(s.checkoutUiVersion);
+        }
         // if (this.brightnessValue != s.brightness) {
         //   this.brightnessValue = s.brightness ?? 1;
         //   try {

@@ -33,6 +33,12 @@ export class SettingConfigPage implements OnInit {
   francisemode = localStorage.getItem('francisemode') ? true : false;
   qrMode = localStorage.getItem('qrMode') ? true : false;
   musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
+  checkoutUiVersion: 'default' | 'v2' | 'v3' = (() => {
+    const v = (localStorage.getItem('checkoutUiVersion') || '').trim();
+    if (v === 'v2' || v === 'v3') return v;
+    if (v === 'kiosk') return 'v3';
+    return 'default';
+  })();
   productFallLimit = localStorage.getItem('product_fall_limit') ? Number(localStorage.getItem('product_fall_limit')) : 10;
 
   dropSensor = localStorage.getItem('dropSensor') ? Number(localStorage.getItem('dropSensor')) : 1;
@@ -169,6 +175,10 @@ export class SettingConfigPage implements OnInit {
     configData.qrMode = this.qrMode ? 'yes' : '';
     // localStorage.setItem('musicVolume', this.musicVolume + '');
     configData.musicVolume = this.musicVolume + '';
+    configData.checkoutUiVersion =
+      this.checkoutUiVersion === 'v2' || this.checkoutUiVersion === 'v3'
+        ? this.checkoutUiVersion
+        : 'default';
 
     // localStorage.setItem('portName', this.portName);
     configData.portName = this.portName;

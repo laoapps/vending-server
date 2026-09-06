@@ -92,6 +92,12 @@ export class QrconfigMachinePage implements OnInit, OnDestroy {
       localStorage.setItem('francisemode', configData.francisemode ? 'yes' : '');
       localStorage.setItem('qrMode', configData.qrMode ? 'yes' : '');
       localStorage.setItem('musicVolume', configData.musicVolume + '');
+      if (configData.checkoutUiVersion) {
+        let v = String(configData.checkoutUiVersion).trim();
+        if (v === 'kiosk') v = 'v3';
+        if (v !== 'v2' && v !== 'v3') v = 'default';
+        localStorage.setItem('checkoutUiVersion', v);
+      }
 
       localStorage.setItem('portName', configData.portName);
       localStorage.setItem('baudRate', configData.baudRate);

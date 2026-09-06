@@ -317,6 +317,22 @@
 
                       <label class="setting-field setting-full">
                         <span class="field-label">
+                          <ion-icon name="phone-portrait-outline"></ion-icon>
+                          Checkout UI
+                        </span>
+                        <ion-select
+                          class="custominput"
+                          interface="popover"
+                          [(ngModel)]="settings[p.machineId].checkoutUiVersion"
+                          placeholder="default">
+                          <ion-select-option value="default">Default</ion-select-option>
+                          <ion-select-option value="v2">v2</ion-select-option>
+                          <ion-select-option value="v3">v3 (Kiosk)</ion-select-option>
+                        </ion-select>
+                      </label>
+
+                      <label class="setting-field setting-full">
+                        <span class="field-label">
                           <ion-icon name="barcode-outline"></ion-icon>
                           Ads List
                         </span>

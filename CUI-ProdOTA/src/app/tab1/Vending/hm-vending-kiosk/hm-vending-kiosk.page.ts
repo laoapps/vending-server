@@ -101,6 +101,9 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
       }
       const r = res?.data?.setting;
       if (r?.refresh) this.apiService.reloadPage?.();
+      if (r?.checkoutUiVersion != null && r?.checkoutUiVersion !== '') {
+        this.apiService.applyRemoteCheckoutUiVersionAndReload(r.checkoutUiVersion);
+      }
     });
 
     const socket: WebSocket | undefined =

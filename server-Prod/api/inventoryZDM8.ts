@@ -5419,6 +5419,9 @@ export class InventoryZDM8 implements IBaseClass {
                                 const isMusicMuted = o.data[0]?.isMusicMuted || false;
                                 const isRobotMuted = o.data[0]?.isRobotMuted || false;
                                 const musicVolume = o.data[0]?.musicVolume || 0;
+                                let checkoutUiVersion = (o.data[0]?.checkoutUiVersion || 'default').toString().trim();
+                                if (checkoutUiVersion === 'kiosk') checkoutUiVersion = 'v3';
+                                if (checkoutUiVersion !== 'v2' && checkoutUiVersion !== 'v3') checkoutUiVersion = 'default';
                                 const adsList = o.data[0]?.adsList || [];
                                 const versionId = o.data[0]?.versionId || '';
                                 const qrPayment = o.data[0]?.qrPayment || false;
@@ -5455,7 +5458,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, adsList: adsList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode, dropDelay: dropDelay, brightness: brightness, location: location, latitude: latitude, longitude: longitude, shopPhone: shopPhone };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, checkoutUiVersion: checkoutUiVersion, adsList: adsList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode, dropDelay: dropDelay, brightness: brightness, location: location, latitude: latitude, longitude: longitude, shopPhone: shopPhone };
                                     r.data.push(a);
                                 }
                                 else {
@@ -5467,6 +5470,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.isMusicMuted = isMusicMuted;
                                     a.isRobotMuted = isRobotMuted;
                                     a.musicVolume = musicVolume;
+                                    a.checkoutUiVersion = checkoutUiVersion;
                                     a.adsList = adsList;
                                     a.versionId = versionId;
                                     a.qrPayment = qrPayment;
