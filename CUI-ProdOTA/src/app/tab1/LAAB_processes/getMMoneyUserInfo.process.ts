@@ -1,6 +1,6 @@
-import { IENMessage } from "src/app/models/base.model";
-import { ApiService } from "src/app/services/api.service";
-import { VendingAPIService } from "src/app/services/vending-api.service";
+import { IENMessage } from "../../models/base.model";
+import { ApiService } from "../../services/api.service";
+import { VendingAPIService } from "../../services/vending-api.service";
 import * as cryptojs from 'crypto-js';
 
 export class GetMMoneyUserInfoProccess {

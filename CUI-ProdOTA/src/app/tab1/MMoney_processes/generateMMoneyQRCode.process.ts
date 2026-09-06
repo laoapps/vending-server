@@ -1,7 +1,7 @@
-import { IENMessage } from "src/app/models/base.model";
-import { IGenerateQRCode } from "src/app/models/mmoney.model";
-import { ApiService } from "src/app/services/api.service";
-import { IVendingMachineBill } from "src/app/services/syste.model";
+import { IENMessage } from "../../models/base.model";
+import { IGenerateQRCode } from "../../models/mmoney.model";
+import { ApiService } from "../../services/api.service";
+import { IVendingMachineBill } from "../../services/syste.model";
 
 export class GenerateMMoneyQRCodeProcess {
 

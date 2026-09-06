@@ -1,8 +1,8 @@
-import { IENMessage } from "src/app/models/base.model";
-import { ApiService } from "src/app/services/api.service";
-import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
+import { IENMessage } from "../../models/base.model";
+import { ApiService } from "../../services/api.service";
+import { AppcachingserviceService } from "../../services/appcachingservice.service";
 import axios from "axios";
-import { CustomloadingPage } from "src/app/customloading/customloading.page";
+import { CustomloadingPage } from "../../customloading/customloading.page";
 
 export class LoadStockListProcess {
 
@@ -300,11 +300,11 @@ export class LoadStockListProcess {
 
 // fixed
 
-// import { IENMessage } from "src/app/models/base.model";
-// import { ApiService } from "src/app/services/api.service";
-// import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
+// import { IENMessage } from "../../models/base.model";
+// import { ApiService } from "../../services/api.service";
+// import { AppcachingserviceService } from "../../services/appcachingservice.service";
 // import axios from "axios";
-// import { CustomloadingPage } from "src/app/customloading/customloading.page";
+// import { CustomloadingPage } from "../../customloading/customloading.page";
 
 // export class LoadStockListProcess {
 

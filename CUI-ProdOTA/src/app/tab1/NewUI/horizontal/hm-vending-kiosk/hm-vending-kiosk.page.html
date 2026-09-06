@@ -1,0 +1,165 @@
+<ion-content class="kiosk-page" [fullscreen]="true" [scrollY]="false">
+<div
+  class="kiosk"
+  [class.kiosk--paying]="getTotalSale?.q > 0"
+  [class.kiosk--menu]="menuOpen"
+  (click)="onKioskPointer($event)"
+  (touchstart)="onKioskPointer($event)">
+
+  <app-hm-ads-banner class="kiosk-ads"></app-hm-ads-banner>
+
+  <section class="shelf" id="shelf">
+    <div class="product-grid">
+      <article
+        *ngFor="let sl of filteredSaleList; let i = index; trackBy: trackByPosition"
+        class="product-card"
+        [attr.data-position]="sl.position"
+        [class.product-card--free]="sl.stock.price == 0"
+        [class.product-card--buyable]="sl.stock.price != 0"
+        [class.product-card--in-cart]="checkCartCount(sl.position) > 0"
+        [style.animation-delay]="(i % 12) * 40 + 'ms'"
+        (click)="sl.stock.price != 0 && addOrder(sl)">
+
+        <div class="product-card__slot">
+          <span class="slot-num">{{ sl.position + compensation }}</span>
+          <span class="slot-machine">***{{ sl.machineId.substring(4) }}</span>
+        </div>
+
+        <div class="product-card__media">
+          <img
+            class="product-card__img"
+            [src]="photoOf(sl, 256)"
+            [alt]="sl.stock.name"
+            loading="lazy"
+            (error)="onPhotoError($event, sl)" />
+          <span *ngIf="checkCartCount(sl.position) > 0" class="product-card__qty">
+            ×{{ checkCartCount(sl.position) }}
+          </span>
+        </div>
+
+        <div class="product-card__body">
+          <h3 class="product-card__name">{{ sl.stock.name }}</h3>
+          <div class="product-card__meta">
+            <div class="product-card__price">
+              <span class="price-value">{{ sl.stock.price | number }}</span>
+              <span class="price-unit">LAK</span>
+            </div>
+            <div
+              class="product-card__stock"
+              [class.product-card__stock--low]="(sl.stock.qtty - checkCartCount(sl.position)) <= 2">
+              <ion-icon name="cube-sharp"></ion-icon>
+              <span>{{ sl.stock.qtty - checkCartCount(sl.position) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card__tap" *ngIf="sl.stock.price != 0">
+          <ion-icon name="add-circle"></ion-icon>
+          ເພີ່ມກະຕ່າ
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div class="checkout-layer" [class.checkout-layer--open]="getTotalSale?.q > 0">
+    <app-hm-checkout-dock
+      class="dock-host"
+      [orders]="orders"
+      [getTotalSale]="getTotalSale"
+      [contact]="contact"
+      [machineId]="machineId"
+      [cashValue]="apiService.cash?.value || 0"
+      [localBalance]="apiService.localBalance || 0"
+      [allowCashIn]="apiService.allowCashIn"
+      [isQrPayment]="apiService.isQrPayment"
+      (removeAt)="removeCart($event)"
+      (buyMore)="focusShelf()"
+      (cartCleared)="clearCart()"
+      (paid)="onCheckoutPaid($event)">
+    </app-hm-checkout-dock>
+  </div>
+
+  <nav class="action-bar" (click)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+    <button
+      type="button"
+      class="action-bar__logo"
+      title="Stock (password)"
+      (mousedown)="holdCount()"
+      (mouseup)="endCount()"
+      (mouseleave)="endCount()"
+      (touchstart)="holdCount()"
+      (touchend)="endCount()"
+      (click)="manageStock()">
+      <img [src]="apiService._cuiSetting?.imgLogo || hmLogo" alt="HM" />
+      <span>Stock</span>
+    </button>
+
+    <button type="button" class="action-bar__btn" (click)="openTestMotor()" title="Test motors">
+      <ion-icon name="thermometer-outline"></ion-icon>
+      <span>{{ _machineStatus?.status?.temp || '—' }}°</span>
+    </button>
+
+    <button type="button" class="action-bar__btn" (click)="loadPaidBills()" title="Pending drop">
+      <ion-icon name="cube-outline"></ion-icon>
+      <span>ບໍ່ຕົກ</span>
+    </button>
+
+    <button
+      type="button"
+      class="action-bar__money"
+      (click)="topUpEwallet()"
+      title="Admin money / config">
+      <small>LAK</small>
+      <strong>{{ currentBalance.value | number }}</strong>
+    </button>
+
+    <a class="action-bar__btn" href="javascript:void(0)" title="WhatsApp">
+      <ion-icon name="logo-whatsapp"></ion-icon>
+      <span>{{ contact }}</span>
+    </a>
+
+    <div class="action-bar__gear-wrap">
+      <button
+        type="button"
+        class="action-bar__btn action-bar__btn--gear"
+        [class.is-on]="menuOpen"
+        (click)="toggleMenu(); $event.stopPropagation()"
+        title="Menu">
+        <ion-icon name="settings-outline"></ion-icon>
+        <span>ເມນູ</span>
+      </button>
+
+      <div class="gear-menu" *ngIf="menuOpen" (click)="$event.stopPropagation()">
+        <button type="button" (click)="startDemoTour(); closeMenu()">
+          <ion-icon name="play-outline"></ion-icon>
+          Demo tour NOW
+        </button>
+        <button type="button" (click)="stopDemoTour(); closeMenu()">
+          <ion-icon name="stop-outline"></ion-icon>
+          Stop · back to 3 min idle
+        </button>
+        <button type="button" (click)="handleRefresh($event); closeMenu()">
+          <ion-icon name="refresh-outline"></ion-icon>
+          Reload stock
+        </button>
+        <button type="button" (click)="showSetting(); closeMenu()">
+          <ion-icon name="settings-outline"></ion-icon>
+          Main setting
+        </button>
+        <button type="button" (click)="openTestMotor(); closeMenu()">
+          <ion-icon name="construct-outline"></ion-icon>
+          Testing
+        </button>
+        <button type="button" (click)="showQrConfig(); closeMenu()">
+          <ion-icon name="qr-code-outline"></ion-icon>
+          QR config
+        </button>
+        <button type="button" (click)="topUpEwallet(); closeMenu()">
+          <ion-icon name="cash-outline"></ion-icon>
+          Admin money
+        </button>
+      </div>
+    </div>
+  </nav>
+</div>
+</ion-content>

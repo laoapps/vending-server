@@ -9,6 +9,7 @@ export class IdleService {
     private idleTimer: any;
     private idleTime = 30000; // 1 นาที
     private adsModal: HTMLIonModalElement | null = null;
+    private disabled = true;   // ← add
 
     constructor(
         private modalCtrl: ModalController,
@@ -16,6 +17,16 @@ export class IdleService {
         private ngZone: NgZone
     ) {
         this.startWatching();
+    }
+    disable() {
+        this.disabled = true;
+        clearTimeout(this.idleTimer);
+        this.closeAds();
+    }
+
+    enable() {
+        this.disabled = false;
+        this.resetTimer();
     }
 
     private startWatching() {
@@ -29,13 +40,14 @@ export class IdleService {
 
     private resetTimer() {
         clearTimeout(this.idleTimer);
-
+        if (this.disabled) return;
         this.idleTimer = setTimeout(() => {
             this.showAds();
         }, this.idleTime);
     }
 
     private async showAds() {
+        if (this.disabled) return;
         // ✅ เช็คก่อนว่ามี modal อะไรเปิดอยู่หรือเปล่า
         if (this.apiService.isAds) {
             const topModal = await this.modalCtrl.getTop();

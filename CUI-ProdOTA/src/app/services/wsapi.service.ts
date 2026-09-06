@@ -1,25 +1,22 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { setWsHeartbeat } from 'ws-heartbeat/client';
-import { EMACHINE_COMMAND, EMessage, IAlive, IBillProcess, IClientId, IReqModel, IResModel } from './syste.model';
+import { EMACHINE_COMMAND, IAlive, IBillProcess, IClientId, IReqModel, IResModel } from './syste.model';
 import * as cryptojs from 'crypto-js';
 import { BehaviorSubject } from 'rxjs/internal/BehaviorSubject';
 import { EventEmitter } from 'events';
 import { AppcachingserviceService } from './appcachingservice.service';
 import { IENMessage } from '../models/base.model';
-import { App } from '@capacitor/app';
 import { IndexerrorService } from '../indexerror.service';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WsapiService implements OnDestroy {
   private wsurl = 'ws://localhost:9009';
   public webSocket: WebSocket | null = null;
-  private machineId: string='';
-  private otp: string='';
+  private machineId = '';
+  private otp = '';
   retries = 1;
-
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 10;
   private reconnectDelay = 1000;
@@ -28,8 +25,11 @@ export class WsapiService implements OnDestroy {
   private connectionTimeout: any = null;
   private failureStartTime: number | null = null;
   private maxFailureDuration = 300000;
+  private replacing = false;
+  private reconnectTimer: any = null;
+  int: any = null;
 
-  private eventEmitter = new EventEmitter(); // Fixed typo
+  private eventEmitter = new EventEmitter();
   public connectionStatus = new BehaviorSubject<string>('disconnected');
   public balanceUpdateSubscription = new BehaviorSubject<number>(0);
   public loginSubscription = new BehaviorSubject<IClientId>(null);
@@ -39,65 +39,42 @@ export class WsapiService implements OnDestroy {
   public refreshSubscription = new BehaviorSubject<boolean>(false);
   public wsalertSubscription = new BehaviorSubject<any>(null);
 
-  retry: any;
   constructor(
     private cashingService: AppcachingserviceService,
     private IndexedLogDB: IndexerrorService,
-  ) { }
+  ) {}
 
   ngOnDestroy(): void {
     this.disconnect();
   }
 
-  int = null;
   reconnect() {
+    if (this.webSocket?.readyState === WebSocket.OPEN) return;
     this.connect(this.wsurl, this.machineId, this.otp);
   }
+
   connect(url: string, machineId: string, otp: string): void {
     this.wsurl = url;
     this.machineId = machineId;
     this.otp = otp;
+
+    if (this.webSocket?.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    this.replacing = true;
     this.disconnect();
+    this.replacing = false;
 
     this.connectionStatus.next('connecting');
     this.webSocket = new WebSocket(this.wsurl);
-
-
-    clearInterval(this.retries);
-    this.retry = null;
-    // setWsHeartbeat(this.webSocket, '{"command":"ping"}', { pingInterval: 10000, pingTimeout: 15000 });
-    if (this.int) {
-      clearInterval(this.int);
-      this.int = null;
-    }
-    this.int = setInterval(async () => {
-      if (this.webSocket?.readyState !== 1) {
-        console.log('websocket not ready');
-        return;
-      }
-      console.log('ping');
-      const allLogs = await this.IndexedLogDB.getAllErrorData();
-      // const settingVersion = localStorage.getItem('settingVersion') ?? 'NO';
-
-      this.send({
-        command: EMACHINE_COMMAND.ping, data: {
-          settingVersion: `${new Date().getTime()}`,
-          errorLog: allLogs,
-          clientVersion: environment.versionId || '0.0.0'
-        }, ip: '', message: '', status: -1, time: new Date().toString(), token: cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex)
-      });
-    }, 10000);
-
-    // setWsHeartbeat(this.webSocket, JSON.stringify({ command: EMACHINE_COMMAND.ping }), {
-    //   pingInterval: 10000,
-    //   pingTimeout: 15000
-    // });
+    this.startPing();
 
     this.connectionTimeout = setTimeout(() => {
       if (this.webSocket?.readyState !== WebSocket.OPEN) {
         console.log('Connection timed out');
         this.webSocket?.close();
-        this.IndexedLogDB.addBillProcess({ errorData: 'Connection timed out' })
+        this.IndexedLogDB.addBillProcess({ errorData: 'Connection timed out' });
       }
     }, 30000);
 
@@ -108,7 +85,6 @@ export class WsapiService implements OnDestroy {
       this.failureStartTime = null;
       this.connectionStatus.next('connected');
       clearTimeout(this.connectionTimeout);
-
       this.send({
         command: EMACHINE_COMMAND.login,
         data: '',
@@ -122,69 +98,62 @@ export class WsapiService implements OnDestroy {
 
     this.webSocket.onclose = (ev) => {
       console.log('WebSocket closed', ev);
-      this.IndexedLogDB.addBillProcess({ errorData: 'WebSocket closed' })
+      if (this.replacing) return;
+      this.IndexedLogDB.addBillProcess({ errorData: 'WebSocket closed' });
       this.connectionStatus.next('disconnected');
       this.scheduleReconnect();
     };
 
     this.webSocket.onerror = (ev) => {
       console.error('WebSocket error', ev);
-      this.IndexedLogDB.addBillProcess({ errorData: `WebSocket error ${JSON.stringify(ev)}` })
-      this.connectionStatus.next('disconnected');
-      this.webSocket?.close();
+      this.IndexedLogDB.addBillProcess({ errorData: `WebSocket error` });
     };
 
     this.webSocket.onmessage = async (ev) => {
       try {
         const res = JSON.parse(ev.data) as IResModel;
-        if (res) {
-          console.log('Received message', res);
-          switch (res.command) {
-            case 'ping':
-              console.log('Ping received');
-              this.aliveSubscription.next({
-                test: res.data?.test,
-                data: res.data,
-                balance: Number(res.data?.balance ?? '0'),
-                // message: res.message === EMessage.openstock ? EMessage.openstock : undefined,
-                message: res.message ?? undefined,
-
-              } as IAlive);
-              break;
-            case 'wsalert':
-              console.log('wsalert', res.data);
-              this.wsalertSubscription.next(res?.data);
-              const t = this.eventEmitter.emit('wsalert', res?.data);
-              console.log('t', t);
-              break;
-            case 'confirm':
-              res.data.transactionID = res.transactionID;
-              this.eventEmitter.emit('billProcess', res.data);
-              this.billProcessSubscription.next(res.data);
-              break;
-            case 'waitingt':
-              this.waitingDelivery.next(res.data);
-              break;
-            case 'login':
-              this.loginSubscription.next(res.data.data);
-              break;
-            case 'CREDIT_NOTE':
-              this.balanceUpdateSubscription.next(res.data);
-              break;
-            case 'refresh':
-              this.refreshSubscription.next(res.data);
-              break;
-            case 'resetCashing':
-              await this.resetCashing();
-              break;
-            case 'setMenus':
-              for (const element of res.data?.menu ?? []) {
-                this.setMenu(element?.menu, element.status);
-              }
-              break;
-            default:
-              break;
-          }
+        if (!res) return;
+        console.log('Received message', res);
+        switch (res.command) {
+          case 'ping':
+            this.aliveSubscription.next({
+              test: res.data?.test,
+              data: res.data,
+              balance: Number(res.data?.balance ?? '0'),
+              message: res.message ?? undefined,
+            } as IAlive);
+            break;
+          case 'wsalert':
+            this.wsalertSubscription.next(res?.data);
+            this.eventEmitter.emit('wsalert', res?.data);
+            break;
+          case 'confirm':
+            res.data.transactionID = res.transactionID;
+            this.eventEmitter.emit('billProcess', res.data);
+            this.billProcessSubscription.next(res.data);
+            break;
+          case 'waitingt':
+            this.waitingDelivery.next(res.data);
+            break;
+          case 'login':
+            this.loginSubscription.next(res.data?.data ?? res.data);
+            break;
+          case 'CREDIT_NOTE':
+            this.balanceUpdateSubscription.next(res.data);
+            break;
+          case 'refresh':
+            this.refreshSubscription.next(res.data);
+            break;
+          case 'resetCashing':
+            await this.resetCashing();
+            break;
+          case 'setMenus':
+            for (const element of res.data?.menu ?? []) {
+              this.setMenu(element?.menu, element.status);
+            }
+            break;
+          default:
+            break;
         }
       } catch (error) {
         console.error('WebSocket message error', error);
@@ -192,88 +161,87 @@ export class WsapiService implements OnDestroy {
     };
   }
 
+  private startPing(): void {
+    this.stopPing();
+    this.int = setInterval(async () => {
+      if (this.webSocket?.readyState !== WebSocket.OPEN) return;
+      const allLogs = await this.IndexedLogDB.getAllErrorData();
+      this.send({
+        command: EMACHINE_COMMAND.ping,
+        data: {
+          settingVersion: `${new Date().getTime()}`,
+          errorLog: allLogs,
+          clientVersion: environment.versionId || '0.0.0',
+        },
+        ip: '',
+        message: '',
+        status: -1,
+        time: new Date().toString(),
+        token: cryptojs.SHA256(this.machineId + this.otp).toString(cryptojs.enc.Hex),
+      });
+    }, 10000);
+  }
+
+  private stopPing(): void {
+    if (this.int) {
+      clearInterval(this.int);
+      this.int = null;
+    }
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+  }
+
   private scheduleReconnect(): void {
-    if (!this.failureStartTime) {
-      this.failureStartTime = Date.now();
+    if (this.replacing) return;
+    if (this.webSocket?.readyState === WebSocket.OPEN) return;
+    clearTimeout(this.reconnectTimer);
+
+    if (!this.failureStartTime) this.failureStartTime = Date.now();
+    if (Date.now() - this.failureStartTime >= this.maxFailureDuration) {
+      this.failureStartTime = null;
+      this.reconnectAttempts = 0;
+      this.reconnectDelay = 5000;
     }
-
-    const elapsedTime = Date.now() - this.failureStartTime;
-
-    // Instead of exiting, just keep going
-    if (elapsedTime >= this.maxFailureDuration) {
-      console.warn('Connection down for 5+ minutes. Continuing to retry...');
-      this.failureStartTime = null; // Reset timer
-      this.reconnectAttempts = 0;   // Optional: reset attempts
-      this.reconnectDelay = 5000;   // Optional: calm down a bit
-    }
-
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      // Don't stop — just increase delay and keep going
       this.reconnectAttempts = 0;
       this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
     }
-
-    const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
+    const delay = Math.min(
+      this.reconnectDelay * Math.pow(2, this.reconnectAttempts),
+      this.maxReconnectDelay,
+    );
     console.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
-
-    setTimeout(() => {
+    this.reconnectTimer = setTimeout(() => {
       this.reconnectAttempts++;
       this.connect(this.wsurl, this.machineId, this.otp);
     }, delay);
   }
 
   disconnect(): void {
+    this.stopPing();
+    clearTimeout(this.connectionTimeout);
+    this.connectionTimeout = null;
+    if (!this.replacing) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     if (this.webSocket) {
-      this.webSocket.close();
+      this.webSocket.onclose = null;
+      this.webSocket.onerror = null;
+      try {
+        this.webSocket.close();
+      } catch {}
       this.webSocket = null;
-    }
-    if (this.pingInterval) {
-      clearInterval(this.pingInterval);
-      this.pingInterval = null;
-    }
-    if (this.connectionTimeout) {
-      clearTimeout(this.connectionTimeout);
-      this.connectionTimeout = null;
     }
     this.connectionStatus.next('disconnected');
   }
 
   send(data: IReqModel | IResModel): void {
     if (this.webSocket?.readyState === WebSocket.OPEN) {
-      console.log('Sending data', data);
       this.webSocket.send(JSON.stringify(data));
-    } else {
-      console.log('WebSocket not ready, queuing send');
-      this.waitForSocketConnection(() => {
-        if (this.webSocket?.readyState === WebSocket.OPEN) {
-          this.webSocket.send(JSON.stringify(data));
-        } else {
-          console.error('Failed to send data, WebSocket not open');
-        }
-      });
     }
-  }
-
-  private waitForSocketConnection(callback: () => void): void {
-    if (this.webSocket?.readyState === WebSocket.OPEN) {
-      callback();
-      return;
-    }
-
-    const maxWaitAttempts = 5;
-    let waitAttempts = 0;
-
-    const waitInterval = setInterval(() => {
-      if (this.webSocket?.readyState === WebSocket.OPEN) {
-        clearInterval(waitInterval);
-        callback();
-      } else if (waitAttempts >= maxWaitAttempts) {
-        clearInterval(waitInterval);
-        console.error('Wait for WebSocket connection timed out');
-        this.scheduleReconnect();
-      }
-      waitAttempts++;
-    }, 1000);
   }
 
   setMenu(m: string, status: boolean): void {
@@ -281,38 +249,24 @@ export class WsapiService implements OnDestroy {
   }
 
   resetCashing(): Promise<string> {
-    return new Promise<string>(async (resolve, reject) => {
+    return new Promise<string>(async (resolve) => {
       try {
         const ownerUuid = localStorage.getItem('machineId');
-        if (ownerUuid) {
-          console.log('Resetting cashing...');
-          await this.cashingService.remove(ownerUuid);
-        }
+        if (ownerUuid) await this.cashingService.remove(ownerUuid);
         resolve(IENMessage.success);
-      } catch (error) {
-        console.error('Reset cashing error', error);
-        resolve(error.message);
+      } catch (error: any) {
+        resolve(error?.message);
       }
     });
   }
 
   onBillProcess(cb: (data: any) => void): void {
-    if (cb) {
-      this.eventEmitter.on('billProcess', cb);
-    }
+    if (cb) this.eventEmitter.on('billProcess', cb);
   }
 
   onWsAlert(cb: (data: any) => void): { unsubscribe: () => void } {
-    if (cb) {
-      console.log('Registering wsalert listener', cb);
-      this.eventEmitter.on('wsalert', cb);
-      return {
-        unsubscribe: () => {
-          console.log('Unregistering wsalert listener', cb);
-          this.eventEmitter.removeListener('wsalert', cb);
-        },
-      };
-    }
-    return { unsubscribe: () => { } };
+    if (!cb) return { unsubscribe: () => {} };
+    this.eventEmitter.on('wsalert', cb);
+    return { unsubscribe: () => this.eventEmitter.removeListener('wsalert', cb) };
   }
 }

@@ -1,0 +1,10 @@
+<div class="attract-modal" (click)="dismiss()">
+  <ng-container *ngIf="featured as sl">
+    <img class="attract-modal__img" [src]="featuredSrc" [alt]="sl?.stock?.name" />
+    <div class="attract-modal__copy">
+      <small>#{{ sl?.position }}</small>
+      <b>{{ sl?.stock?.name }}</b>
+      <em>{{ sl?.stock?.price | number }} <span>LAK</span></em>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,33 @@
+<aside class="dock-h" [class.dock-h--empty]="!getTotalSale?.q">
+  <div class="dock-h__list">
+    <article class="dock-h__item" *ngFor="let order of orders; let i = index" (click)="removeOrder(i)" title="Remove">
+      <img [src]="photoOf(order, 64)" [alt]="order.stock.name" (error)="onPhotoError($event, order)" />
+      <b>#{{ order?.position }} {{ order?.stock?.name }}</b>
+      <em>{{ order?.stock?.price | number }}</em>
+    </article>
+  </div>
+
+  <div class="dock-h__methods">
+    <button *ngFor="let list of paymentList" type="button" class="dock-h__payopt"
+      [class.on]="paymentmethod === list.value" (click)="choosePaymentMethod(list)">
+      <img [src]="list.image" [alt]="list.name" />
+      <small>{{ list.name }}</small>
+    </button>
+  </div>
+
+  <div class="dock-h__ticket">
+  <div class="dock-h__qr">
+    <img *ngIf="qrDataUrl && !isQrGenerating && !showQrRetry" [src]="qrDataUrl" alt="QR" />
+    <span *ngIf="isQrGenerating">ກຳລັງສ້າງ QR… {{ qrWaitLeft }}s</span>
+    <button *ngIf="showQrRetry" type="button" (click)="retryGenerateQr()">ລອງອີກຄັ້ງ</button>
+  </div>
+  <div class="dock-h__sum">
+    <small>ລາຍການ</small>
+    <b>{{ getTotalSale?.q || 0 }}/10</b>
+    <small>ລວມ</small>
+    <strong>{{ (getTotalSale?.t || 0) | number:'1.0-0' }}</strong>
+    <span>LAK</span>
+    <button type="button" class="dock-h__clear" (click)="clearCartOnly()">ລ້າງ</button>
+  </div>
+</div>
+</aside>

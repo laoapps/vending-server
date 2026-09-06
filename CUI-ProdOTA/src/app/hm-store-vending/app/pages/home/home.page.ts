@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { WsapiService } from 'src/app/services/wsapi.service';
+import { WsapiService } from '../..//services/wsapi.service';
 import { PhotoProductService } from '../../services/photo/photo-product.service';
 import { LoadingService } from '../../services/loading/loading.service';
 import { ApiService } from '../../services/api.service';

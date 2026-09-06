@@ -21,10 +21,14 @@ export function filemanagerBase(): string {
 /** Thumb: /api/v1/downloadphoto?url=HASH&w=&h= */
 export function downloadPhotoUrl(hash: string, w = 256, h = 256): string {
   if (!hash) return '';
-  if (hash.startsWith('data:') || hash.startsWith('blob:') || hash.startsWith('http')) {
+  if (hash.startsWith('data:') || hash.startsWith('blob:')) return hash;
+  if (/^https?:\/\//i.test(hash) && !hash.includes('/DATA/') && !hash.includes('/file/')) {
     return hash;
   }
-  return `${filemanagerBase()}downloadphoto?url=${encodeURIComponent(hash)}&w=${w}&h=${h}`;
+  const id = hash.includes('url=')
+    ? decodeURIComponent((hash.match(/[?&]url=([^&]+)/) || [])[1] || hash)
+    : hash.replace(/^.*\//, '').replace(/^DATA\//, '');
+  return `${filemanagerBase()}downloadphoto?url=${encodeURIComponent(id)}&w=${w}&h=${h}`;
 }
 
 /** Original file: /api/v1/file/download/HASH */

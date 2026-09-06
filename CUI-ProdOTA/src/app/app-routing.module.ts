@@ -214,9 +214,13 @@ const routes: Routes = [
     path: 'get-coupon-promotion',
     loadChildren: () => import('./get-coupon-promotion/get-coupon-promotion.module').then( m => m.GetCouponPromotionPageModule)
   },
+    {
+    path: 'tab1',
+    loadChildren: () => import('./tabs/tabs.module').then( m => m.TabsPageModule)
+  },
   {
     path: 'hm-vending-kiosk',
-    loadChildren: () => import('./tab1/Vending/hm-vending-kiosk/hm-vending-kiosk.module').then( m => m.HmVendingKioskPageModule)
+    loadChildren: () => import('./tab1/NewUI/horizontal/hm-vending-kiosk/hm-vending-kiosk.module').then( m => m.HmVendingKioskPageModule)
   }
 ];
 @NgModule({

@@ -1,6 +1,6 @@
-import { IENMessage } from "src/app/models/base.model";
-import { ApiService } from "src/app/services/api.service";
-import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
+import { IENMessage } from "../../models/base.model";
+import { ApiService } from "../../services/api.service";
+import { AppcachingserviceService } from "../../services/appcachingservice.service";
 import axios from "axios";
 
 export class LoadStockListProcess {
@@ -12,8 +12,8 @@ export class LoadStockListProcess {
     private cashingService: AppcachingserviceService;
     
     // parameters
-    private ownerUuid: string;
-    private filemanagerURL: string;
+    private ownerUuid: string='';
+    private filemanagerURL: string='';
 
     // properties
     private lists: Array<any> = [];
@@ -85,7 +85,7 @@ export class LoadStockListProcess {
                
 
 
-            } catch (error) {
+            } catch (error:any) {
                 message.message='Init params....'+error.message;
                 setTimeout(() => {
                     this.apiService.dismissModal();
@@ -298,9 +298,9 @@ export class LoadStockListProcess {
 
 // fixed
 
-// import { IENMessage } from "src/app/models/base.model";
-// import { ApiService } from "src/app/services/api.service";
-// import { AppcachingserviceService } from "src/app/services/appcachingservice.service";
+// import { IENMessage } from "../../models/base.model";
+// import { ApiService } from "../../services/api.service";
+// import { AppcachingserviceService } from "../../services/appcachingservice.service";
 // import axios from "axios";
 
 // export class LoadStockListProcess {

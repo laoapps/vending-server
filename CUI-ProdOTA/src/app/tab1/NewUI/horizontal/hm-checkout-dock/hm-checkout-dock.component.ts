@@ -1,22 +1,22 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
-import { IENMessage } from 'src/app/models/base.model';
-import { ApiService } from 'src/app/services/api.service';
-import { EClientCommand, EMessage, IMachineId, IVendingMachineSale } from 'src/app/services/syste.model';
-import { VendingAPIService } from 'src/app/services/vending-api.service';
-import { PaidValidationProcess } from '../../LAAB_processes/paidValidation.process';
-import { GenerateLaoQRCodeProcess } from '../../LaoQR_processes/generateLaoQRCode.process';
+import { IENMessage } from '../../../..//models/base.model';
+import { ApiService } from './../../../../services/api.service';
+import { EClientCommand, EMessage, IMachineId, IVendingMachineSale } from '../../../../services/syste.model';
+import { VendingAPIService } from '../../../../services/vending-api.service';
+import { PaidValidationProcess } from '../../../LAAB_processes/paidValidation.process';
+import { GenerateLaoQRCodeProcess } from '../../../LaoQR_processes/generateLaoQRCode.process';
 import * as cryptojs from 'crypto-js';
 import qrlogo from 'qrcode-with-logos';
-import { WsapiService } from 'src/app/services/wsapi.service';
-import { LoadVendingWalletCoinBalanceProcess } from '../../LAAB_processes/loadVendingWalletCoinBalance.process';
-// import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
-import { GenerateMMoneyQRCodeProcess } from '../../MMoney_processes/generateMMoneyQRCode.process';
-import { RemainingbilllocalPage } from 'src/app/remainingbilllocal/remainingbilllocal.page';
-import { BlockchainDbService } from 'src/app/blockchain-db';
+import { WsapiService } from '../../../../services/wsapi.service';
+import { LoadVendingWalletCoinBalanceProcess } from '../../../LAAB_processes/loadVendingWalletCoinBalance.process';
+// import { RemainingbillsPage } from '../../remainingbills/remainingbills.page';
+import { GenerateMMoneyQRCodeProcess } from '../../../MMoney_processes/generateMMoneyQRCode.process';
+import { RemainingbilllocalPage } from '../../../../remainingbilllocal/remainingbilllocal.page';
+import { BlockchainDbService } from '../../../../blockchain-db';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { downloadPhotoUrl } from '../../../filemanager-url';
+import { downloadPhotoUrl } from '../../../../filemanager-url'
 
 
 @Component({
@@ -73,7 +73,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
   countdownQrRetryTimer: any = {} as any;
   countdownQrGenTimer: any = {} as any;
   pageHardCloseTimer: any = {} as any;
-  private qrRequestId: number = 0;
+
 
 
   laabIcon: string = `../../../../assets/logo/LAAB-logo.png`;
@@ -317,7 +317,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     // }
     console.log('paymentList', this.paymentList);
 
-
+    this.ensureDefaultPayment();
 
     this.loadDOMs();
     // this.loadFakeOrder();
@@ -334,7 +334,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     this.scheduleGenerate();
-    this.bumpIdle();
+
 
 
   }
@@ -1282,6 +1282,18 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
+  /** First method in paymentList is the default (LaoQR if that is index 0). */
+  ensureDefaultPayment() {
+    const list = this.paymentList || [];
+    if (!list.length) return;
+    const exists = list.some((p) => p.value === this.paymentmethod);
+    if (!exists) {
+      this.paymentmethod = list[0].value;
+      this.paymentText = this.paymentList[0].name;
+      this.paymentLogo = list[0].image
+    }
+
+  }
 
 
 
@@ -1422,31 +1434,102 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-  private qrDebounce: any;
-  private idleTimer: any;
-  private qrAbort: AbortController | null = null;
-  readonly idleMs = 5 * 60 * 1000;
-  hmLogo = 'assets/icon/logo.png'
+
+
+
+
+  hmLogo = 'assets/icon/logo.png';
+
   /** Kiosk + dock — never return HTTP. */
 
-  photoOf(sl: any, _size = 256): string {
-    const id = sl?.stock?.image;
-    if (!id) return this.hmLogo;
-    const cached = this.apiService?.imageList?.[id];
-    if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
-    return this.hmLogo;
-  }
+photoOf(sl: any, _size = 256): string {
+  const id = sl?.stock?.image;
+  if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
+  if (!id) return this.hmLogo || 'assets/icon/logo.png';
 
-  onPhotoError(ev: Event): void {
-    const img = ev.target as HTMLImageElement;
-    if (img) img.src = this.hmLogo;
-  }
+  const cached = this.unwrapPhoto(this.apiService?.imageList?.[id]);
+  if (this.isPhotoData(cached)) return this.asImageData(cached);
 
+  return this.hmLogo || 'assets/icon/logo.png';
+}
+
+onPhotoError(ev: Event): void {
+  const img = ev.target as HTMLImageElement;
+  if (img) img.src = this.hmLogo || 'assets/icon/logo.png';
+}
+
+private unwrapPhoto(x: any): string {
+  if (!x) return '';
+  if (typeof x === 'string') {
+    const s = x.trim();
+    if (s.startsWith('data:') || s.startsWith('blob:')) return s;
+    if (s.startsWith('{')) {
+      try { return this.unwrapPhoto(JSON.parse(s)); } catch { return ''; }
+    }
+    return '';
+  }
+  return this.unwrapPhoto(x.v || x.file || '');
+}
+
+private isPhotoData(s: any): boolean {
+  return typeof s === 'string' && (
+    s.startsWith('data:image') ||
+    s.startsWith('data:application/octet-stream') ||
+    s.startsWith('blob:')
+  );
+}
+
+private asImageData(s: string): string {
+  if (s.startsWith('data:application/octet-stream')) {
+    return 'data:image/jpeg;base64,' + s.split(',')[1];
+  }
+  return s;
+}
+
+
+  qrWaitMs = 3000;
+  private qrDebounce: any;
+  private qrRequestId = 0;
+  private qrAbort: AbortController | null = null;
+  qrWaitLeft = 0;
+private qrTick: any
   ngOnChanges(changes: SimpleChanges): void {
+    this.ensureDefaultPayment();
     if (!changes['orders'] && !changes['getTotalSale']) return;
+    this.scheduleQr();
+  }
+  /** Call this from removeAt / parent add as well if ngOnChanges misses it. */
+  scheduleQr(): void {
     this.invalidateQr();
-    this.scheduleGenerate();
-    this.bumpIdle();
+    if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
+      this.qrDataUrl = '';
+      this.isQrGenerating = false;
+      this.qrWaitLeft = 0;
+      return;
+    }
+    this.qrDataUrl = '';
+    this.isQrGenerating = true;
+    this.qrWaitLeft = Math.ceil(this.qrWaitMs / 1000);
+
+    const requestId = this.qrRequestId;
+    this.qrTick = setInterval(() => {
+      if (requestId !== this.qrRequestId) return;
+      this.qrWaitLeft = Math.max(0, this.qrWaitLeft - 1);
+    }, 1000);
+
+    this.qrDebounce = setTimeout(() => {
+      clearInterval(this.qrTick);
+      if (requestId !== this.qrRequestId) return;
+      this.generateLaoQr(requestId, this.qrAbort?.signal);
+    }, this.qrWaitMs);
+  }
+
+  invalidateQr(): void {
+    this.qrRequestId++;
+    try { this.qrAbort?.abort(); } catch { }
+    this.qrAbort = new AbortController();
+    clearTimeout(this.qrDebounce);
+    clearInterval(this.qrTick);
   }
 
   removeOrder(index: number) {
@@ -1462,14 +1545,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     this.cartCleared.emit();
   }
 
-  invalidateQr() {
-    this.qrRequestId++;
-    try {
-      this.qrAbort?.abort();
-    } catch { }
-    this.qrAbort = new AbortController();
-    clearTimeout(this.qrDebounce);
-  }
+
 
   scheduleGenerate() {
     if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
@@ -1511,7 +1587,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
         localStorage.setItem('transactionID', run.transactionID);
         try {
           const canvas: any = await Promise.race([
-            new qrlogo({ content: run.qr }).getCanvas(),
+            new qrlogo({ logo: this.paymentLogo, content: run.qr }).getCanvas(),
             new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
           ]);
           if (requestId !== this.qrRequestId || signal?.aborted) return;
@@ -1531,10 +1607,6 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  bumpIdle() {
-    clearTimeout(this.idleTimer);
-    this.idleTimer = setTimeout(() => this.clearCartOnly(), this.idleMs);
-  }
 
 
 }

@@ -426,3 +426,197 @@ ion-item {
   align-items: center;
 }
 
+
+
+/* PASTE AT THE VERY BOTTOM OF src/global.scss
+   Fixes the red full-width ticket covering the cart. */
+
+app-hm-checkout-dock {
+  display: block !important;
+  height: 220px !important;
+  width: 100% !important;
+}
+
+app-hm-checkout-dock .dock,
+app-hm-checkout-dock .dock-h {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 90px 320px !important;
+  grid-template-rows: 220px !important;
+  width: 100% !important;
+  height: 220px !important;
+  background: #fff !important;
+  position: relative !important;
+}
+
+app-hm-checkout-dock .dock__head,
+app-hm-checkout-dock .title,
+app-hm-checkout-dock .dock__help {
+  display: none !important;
+}
+
+/* explode old .dock__pay so methods + ticket become grid cells */
+app-hm-checkout-dock .dock__pay,
+app-hm-checkout-dock .laab-card-footer {
+  display: contents !important;
+  background: transparent !important;
+  position: static !important;
+}
+
+app-hm-checkout-dock .dock__cart,
+app-hm-checkout-dock .order-list,
+app-hm-checkout-dock .dock-h__list {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-rows: 1fr 1fr !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  overflow: hidden !important;
+  min-height: 200px !important;
+  height: 220px !important;
+  background: #fff !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+app-hm-checkout-dock .cart-row,
+app-hm-checkout-dock .dock-h__item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #f3f4f6 !important;
+  border-radius: 12px !important;
+  padding: 6px !important;
+  position: relative !important;
+}
+
+app-hm-checkout-dock .methods,
+app-hm-checkout-dock .dock-h__methods {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 90px !important;
+  background: #fafafa !important;
+  z-index: 3 !important;
+  position: relative !important;
+}
+
+app-hm-checkout-dock .method,
+app-hm-checkout-dock .dock-h__payopt {
+  width: 72px !important;
+  min-width: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 6px 4px !important;
+}
+
+app-hm-checkout-dock .method img,
+app-hm-checkout-dock .methods img,
+app-hm-checkout-dock .dock-h__payopt img {
+  width: 36px !important;
+  height: 36px !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  object-fit: contain !important;
+}
+
+app-hm-checkout-dock .method span {
+  font-size: 9px !important;
+}
+
+app-hm-checkout-dock .ticket,
+app-hm-checkout-dock .dock-h__ticket {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 320px !important;
+  max-width: 320px !important;
+  height: 220px !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  background: #fff !important;
+  position: relative !important;
+  z-index: 3 !important;
+  border-radius: 0 !important;
+}
+
+app-hm-checkout-dock .ticket__qr,
+app-hm-checkout-dock .dock-h__qr {
+  width: 196px !important;
+  height: 196px !important;
+  flex: 0 0 196px !important;
+  background: #fff !important;
+}
+
+app-hm-checkout-dock .ticket__qr img,
+app-hm-checkout-dock #qr-img,
+app-hm-checkout-dock .dock-h__qr img {
+  width: 196px !important;
+  height: 196px !important;
+  max-width: 196px !important;
+  max-height: 196px !important;
+  object-fit: contain !important;
+}
+
+app-hm-checkout-dock .ticket__sum,
+app-hm-checkout-dock .dock-h__sum {
+  display: flex !important;
+  flex-direction: column !important;
+  color: #14181d !important;
+}
+
+app-hm-checkout-dock .ticket__total,
+app-hm-checkout-dock .dock-h__sum strong {
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  color: #14181d !important;
+}
+
+app-hm-checkout-dock .ticket__timer {
+  display: none !important;
+}
+
+
+
+
+
+
+
+
+
+/* PASTE into src/global.scss
+   Compact card, centered inside #shelf only. */
+
+ion-modal.kiosk-attract-modal {
+  --width: var(--attract-w, 80%);
+  --height: var(--attract-h, 75%);
+  --max-width: none;
+  --max-height: none;
+  --border-radius: 24px;
+  --background: #fff;
+  --box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  --backdrop-opacity: 0.35;
+}
+
+ion-modal.kiosk-attract-modal::part(content) {
+  position: absolute;
+  top: var(--attract-top, 35%);
+  left: var(--attract-left, 10%);
+  width: var(--attract-w, 80%);
+  height: var(--attract-h, 75%);
+  margin: 0;
+  border-radius: 24px;
+  overflow: hidden;
+}
+

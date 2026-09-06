@@ -1,7 +1,7 @@
-import { IENMessage } from "src/app/models/base.model";
-import { IGenerateLAOQRCode } from "src/app/models/laoqr.model";
-import { ApiService } from "src/app/services/api.service";
-import { EMessage, IVendingMachineBill } from "src/app/services/syste.model";
+import { IENMessage } from "../../models/base.model";
+import { IGenerateLAOQRCode } from "../../models/laoqr.model";
+import { ApiService } from "../../services/api.service";
+import { EMessage, IVendingMachineBill } from "../../services/syste.model";
 
 export class GenerateLaoQRCodeProcess {
     private workload: any = {} as any;

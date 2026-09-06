@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { IControlMenu } from 'src/app/models/menu.model';
-import { ApiService } from 'src/app/services/api.service';
-import { ControlMenuService } from 'src/app/services/control-menu.service';
+import { IControlMenu } from '../../../models/menu.model';
+import { ApiService } from '../../../services/api.service';
+import { ControlMenuService } from '../../../services/control-menu.service';
 
 @Component({
   selector: 'app-setting-control-menu',

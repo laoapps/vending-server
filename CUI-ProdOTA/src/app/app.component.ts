@@ -11,7 +11,7 @@ import { LiveUpdate } from '@capawesome/capacitor-live-update';
 import { VendingIndexServiceService } from './vending-index-service.service';
 import { LiveupdateService } from './liveupdate.service';
 import { CloseStytemPage } from './close-stytem/close-stytem.page';
-import { IdleService } from './services/idle.service';
+// import { IdleService } from './services/idle.service';
 
 
 window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
@@ -64,7 +64,7 @@ export class AppComponent {
     public vendingIndex: VendingIndexServiceService,
     private liveUpdateService: LiveupdateService,
     private debugService: DebugService,
-    private idleService: IdleService
+    // private idleService: IdleService
   ) {
     this.debugService.addDebugMessage('App initialized');
     this.platform.ready().then(() => {
@@ -135,9 +135,9 @@ export class AppComponent {
       const x = prompt('password');
       console.log(x, this.getPassword());
 
-      if (!this.getPassword().endsWith(x.substring(6)) || !x.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
+      if (!this.getPassword().endsWith(x?.substring(6)||'') || !x?.startsWith(this.apiService.machineId?.otp) || x.length < 12) return;
       this.apiService.showModal(SettingPage).then(r => {
-        r.present();
+        r?.present();
       })
 
       if (this.t) {
@@ -151,7 +151,7 @@ export class AppComponent {
   exitsApp() {
 
     this.apiService.showModal(CloseStytemPage).then(r => {
-      r.present();
+      r?.present();
     })
   }
   getPassword() {

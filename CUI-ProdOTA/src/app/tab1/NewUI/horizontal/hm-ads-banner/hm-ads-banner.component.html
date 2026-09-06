@@ -1,0 +1,18 @@
+<div class="ads-banner" [class.ads-banner--empty]="!playlist.length">
+  <div class="ads-banner__video-wrap">
+    <video
+      #videoPlayer
+      class="ads-banner__video"
+      [src]="currentSrc"
+      (ended)="onEnded()"
+      autoplay
+      muted
+      playsinline
+      webkit-playsinline="true"
+      disablePictureInPicture
+      controlslist="nofullscreen nodownload noremoteplayback"></video>
+  </div>
+  <div class="ads-banner__slot">
+    <ng-content></ng-content>
+  </div>
+</div>

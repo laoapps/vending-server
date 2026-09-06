@@ -1,0 +1,241 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dock-h {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px 300px;
+  grid-template-rows: 1fr;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  gap: 0;
+}
+
+.dock-h--empty {
+  display: none;
+}
+
+/* 5 columns × 2 rows = 10 items */
+.dock-h__list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: 1fr 1fr;
+  gap: 8px;
+  padding: 10px 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dock-h__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 4px 4px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  cursor: pointer;
+  text-align: center;
+}
+
+.dock-h__item:active {
+  background: #ececec;
+}
+
+.dock-h__item img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.dock-h__item b {
+  color: #14181d;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.15;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dock-h__item em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ee3124;
+}
+
+.dock-h__del {
+  display: none !important;
+}
+
+.dock-h__meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-h__meta b {
+  color: #ee3124;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.dock-h__methods {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  border-left: 1px solid #ececec;
+  border-right: 1px solid #ececec;
+  background: #fafafa;
+}
+
+.dock-h__payopt {
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 12px;
+  padding: 6px 4px;
+  cursor: pointer;
+}
+
+.dock-h__payopt.on {
+  border-color: #ee3124;
+  box-shadow: 0 0 0 2px rgba(238, 49, 36, 0.2);
+}
+
+.dock-h__payopt img {
+  width: 36px !important;
+  height: 36px !important;
+  object-fit: contain;
+}
+
+.dock-h__payopt small {
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.dock-h__ticket {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  background: #fff;
+}
+
+.dock-h__qr {
+  width: 196px;
+  height: 196px;
+  flex: 0 0 196px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dock-h__qr img,
+#qr-img {
+  width: 196px !important;
+  height: 196px !important;
+  object-fit: contain;
+  display: block;
+}
+
+.dock-h__qr button {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff5f5;
+  color: #ee3124;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dock-h__sum {
+  display: flex;
+  flex-direction: column;
+  min-width: 90px;
+}
+
+.dock-h__sum small {
+  font-size: 10px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.dock-h__sum b {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.dock-h__sum strong {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #14181d;
+}
+
+.dock-h__sum span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.dock-h__clear {
+  border: 0;
+  background: #ececec;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+
+.dock-h__sum {
+  flex: 1 1 120px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+.dock-h__sum strong {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+  letter-spacing: -0.5px;
+}
+.dock-h__sum span { font-size: 12px; color: #6b7280; }
+.dock-h__item img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}

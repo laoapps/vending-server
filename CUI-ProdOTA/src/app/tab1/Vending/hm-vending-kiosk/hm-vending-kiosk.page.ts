@@ -200,42 +200,64 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
         const items = JSON.parse(JSON.stringify(s?.v ? s.v : ApiService.vendingOnSale || []));
         this.saleList = items;
         this.ref.detectChanges();
+        this.loadPhotos();
       } catch {}
     });
   }
 
-  photoOf(sl: any, size = 256): string {
-    const id = sl?.stock?.image;
-    if (!id) return this.hmLogo;
-    const cached = this.apiService?.imageList?.[id];
-    if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
-    if (typeof cached === 'string' && cached.startsWith('http')) return cached;
-    return downloadPhotoUrl(id, size, size) || this.hmLogo;
-  }
+photoOf(sl: any, _size = 256): string {
+  const id = sl?.stock?.image;
+  if (!id) return this.hmLogo;
+  const cached = this.apiService?.imageList?.[id];
+  if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
+  return this.hmLogo;
+}
 
-  onPhotoError(ev: Event, sl: any): void {
-    const img = ev.target as HTMLImageElement;
-    if (!img) return;
-    const id = sl?.stock?.image;
-    if (id && img.dataset['step'] !== '1') {
-      img.dataset['step'] = '1';
-      img.src = downloadPhotoUrl(id, 64, 64);
-    }
-  }
+onPhotoError(ev: Event): void {
+  const img = ev.target as HTMLImageElement;
+  if (img) img.src = this.hmLogo;
+}
 
   async loadPhotos(): Promise<void> {
-    if (!this.apiService.imageList) this.apiService.imageList = {};
-    for (const sl of this.saleList || []) {
-      const id = sl?.stock?.image;
-      if (!id) continue;
-      const cur = this.apiService.imageList[id];
-      if (typeof cur === 'string' && (cur.startsWith('data:image') || cur.startsWith('http'))) {
+  if (!this.apiService.imageList) this.apiService.imageList = {};
+  const online = typeof navigator === 'undefined' || navigator.onLine !== false;
+
+  for (const sl of this.saleList || []) {
+    const id = sl?.stock?.image;
+    if (!id) continue;
+    if (String(this.apiService.imageList[id] || '').startsWith('data:image')) continue;
+
+    // Storage first
+    try {
+      const stored = await this.appCaching.getPhoto(
+        downloadPhotoUrl(id, 256, 256) + id,
+      );
+      const parsed = typeof stored === 'string' ? JSON.parse(stored) : stored;
+      const v = parsed?.v || parsed;
+      if (typeof v === 'string' && v.startsWith('data:image')) {
+        this.apiService.imageList[id] = v;
         continue;
       }
-      this.apiService.imageList[id] = downloadPhotoUrl(id, 256, 256);
-    }
-    this.ref.detectChanges();
+    } catch {}
+
+    if (!online) continue;
+
+    try {
+      const raw = await this.appCaching.saveCachingPhoto(
+        downloadPhotoUrl(id, 256, 256),
+        new Date(sl?.stock?.updatedAt || Date.now()),
+        id,
+      );
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const v = parsed?.v || parsed;
+      if (typeof v === 'string' && v.startsWith('data:image')) {
+        this.apiService.imageList[id] = v;
+      }
+    } catch {}
   }
+  this.ref.detectChanges();
+}
+
 
   async loadBalance(): Promise<void> {
     try {
@@ -252,7 +274,6 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.loadStock();
     this.localLoad();
     this.loadBalance();
-    this.loadPhotos();
     setTimeout(() => ev?.target?.complete?.(), 600);
   }
 
