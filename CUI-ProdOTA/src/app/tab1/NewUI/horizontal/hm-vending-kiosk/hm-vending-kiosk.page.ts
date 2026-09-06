@@ -271,26 +271,28 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   hydrateHi = (sl: any): Promise<void> => this.ensureHi(sl);
 
   private async ensureHi(sl: any): Promise<void> {
-    const id = sl?.stock?.image;
-    if (!id) return;
-    const key = id + '@1024';
-    if (this.isPhotoData(this.unwrapPhoto(this.apiService?.imageList?.[key]))) return;
-    if (this.hiBusy.has(key) || navigator.onLine === false) return;
-    this.hiBusy.add(key);
-    try {
-      const raw = await this.appCaching.saveCachingPhoto(
-        downloadPhotoUrl(id, 1024, 1024),
-        new Date(sl?.stock?.updatedAt || Date.now()),
-        key,
-      );
-      const v = this.asImageData(this.unwrapPhoto(raw));
-      if (this.isPhotoData(v)) {
-        this.apiService.imageList[key] = v;
-        this.apiService.imageList = { ...this.apiService.imageList };
-      }
-    } catch { }
-    this.hiBusy.delete(key);
+  const id = sl?.stock?.image;
+  if (!id) return;
+  const key = id + '@1024';
+  if (this.isPhotoData(this.unwrapPhoto(this.apiService?.imageList?.[key]))) return;
+
+  const url = downloadPhotoUrl(id, 1024, 1024);
+  const stored = await this.appCaching.getPhoto(url + key);
+  const hit = this.asImageData(this.unwrapPhoto(stored));
+  if (this.isPhotoData(hit)) {
+    this.apiService.imageList[key] = hit;
+    return;
   }
+  if (navigator.onLine === false) return;
+
+  const raw = await this.appCaching.saveCachingPhoto(
+    url,
+    new Date(sl?.stock?.updatedAt || 0), // 0 = never force-refresh
+    key,
+  );
+  const v = this.asImageData(this.unwrapPhoto(raw));
+  if (this.isPhotoData(v)) this.apiService.imageList[key] = v;
+}
 
   onPhotoError(ev: Event): void {
     const img = ev.target as HTMLImageElement;

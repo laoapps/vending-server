@@ -7,7 +7,7 @@ import { downloadPhotoUrl } from '../filemanager-url';
   providedIn: 'root',
 })
 export class CachingService {
-  constructor(private caching: AppcachingserviceService) {}
+  constructor(private caching: AppcachingserviceService) { }
 
   async getPhoto(k: string) {
     return await this.caching.get(k);
@@ -19,24 +19,19 @@ export class CachingService {
 
   async saveCachingPhoto(k: string, d: Date, id: string) {
     const x = await this.getPhoto(k + id);
-
     if (x) {
-      const y = JSON.parse(x);
-
-      if (new Date(y.d).getTime() != d.getTime()) {
-        const w = await this.getBase64ImageFromUrl(k);
-        return this.caching.setWithdate(k + id, w, d);
-      }
-
-      if (typeof y.v === 'string' && y.v.indexOf('data:application/octet-stream') !== -1) {
-        const w = await this.getBase64ImageFromUrl(k);
-        return this.caching.setWithdate(k + id, w, d);
-      }
-      return x;
+      try {
+        const y = typeof x === 'string' ? JSON.parse(x) : x;
+        const v = y?.v || y;
+        if (typeof v === 'string' && v.startsWith('data:')) {
+          const cachedT = new Date(y.d || 0).getTime();
+          const newT = d ? new Date(d).getTime() : 0;
+          if (!newT || cachedT >= newT) return x; // still valid
+        }
+      } catch { }
     }
-
     const w = await this.getBase64ImageFromUrl(k);
-    return this.caching.setWithdate(k + id, w, d);
+    return this.caching.setWithdate(k + id, w, d || new Date());
   }
 
   async saveCachingPhoto2(k: string, v: any) {
