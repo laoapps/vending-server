@@ -28,5 +28,14 @@ export const environment = {
   // vending_server: 'https://tvending4.khamvong.com',
   // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
-  versionId: '1.1.21'
+  versionId: '1.1.21',
+    demoStartMs: 18000, // attract auto  (demo: 3000)
+  idleClearMs: 180000,  // clear checkout
+  demoItemMs: 10000,   // each product photo in attract
+  // attract / showcase row
+  holdMs :10000,   // photo before story
+  // videoMs:12000,   // vertical video this one from Admin defined
+  // dock
+  qrWaitMs:1500,    // quiet time after add/remove, then QR + float
+  cartMax : 10
 };
