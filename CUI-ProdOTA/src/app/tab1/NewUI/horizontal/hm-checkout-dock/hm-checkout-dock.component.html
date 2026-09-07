@@ -1,7 +1,7 @@
 <aside class="dock-h" [class.dock-h--empty]="!getTotalSale?.q">
   <div class="dock-h__list">
     <article class="dock-h__item" *ngFor="let order of orders; let i = index" (click)="removeOrder(i)" title="Remove">
-      <img [src]="photoOf(order, 64)" [alt]="order.stock.name" (error)="onPhotoError($event, order)" />
+      <img [src]="photoOf(order, 64)" [alt]="order.stock.name" (error)="onPhotoError($event)" />
       <b>#{{ order?.position }} {{ order?.stock?.name }}</b>
       <em>{{ order?.stock?.price | number }}</em>
     </article>

@@ -21,7 +21,7 @@
               <ion-icon name="information-circle"></ion-icon>
             </button>
             <img class="product-card__img" [src]="photoOf(sl, 256)" [alt]="sl.stock.name" loading="lazy"
-              (error)="onPhotoError($event, sl)"  (click)="sl.stock.price != 0 && addOrder(sl)"/>
+              (error)="onPhotoError($event)"  (click)="sl.stock.price != 0 && addOrder(sl)"/>
             <span *ngIf="checkCartCount(sl.position) > 0" class="product-card__qty">
               ×{{ checkCartCount(sl.position) }}
             </span>
