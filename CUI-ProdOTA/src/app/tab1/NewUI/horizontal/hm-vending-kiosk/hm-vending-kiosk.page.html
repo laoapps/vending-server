@@ -18,14 +18,20 @@
         [class.product-card--buyable]="sl.stock.price != 0"
         [class.product-card--in-cart]="checkCartCount(sl.position) > 0"
         [style.animation-delay]="(i % 12) * 40 + 'ms'"
-        (click)="sl.stock.price != 0 && addOrder(sl)">
-
+        >
         <div class="product-card__slot">
           <span class="slot-num">{{ sl.position + compensation }}</span>
           <span class="slot-machine">***{{ sl.machineId.substring(4) }}</span>
         </div>
 
-        <div class="product-card__media">
+        <div class="product-card__media" >
+          <button
+    type="button"
+    class="product-card__info"
+    (click)="openShowcase(sl, $event)"
+    aria-label="info">
+    <ion-icon name="information-circle"></ion-icon>
+  </button>
           <img
             class="product-card__img"
             [src]="photoOf(sl, 256)"
@@ -53,7 +59,7 @@
           </div>
         </div>
 
-        <div class="product-card__tap" *ngIf="sl.stock.price != 0">
+        <div class="product-card__tap" *ngIf="sl.stock.price != 0" (click)="sl.stock.price != 0 && addOrder(sl)">
           <ion-icon name="add-circle"></ion-icon>
           ເພີ່ມກະຕ່າ
         </div>

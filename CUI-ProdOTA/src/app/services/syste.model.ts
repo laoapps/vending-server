@@ -1218,4 +1218,45 @@ export interface ITicket {
   createdAt?: string;
   updatedAt?: string;
 }
+
+
+
+
+
+
+export interface IProductShowcase {
+  id?: number;
+  uuid?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  ownerUuid?: string;
+  stockId: number;
+  globalProductId?: string;
+  title?: string;
+  html?: string;
+  story?: string;
+  price?: number;
+  video?: string;
+  photos?: string[];
+  holdMs?: number;
+  videoMs?: number;
+  hashP?: string;
+}
+
+export function showcaseContentHash(s: Partial<IProductShowcase>): string {
+  const payload = JSON.stringify({
+    title: s.title || '',
+    html: s.html || '',
+    story: s.story || '',
+    price: Number(s.price) || 0,
+    video: s.video || '',
+    photos: s.photos || [],
+    holdMs: Number(s.holdMs) || 10000,
+    videoMs: Number(s.videoMs) || 12000,
+  });
+  let h = 0;
+  for (let i = 0; i < payload.length; i++) h = (Math.imul(31, h) + payload.charCodeAt(i)) | 0;
+  return 'h' + (h >>> 0).toString(16);
+}
 // Example usage

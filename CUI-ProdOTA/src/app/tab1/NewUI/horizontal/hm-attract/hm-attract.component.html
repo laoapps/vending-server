@@ -1,10 +1,28 @@
-<div class="attract-modal" (click)="dismiss()">
+<div class="attract-modal" [class.attract-modal--detail]="phase === 'detail'" (click)="dismiss()">
   <ng-container *ngIf="featured as sl">
-    <img class="attract-modal__img" [src]="featuredSrc" [alt]="sl?.stock?.name" />
+    <div class="attract-modal__hero">
+      <img class="attract-modal__img" [src]="featuredSrc" [alt]="sl?.stock?.name" />
+      <video
+        *ngIf="phase === 'detail' && videoSrc"
+        class="attract-modal__video"
+        [src]="videoSrc"
+        autoplay
+        muted
+        playsinline
+        loop></video>
+    </div>
+
     <div class="attract-modal__copy">
       <small>#{{ sl?.position }}</small>
       <b>{{ sl?.stock?.name }}</b>
       <em>{{ sl?.stock?.price | number }} <span>LAK</span></em>
+    </div>
+
+    <div class="attract-modal__story" *ngIf="phase === 'detail'">
+      <div class="attract-modal__html" *ngIf="storyHtml" [innerHTML]="storyHtml"></div>
+      <div class="attract-modal__gallery" *ngIf="extraPhotos.length">
+        <img *ngFor="let p of extraPhotos" [src]="photoOf({ stock: { image: p } }, 1024)" alt="" />
+      </div>
     </div>
   </ng-container>
 </div>

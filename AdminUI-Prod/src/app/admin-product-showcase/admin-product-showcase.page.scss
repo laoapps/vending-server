@@ -1,0 +1,59 @@
+.sa {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100%;
+}
+.sa__list {
+  border-right: 1px solid #ececec;
+  overflow: auto;
+  button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    background: #fff;
+    border: 0;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    &.on { background: #fff1f0; }
+    b { display: block; }
+    small { color: #6b7280; }
+  }
+}
+.sa__form {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  label { display: flex; flex-direction: column; gap: 4px; font-weight: 700; }
+  input, textarea {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font: inherit;
+  }
+}
+.sa__photos span {
+  display: inline-block;
+  margin: 4px;
+  padding: 4px 8px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.sa__preview {
+  border: 1px dashed #e5e7eb;
+  min-height: 80px;
+  padding: 12px;
+  border-radius: 8px;
+}
+.sa__save {
+  height: 48px;
+  background: #ee3124;
+  color: #fff;
+  border: 0;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}

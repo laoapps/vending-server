@@ -15,8 +15,10 @@ import { QrconfigMachinePage } from 'src/app/qrconfig-machine/qrconfig-machine.p
 import { environment } from 'src/environments/environment';
 import { downloadPhotoUrl } from '../../../../filemanager-url';
 import { HmAttractComponent } from '../hm-attract/hm-attract.component';
-import { KioskStockService } from '../../../../services/kiosk-stock.service';
+import { KioskShowcaseService } from '../../../../kiosk-showcase.service';
 import { AppcachingserviceService } from '../../../../services/appcachingservice.service';
+import { VideoCacheService } from '../../../../video-cache.service';
+import { downloadFileUrl } from '../../../../filemanager-url';
 @Component({
   selector: 'app-hm-vending-kiosk',
   templateUrl: './hm-vending-kiosk.page.html',
@@ -45,7 +47,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
    * 3000 = 3 seconds (demo). 180000 = 3 minutes (production).
    */
   demoStartMs = 3000;
-  demoItemMs = 2500;
+  demoItemMs = 10000;
   idleClearMs = 3 * 60 * 1000;
 
   photoOfBound = (sl: any, size?: number) => this.photoOf(sl, size);
@@ -72,7 +74,9 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     public blockchainDbService: BlockchainDbService,
     private idleService: IdleService,
     private WSAPIService: WsapiService,
-    private cashingService: AppcachingserviceService
+    private cashingService: AppcachingserviceService,
+    private showcase: KioskShowcaseService,
+    private videoCache: VideoCacheService,
   ) {
     this.machineId = this.apiService.machineId;
   }
@@ -93,6 +97,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     } catch { }
     this.armIdle();
     this.armAttract();
+    this.sfxAdd.load()
   }
 
   ngOnDestroy(): void {
@@ -175,6 +180,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     if (!sl?.stock || sl.stock.price == 0) return;
     if (this.checkCartCount(sl.position) >= sl.stock.qtty) return;
     if (this.getTotalSale.q >= 10) {
+      this.beep(this.sfxMax);
       try {
         this.apiService.toast
           ?.create({
@@ -187,7 +193,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
       } catch { }
       return;
     }
-
+    this.beep(this.sfxAdd);
     const line = JSON.parse(JSON.stringify(sl)) as IVendingMachineSale;
     line.stock.qtty = 1;
     this.orders = [...this.orders, line];
@@ -201,6 +207,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.orders = this.orders.filter((_, i) => i !== index);
     this.recalcTotals();
     this.localSave();
+    this.beep(this.sfxRemove);
     this.ref.detectChanges();
   }
 
@@ -271,28 +278,28 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   hydrateHi = (sl: any): Promise<void> => this.ensureHi(sl);
 
   private async ensureHi(sl: any): Promise<void> {
-  const id = sl?.stock?.image;
-  if (!id) return;
-  const key = id + '@1024';
-  if (this.isPhotoData(this.unwrapPhoto(this.apiService?.imageList?.[key]))) return;
+    const id = sl?.stock?.image;
+    if (!id) return;
+    const key = id + '@1024';
+    if (this.isPhotoData(this.unwrapPhoto(this.apiService?.imageList?.[key]))) return;
 
-  const url = downloadPhotoUrl(id, 1024, 1024);
-  const stored = await this.appCaching.getPhoto(url + key);
-  const hit = this.asImageData(this.unwrapPhoto(stored));
-  if (this.isPhotoData(hit)) {
-    this.apiService.imageList[key] = hit;
-    return;
+    const url = downloadPhotoUrl(id, 1024, 1024);
+    const stored = await this.appCaching.getPhoto(url + key);
+    const hit = this.asImageData(this.unwrapPhoto(stored));
+    if (this.isPhotoData(hit)) {
+      this.apiService.imageList[key] = hit;
+      return;
+    }
+    if (navigator.onLine === false) return;
+
+    const raw = await this.appCaching.saveCachingPhoto(
+      url,
+      new Date(sl?.stock?.updatedAt || 0), // 0 = never force-refresh
+      key,
+    );
+    const v = this.asImageData(this.unwrapPhoto(raw));
+    if (this.isPhotoData(v)) this.apiService.imageList[key] = v;
   }
-  if (navigator.onLine === false) return;
-
-  const raw = await this.appCaching.saveCachingPhoto(
-    url,
-    new Date(sl?.stock?.updatedAt || 0), // 0 = never force-refresh
-    key,
-  );
-  const v = this.asImageData(this.unwrapPhoto(raw));
-  if (this.isPhotoData(v)) this.apiService.imageList[key] = v;
-}
 
   onPhotoError(ev: Event): void {
     const img = ev.target as HTMLImageElement;
@@ -343,6 +350,13 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
           if (name && this.isPhotoData(file)) this.apiService.imageList[name] = file;
         }
       }
+
+      /// seed fake
+      this.showcase.seedFake(this.saleList);
+      ///
+
+      // await this.showcase.sync();
+
     } catch (e) {
       console.warn('cashList hydrate', e);
     }
@@ -447,7 +461,23 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.attractArm = setTimeout(() => this.openAttractModal(), this.demoStartMs);
   }
 
-  async openAttractModal(): Promise<void> {
+
+
+  showcaseOf = (sl: any) => this.showcase.get(Number(sl?.stock?.id));
+
+  videoSrcOf = (hash: string) => {
+    try {
+      return this.videoCache.getPlayableUrl?.(hash) || downloadFileUrl(hash);
+    } catch {
+      return downloadFileUrl(hash);
+    }
+  };
+  /** Product card Details button */
+  openShowcase(sl: any, ev?: Event) {
+    ev?.stopPropagation();
+    this.openAttractModal({ sl, auto: false });
+  }
+  async openAttractModal(opts?: { sl?: any; auto?: boolean }): Promise<void> {
     if (this.attractModal) return;
     this.apiService.isAds = false;
     try {
@@ -462,9 +492,13 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
         products: this.filteredSaleList,
         photoOf: this.photoOfBound,
         hydrateHi: this.hydrateHi,
+        showcaseOf: this.showcaseOf,
+        videoSrcOf: this.videoSrcOf,
+        itemHoldMs: this.demoItemMs, // 10000
         fallback: this.hmLogo,
         shelfId: 'shelf',
-        itemHoldMs: this.demoItemMs,
+        auto: opts?.auto !== false,
+        startAt: opts?.sl || null,
       },
     });
     this.pinAttractToShelf(this.attractModal);
@@ -617,4 +651,26 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   async _processLoopCheckLaoQRPaid(): Promise<void> {
     // dock already polls QR; keep for old call sites
   }
+
+
+
+
+
+  private sfxAdd = new Audio('assets/sounds/add.wav');
+  private sfxRemove = new Audio('assets/sounds/remove.wav');
+  private sfxMax = new Audio('assets/sounds/max.wav');
+
+  private beep(a: HTMLAudioElement) {
+    try {
+      a.currentTime = 0;
+      a.volume = 0.7;
+      a.play();
+    } catch { }
+  }
+
+
+
+
+
+  
 }

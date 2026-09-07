@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-hm-attract',
@@ -16,14 +17,24 @@ import { IonicModule, ModalController } from '@ionic/angular';
   styleUrls: ['./hm-attract.component.scss'],
 })
 export class HmAttractComponent implements OnInit, OnDestroy {
-  @Input() itemHoldMs = 2500;
+  /** photo hold — default 10s, overridable per product */
+  @Input() itemHoldMs = 10000;
   @Input() shelfId = 'shelf';
   @Input() products: any[] = [];
   @Input() photoOf: (sl: any, size?: number) => string = () => '';
   @Input() fallback = 'assets/icon/logo.png';
   @Input() hydrateHi?: (sl: any) => Promise<void>;
+  @Input() showcaseOf?: (sl: any) => any;
+  @Input() videoSrcOf?: (hash: string) => string;
+  @Input() auto = true;
+  @Input() startAt: any = null;
+
   featured: any = null;
   featuredSrc = '';
+  phase: 'photo' | 'detail' = 'photo';
+  storyHtml: SafeHtml | null = null;
+  videoSrc = '';
+  extraPhotos: string[] = [];
   running = false;
 
   private holdTimer: any = null;
@@ -32,7 +43,8 @@ export class HmAttractComponent implements OnInit, OnDestroy {
   constructor(
     private ref: ChangeDetectorRef,
     private modalCtrl: ModalController,
-  ) { }
+    private sanitizer: DomSanitizer,
+  ) {}
 
   ngOnInit(): void {
     this.play();
@@ -57,26 +69,31 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     this.stop();
     try {
       await this.modalCtrl.dismiss();
-    } catch { }
+    } catch {}
   }
 
   private async start(): Promise<void> {
     if (this.running) return;
     this.running = true;
     const token = ++this.seq;
-    const list = [...(this.products || [])];
+    const list = this.startAt ? [this.startAt] : [...(this.products || [])];
     if (!list.length) {
       this.running = false;
       return;
     }
-    const forward = list;
-    const backward = [...list].reverse();
+    if (!this.auto) {
+      await this.showOne(list[0], token);
+      return;
+    }
+    const forward = [...(this.products || [])];
+    const backward = [...forward].reverse();
     while (this.running && token === this.seq) {
       await this.playPass(forward, token);
       if (!this.running || token !== this.seq) return;
       await this.playPass(backward, token);
     }
   }
+
   private srcOf(sl: any): string {
     const a = this.photoOf?.(sl, 1024) || '';
     if (a.startsWith('data:image') || a.startsWith('blob:')) return a;
@@ -89,20 +106,43 @@ export class HmAttractComponent implements OnInit, OnDestroy {
   private async playPass(list: any[], token: number): Promise<void> {
     for (const sl of list) {
       if (!this.running || token !== this.seq) return;
-      this.featured = sl;
-      this.featuredSrc = this.srcOf(sl);          // 256 now
-      this.ref.detectChanges();
-      this.scrollTo(sl);
-      this.hydrateHi?.(sl)?.then(() => {          // 1024 in background
-        if (this.featured === sl && this.running) {
-          this.featuredSrc = this.srcOf(sl);
-          this.ref.detectChanges();
-        }
-      });
-      await this.sleep(this.itemHoldMs, token);
+      await this.showOne(sl, token);
     }
   }
 
+  private async showOne(sl: any, token: number): Promise<void> {
+    this.featured = sl;
+    this.phase = 'photo';
+    this.videoSrc = '';
+    this.storyHtml = null;
+    this.extraPhotos = [];
+    this.featuredSrc = this.srcOf(sl);
+    this.ref.detectChanges();
+    this.scrollTo(sl);
+    this.hydrateHi?.(sl)?.then(() => {
+      if (this.featured === sl && this.running) {
+        this.featuredSrc = this.srcOf(sl);
+        this.ref.detectChanges();
+      }
+    });
+
+    const sc = this.showcaseOf?.(sl);
+    const hold = Number(sc?.holdMs) > 0 ? Number(sc.holdMs) : this.itemHoldMs;
+    await this.sleep(hold, token);
+    if (!this.running || token !== this.seq) return;
+
+    if (sc && (sc.video || sc.html || sc.story || (sc.photos || []).length)) {
+      this.phase = 'detail';
+      this.storyHtml = this.sanitizer.bypassSecurityTrustHtml(
+        sc.html || (sc.story ? `<p>${sc.story}</p>` : ''),
+      );
+      this.extraPhotos = sc.photos || [];
+      if (sc.video) this.videoSrc = this.videoSrcOf?.(sc.video) || '';
+      this.ref.detectChanges();
+      const vms = Number(sc.videoMs) > 0 ? Number(sc.videoMs) : 12000;
+      await this.sleep(vms, token);
+    }
+  }
 
   private scrollTo(sl: any): void {
     const shelf = document.getElementById(this.shelfId);

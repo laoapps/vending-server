@@ -7,64 +7,100 @@
 .attract-modal {
   height: 100%;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: stretch;
+  display: grid;
+  grid-template-rows: 1fr auto;
   gap: 8px;
-  padding: 20px 28px 24px;
+  padding: 16px 20px 20px;
   background: #fff;
   cursor: pointer;
   box-sizing: border-box;
+  transition: grid-template-rows 0.8s ease;
+}
+
+.attract-modal--detail {
+  grid-template-rows: minmax(180px, 38%) auto 1fr;
+}
+
+.attract-modal__hero {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .attract-modal__img {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: auto;
   max-width: 100%;
-  height: auto;
-  max-height: none;
+  max-height: 100%;
   object-fit: contain;
-  display: block;
+  transition: transform 0.8s ease, max-height 0.8s ease;
+}
+
+.attract-modal--detail .attract-modal__img {
+  max-height: 42%;
+  transform: scale(0.72);
+}
+
+.attract-modal__video {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 32%;
+  max-width: 220px;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #111;
 }
 
 .attract-modal__copy {
-  flex: 0 0 auto;
-  width: 100%;
   text-align: center;
   color: #14181d;
-  padding: 8px 8px 4px;
 }
-
 .attract-modal__copy small {
   display: block;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   color: #ee3124;
-  margin-bottom: 4px;
 }
-
 .attract-modal__copy b {
   display: block;
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 800;
   line-height: 1.2;
-  white-space: normal;
-  overflow: visible;
-  word-break: break-word;
 }
-
 .attract-modal__copy em {
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   font-style: normal;
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 800;
 }
-
 .attract-modal__copy span {
-  font-size: 16px;
+  font-size: 14px;
   color: #6b7280;
-  margin-left: 6px;
+}
+
+.attract-modal__story {
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 8px 0;
+}
+.attract-modal__html {
+  font-size: 16px;
+  line-height: 1.45;
+  color: #14181d;
+}
+.attract-modal__gallery {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+}
+.attract-modal__gallery img {
+  height: 96px;
+  width: auto;
+  object-fit: contain;
+  background: #f3f4f6;
+  border-radius: 8px;
 }

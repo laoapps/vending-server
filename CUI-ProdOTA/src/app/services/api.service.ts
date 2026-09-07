@@ -2250,7 +2250,9 @@ export class ApiService {
     );
   }
 
-
+    post(url: string,data:any) {
+      return axios.post<IResModel>(this.url + '/'+url, data, { headers: this.headerBase() });
+    }
   // retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
   //   return axios.post<IResModel>(
   //     this.url + '/retryProcessBillNew?T=' + T + '&position=' + position,

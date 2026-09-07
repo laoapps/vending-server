@@ -1,0 +1,1 @@
+// need to check if server can work and need to check the rest function : deduct.... and make sure server can work and admin can work

@@ -291,6 +291,10 @@ const routes: Routes = [
   {
     path: 'compare-excel',
     loadChildren: () => import('./compare-excel/compare-excel.module').then( m => m.CompareExcelPageModule)
+  },
+  {
+    path: 'admin-product-showcase',
+    loadChildren: () => import('./admin-product-showcase/admin-product-showcase.module').then( m => m.AdminProductShowcasePageModule)
   }
 ];
 @NgModule({

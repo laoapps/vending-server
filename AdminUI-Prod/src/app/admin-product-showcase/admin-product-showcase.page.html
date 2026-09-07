@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar color="dark">
+    <ion-title>Product showcase</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="showcase-admin">
+  <div class="sa">
+    <aside class="sa__list">
+      <button type="button" *ngFor="let st of stocks" (click)="pick(st)" [class.on]="selected?.id === st.id">
+        <b>{{ st.name }}</b>
+        <small>#{{ st.id }} · {{ st.price | number }} LAK</small>
+      </button>
+    </aside>
+
+    <section class="sa__form" *ngIf="form.stockId">
+      <label>Title <input [(ngModel)]="form.title" /></label>
+      <label>Price <input type="number" [(ngModel)]="form.price" /></label>
+      <label>Photo hold (ms) <input type="number" [(ngModel)]="form.holdMs" /></label>
+      <label>Video (ms) <input type="number" [(ngModel)]="form.videoMs" /></label>
+      <label>Vertical video hash <input [(ngModel)]="form.video" placeholder="filemanager hash" /></label>
+      <label>Story
+        <textarea rows="3" [(ngModel)]="form.story"></textarea>
+      </label>
+      <label>HTML description
+        <textarea rows="8" [(ngModel)]="form.html" placeholder="<p>…</p>"></textarea>
+      </label>
+      <label>Extra photo hashes (comma)
+        <input #ph (keyup.enter)="addPhoto(ph.value); ph.value=''" />
+      </label>
+      <div class="sa__photos">
+        <span *ngFor="let p of form.photos; let i = index" (click)="removePhoto(i)">{{ p | slice:0:8 }} ×</span>
+      </div>
+      <div class="sa__preview" [innerHTML]="form.html"></div>
+      <button type="button" class="sa__save" [disabled]="saving" (click)="save()">Save</button>
+    </section>
+  </div>
+</ion-content>

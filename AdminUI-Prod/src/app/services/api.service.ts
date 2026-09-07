@@ -24,6 +24,7 @@ var REQUEST_TIME_OUT = 10000;
     providedIn: 'root'
 })
 export class ApiService {
+    
 
     offsettz = 420;
     dateformat = 'yy-MM-dd HH:mm:ss';
@@ -347,6 +348,15 @@ export class ApiService {
     getBills() {
         return this.http.get<IResModel>(this.url + '/getBills', { headers: this.headerBase() });
     }
+
+
+
+
+
+    post(url: string,data:any) {
+      return this.http.post<IResModel>(this.url + '/'+url, data, { headers: this.headerBase() });
+    }
+
 
 
     getReportClientLogs(data: any) {
