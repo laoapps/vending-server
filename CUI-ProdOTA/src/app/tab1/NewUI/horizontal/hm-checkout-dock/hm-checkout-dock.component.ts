@@ -16,6 +16,7 @@ import { RemainingbilllocalPage } from '../../../../remainingbilllocal/remaining
 import { BlockchainDbService } from '../../../../blockchain-db';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../../environments/environment';
 import { downloadPhotoUrl } from '../../../../filemanager-url'
 
 
@@ -348,7 +349,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
   ngOnDestroy(): void {
-
+    this.cancelQr();
     // intervals
     clearInterval(this.reloadElement);
     clearInterval(this.countdownBillTimer);
@@ -1442,89 +1443,111 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
   /** Kiosk + dock — never return HTTP. */
 
-photoOf(sl: any, _size = 256): string {
-  const id = sl?.stock?.image;
-  if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
-  if (!id) return this.hmLogo || 'assets/icon/logo.png';
+  photoOf(sl: any, _size = 256): string {
+    const id = sl?.stock?.image;
+    if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
+    if (!id) return this.hmLogo || 'assets/icon/logo.png';
 
-  const cached = this.unwrapPhoto(this.apiService?.imageList?.[id]);
-  if (this.isPhotoData(cached)) return this.asImageData(cached);
+    const cached = this.unwrapPhoto(this.apiService?.imageList?.[id]);
+    if (this.isPhotoData(cached)) return this.asImageData(cached);
 
-  return this.hmLogo || 'assets/icon/logo.png';
-}
+    return this.hmLogo || 'assets/icon/logo.png';
+  }
 
-onPhotoError(ev: Event): void {
-  const img = ev.target as HTMLImageElement;
-  if (img) img.src = this.hmLogo || 'assets/icon/logo.png';
-}
+  onPhotoError(ev: Event): void {
+    const img = ev.target as HTMLImageElement;
+    if (img) img.src = this.hmLogo || 'assets/icon/logo.png';
+  }
 
-private unwrapPhoto(x: any): string {
-  if (!x) return '';
-  if (typeof x === 'string') {
-    const s = x.trim();
-    if (s.startsWith('data:') || s.startsWith('blob:')) return s;
-    if (s.startsWith('{')) {
-      try { return this.unwrapPhoto(JSON.parse(s)); } catch { return ''; }
+  private unwrapPhoto(x: any): string {
+    if (!x) return '';
+    if (typeof x === 'string') {
+      const s = x.trim();
+      if (s.startsWith('data:') || s.startsWith('blob:')) return s;
+      if (s.startsWith('{')) {
+        try { return this.unwrapPhoto(JSON.parse(s)); } catch { return ''; }
+      }
+      return '';
     }
-    return '';
+    return this.unwrapPhoto(x.v || x.file || '');
   }
-  return this.unwrapPhoto(x.v || x.file || '');
-}
 
-private isPhotoData(s: any): boolean {
-  return typeof s === 'string' && (
-    s.startsWith('data:image') ||
-    s.startsWith('data:application/octet-stream') ||
-    s.startsWith('blob:')
-  );
-}
-
-private asImageData(s: string): string {
-  if (s.startsWith('data:application/octet-stream')) {
-    return 'data:image/jpeg;base64,' + s.split(',')[1];
+  private isPhotoData(s: any): boolean {
+    return typeof s === 'string' && (
+      s.startsWith('data:image') ||
+      s.startsWith('data:application/octet-stream') ||
+      s.startsWith('blob:')
+    );
   }
-  return s;
-}
+
+  private asImageData(s: string): string {
+    if (s.startsWith('data:application/octet-stream')) {
+      return 'data:image/jpeg;base64,' + s.split(',')[1];
+    }
+    return s;
+  }
 
 
-  qrWaitMs = 1500;
+
   private qrDebounce: any;
   private qrRequestId = 0;
   private qrAbort: AbortController | null = null;
   qrWaitLeft = 0;
-private qrTick: any
-  ngOnChanges(changes: SimpleChanges): void {
-    this.ensureDefaultPayment();
-    if (!changes['orders'] && !changes['getTotalSale']) return;
-    this.scheduleQr();
-  }
+  qrFloat = false;
+    // dock
+  qrWaitMs =environment.qrWaitMs|| 1500;    // quiet time after add/remove, then QR + float debounce generate + float
+
+  private qrTick: any
+ngOnChanges(changes: SimpleChanges): void {
+  this.ensureDefaultPayment();
+  if (!changes['orders'] && !changes['getTotalSale']) return;
+  this.scheduleQr();
+}
+/** cancel only — never call scheduleQr from here */
+cancelQr(): void {
+  this.qrRequestId++;
+  try { this.qrAbort?.abort(); } catch {}
+  this.qrAbort = new AbortController();
+  clearTimeout(this.qrDebounce);
+  clearInterval(this.qrTick);
+}
   /** Call this from removeAt / parent add as well if ngOnChanges misses it. */
   scheduleQr(): void {
-    this.invalidateQr();
-    if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
-      this.qrDataUrl = '';
-      this.isQrGenerating = false;
-      this.qrWaitLeft = 0;
-      return;
-    }
+  this.cancelQr();
+
+  if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
     this.qrDataUrl = '';
-    this.isQrGenerating = true;
-    this.qrWaitLeft = Math.ceil(this.qrWaitMs / 1000);
-
-    const requestId = this.qrRequestId;
-    this.qrTick = setInterval(() => {
-      if (requestId !== this.qrRequestId) return;
-      this.qrWaitLeft = Math.max(0, this.qrWaitLeft - 1);
-    }, 1000);
-
-    this.qrDebounce = setTimeout(() => {
-      clearInterval(this.qrTick);
-      if (requestId !== this.qrRequestId) return;
-      this.generateLaoQr(requestId, this.qrAbort?.signal);
-    }, this.qrWaitMs);
+    this.isQrGenerating = false;
+    this.qrWaitLeft = 0;
+    this.qrFloat = false;
+    return;
   }
 
+  this.qrFloat = false;
+  this.qrDataUrl = '';
+  this.isQrGenerating = true;
+  this.qrWaitLeft = Math.ceil(this.qrWaitMs / 1000);
+
+  this.qrAbort = new AbortController();
+  const requestId = ++this.qrRequestId;
+
+  this.qrTick = setInterval(() => {
+    if (requestId !== this.qrRequestId) return;
+    this.qrWaitLeft = Math.max(0, this.qrWaitLeft - 1);
+  }, 1000);
+
+  this.qrDebounce = setTimeout(() => {
+    clearInterval(this.qrTick);
+    if (requestId !== this.qrRequestId) return;
+    this.generateLaoQr(requestId, this.qrAbort?.signal);
+  }, this.qrWaitMs);
+}
+
   invalidateQr(): void {
+    this.qrFloat = false;
+    this.qrDataUrl = '';
+    this.isQrGenerating = !!this.getTotalSale?.q;
+    this.scheduleQr();
     this.qrRequestId++;
     try { this.qrAbort?.abort(); } catch { }
     this.qrAbort = new AbortController();
@@ -1537,6 +1560,7 @@ private qrTick: any
   }
 
   clearCartOnly() {
+    this.qrFloat = false;
     this.invalidateQr();
     this.qrDataUrl = '';
     this.isPayment = false;
@@ -1561,11 +1585,10 @@ private qrTick: any
     this.qrDebounce = setTimeout(() => this.generateLaoQr(requestId, signal), 120);
   }
 
-  retryGenerateQr() {
-    this.qrRetryCount++;
-    this.invalidateQr();
-    this.scheduleGenerate();
-  }
+retryGenerateQr(): void {
+  this.showQrRetry = false;
+  this.scheduleQr();
+}
 
   private generateLaoQr(requestId: number, signal?: AbortSignal) {
     if (requestId !== this.qrRequestId || signal?.aborted) return;
@@ -1594,6 +1617,7 @@ private qrTick: any
           this.qrDataUrl = canvas.toDataURL();
           this.isPayment = true;
           this.isQrGenerating = false;
+          this.qrFloat = !!this.qrDataUrl && this.getTotalSale?.q > 0;
         } catch {
           if (requestId !== this.qrRequestId) return;
           this.showQrRetry = true;
@@ -2263,6 +2287,8 @@ class MMoneyPayment {
  * Replace removeOrder + refreshOrder + checkOrders in HmCheckoutDockComponent.
  * The crash is: orderlistElement is null (dock template has no .order-list).
  */
+
+
 
 
 

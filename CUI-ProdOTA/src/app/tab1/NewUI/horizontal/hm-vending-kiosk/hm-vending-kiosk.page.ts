@@ -46,9 +46,12 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
    * Attract demo delay after last touch.
    * 3000 = 3 seconds (demo). 180000 = 3 minutes (production).
    */
-  demoStartMs = 3000;
-  demoItemMs = 10000;
-  idleClearMs = 3 * 60 * 1000;
+  // kiosk
+  demoStartMs = environment.demoStartMs||3000;  // attract auto  (demo: 3000) ==>180000
+  idleClearMs = environment.idleClearMs||180000;  // clear checkout ==>180000
+  demoItemMs = environment.demoItemMs||10000;   // each product photo in attract
+  cartMax = environment.cartMax ||10;
+
 
   photoOfBound = (sl: any, size?: number) => this.photoOf(sl, size);
   private holdTimer: any = null;
@@ -179,7 +182,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.bumpActivity();
     if (!sl?.stock || sl.stock.price == 0) return;
     if (this.checkCartCount(sl.position) >= sl.stock.qtty) return;
-    if (this.getTotalSale.q >= 10) {
+    if (this.getTotalSale.q >= this.cartMax) {
       this.beep(this.sfxMax);
       try {
         this.apiService.toast
@@ -672,5 +675,5 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
 
 
-  
+
 }

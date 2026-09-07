@@ -239,3 +239,31 @@
   height: 56px;
   object-fit: contain;
 }
+
+
+
+
+.dock-h { position: relative; }
+
+.qr-float {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  z-index: 30;
+  width: 220px;          /* ~2× typical dock QR */
+  height: 220px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(20, 24, 29, 0.28);
+  animation: qr-pop 0.22s ease;
+}
+.qr-float img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+@keyframes qr-pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}

@@ -31,7 +31,18 @@ export const environment = {
   wsHM: 'wss://vending-service-api5.laoapps.com/zdm8',
   vendingHM: 'https://vending-service-api5.laoapps.com',
 
-  versionId: '1.1.21'
+  versionId: '1.1.21',
+
+  demoStartMs: 3000, // attract auto  (demo: 3000)
+  idleClearMs: 180000,  // clear checkout
+  demoItemMs: 10000,   // each product photo in attract
+  // attract / showcase row
+  holdMs :10000,   // photo before story
+  // videoMs:12000,   // vertical video this one from Admin defined
+  // dock
+  qrWaitMs:3000,    // quiet time after add/remove, then QR + float
+  cartMax : 10
+
 };
 
 /*

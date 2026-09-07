@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import {environment} from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-hm-attract',
@@ -18,7 +19,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 })
 export class HmAttractComponent implements OnInit, OnDestroy {
   /** photo hold — default 10s, overridable per product */
-  @Input() itemHoldMs = 10000;
+  @Input() itemHoldMs = environment.holdMs||10000;   // photo before story;
   @Input() shelfId = 'shelf';
   @Input() products: any[] = [];
   @Input() photoOf: (sl: any, size?: number) => string = () => '';
@@ -39,6 +40,8 @@ export class HmAttractComponent implements OnInit, OnDestroy {
 
   private holdTimer: any = null;
   private seq = 0;
+
+    // attract / showcase row
 
   constructor(
     private ref: ChangeDetectorRef,
