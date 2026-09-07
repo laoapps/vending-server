@@ -1487,7 +1487,7 @@ private asImageData(s: string): string {
 }
 
 
-  qrWaitMs = 3000;
+  qrWaitMs = 1500;
   private qrDebounce: any;
   private qrRequestId = 0;
   private qrAbort: AbortController | null = null;
