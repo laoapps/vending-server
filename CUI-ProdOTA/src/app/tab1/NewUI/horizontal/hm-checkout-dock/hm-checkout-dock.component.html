@@ -15,16 +15,26 @@
     </button>
   </div>
 
-  <div class="dock-h__ticket">
-    <div class="dock-h__qr" [class.dock-h__qr--busy]="isQrGenerating">
-      <img *ngIf="qrDataUrl && !isQrGenerating && !showQrRetry" [src]="qrDataUrl" alt="QR" />
-      <span *ngIf="isQrGenerating">ກຳລັງສ້າງ QR… {{ qrWaitLeft }}s</span>
-      <button *ngIf="showQrRetry" type="button" (click)="retryGenerateQr()">ລອງອີກຄັ້ງ</button>
-    </div>
-    <div class="dock-h__sum">…</div>
+<div class="dock-h__ticket">
+  <div class="dock-h__qr" *ngIf="!qrFloat">
+    <span *ngIf="isQrGenerating">ກຳລັງສ້າງ QR… {{ qrWaitLeft }}s</span>
+    <button *ngIf="showQrRetry" type="button" (click)="retryGenerateQr()">ລອງອີກຄັ້ງ</button>
   </div>
+  <div class="dock-h__sum">
+    <small>ລາຍການ</small>
+    <b>{{ getTotalSale?.q || 0 }}/10</b>
+    <small>ລວມ</small>
+    <strong>{{ (getTotalSale?.t || 0) | number:'1.0-0' }}</strong>
+    <span>LAK</span>
+    <button type="button" class="dock-h__clear" (click)="clearCartOnly()">ລ້າງ</button>
+  </div>
+</div>
 
-  <div class="qr-float" *ngIf="qrFloat && qrDataUrl && !isQrGenerating" (click)="$event.stopPropagation()">
-    <img [src]="qrDataUrl" alt="QR" />
+<div class="qr-float" *ngIf="qrFloat && qrDataUrl">
+  <img [src]="qrDataUrl" alt="QR" />
+  <div class="qr-float__sum">
+    <b>{{ getTotalSale?.q || 0 }}/10</b>
+    <strong>{{ (getTotalSale?.t || 0) | number:'1.0-0' }} <span>LAK</span></strong>
   </div>
+</div>
 </aside>

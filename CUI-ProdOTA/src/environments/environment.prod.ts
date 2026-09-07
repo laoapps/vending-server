@@ -29,13 +29,21 @@ export const environment = {
   // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
   versionId: '1.1.21',
+<<<<<<< HEAD
   demoStartMs: 180000, // attract auto  (demo: 3000)
+=======
+    demoStartMs: 18000, // attract auto  (demo: 3000)
+>>>>>>> 78029e2804eb5c4c0be9c8293a088afa4cdc264e
   idleClearMs: 180000,  // clear checkout
   demoItemMs: 10000,   // each product photo in attract
   // attract / showcase row
   holdMs :10000,   // photo before story
   // videoMs:12000,   // vertical video this one from Admin defined
   // dock
+<<<<<<< HEAD
   qrWaitMs:3000,    // quiet time after add/remove, then QR + float
+=======
+  qrWaitMs:1500,    // quiet time after add/remove, then QR + float
+>>>>>>> 78029e2804eb5c4c0be9c8293a088afa4cdc264e
   cartMax : 10
 };

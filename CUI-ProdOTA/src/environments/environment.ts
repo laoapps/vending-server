@@ -40,7 +40,7 @@ export const environment = {
   holdMs :10000,   // photo before story
   // videoMs:12000,   // vertical video this one from Admin defined
   // dock
-  qrWaitMs:3000,    // quiet time after add/remove, then QR + float
+  qrWaitMs:1500,    // quiet time after add/remove, then QR + float
   cartMax : 10
 
 };
