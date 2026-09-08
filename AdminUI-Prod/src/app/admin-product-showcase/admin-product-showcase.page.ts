@@ -6,8 +6,8 @@ import { ApiService } from 'src/app/services/api.service';
 
 @Component({
   selector: 'app-admin-product-showcase',
-  standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  // standalone: true,
+  // imports: [CommonModule, FormsModule, IonicModule],
   templateUrl: './admin-product-showcase.page.html',
   styleUrls: ['./admin-product-showcase.page.scss'],
 })
