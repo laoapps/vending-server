@@ -1191,7 +1191,11 @@ export class BillingPage implements OnInit {
       this.apiService.showLoadingLong();
       const result = await this.apiService.checkAndConfirmBillToDeliver(body).toPromise();
       if (result['status'] == 1) {
-        this.apiService.alertSuccess('ກວດເຄື່ອງສຳເຫຼັດ');
+        const pendingCount = result?.['data']?.pendingCount;
+        const msg = pendingCount
+          ? `ກຳລັງກວດ ${pendingCount} ລາຍການໃນພື້ນຫຼັງ`
+          : 'ກວດເຄື່ອງສຳເຫຼັດ';
+        this.apiService.alertSuccess(msg);
       } else {
         this.apiService.alertError('ເກີດຂໍ້ຜິດພາດໃນການກວດເຄື່ອງ')
       }

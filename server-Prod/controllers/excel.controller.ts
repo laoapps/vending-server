@@ -10,7 +10,7 @@ import https from 'https';
 import axios from "axios";
 import { PrintError, PrintSucceeded } from "../services/service";
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
-import { apiQueue } from "../api/queue.services";
+import PQueue from "p-queue";
 
 
 
@@ -251,16 +251,53 @@ export const reportAllBillNotPaid = async (req: Request, res: Response) => {
 
 
         const runData = await getReportAllBillNotPaid(machineId, fromDate.toString(), toDate.toString(), ownerUuid);
-        if (!runData) {
-            return res.send(PrintSucceeded('reportAllBilling', [], EMessage.succeeded))
+        if (!runData || runData.length === 0) {
+            return res.send(PrintSucceeded('reportAllBilling', {
+                runData: [],
+                result: [],
+                resultNotPaid: [],
+                pendingCount: 0,
+                processing: false,
+            }, EMessage.succeeded))
         }
-        const resultBill: string[] = [];
-        const resultNotPaid: string[] = [];
-        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+
+        // Respond immediately — sequential/parallel M-Money checks exceed gateway (~60s) and cause 504
+        res.send(PrintSucceeded('reportAllBilling', {
+            pendingCount: runData.length,
+            processing: true,
+            result: [],
+            resultNotPaid: [],
+        }, EMessage.succeeded));
+
+        void processPendingBillsToDeliver(runData, ownerUuid, machineId, fromDate, toDate);
+
+    } catch (error: any) {
+        console.error("Error reading Excel:", error);
+        if (!res.headersSent) {
+            return res.send(PrintError('reportAllBilling', error, EMessage.unknownError));
+        }
+    }
+};
+
+async function processPendingBillsToDeliver(
+    runData: any[],
+    ownerUuid: string,
+    machineId: string,
+    fromDate: Date,
+    toDate: Date,
+) {
+    const resultBill: string[] = [];
+    const resultNotPaid: string[] = [];
+    const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+    // Dedicated queue — do not share apiQueue (rate-limited + used by QR generation)
+    const checkQueue = new PQueue({ concurrency: 8 });
+
+    try {
+        console.log(`[checkAndConfirmBillToDeliver] start machine=${machineId} pending=${runData.length}`);
 
         await Promise.all(
             runData.map((element) =>
-                apiQueue.add(async () => {
+                checkQueue.add(async () => {
                     const transactionID = element.transactionID;
                     const resCheck = await checkQRPaidMmoneyResponse(transactionID);
                     if (resCheck.status === 1) {
@@ -282,7 +319,6 @@ export const reportAllBillNotPaid = async (req: Request, res: Response) => {
             )
         );
 
-
         const recordBill = {
             ownerUuid: ownerUuid,
             machineId: machineId,
@@ -292,25 +328,16 @@ export const reportAllBillNotPaid = async (req: Request, res: Response) => {
             result: resultBill
         } as IRecordBilling;
 
-        // console.log('resultBill :', recordBill);
-
         const entRecord = RecordBillingFactory(EEntity.RecordBilling, dbConnection);
-
         await entRecord.create(recordBill);
 
-
-        return res.send(PrintSucceeded('reportAllBilling', {
-            runData: runData,
-            result: resultBill,
-            resultNotPaid: resultNotPaid,
-        }, EMessage.succeeded))
-
-
-    } catch (error: any) {
-        console.error("Error reading Excel:", error);
-        return res.send(PrintError('reportAllBilling', error, EMessage.unknownError));
+        console.log(
+            `[checkAndConfirmBillToDeliver] done machine=${machineId} delivered=${resultBill.length} notPaid=${resultNotPaid.length}`
+        );
+    } catch (error) {
+        console.error('[checkAndConfirmBillToDeliver] background error:', error);
     }
-};
+}
 
 
 async function getReportSale(machineId: string, fromDate: string, toDate: string, ownerUuid: string) {
