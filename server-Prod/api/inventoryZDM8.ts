@@ -1380,7 +1380,7 @@ export class InventoryZDM8 implements IBaseClass {
  * Lookup: real stock.id  (+ ownerUuid from machine / admin session)
  */
 
-            
+
             /* ===== ADMIN ===== */
 
             router.post(
@@ -11697,24 +11697,24 @@ export class LoadVendingMachineStockReport {
 }
 
 function showcaseHash(s: any): string {
-                const payload = JSON.stringify({
-                    title: s.title || '',
-                    html: s.html || '',
-                    story: s.story || '',
-                    price: Number(s.price) || 0,
-                    video: s.video || '',
-                    photos: s.photos || [],
-                    holdMs: Number(s.holdMs) || 10000,
-                    videoMs: Number(s.videoMs) || 12000,
-                });
-                return crypto.createHash('sha256').update(payload).digest('hex');
-            }
+    const payload = JSON.stringify({
+        title: s.title || '',
+        html: s.html || '',
+        story: s.story || '',
+        price: Number(s.price) || 0,
+        video: s.video || '',
+        photos: s.photos || [],
+        holdMs: Number(s.holdMs) || 10000,
+        videoMs: Number(s.videoMs) || 12000,
+    });
+    return crypto.createHash('sha256').update(payload).digest('hex');
+}
 
-            async function showcaseEnt(ownerUuid: string) {
-                const ent = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
-                await ent.sync();
-                return ent;
-            }
+async function showcaseEnt(ownerUuid: string) {
+    const ent = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
+    await ent.sync();
+    return ent;
+}
 
 
 function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
