@@ -29,7 +29,7 @@ export const environment = {
   // filemanagerurl: 'https://filemanager-api.laoapps.com/api/v1/file/',
 
   versionId: '1.1.21',
-  demoStartMs: 3000, // attract auto  (demo: 3000)
+  demoStartMs: 180000, // attract auto  (demo: 3000)
   idleClearMs: 180000,  // clear checkout
   demoItemMs: 10000,   // each product photo in attract
   // attract / showcase row

@@ -5565,7 +5565,13 @@ export class InventoryZDM8 implements IBaseClass {
                                 const isMusicMuted = o.data[0]?.isMusicMuted || false;
                                 const isRobotMuted = o.data[0]?.isRobotMuted || false;
                                 const musicVolume = o.data[0]?.musicVolume || 0;
-                                let checkoutUiVersion = (o.data[0]?.checkoutUiVersion || 'default').toString().trim();
+                                // Preserve existing value when Admin payload omits the field (older UI / partial updates).
+                                let checkoutUiVersion: string;
+                                if (o.data[0]?.checkoutUiVersion != null && String(o.data[0].checkoutUiVersion).trim() !== '') {
+                                    checkoutUiVersion = String(o.data[0].checkoutUiVersion).trim();
+                                } else {
+                                    checkoutUiVersion = (a?.checkoutUiVersion || 'default').toString().trim();
+                                }
                                 if (checkoutUiVersion === 'kiosk') checkoutUiVersion = 'v3';
                                 if (checkoutUiVersion !== 'v2' && checkoutUiVersion !== 'v3') checkoutUiVersion = 'default';
                                 const adsList = o.data[0]?.adsList || [];
@@ -5639,7 +5645,8 @@ export class InventoryZDM8 implements IBaseClass {
                                 // s.ownerPhone = '';
                                 // s.imei = '';
                                 await writeMachineSetting(r.machineId, a2);
-                                writeMachineSettingVersion(r.machineId, a2);
+                                await writeMachineSettingVersion(r.machineId, a2);
+                                console.log('UPDATE MACHINE SETTING checkoutUiVersion=', s?.checkoutUiVersion, 'machineId=', r.machineId);
                                 this.machineIds.find(v => {
                                     if (v.machineId == r.machineId) {
                                         Object.assign(v, r);

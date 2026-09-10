@@ -88,7 +88,10 @@
 
       <div class="action-bar__gear-wrap">
         <button type="button" class="action-bar__btn action-bar__btn--gear" [class.is-on]="menuOpen"
-          (click)="toggleMenu(); $event.stopPropagation()" title="Menu">
+          title="Setting (tap ×6) · hold for menu"
+          (mousedown)="holdGearMenu($event)" (mouseup)="endGearMenu()" (mouseleave)="endGearMenu()"
+          (touchstart)="holdGearMenu($event)" (touchend)="endGearMenu()"
+          (click)="onGearClick($event)">
           <ion-icon name="settings-outline"></ion-icon>
           <span>ເມນູ</span>
         </button>
@@ -106,7 +109,7 @@
             <ion-icon name="refresh-outline"></ion-icon>
             Reload stock
           </button>
-          <button type="button" (click)="showSetting(); closeMenu()">
+          <button type="button" (click)="openSettingNow(); closeMenu()">
             <ion-icon name="settings-outline"></ion-icon>
             Main setting
           </button>
@@ -114,7 +117,7 @@
             <ion-icon name="construct-outline"></ion-icon>
             Testing
           </button>
-          <button type="button" (click)="showQrConfig(); closeMenu()">
+          <button type="button" (click)="openQrConfigNow(); closeMenu()">
             <ion-icon name="qr-code-outline"></ion-icon>
             QR config
           </button>

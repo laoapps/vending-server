@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, Platform } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
 import { IMachineId, IVendingMachineSale } from 'src/app/services/syste.model';
@@ -52,11 +53,20 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     public blockchainDbService: BlockchainDbService,
     private idleService: IdleService,
     private WSAPIService: WsapiService,
+    private router: Router,
   ) {
     this.machineId = this.apiService.machineId;
+    this.apiService.checkoutUiVersion = ApiService.readCheckoutUiVersion();
+    if (this.apiService.checkoutUiVersion !== 'v3') {
+      this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+    }
   }
 
   ngOnInit(): void {
+    if (this.apiService.checkoutUiVersion !== 'v3') {
+      this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+      return;
+    }
     // Dock still calls apiService.myTab1.* — this PAGE is the host, not Tab1.
     this.apiService.myTab1 = this as any;
     this.bindWebsocket();

@@ -513,8 +513,10 @@ export class Tab1Page implements OnDestroy {
     private alertCtrl: AlertController,
     private modalCtrl: ModalController
   ) {
-    // this.router.navigate(['/hm-vending-kiosk']);
-    // return;
+    if (this.apiService.checkoutUiVersion === 'v3') {
+      this.router.navigateByUrl('/hm-vending-kiosk', { replaceUrl: true });
+      return;
+    }
 
     // this.refreshAllEveryHour();
 
@@ -740,6 +742,10 @@ export class Tab1Page implements OnDestroy {
 
 
     /// TESTING MODE OR REAL MODE
+    if (this.apiService.checkoutUiVersion === 'v3') {
+      this.router.navigateByUrl('/hm-vending-kiosk', { replaceUrl: true });
+      return;
+    }
     if (localStorage.getItem('startTestMotor')) {
       this.startTestMotor();
       return;
