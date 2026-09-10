@@ -436,7 +436,23 @@ export class ApiService {
 
   isAds: boolean = false;
 
-  adsList: any = localStorage.getItem('adsList') || [];
+  adsList: any = (() => {
+    try {
+      const raw = localStorage.getItem('adsList');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  bannerList: string[] = (() => {
+    try {
+      const raw = localStorage.getItem('bannerList');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
 
 
   isRemainingBillsModalOpen: boolean = false;
@@ -753,6 +769,16 @@ export class ApiService {
             console.log('Error getReplacements', error);
           }
 
+        }
+
+        if (rSetting) {
+          const nextBanners = Array.isArray(rSetting.bannerList)
+            ? rSetting.bannerList.map((x: any) => String(x || '').trim()).filter(Boolean)
+            : [];
+          if (this.areArraysDifferentUnordered(this.bannerList ?? [], nextBanners)) {
+            this.bannerList = nextBanners;
+            localStorage.setItem('bannerList', JSON.stringify(this.bannerList));
+          }
         }
 
         this.checkIsDropStock();

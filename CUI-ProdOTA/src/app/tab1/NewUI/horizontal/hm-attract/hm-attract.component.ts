@@ -8,7 +8,9 @@ import {
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import {environment} from '../../../../../environments/environment';
+import { environment } from '../../../../../environments/environment';
+import { VideoCacheService } from 'src/app/video-cache.service';
+import { downloadFileUrl } from 'src/app/filemanager-url';
 
 @Component({
   selector: 'app-hm-attract',
@@ -19,13 +21,14 @@ import {environment} from '../../../../../environments/environment';
 })
 export class HmAttractComponent implements OnInit, OnDestroy {
   /** photo hold — default 10s, overridable per product */
-  @Input() itemHoldMs = environment.holdMs||10000;   // photo before story;
+  @Input() itemHoldMs = environment.holdMs || 10000;
   @Input() shelfId = 'shelf';
   @Input() products: any[] = [];
   @Input() photoOf: (sl: any, size?: number) => string = () => '';
   @Input() fallback = 'assets/icon/logo.png';
   @Input() hydrateHi?: (sl: any) => Promise<void>;
   @Input() showcaseOf?: (sl: any) => any;
+  /** @deprecated prefer internal VideoCacheService.resolvePlayable */
   @Input() videoSrcOf?: (hash: string) => string;
   @Input() auto = true;
   @Input() startAt: any = null;
@@ -40,13 +43,13 @@ export class HmAttractComponent implements OnInit, OnDestroy {
 
   private holdTimer: any = null;
   private seq = 0;
-
-    // attract / showcase row
+  private activeVideoPlayable = '';
 
   constructor(
     private ref: ChangeDetectorRef,
     private modalCtrl: ModalController,
     private sanitizer: DomSanitizer,
+    private videos: VideoCacheService,
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +69,7 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     this.running = false;
     this.seq++;
     clearTimeout(this.holdTimer);
+    this.releaseVideo();
   }
 
   async dismiss(): Promise<void> {
@@ -116,7 +120,7 @@ export class HmAttractComponent implements OnInit, OnDestroy {
   private async showOne(sl: any, token: number): Promise<void> {
     this.featured = sl;
     this.phase = 'photo';
-    this.videoSrc = '';
+    this.releaseVideo();
     this.storyHtml = null;
     this.extraPhotos = [];
     this.featuredSrc = this.srcOf(sl);
@@ -140,11 +144,40 @@ export class HmAttractComponent implements OnInit, OnDestroy {
         sc.html || (sc.story ? `<p>${sc.story}</p>` : ''),
       );
       this.extraPhotos = sc.photos || [];
-      if (sc.video) this.videoSrc = this.videoSrcOf?.(sc.video) || '';
+      if (sc.video) {
+        await this.loadShowcaseVideo(sc.video, token);
+      }
       this.ref.detectChanges();
       const vms = Number(sc.videoMs) > 0 ? Number(sc.videoMs) : 12000;
       await this.sleep(vms, token);
     }
+  }
+
+  private async loadShowcaseVideo(hash: string, token: number): Promise<void> {
+    try {
+      const playable = await this.videos.resolvePlayable(downloadFileUrl(hash));
+      if (!this.running || token !== this.seq) {
+        this.videos.releasePlayable(playable);
+        return;
+      }
+      if (this.activeVideoPlayable && this.activeVideoPlayable !== playable) {
+        this.videos.releasePlayable(this.activeVideoPlayable);
+      }
+      this.activeVideoPlayable = playable;
+      this.videoSrc = playable;
+    } catch {
+      // Optional legacy sync fallback only if already a local/blob URL.
+      const legacy = this.videoSrcOf?.(hash) || '';
+      this.videoSrc = legacy.startsWith('blob:') || legacy.startsWith('data:') ? legacy : '';
+    }
+  }
+
+  private releaseVideo(): void {
+    if (this.activeVideoPlayable) {
+      this.videos.releasePlayable(this.activeVideoPlayable);
+      this.activeVideoPlayable = '';
+    }
+    this.videoSrc = '';
   }
 
   private scrollTo(sl: any): void {

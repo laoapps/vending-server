@@ -26,7 +26,6 @@ import { HmAttractComponent } from '../hm-attract/hm-attract.component';
 import { KioskShowcaseService } from '../../../../kiosk-showcase.service';
 import { AppcachingserviceService } from '../../../../services/appcachingservice.service';
 import { VideoCacheService } from '../../../../video-cache.service';
-import { downloadFileUrl } from '../../../../filemanager-url';
 @Component({
   selector: 'app-hm-vending-kiosk',
   templateUrl: './hm-vending-kiosk.page.html',
@@ -515,11 +514,16 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
   showcaseOf = (sl: any) => this.showcase.get(Number(sl?.stock?.id));
 
+  /** Legacy sync hint only; attract resolves via VideoCacheService.resolvePlayable. */
   videoSrcOf = (hash: string) => {
     try {
-      return this.videoCache.getPlayableUrl?.(hash) || downloadFileUrl(hash);
+      const cached = this.videoCache.getPlayableUrl?.(hash);
+      if (cached && (cached.startsWith('blob:') || cached.startsWith('data:') || cached.startsWith('capacitor:'))) {
+        return cached;
+      }
+      return '';
     } catch {
-      return downloadFileUrl(hash);
+      return '';
     }
   };
   /** Product card Details button */

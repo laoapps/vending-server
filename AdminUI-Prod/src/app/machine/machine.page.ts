@@ -239,6 +239,7 @@ export class MachinePage implements OnInit {
             setting.highTemp = 15;
             setting.light = { start: 3, end: 2 };
             setting.adsList = [];
+            setting.bannerList = [];
 
             setting.imei = '';
             setting.location = '';
@@ -252,6 +253,9 @@ export class MachinePage implements OnInit {
           if (setting.adsList == undefined || setting.adsList == null) {
             setting.adsList = [];
           }
+          if (setting.bannerList == undefined || setting.bannerList == null) {
+            setting.bannerList = [];
+          }
           if (!setting.checkoutUiVersion) {
             setting.checkoutUiVersion = 'default';
           }
@@ -259,6 +263,9 @@ export class MachinePage implements OnInit {
             setting.checkoutUiVersion = 'v3';
           }
           setting.adsList = setting.adsList?.join(',')
+          setting.bannerList = Array.isArray(setting.bannerList)
+            ? setting.bannerList.join(',')
+            : (setting.bannerList || '');
 
 
           console.log('setting.adsList', setting.adsList);
@@ -303,6 +310,16 @@ export class MachinePage implements OnInit {
     } else {
       // ถ้าเป็น null/undefined หรืออย่างอื่น ให้เซ็ตเป็น array ว่าง
       setting.adsList = [];
+    }
+
+    if (typeof setting.bannerList === 'string') {
+      setting.bannerList = setting.bannerList.split(',')
+        .map(item => item.trim())
+        .filter(item => item);
+    } else if (Array.isArray(setting.bannerList)) {
+      setting.bannerList = setting.bannerList.map(item => String(item).trim()).filter(item => item);
+    } else {
+      setting.bannerList = [];
     }
 
     if (!setting.settingName) setting.settingName = 'setting';

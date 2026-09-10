@@ -334,14 +334,28 @@
                       <label class="setting-field setting-full">
                         <span class="field-label">
                           <ion-icon name="barcode-outline"></ion-icon>
-                          Ads List
+                          Ads List (video)
                         </span>
                         <ion-textarea
                           class="custominput"
                           rows="2"
                           auto-grow="true"
-                          placeholder="enter Ads List"
+                          placeholder="video URLs / hashes, comma-separated"
                           [(ngModel)]="settings[p.machineId].adsList">
+                        </ion-textarea>
+                      </label>
+
+                      <label class="setting-field setting-full">
+                        <span class="field-label">
+                          <ion-icon name="images-outline"></ion-icon>
+                          Banner List (images)
+                        </span>
+                        <ion-textarea
+                          class="custominput"
+                          rows="2"
+                          auto-grow="true"
+                          placeholder="image URLs / hashes, comma-separated"
+                          [(ngModel)]="settings[p.machineId].bannerList">
                         </ion-textarea>
                       </label>
                     </div>

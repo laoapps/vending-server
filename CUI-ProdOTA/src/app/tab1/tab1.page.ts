@@ -3328,13 +3328,11 @@ export class Tab1Page implements OnDestroy {
 
   private async toPlayableAdSrc(remoteUrl: string): Promise<string> {
     if (!remoteUrl) return '';
-    if (!Capacitor.isNativePlatform()) return remoteUrl;
     try {
-      const localPath = await Promise.race([
-        this.videoCacheService.downloadIfNotExist(remoteUrl),
+      const playable = await Promise.race([
+        this.videoCacheService.resolvePlayable(remoteUrl),
         new Promise<string>((_, reject) => setTimeout(() => reject(new Error('ads cache timeout')), 1800))
       ]);
-      const playable = localPath ? this.videoCacheService.getPlayableUrl(localPath) : '';
       if (!playable) return remoteUrl;
       if (playable.indexOf('/DATA/') >= 0 || playable.indexOf('localhost:') >= 0) return remoteUrl;
       return playable;

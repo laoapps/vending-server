@@ -10,6 +10,7 @@ const CACHE_NAME = 'hm-ads-v1';
 })
 export class VideoCacheService {
   public downloadProgress = 0;
+  /** Web only: remote URL → object URL. Keep small; revoke when unused. */
   private blobUrls = new Map<string, string>();
 
   constructor(private ngZone: NgZone) {
@@ -65,7 +66,7 @@ export class VideoCacheService {
     return hash.indexOf('.') === -1 ? hash + '.mp4' : hash;
   }
 
-  /** Download every ad while online. Call from kiosk ngOnInit. */
+  /** Download every ad to disk/Cache API only — does not create blob URLs (no RAM spike). */
   async preloadAll(urls: string[]): Promise<void> {
     for (const url of urls || []) {
       try {
@@ -78,7 +79,7 @@ export class VideoCacheService {
 
   async getLocalPath(url: string): Promise<string | null> {
     if (Capacitor.getPlatform() === 'web') {
-      return this.webCachedBlob(url);
+      return this.webCacheKeyIfPresent(url);
     }
     try {
       const stat = await Filesystem.stat({
@@ -91,7 +92,10 @@ export class VideoCacheService {
     }
   }
 
-  /** Cache-first. Never return a live HTTP URL if a local copy exists. */
+  /**
+   * Cache-first. On web returns the remote URL key after Cache Storage hit/put
+   * (not a blob URL — use resolvePlayable for playback).
+   */
   async downloadIfNotExist(url: string): Promise<string> {
     const local = await this.getLocalPath(url);
     if (local) return local;
@@ -121,10 +125,27 @@ export class VideoCacheService {
     }
   }
 
+  /**
+   * Ensure cached, then return a playable src (file / convertFileSrc / blob:).
+   * Prefer this over downloadIfNotExist + getPlayableUrl on web.
+   */
+  async resolvePlayable(url: string): Promise<string> {
+    if (!url) return '';
+    if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+    const local = await this.downloadIfNotExist(url);
+    return this.toPlayable(local);
+  }
+
+  /** Sync helper for native file URIs / existing blob URLs. Prefer resolvePlayable on web. */
   getPlayableUrl(path: string): string {
     if (!path) return '';
     if (path.startsWith('blob:') || path.startsWith('data:')) return path;
-    if (path.startsWith('http') && Capacitor.getPlatform() === 'web') return path;
+    const mapped = this.blobUrls.get(path) || this.blobUrls.get(this.remoteUrl(path));
+    if (mapped) return mapped;
+    if (path.startsWith('http') && Capacitor.getPlatform() === 'web') {
+      // Legacy: may stream — callers should migrate to resolvePlayable.
+      return path;
+    }
     try {
       return Capacitor.convertFileSrc(path);
     } catch {
@@ -132,44 +153,92 @@ export class VideoCacheService {
     }
   }
 
-  private async webCachedBlob(url: string): Promise<string | null> {
+  /** Revoke a blob: object URL created by this service. */
+  releasePlayable(playable: string | null | undefined): void {
+    if (!playable || !playable.startsWith('blob:')) return;
+    for (const [key, value] of [...this.blobUrls.entries()]) {
+      if (value === playable) {
+        try {
+          URL.revokeObjectURL(value);
+        } catch {}
+        this.blobUrls.delete(key);
+      }
+    }
+  }
+
+  /** Drop all materialized blobs except an optional currently playing URL. */
+  releaseAllBlobsExcept(keep?: string | null): void {
+    for (const [key, value] of [...this.blobUrls.entries()]) {
+      if (keep && value === keep) continue;
+      try {
+        URL.revokeObjectURL(value);
+      } catch {}
+      this.blobUrls.delete(key);
+    }
+  }
+
+  private async toPlayable(localPath: string): Promise<string> {
+    if (!localPath) return '';
+    if (localPath.startsWith('blob:') || localPath.startsWith('data:')) return localPath;
+    if (Capacitor.getPlatform() === 'web') {
+      return this.materializeBlob(localPath.startsWith('http') ? localPath : this.remoteUrl(localPath));
+    }
+    return this.getPlayableUrl(localPath);
+  }
+
+  /** True if Cache Storage already has the remote (no blob created). */
+  private async webCacheKeyIfPresent(url: string): Promise<string | null> {
     const remote = this.remoteUrl(url);
-    if (this.blobUrls.has(remote)) return this.blobUrls.get(remote)||'';
     try {
       const cache = await caches.open(CACHE_NAME);
       const hit = await cache.match(remote);
-      if (!hit) return null;
-      const blob = await hit.blob();
-      const obj = URL.createObjectURL(blob);
-      this.blobUrls.set(remote, obj);
-      return obj;
+      return hit ? remote : null;
     } catch {
       return null;
     }
   }
 
+  /** Fetch → Cache Storage only (no createObjectURL). */
   private async webDownload(remote: string): Promise<string> {
     const cache = await caches.open(CACHE_NAME);
     try {
       const res = await fetch(remote);
       if (!res.ok) throw new Error('fetch ' + res.status);
       await cache.put(remote, res.clone());
-      const blob = await res.blob();
-      const obj = URL.createObjectURL(blob);
-      this.blobUrls.set(remote, obj);
-      return obj;
+      return remote;
     } catch (e) {
-      const cached = await this.webCachedBlob(remote);
+      const cached = await this.webCacheKeyIfPresent(remote);
       if (cached) return cached;
       throw e;
     }
   }
 
+  /** Create (or reuse) one blob URL for playback from Cache Storage. */
+  private async materializeBlob(remote: string): Promise<string> {
+    if (!remote) return '';
+    if (this.blobUrls.has(remote)) return this.blobUrls.get(remote) || '';
+    const cache = await caches.open(CACHE_NAME);
+    const hit = await cache.match(remote);
+    if (!hit) throw new Error('cache miss ' + remote);
+    const blob = await hit.blob();
+    const obj = URL.createObjectURL(blob);
+    this.blobUrls.set(remote, obj);
+    return obj;
+  }
+
   async deleteVideo(url: string): Promise<void> {
+    const remote = this.remoteUrl(url);
+    const blob = this.blobUrls.get(remote);
+    if (blob) {
+      try {
+        URL.revokeObjectURL(blob);
+      } catch {}
+      this.blobUrls.delete(remote);
+    }
     if (Capacitor.getPlatform() === 'web') {
       try {
         const cache = await caches.open(CACHE_NAME);
-        await cache.delete(this.remoteUrl(url));
+        await cache.delete(remote);
       } catch {}
       return;
     }
