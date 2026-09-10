@@ -10,6 +10,7 @@ import https from 'https';
 import axios from "axios";
 import { PrintError, PrintSucceeded } from "../services/service";
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
+import { apiQueue } from "../api/queue.services";
 
 
 
@@ -253,31 +254,33 @@ export const reportAllBillNotPaid = async (req: Request, res: Response) => {
         if (!runData) {
             return res.send(PrintSucceeded('reportAllBilling', [], EMessage.succeeded))
         }
-        let resultBill = [];
-        let resultNotPaid = [];
+        const resultBill: string[] = [];
+        const resultNotPaid: string[] = [];
         const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
 
-        for (let element of runData) {
-            const transactionID = element.transactionID;
-            const resCheck = await checkQRPaidMmoneyResponse(transactionID);
-            if (resCheck.status === 1) {
-                // console.log('transaction', transactionID, '✅ Success', 'id :', element.id);
-                const billData = await ent.findByPk(element.id);
-                if (billData) {
-                    // console.log('billData :', billData.paymentstatus);
-                    billData.paymentstatus = EPaymentStatus.delivered;
-                    billData.changed("paymentstatus", true);
-                    billData.save().then(s => {
-                        resultBill.push(transactionID);
-                    }).catch(err => {
-                        console.log('Err Save :', err);
-                    });
-                }
-            } else {
-                resultNotPaid.push(transactionID);
-                // console.log('transaction', transactionID, '❌ Not Success', 'id :', element.id);
-            }
-        }
+        await Promise.all(
+            runData.map((element) =>
+                apiQueue.add(async () => {
+                    const transactionID = element.transactionID;
+                    const resCheck = await checkQRPaidMmoneyResponse(transactionID);
+                    if (resCheck.status === 1) {
+                        const billData = await ent.findByPk(element.id);
+                        if (billData) {
+                            billData.paymentstatus = EPaymentStatus.delivered;
+                            billData.changed("paymentstatus", true);
+                            try {
+                                await billData.save();
+                                resultBill.push(transactionID);
+                            } catch (err) {
+                                console.log('Err Save :', err);
+                            }
+                        }
+                    } else {
+                        resultNotPaid.push(transactionID);
+                    }
+                })
+            )
+        );
 
 
         const recordBill = {
