@@ -254,10 +254,49 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
     })
     s.present();
   }
+
+  /** StockPage reads apiService.stock — load catalog if kiosk never ran Tab1 init. */
+  private async ensureProductCatalog(): Promise<boolean> {
+    if (this.apiService.stock?.length) return true;
+
+    try {
+      const cached = await this.storage.get('productItems', 'item');
+      const items = cached?.v;
+      if (Array.isArray(items) && items.length) {
+        this.apiService.stock.length = 0;
+        this.apiService.stock.push(...JSON.parse(JSON.stringify(items)));
+        return true;
+      }
+    } catch { }
+
+    try {
+      const rx = await this.apiService.loadVendingSale();
+      const r: any = rx?.data;
+      if (r?.status == 1 && Array.isArray(r.data) && r.data.length) {
+        this.apiService.newProductItems(r.data);
+        if (this.apiService.stock?.length) return true;
+      }
+    } catch (e) {
+      console.log('ensureProductCatalog loadVendingSale', e);
+    }
+
+    const fromSlots = (this.saleStock || [])
+      .map((s) => s?.stock)
+      .filter((s) => s && s.id != null && Number(s.id) !== -1 && Number(s.price) >= 0);
+    if (fromSlots.length) {
+      this.apiService.updateStockItems(fromSlots);
+      return this.apiService.stock.length > 0;
+    }
+    return false;
+  }
+
   async changeStock(position: number) {
+    const ok = await this.ensureProductCatalog();
+    if (!ok) return alert('no stock');
+
+    this.stock = this.apiService.stock || [];
     console.log('stock ', this.stock);
 
-    if (!this.stock.length) return alert('no stock')
     const s = await this.apiService.showModal(StockPage);
     s.onDidDismiss().then(r => {
       try {

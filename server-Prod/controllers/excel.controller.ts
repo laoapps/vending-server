@@ -10,6 +10,7 @@ import https from 'https';
 import axios from "axios";
 import { PrintError, PrintSucceeded } from "../services/service";
 import { RecordBillingFactory } from "../entities/recordbilling.entity";
+import PQueue from "p-queue";
 
 
 
@@ -250,35 +251,73 @@ export const reportAllBillNotPaid = async (req: Request, res: Response) => {
 
 
         const runData = await getReportAllBillNotPaid(machineId, fromDate.toString(), toDate.toString(), ownerUuid);
-        if (!runData) {
-            return res.send(PrintSucceeded('reportAllBilling', [], EMessage.succeeded))
-        }
-        let resultBill = [];
-        let resultNotPaid = [];
-        const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
-
-        for (let element of runData) {
-            const transactionID = element.transactionID;
-            const resCheck = await checkQRPaidMmoneyResponse(transactionID);
-            if (resCheck.status === 1) {
-                // console.log('transaction', transactionID, '✅ Success', 'id :', element.id);
-                const billData = await ent.findByPk(element.id);
-                if (billData) {
-                    // console.log('billData :', billData.paymentstatus);
-                    billData.paymentstatus = EPaymentStatus.delivered;
-                    billData.changed("paymentstatus", true);
-                    billData.save().then(s => {
-                        resultBill.push(transactionID);
-                    }).catch(err => {
-                        console.log('Err Save :', err);
-                    });
-                }
-            } else {
-                resultNotPaid.push(transactionID);
-                // console.log('transaction', transactionID, '❌ Not Success', 'id :', element.id);
-            }
+        if (!runData || runData.length === 0) {
+            return res.send(PrintSucceeded('reportAllBilling', {
+                runData: [],
+                result: [],
+                resultNotPaid: [],
+                pendingCount: 0,
+                processing: false,
+            }, EMessage.succeeded))
         }
 
+        // Respond immediately — sequential/parallel M-Money checks exceed gateway (~60s) and cause 504
+        res.send(PrintSucceeded('reportAllBilling', {
+            pendingCount: runData.length,
+            processing: true,
+            result: [],
+            resultNotPaid: [],
+        }, EMessage.succeeded));
+
+        void processPendingBillsToDeliver(runData, ownerUuid, machineId, fromDate, toDate);
+
+    } catch (error: any) {
+        console.error("Error reading Excel:", error);
+        if (!res.headersSent) {
+            return res.send(PrintError('reportAllBilling', error, EMessage.unknownError));
+        }
+    }
+};
+
+async function processPendingBillsToDeliver(
+    runData: any[],
+    ownerUuid: string,
+    machineId: string,
+    fromDate: Date,
+    toDate: Date,
+) {
+    const resultBill: string[] = [];
+    const resultNotPaid: string[] = [];
+    const ent = VendingMachineBillFactory(EEntity.vendingmachinebill + '_' + ownerUuid, dbConnection);
+    // Dedicated queue — do not share apiQueue (rate-limited + used by QR generation)
+    const checkQueue = new PQueue({ concurrency: 8 });
+
+    try {
+        console.log(`[checkAndConfirmBillToDeliver] start machine=${machineId} pending=${runData.length}`);
+
+        await Promise.all(
+            runData.map((element) =>
+                checkQueue.add(async () => {
+                    const transactionID = element.transactionID;
+                    const resCheck = await checkQRPaidMmoneyResponse(transactionID);
+                    if (resCheck.status === 1) {
+                        const billData = await ent.findByPk(element.id);
+                        if (billData) {
+                            billData.paymentstatus = EPaymentStatus.delivered;
+                            billData.changed("paymentstatus", true);
+                            try {
+                                await billData.save();
+                                resultBill.push(transactionID);
+                            } catch (err) {
+                                console.log('Err Save :', err);
+                            }
+                        }
+                    } else {
+                        resultNotPaid.push(transactionID);
+                    }
+                })
+            )
+        );
 
         const recordBill = {
             ownerUuid: ownerUuid,
@@ -289,25 +328,16 @@ export const reportAllBillNotPaid = async (req: Request, res: Response) => {
             result: resultBill
         } as IRecordBilling;
 
-        // console.log('resultBill :', recordBill);
-
         const entRecord = RecordBillingFactory(EEntity.RecordBilling, dbConnection);
-
         await entRecord.create(recordBill);
 
-
-        return res.send(PrintSucceeded('reportAllBilling', {
-            runData: runData,
-            result: resultBill,
-            resultNotPaid: resultNotPaid,
-        }, EMessage.succeeded))
-
-
-    } catch (error: any) {
-        console.error("Error reading Excel:", error);
-        return res.send(PrintError('reportAllBilling', error, EMessage.unknownError));
+        console.log(
+            `[checkAndConfirmBillToDeliver] done machine=${machineId} delivered=${resultBill.length} notPaid=${resultNotPaid.length}`
+        );
+    } catch (error) {
+        console.error('[checkAndConfirmBillToDeliver] background error:', error);
     }
-};
+}
 
 
 async function getReportSale(machineId: string, fromDate: string, toDate: string, ownerUuid: string) {

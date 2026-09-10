@@ -24,6 +24,8 @@ export class AdsPage implements OnInit {
 
   currentSrc: string | null = null;
 
+  private activePlayable: string | null = null;
+
   constructor(
     private videoService: VideoCacheService,
     private navCtrl: NavController
@@ -61,12 +63,14 @@ export class AdsPage implements OnInit {
 
     this.cleanup();
 
-    const localPath =
-      await this.videoService.downloadIfNotExist(url);
-
-    this.currentSrc =
-      this.videoService.getPlayableUrl(localPath);
-
+    try {
+      const playable = await this.videoService.resolvePlayable(url);
+      this.videoService.releaseAllBlobsExcept(playable);
+      this.activePlayable = playable;
+      this.currentSrc = playable;
+    } catch {
+      return;
+    }
 
     setTimeout(() => {
 
@@ -136,13 +140,17 @@ export class AdsPage implements OnInit {
 
     const video = this.videoPlayer?.nativeElement;
 
-    if (!video) return;
+    if (video) {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+    }
 
-    video.pause();
-
-    video.removeAttribute('src');
-
-    video.load();
+    if (this.activePlayable) {
+      this.videoService.releasePlayable(this.activePlayable);
+      this.activePlayable = null;
+    }
+    this.currentSrc = null;
 
   }
 

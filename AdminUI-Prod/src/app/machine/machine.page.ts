@@ -194,7 +194,10 @@ export class MachinePage implements OnInit {
             setting.imgHeader = '';
             setting.imgFooter = '';
             setting.imgLogo = '';
+            setting.checkoutUiVersion = 'default';
           }
+          if (!setting.checkoutUiVersion) setting.checkoutUiVersion = 'default';
+          if (setting.checkoutUiVersion === 'kiosk') setting.checkoutUiVersion = 'v3';
 
           this.settings[v?.machineId] = setting;
         })
@@ -236,6 +239,7 @@ export class MachinePage implements OnInit {
             setting.highTemp = 15;
             setting.light = { start: 3, end: 2 };
             setting.adsList = [];
+            setting.bannerList = [];
 
             setting.imei = '';
             setting.location = '';
@@ -249,6 +253,9 @@ export class MachinePage implements OnInit {
           if (setting.adsList == undefined || setting.adsList == null) {
             setting.adsList = [];
           }
+          if (setting.bannerList == undefined || setting.bannerList == null) {
+            setting.bannerList = [];
+          }
           if (!setting.checkoutUiVersion) {
             setting.checkoutUiVersion = 'default';
           }
@@ -256,6 +263,9 @@ export class MachinePage implements OnInit {
             setting.checkoutUiVersion = 'v3';
           }
           setting.adsList = setting.adsList?.join(',')
+          setting.bannerList = Array.isArray(setting.bannerList)
+            ? setting.bannerList.join(',')
+            : (setting.bannerList || '');
 
 
           console.log('setting.adsList', setting.adsList);
@@ -284,6 +294,10 @@ export class MachinePage implements OnInit {
     // console.log('setting0', setting);
 
     const setting = this.settings[m];
+    if (!setting || typeof setting !== 'object') {
+      this.apiService.toast.create({ message: 'Setting not loaded', duration: 3000 }).then(ry => ry.present());
+      return;
+    }
 
     // ✅ เช็คก่อนว่าเป็น string จริงหรือไม่
     if (typeof setting.adsList === 'string') {
@@ -298,12 +312,29 @@ export class MachinePage implements OnInit {
       setting.adsList = [];
     }
 
+    if (typeof setting.bannerList === 'string') {
+      setting.bannerList = setting.bannerList.split(',')
+        .map(item => item.trim())
+        .filter(item => item);
+    } else if (Array.isArray(setting.bannerList)) {
+      setting.bannerList = setting.bannerList.map(item => String(item).trim()).filter(item => item);
+    } else {
+      setting.bannerList = [];
+    }
+
+    if (!setting.settingName) setting.settingName = 'setting';
+    let checkoutUi = (setting.checkoutUiVersion || 'default').toString().trim();
+    if (checkoutUi === 'kiosk') checkoutUi = 'v3';
+    if (checkoutUi !== 'v2' && checkoutUi !== 'v3') checkoutUi = 'default';
+    setting.checkoutUiVersion = checkoutUi;
+
     const o = this._l.find(v => v?.machineId == m);
     const oldData = JSON.stringify(o.data);
     o.data = [setting];
     console.log('setting', o);
     console.log('setting', o.data);
     console.log('this.setting', this.settings);
+    console.log('checkoutUiVersion payload', setting.checkoutUiVersion);
 
 
     this.apiService.updateMachineSetting(o, o.id).subscribe(rx => {

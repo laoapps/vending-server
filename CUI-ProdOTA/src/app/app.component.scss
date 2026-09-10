@@ -1,9 +1,14 @@
-.statusbar{
-    display: flex;
-    justify-content: right;
-    // z-index: 1000000;
-    // z-index: 99999999;
-    z-index: 99999999;
+.statusbar {
+  display: flex;
+  justify-content: right;
+  z-index: 99999999;
+  color: #fff;
+}
 
+.statusbar ion-label {
+  color: #fff;
+}
 
+.statusbar ion-icon {
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.4));
 }

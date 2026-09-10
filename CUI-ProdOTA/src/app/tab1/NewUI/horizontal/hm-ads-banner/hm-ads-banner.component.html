@@ -1,4 +1,4 @@
-<div class="ads-banner" [class.ads-banner--empty]="!playlist.length">
+<div class="ads-banner" [class.ads-banner--empty]="!playlist.length && !bannerItems.length">
   <div class="ads-banner__video-wrap">
     <video
       #videoPlayer
@@ -13,6 +13,29 @@
       controlslist="nofullscreen nodownload noremoteplayback"></video>
   </div>
   <div class="ads-banner__slot">
-    <ng-content></ng-content>
+    <div class="ads-banner__images" *ngIf="bannerItems.length; else slotContent">
+      <img
+        *ngIf="bannerPrevSrc"
+        class="ads-banner__img ads-banner__img--prev"
+        [src]="bannerPrevSrc"
+        alt=""
+      />
+      <img
+        class="ads-banner__img"
+        [class.ads-banner__img--in]="bannerFade"
+        [src]="bannerSrc"
+        alt="banner"
+        (error)="onBannerError()"
+      />
+      <div class="ads-banner__dots" *ngIf="bannerItems.length > 1">
+        <span
+          *ngFor="let _ of bannerItems; let i = index"
+          class="ads-banner__dot"
+          [class.is-on]="i === bannerIndex"></span>
+      </div>
+    </div>
+    <ng-template #slotContent>
+      <ng-content></ng-content>
+    </ng-template>
   </div>
 </div>

@@ -2,9 +2,12 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, Platform } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import CryptoJS from 'crypto-js';
+import { Toast } from '@capacitor/toast';
 import { ApiService } from 'src/app/services/api.service';
-import { IMachineId, IVendingMachineSale } from 'src/app/services/syste.model';
+import { EMACHINE_COMMAND, IBillProcess, IMachineId, IVendingMachineSale } from 'src/app/services/syste.model';
 import { IonicStorageService } from 'src/app/ionic-storage.service';
 import { BlockchainDbService } from 'src/app/blockchain-db';
 import { CachingService } from 'src/app/services/caching.service';
@@ -12,13 +15,17 @@ import { IdleService } from 'src/app/services/idle.service';
 import { WsapiService } from 'src/app/services/wsapi.service';
 import { SettingPage } from 'src/app/setting/setting.page';
 import { QrconfigMachinePage } from 'src/app/qrconfig-machine/qrconfig-machine.page';
+import { StocksalePage } from 'src/app/stocksale/stocksale.page';
+import { QrOpenStockPage } from 'src/app/qr-open-stock/qr-open-stock.page';
+import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
+import { BillNotDropPage } from 'src/app/bill-not-drop/bill-not-drop.page';
+import { NumpadModalComponent } from 'src/app/components/numpad-modal/numpad-modal.component';
 import { environment } from 'src/environments/environment';
 import { downloadPhotoUrl } from '../../../../filemanager-url';
 import { HmAttractComponent } from '../hm-attract/hm-attract.component';
 import { KioskShowcaseService } from '../../../../kiosk-showcase.service';
 import { AppcachingserviceService } from '../../../../services/appcachingservice.service';
 import { VideoCacheService } from '../../../../video-cache.service';
-import { downloadFileUrl } from '../../../../filemanager-url';
 @Component({
   selector: 'app-hm-vending-kiosk',
   templateUrl: './hm-vending-kiosk.page.html',
@@ -41,6 +48,14 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   _machineStatus: { status?: { temp?: string | number } } = { status: {} };
   serial: any = null;
   menuOpen = false;
+  qrMode = localStorage.getItem('qrMode') ? true : false;
+  private numpadModal?: HTMLIonModalElement;
+  isOpenStock = false;
+  processLoadedPaidBills = false;
+  private testMotorCount = 7;
+  private testMotorTimer: any = null;
+  private gearHoldTimer: any = null;
+  private gearHeldOpen = false;
 
   /**
    * Attract demo delay after last touch.
@@ -80,11 +95,21 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     private cashingService: AppcachingserviceService,
     private showcase: KioskShowcaseService,
     private videoCache: VideoCacheService,
+    private router: Router,
   ) {
     this.machineId = this.apiService.machineId;
+    // Sync from localStorage in case Admin/setting changed while on this URL.
+    this.apiService.checkoutUiVersion = ApiService.readCheckoutUiVersion();
+    if (this.apiService.checkoutUiVersion !== 'v3') {
+      this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+    }
   }
 
   ngOnInit(): void {
+    if (this.apiService.checkoutUiVersion !== 'v3') {
+      this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+      return;
+    }
     // Dock still calls apiService.myTab1.* — this PAGE is the host, not Tab1.
     this.apiService.myTab1 = this as any;
     this.bindWebsocket();
@@ -106,6 +131,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.tapTimer) clearTimeout(this.tapTimer);
     if (this.holdTimer) clearTimeout(this.holdTimer);
+    if (this.testMotorTimer) clearTimeout(this.testMotorTimer);
+    if (this.gearHoldTimer) clearTimeout(this.gearHoldTimer);
     clearTimeout(this.attractArm);
     this.closeAttractModal();
     this.loginSub?.unsubscribe();
@@ -141,6 +168,9 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
       }
       const r = res?.data?.setting;
       if (r?.refresh) this.apiService.reloadPage?.();
+      if (r?.checkoutUiVersion != null && r?.checkoutUiVersion !== '') {
+        this.apiService.applyRemoteCheckoutUiVersionAndReload(r.checkoutUiVersion);
+      }
     });
 
     this.billSub = this.WSAPIService.billProcessSubscription?.subscribe((bill: any) => {
@@ -256,11 +286,27 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   loadStock(): void {
     this.storage.get('saleStock', 'stock').then((s) => {
       try {
-        const items = JSON.parse(JSON.stringify(s?.v ? s.v : ApiService.vendingOnSale || []));
+        let raw = s?.v ?? s;
+        // Older kiosk writes double-wrapped { v: { v: list } } via storage.set
+        if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) {
+          raw = (raw as any).v;
+        }
+        const fallback = ApiService.vendingOnSale || [];
+        const items = JSON.parse(
+          JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback)
+        ) as IVendingMachineSale[];
         this.saleList = items;
+        this.syncVendingOnSale(items);
         this.ref.detectChanges();
       } catch { }
     });
+  }
+
+  /** StocksalePage reads ApiService.vendingOnSale — keep it in sync with kiosk shelf. */
+  private syncVendingOnSale(items: IVendingMachineSale[]): void {
+    if (!Array.isArray(items)) return;
+    ApiService.vendingOnSale.length = 0;
+    ApiService.vendingOnSale.push(...items);
   }
 
   private hiBusy = new Set<string>();
@@ -468,11 +514,16 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
   showcaseOf = (sl: any) => this.showcase.get(Number(sl?.stock?.id));
 
+  /** Legacy sync hint only; attract resolves via VideoCacheService.resolvePlayable. */
   videoSrcOf = (hash: string) => {
     try {
-      return this.videoCache.getPlayableUrl?.(hash) || downloadFileUrl(hash);
+      const cached = this.videoCache.getPlayableUrl?.(hash);
+      if (cached && (cached.startsWith('blob:') || cached.startsWith('data:') || cached.startsWith('capacitor:'))) {
+        return cached;
+      }
+      return '';
     } catch {
-      return downloadFileUrl(hash);
+      return '';
     }
   };
   /** Product card Details button */
@@ -567,9 +618,10 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
       return copy;
     });
     this.saleList = next;
-    if (ApiService.vendingOnSale) ApiService.vendingOnSale = next;
+    this.syncVendingOnSale(next);
     try {
-      this.storage.set('saleStock', { v: next, d: new Date() }, 'stock');
+      // storage.set already wraps { v, d } — pass the list only
+      this.storage.set('saleStock', next, 'stock');
     } catch { }
     this.ref.detectChanges();
   }
@@ -582,15 +634,58 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   showSetting(): void {
-    this.armTap(6, () => {
-      this.apiService.showModal(SettingPage).then((r) => r?.present());
+    // Same as Tab1 footer "IOS & Android" — tap ×6 then password.
+    this.armTap(6, async () => {
+      await this.openSettingNow();
     });
   }
 
   showQrConfig(): void {
-    this.armTap(6, () => {
-      this.apiService.showModal(QrconfigMachinePage).then((r) => r?.present());
+    this.armTap(6, async () => {
+      await this.openQrConfigNow();
     });
+  }
+
+  /** Open Setting after password (no multi-tap) — for gear menu. */
+  async openSettingNow(): Promise<void> {
+    if (!(await this.requireAdminPassword())) return;
+    this.apiService.showModal(SettingPage).then((r) => r?.present());
+  }
+
+  async openQrConfigNow(): Promise<void> {
+    if (!(await this.requireAdminPassword())) return;
+    this.apiService.showModal(QrconfigMachinePage).then((r) => r?.present());
+  }
+
+  /** Gear: tap counts toward showSetting (Tab1). Hold ~0.8s opens kiosk demo menu. */
+  holdGearMenu(ev: Event): void {
+    ev.stopPropagation();
+    this.gearHeldOpen = false;
+    clearTimeout(this.gearHoldTimer);
+    this.gearHoldTimer = setTimeout(() => {
+      this.gearHeldOpen = true;
+      this.menuOpen = true;
+      this.ref.detectChanges();
+    }, 800);
+  }
+
+  endGearMenu(): void {
+    clearTimeout(this.gearHoldTimer);
+    this.gearHoldTimer = null;
+  }
+
+  onGearClick(ev: Event): void {
+    ev.stopPropagation();
+    this.endGearMenu();
+    if (this.gearHeldOpen) {
+      this.gearHeldOpen = false;
+      return;
+    }
+    if (this.menuOpen) {
+      this.closeMenu();
+      return;
+    }
+    this.showSetting();
   }
 
   private armTap(resetTo: number, action: () => void): void {
@@ -610,8 +705,64 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     }
   }
 
-  topUpEwallet(): void { }
-  openTestMotor(): void { }
+  async topUpEwallet(): Promise<void> {
+    try {
+      const walletId = await this.promptWalletId();
+      if (!walletId) return;
+
+      const currentDbBalance = await this.blockchainDbService.getLocalBalance(
+        this.machineId?.machineId
+      );
+      if (currentDbBalance <= 0) return;
+
+      const offlineMode = localStorage.getItem('offlineMode') === 'true';
+      await this.updateBalance(-currentDbBalance);
+
+      let syncSuccess = false;
+      if (!offlineMode) {
+        try {
+          await this.syncToServer(walletId);
+          syncSuccess = true;
+        } catch {
+          syncSuccess = false;
+        }
+      } else {
+        syncSuccess = true;
+      }
+
+      if (syncSuccess) {
+        this.currentBalance.value = 0;
+        this.apiService.localBalance = 0;
+        this.ref.detectChanges();
+      }
+    } catch (error) {
+      console.error('Failed to top up e-wallet:', error);
+    }
+  }
+
+  async openTestMotor(): Promise<void> {
+    if (!this.testMotorTimer) {
+      this.testMotorTimer = setTimeout(() => {
+        this.testMotorCount = 7;
+        this.testMotorTimer = null;
+      }, 1500);
+    }
+    if (--this.testMotorCount <= 0) {
+      this.testMotorCount = 7;
+      if (this.testMotorTimer) {
+        clearTimeout(this.testMotorTimer);
+        this.testMotorTimer = null;
+      }
+      const xp = prompt('password1');
+      if (xp + '' === '1234567890_laoapps.*..') {
+        await this.serial?.close?.();
+        localStorage.setItem('startTestMotor', 'true');
+        this.apiService.reloadPage();
+      } else {
+        this.apiService.alertError('ສຳເຫຼັດແລ້ວ');
+      }
+    }
+  }
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
@@ -630,9 +781,230 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     clearTimeout(this.holdTimer);
   }
 
-  /** Same as Tab1 logo → password + stock refill. Paste Tab1.manageStock body here. */
-  manageStock(): void {
+  getPassword(): string {
+    let x = '';
+    (this.apiService.machineuuid || '').split('').forEach((v: string) => {
+      if (!Number.isNaN(Number.parseInt(v, 10))) x += v;
+    });
+    return x;
+  }
+
+  private async requireAdminPassword(): Promise<boolean> {
+    const x = (await this.promptPassword()) || '';
+    const otp = this.machineId?.otp || this.apiService.machineId?.otp;
+    return (
+      this.getPassword().endsWith(x?.substring(6) || '') &&
+      !!x?.startsWith(otp || '') &&
+      x.length >= 12
+    );
+  }
+
+  private async promptPassword(length = 12): Promise<string | null> {
+    const modal = await this.modal.create({
+      component: NumpadModalComponent,
+      initialBreakpoint: 1,
+      breakpoints: [0, 1],
+      componentProps: {
+        title: 'Password Required',
+        subtitle: 'Enter your 12-digit Password',
+        length,
+      },
+    });
+    this.numpadModal = modal;
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+    if (this.numpadModal === modal) this.numpadModal = undefined;
+    return role === 'confirm' ? data : null;
+  }
+
+  private async promptWalletId(): Promise<string | null> {
+    const modal = await this.modal.create({
+      component: NumpadModalComponent,
+      initialBreakpoint: 1,
+      breakpoints: [0, 1],
+      componentProps: {
+        title: 'Top up e-wallet',
+        subtitle: 'Enter your 8-digit LaabX wallet number',
+        length: 8,
+        hideByDefault: false,
+      },
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss();
+    return role === 'confirm' ? data : null;
+  }
+
+  async showQrAlert(): Promise<void> {
+    const m = await this.apiService.showModal(QrOpenStockPage);
+    m?.present();
+    this.isOpenStock = true;
+    m?.onDidDismiss().then(() => {
+      this.isOpenStock = false;
+    });
+  }
+
+  /** Same as Tab1 logo → password + stock refill. */
+  async manageStock(): Promise<void> {
     this.closeMenu();
+    if (this.qrMode) {
+      if (this.apiService.secret) this.showQrAlert();
+      return;
+    }
+    if (!(await this.requireAdminPassword())) return;
+    await this.openManageStock();
+  }
+
+  /** StocksalePage → StockPage reads apiService.stock (Tab1 fills this on boot). */
+  private async ensureProductCatalog(): Promise<void> {
+    if (this.apiService.stock?.length) return;
+    try {
+      const cached = await this.storage.get('productItems', 'item');
+      const items = cached?.v;
+      if (Array.isArray(items) && items.length) {
+        this.apiService.stock.length = 0;
+        this.apiService.stock.push(...JSON.parse(JSON.stringify(items)));
+        return;
+      }
+    } catch { }
+    try {
+      const rx = await this.apiService.loadVendingSale();
+      const r: any = rx?.data;
+      if (r?.status == 1 && Array.isArray(r.data) && r.data.length) {
+        this.apiService.newProductItems(r.data);
+        return;
+      }
+    } catch (e) {
+      console.log('kiosk ensureProductCatalog', e);
+    }
+    if (this.saleList?.length) {
+      this.apiService.newProductItems(this.saleList);
+    }
+  }
+
+  async openManageStock(): Promise<void> {
+    try {
+      // StocksalePage constructor uses ApiService.vendingOnSale only
+      this.syncVendingOnSale(this.saleList?.length ? this.saleList : ApiService.vendingOnSale);
+      if (!ApiService.vendingOnSale?.length) {
+        await new Promise<void>((resolve) => {
+          this.storage.get('saleStock', 'stock').then((s) => {
+            try {
+              let raw = s?.v ?? s;
+              if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) {
+                raw = (raw as any).v;
+              }
+              if (Array.isArray(raw) && raw.length) {
+                this.saleList = JSON.parse(JSON.stringify(raw));
+                this.syncVendingOnSale(this.saleList);
+              }
+            } catch { }
+            resolve();
+          }).catch(() => resolve());
+        });
+      }
+
+      // Stock picker (StockPage) needs apiService.stock product catalog
+      await this.ensureProductCatalog();
+
+      const m =
+        (await this.apiService.showModal(StocksalePage, {}, false)) ||
+        ({} as HTMLIonModalElement);
+      m.onDidDismiss?.().then((r) => {
+        const d = r?.data as { resetCashCount?: boolean };
+        const k = 'refillSaleStock';
+        this.storage.get(k + '_', k).then((rx) => {
+          const b = rx?.v as Array<IVendingMachineSale>;
+          const s = b ? b : [];
+          const u = new Date();
+          const onSale = ApiService.vendingOnSale || this.saleList || [];
+          onSale.forEach((v) => (v.updatedAt = u));
+          s.unshift(...onSale);
+          this.storage.set(k + '_', s, k);
+        });
+        if (d?.resetCashCount) {
+          this.resetCashAcceptor();
+        }
+        // After StocksalePage save, static list is source of truth
+        if (ApiService.vendingOnSale?.length) {
+          this.saleList = JSON.parse(JSON.stringify(ApiService.vendingOnSale));
+        }
+        this.loadStock();
+        this.ref.detectChanges();
+      });
+      await m.present?.();
+    } catch (error) {
+      console.log('openManageStock', error);
+    }
+  }
+
+  async resetCashAcceptor(): Promise<void> {
+    try {
+      await this.serial?.nv9Command?.(EMACHINE_COMMAND.NV9_RESET, {}, Date.now());
+      await this.updateBalance(-this.currentBalance.value);
+      await this.syncToServer();
+      this.currentBalance.value = 0;
+      this.apiService.localBalance = 0;
+      this.ref.detectChanges();
+    } catch (error) {
+      console.error('Failed to reset NV9:', error);
+    }
+  }
+
+  private async updateBalance(amount: number): Promise<void> {
+    if (amount === 0) return;
+    try {
+      const isInsert = amount > 0;
+      const absAmount = Math.abs(amount);
+      const latest = await this.blockchainDbService.getLatestBlock(this.machineId.machineId);
+      const prevHash =
+        latest?.hash || '0000000000000000000000000000000000000000000000000000000000000000';
+      const nextIndex = (latest?.block_index ?? 0) + 1;
+      const txData = {
+        type: isInsert ? 'insert' : 'withdrawal',
+        amount: absAmount,
+        timestamp: new Date().toISOString(),
+        note: isInsert ? 'Banknote accepted' : 'Cash reset / transferred to e-wallet',
+      };
+      const blockString = JSON.stringify({
+        prevHash,
+        index: nextIndex,
+        data: txData,
+        timestamp: txData.timestamp,
+      });
+      const newHash = CryptoJS.SHA256(blockString).toString();
+      await this.blockchainDbService.addBlock({
+        machineId: this.machineId.machineId,
+        prevHash,
+        hash: newHash,
+        data: txData,
+        isReset: !isInsert,
+        signature: '',
+        needsSync: true,
+      });
+      this.currentBalance.value += amount;
+      this.apiService.localBalance = this.currentBalance.value;
+      this.ref.detectChanges();
+    } catch (err) {
+      console.error('Failed to update balance / log transaction:', err);
+    }
+  }
+
+  private async syncToServer(LaabXWallet: string = ''): Promise<void> {
+    if (localStorage.getItem('offlineMode') === 'true') return;
+    const unsynced = await this.blockchainDbService.getUnsyncedBlocks(
+      this.machineId.machineId,
+      200
+    );
+    if (!unsynced.length) return;
+    const res = await this.apiService.blockChainSync(unsynced, LaabXWallet);
+    if (res?.status === 1) {
+      await this.blockchainDbService.markAsSynced(unsynced.map((b) => b.id));
+      if (unsynced.length === 200) {
+        setTimeout(() => this.syncToServer(LaabXWallet), 1500);
+      }
+    } else {
+      throw new Error('Server returned non-success status');
+    }
   }
 
   refreshBalanceFromAnotherModal(n: number): void {
@@ -648,7 +1020,109 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   async loadPaidBills(): Promise<void> {
-    // copy body from Tab1.loadPaidBills if remaining-drop modal is needed
+    if (this.processLoadedPaidBills) return;
+    this.processLoadedPaidBills = true;
+
+    try {
+      const data = (await this.apiService.IndexedDB.getBillProcesses()) ?? [];
+      if (data.length > 0) {
+        this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Click loadPaidBills Local ${JSON.stringify(data)}`,
+        });
+        this.showBills();
+        return;
+      }
+
+      try {
+        const re = await this.apiService.loadPaidBills();
+        const r = re.data;
+        Toast.show({ text: `Load paid bills ${r?.data?.length}`, duration: 'short' });
+
+        if (!r?.data?.length) {
+          this.apiService.IndexedLogDB.addBillProcess({
+            errorData: `Click loadPaidBills Server ${JSON.stringify(r?.data)}`,
+          });
+          this.showBills();
+        }
+
+        const m = await this.apiService.showModal(BillNotDropPage, {}, true, 'customModalLarge');
+        if (m) {
+          m.present();
+          let timeout: any;
+          const resetTimeout = () => {
+            if (timeout) clearTimeout(timeout);
+            timeout = setTimeout(() => m.dismiss(), 20000);
+          };
+          const events = ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'];
+          const eventHandler = () => resetTimeout();
+          events.forEach((event) => document.addEventListener(event, eventHandler, true));
+          resetTimeout();
+          m.onDidDismiss().then(() => {
+            if (timeout) clearTimeout(timeout);
+            events.forEach((event) => document.removeEventListener(event, eventHandler, true));
+          });
+        }
+      } catch (er: any) {
+        this.apiService.IndexedLogDB.addBillProcess({
+          errorData: `Error Click loadPaidBills ${JSON.stringify(er)}`,
+        });
+        Toast.show({ text: `Load paid bills error ${er?.message || er}` });
+      }
+    } finally {
+      this.apiService.IndexedLogDB.addBillProcess({ errorData: `finally Click loadPaidBills` });
+      Toast.show({ text: `Load paid bills finally`, duration: 'short' });
+      this.processLoadedPaidBills = false;
+    }
+  }
+
+  showBills(): void {
+    this.apiService.loadDeliveryingBillsNew().then((r) => {
+      try {
+        if (r.length > 0) {
+          this.apiService.pb = r as Array<IBillProcess>;
+          if (this.apiService.pb.length) {
+            this.apiService.isDropStock = true;
+            if (!this.apiService.isRemainingBillsModalOpen) {
+              if (this.serial) {
+                if (localStorage.getItem('device') != 'ZDM8') {
+                  const lastClick = this.apiService.checkOverLastSerialAction();
+                  if (lastClick) {
+                    this.apiService.exitApp();
+                    return;
+                  }
+                }
+                this.apiService
+                  .showModal(RemainingbillsPage, { r: this.apiService.pb, serial: this.serial }, false)
+                  .then((modal: any) => {
+                    this.apiService.isRemainingBillsModalOpen = true;
+                    this.apiService.IndexedLogDB.addBillProcess({
+                      errorData: `RemainingbillsPage Open In Kiosk`,
+                    });
+                    modal.present();
+                    modal.onDidDismiss().then(() => {
+                      this.apiService.IndexedLogDB.addBillProcess({
+                        errorData: `RemainingbillsPage Close In Kiosk`,
+                      });
+                      this.apiService.isRemainingBillsModalOpen = false;
+                    });
+                  });
+              } else {
+                this.apiService.exitApp();
+              }
+            }
+          }
+        } else {
+          this.apiService.isDropStock = false;
+          this.apiService.toast.create({ message: '', duration: 5000 }).then((t) => t.present());
+        }
+      } catch (error: any) {
+        this.apiService.toast
+          .create({ message: error.message, duration: 5000 })
+          .then((t) => t.present());
+      }
+    }).catch((e) => {
+      Toast.show({ text: 'Error showBills ' + JSON.stringify(e), duration: 'long' });
+    });
   }
 
   async _processLoopCheckLaoQRPaid(): Promise<void> {

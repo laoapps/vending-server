@@ -225,6 +225,7 @@ export class MymachinePage implements OnInit {
             setting.highTemp = 15;
             setting.light = { start: 3, end: 2 };
             setting.adsList = [];
+            setting.bannerList = [];
 
             setting.imei = '';
           }
@@ -234,6 +235,9 @@ export class MymachinePage implements OnInit {
           if (setting.adsList == undefined || setting.adsList == null) {
             setting.adsList = [];
           }
+          if (setting.bannerList == undefined || setting.bannerList == null) {
+            setting.bannerList = [];
+          }
           if (!setting.checkoutUiVersion) {
             setting.checkoutUiVersion = 'default';
           }
@@ -241,6 +245,9 @@ export class MymachinePage implements OnInit {
             setting.checkoutUiVersion = 'v3';
           }
           setting.adsList = setting.adsList?.join(',')
+          setting.bannerList = Array.isArray(setting.bannerList)
+            ? setting.bannerList.join(',')
+            : (setting.bannerList || '');
 
 
           console.log('setting.adsList', setting.adsList);
@@ -262,10 +269,34 @@ export class MymachinePage implements OnInit {
   }
   updateSetting(m: string) {
     const setting = this.settings[m];
-    setting.adsList = setting.adsList?.split(',')
-      .map(item => item.trim())
-      .filter(item => item);
-    console.log('setting0', setting);
+    if (!setting || typeof setting !== 'object') {
+      this.apiService.toast.create({ message: 'Setting not loaded', duration: 3000 }).then(ry => ry.present());
+      return;
+    }
+    if (typeof setting.adsList === 'string') {
+      setting.adsList = setting.adsList.split(',')
+        .map(item => item.trim())
+        .filter(item => item);
+    } else if (Array.isArray(setting.adsList)) {
+      setting.adsList = setting.adsList.map(item => item.trim()).filter(item => item);
+    } else {
+      setting.adsList = [];
+    }
+    if (typeof setting.bannerList === 'string') {
+      setting.bannerList = setting.bannerList.split(',')
+        .map(item => item.trim())
+        .filter(item => item);
+    } else if (Array.isArray(setting.bannerList)) {
+      setting.bannerList = setting.bannerList.map(item => String(item).trim()).filter(item => item);
+    } else {
+      setting.bannerList = [];
+    }
+    if (!setting.settingName) setting.settingName = 'setting';
+    let checkoutUi = (setting.checkoutUiVersion || 'default').toString().trim();
+    if (checkoutUi === 'kiosk') checkoutUi = 'v3';
+    if (checkoutUi !== 'v2' && checkoutUi !== 'v3') checkoutUi = 'default';
+    setting.checkoutUiVersion = checkoutUi;
+    console.log('setting0', setting, 'checkoutUiVersion', setting.checkoutUiVersion);
 
     const o = this._l.find(v => v.machineId == m);
     const oldData = JSON.stringify(o.data);

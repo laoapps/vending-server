@@ -127,8 +127,8 @@ export class SettingPage implements OnInit, OnDestroy {
 
     this.storage.set('saleStock', [], 'stock').then(r => {
       console.log('reset', r);
-      // window.location.reload();
-      this.apiService.reloadPage();
+      // Must change path — reload alone keeps /hm-vending-kiosk when leaving v3.
+      window.location.assign(this.apiService.checkoutUiRoute());
     }).catch(e => {
       console.log('reset error', e);
     });

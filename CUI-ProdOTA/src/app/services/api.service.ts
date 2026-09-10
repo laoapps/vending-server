@@ -436,7 +436,23 @@ export class ApiService {
 
   isAds: boolean = false;
 
-  adsList: any = localStorage.getItem('adsList') || [];
+  adsList: any = (() => {
+    try {
+      const raw = localStorage.getItem('adsList');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  bannerList: string[] = (() => {
+    try {
+      const raw = localStorage.getItem('bannerList');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  })();
 
 
   isRemainingBillsModalOpen: boolean = false;
@@ -518,8 +534,18 @@ export class ApiService {
     if (this.checkoutUiApplyBusy) return;
     if (!this.applyRemoteCheckoutUiVersion(raw)) return;
     this.checkoutUiApplyBusy = true;
+    const route = this.checkoutUiRoute();
+    console.log('checkoutUiVersion changed → go to', route);
     try {
-      this.reloadPage();
+      // Must change URL — reload alone keeps /hm-vending-kiosk and looks "stuck".
+      setTimeout(() => {
+        try {
+          window.location.assign(route);
+        } catch (e) {
+          this.checkoutUiApplyBusy = false;
+          this.reloadPage();
+        }
+      }, 300);
     } catch (e) {
       this.checkoutUiApplyBusy = false;
     }
@@ -653,16 +679,22 @@ export class ApiService {
           return;
         }
 
-        if (this.allowTopUp !== s.isTopUp) this.allowTopUp = s.isTopUp ?? false;
-        if (this.isQrPayment !== s.qrPayment) this.isQrPayment = s.qrPayment ?? false;
-        if (this.allowCashIn !== s.allowCashIn) this.allowCashIn = s.allowCashIn ?? false;
-        // console.log('-----> allowTopUp :', this.allowTopUp);
+        if (s) {
+          if (this.allowTopUp !== s.isTopUp) this.allowTopUp = s.isTopUp ?? false;
+          if (this.isQrPayment !== s.qrPayment) this.isQrPayment = s.qrPayment ?? false;
+          if (this.allowCashIn !== s.allowCashIn) this.allowCashIn = s.allowCashIn ?? false;
+          // console.log('-----> allowTopUp :', this.allowTopUp);
 
-        if (this.isAds !== s.isAds) this.isAds = s.isAds ?? false;
-        if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
-        if (this.dropDelay !== s.dropDelay) this.dropDelay = s.dropDelay ?? 10;
-        if (s?.checkoutUiVersion != null && s?.checkoutUiVersion !== '') {
-          this.applyRemoteCheckoutUiVersionAndReload(s.checkoutUiVersion);
+          if (this.isAds !== s.isAds) this.isAds = s.isAds ?? false;
+          if (this.isFranciseMode !== s.isFranciseMode) this.isFranciseMode = s.isFranciseMode ?? false;
+          if (this.dropDelay !== s.dropDelay) this.dropDelay = s.dropDelay ?? 10;
+          if (s.checkoutUiVersion != null && s.checkoutUiVersion !== '') {
+            this.applyRemoteCheckoutUiVersionAndReload(s.checkoutUiVersion);
+          }
+          if (s.musicVolume != null && this.musicVolume != s.musicVolume) {
+            this.musicVolume = Number(s.musicVolume) || 0;
+            localStorage.setItem('musicVolume', this.musicVolume.toString());
+          }
         }
         // if (this.brightnessValue != s.brightness) {
         //   this.brightnessValue = s.brightness ?? 1;
@@ -707,7 +739,7 @@ export class ApiService {
 
 
 
-        if (this.areArraysDifferentUnordered(this.adsList ?? [], rSetting.adsList ?? [])) {
+        if (rSetting && this.areArraysDifferentUnordered(this.adsList ?? [], rSetting?.adsList ?? [])) {
           try {
             const result = this.getReplacements(this.adsList ?? [], rSetting.adsList ?? []);
             this.adsList = rSetting.adsList;
@@ -737,6 +769,16 @@ export class ApiService {
             console.log('Error getReplacements', error);
           }
 
+        }
+
+        if (rSetting) {
+          const nextBanners = Array.isArray(rSetting.bannerList)
+            ? rSetting.bannerList.map((x: any) => String(x || '').trim()).filter(Boolean)
+            : [];
+          if (this.areArraysDifferentUnordered(this.bannerList ?? [], nextBanners)) {
+            this.bannerList = nextBanners;
+            localStorage.setItem('bannerList', JSON.stringify(this.bannerList));
+          }
         }
 
         this.checkIsDropStock();
