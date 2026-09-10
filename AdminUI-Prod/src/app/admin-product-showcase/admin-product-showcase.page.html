@@ -7,32 +7,88 @@
 <ion-content class="showcase-admin">
   <div class="sa">
     <aside class="sa__list">
-      <button type="button" *ngFor="let st of stocks" (click)="pick(st)" [class.on]="selected?.id === st.id">
-        <b>{{ st.name }}</b>
-        <small>#{{ st.id }} · {{ st.price | number }} LAK</small>
-      </button>
+      <input class="sa__search" type="search" [(ngModel)]="q" placeholder="ຄົ້ນຫາຊື່ / #id" />
+      <div class="sa__list-body">
+        <p class="sa__err" *ngIf="loadError">{{ loadError }}</p>
+        <p class="sa__empty" *ngIf="!filtered.length && !loadError">ບໍ່ພົບສິນຄ້າ</p>
+        <button type="button" *ngFor="let st of filtered" (click)="pick(st)" [class.on]="selected?.id === st.id">
+          <img [src]="photoSrc(st.image)" [alt]="st.name" (error)="onPhotoError($event)" />
+          <span>
+            <b>{{ st.name }}</b>
+            <small>#{{ st.id }} · {{ st.price | number }} LAK</small>
+          </span>
+        </button>
+      </div>
     </aside>
 
     <section class="sa__form" *ngIf="form.stockId">
-      <label>Title <input [(ngModel)]="form.title" /></label>
-      <label>Price <input type="number" [(ngModel)]="form.price" /></label>
-      <label>Photo hold (ms) <input type="number" [(ngModel)]="form.holdMs" /></label>
-      <label>Video (ms) <input type="number" [(ngModel)]="form.videoMs" /></label>
-      <label>Vertical video hash <input [(ngModel)]="form.video" placeholder="filemanager hash" /></label>
-      <label>Story
-        <textarea rows="3" [(ngModel)]="form.story"></textarea>
-      </label>
-      <label>HTML description
-        <textarea rows="8" [(ngModel)]="form.html" placeholder="<p>…</p>"></textarea>
-      </label>
-      <label>Extra photo hashes (comma)
-        <input #ph (keyup.enter)="addPhoto(ph.value); ph.value=''" />
-      </label>
-      <div class="sa__photos">
-        <span *ngFor="let p of form.photos; let i = index" (click)="removePhoto(i)">{{ p | slice:0:8 }} ×</span>
+      <div class="sa__top">
+        <img class="sa__hero-img" [src]="photoSrc(form.photos[0] || selected?.image)" alt="" (error)="onPhotoError($event)" />
+        <div class="sa__fields">
+          <label>Title
+            <input [(ngModel)]="form.title" />
+          </label>
+          <div class="sa__row">
+            <label>Price (LAK)
+              <input type="number" [(ngModel)]="form.price" />
+            </label>
+            <label>Photo ms
+              <input type="number" [(ngModel)]="form.holdMs" />
+            </label>
+            <label>Video ms
+              <input type="number" [(ngModel)]="form.videoMs" />
+            </label>
+          </div>
+        </div>
       </div>
-      <div class="sa__preview" [innerHTML]="form.html"></div>
-      <button type="button" class="sa__save" [disabled]="saving" (click)="save()">Save</button>
+
+      <div class="sa__media">
+        <label class="sa__btn">
+          Upload photo
+          <input type="file" accept="image/*" hidden (change)="onPickFile($event, 'photo')" />
+        </label>
+        <label class="sa__btn">
+          Upload video 9:16
+          <input type="file" accept="video/*" hidden (change)="onPickFile($event, 'video')" />
+        </label>
+        <span *ngIf="uploading">ກຳລັງອັບໂຫລດ…</span>
+      </div>
+
+      <div class="sa__video" *ngIf="form.video">
+        <video [src]="filemanagerURL + form.video" controls playsinline></video>
+        <button type="button" class="sa__danger" (click)="deleteVideo()">Delete video</button>
+      </div>
+
+      <div class="sa__photos">
+        <figure *ngFor="let p of form.photos; let i = index">
+          <img [src]="photoSrc(p)" [alt]="p" (error)="onPhotoError($event)" />
+          <button type="button" (click)="deletePhoto(i)">×</button>
+        </figure>
+      </div>
+
+      <p class="sa__hint">Description</p>
+      <div class="sa__rt-wrap">
+        <div class="sa__rt-bar">
+          <button type="button" (click)="fmt('bold')"><b>B</b></button>
+          <button type="button" (click)="fmt('italic')"><i>I</i></button>
+          <button type="button" (click)="fmt('underline')"><u>U</u></button>
+          <button type="button" (click)="fmt('insertUnorderedList')">•</button>
+          <button type="button" (click)="fmt('formatBlock', 'H3')">H</button>
+          <button type="button" (click)="fmt('formatBlock', 'P')">P</button>
+        </div>
+        <div #rt class="sa__rt" contenteditable="true" (input)="onHtmlInput()"></div>
+      </div>
+
+      <div class="sa__gallery" *ngIf="gallery.length">
+        <small>Tap to add from gallery — scroll sideways</small>
+        <div class="sa__gallery-scroller">
+          <button type="button" *ngFor="let g of gallery" (click)="addFromGallery(g)">
+            <img [src]="photoSrc(g.imageURL || g.image)" [alt]="g.name" (error)="onPhotoError($event)" />
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="sa__save" [disabled]="saving || uploading" (click)="save()">Save</button>
     </section>
   </div>
 </ion-content>

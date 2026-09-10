@@ -118,6 +118,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.loadStock();
     this.loadBalance();
     this.loadPhotos();
+    this.showcase.sync().then(() => this.ref.detectChanges());
+
     this.connect();
     this.apiService.isAds = false;
     try {
@@ -400,12 +402,6 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
         }
       }
 
-      /// seed fake
-      this.showcase.seedFake(this.saleList);
-      ///
-
-      // await this.showcase.sync();
-
     } catch (e) {
       console.warn('cashList hydrate', e);
     }
@@ -465,6 +461,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.localLoad();
     this.loadBalance();
     this.loadPhotos();
+    this.showcase.sync().then(() => this.ref.detectChanges());
     setTimeout(() => ev?.target?.complete?.(), 600);
   }
 
