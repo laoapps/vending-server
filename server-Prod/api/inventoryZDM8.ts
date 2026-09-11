@@ -5252,23 +5252,26 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const machineId = res.locals['machineId'];
-                        if (!machineId) throw new Error('machine is not exist');
+                        if (!machineId?.machineId) throw new Error('machine is not exist');
+                        const otp = String(machineId.otp || req.body?.otp || '');
                         const m = await machineClientIDEntity.findOne({
                             where: { machineId: machineId.machineId },
                         });
                         const ownerUuid = m?.ownerUuid || '';
                         const clientHash = String(req.body?.data?.hashP || req.body?.hashP || '').trim();
-                        const hashP = await readSaleHash(machineId.machineId, ownerUuid);
+                        const hashP = await readSaleHash(machineId.machineId, otp, ownerUuid);
                         res.send(
                             PrintSucceeded(
                                 'machineSaleListHash',
-                                [{ hashP, match: !!clientHash && clientHash === hashP }],
+                                [{ hashP, machineId: machineId.machineId, match: !!clientHash && clientHash === hashP }],
                                 EMessage.succeeded,
                                 returnLog(req, res),
                             ),
                         );
                     } catch (error) {
-                        res.send(PrintError('machineSaleListHash', error, EMessage.error, returnLog(req, res, true)));
+                        res.send(
+                            PrintError('machineSaleListHash', error, EMessage.error, returnLog(req, res, true)),
+                        );
                     }
                 },
             );
@@ -11774,37 +11777,50 @@ function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
 function imageOf(d: any): string {
     return String(d?.image || d?.photos?.[0] || '').trim();
 }
-function saleCatalogSig(rows: any[]): string {
-    const sig = (rows || [])
-        .map((r) => ({
-            id: r.id,
-            p: Number(r.position),
-            a: !!r.isActive,
-            max: Number(r.max || 0),
-            sid: r.stock?.id,
-            n: r.stock?.name,
-            img: r.stock?.image,
-            pr: Number(r.stock?.price || 0),
-        }))
-        .sort((a, b) => a.p - b.p || a.id - b.id);
+
+function saleCatalogSig(machineId: string, rows: any[]): string {
+    const sig = {
+        machineId,
+        rows: (rows || [])
+            .map((r) => ({
+                id: r.id,
+                p: Number(r.position),
+                a: !!r.isActive,
+                max: Number(r.max || 0),
+                sid: r.stock?.id,
+                n: r.stock?.name,
+                img: r.stock?.image,
+                pr: Number(r.stock?.price || 0),
+            }))
+            .sort((a, b) => a.p - b.p || a.id - b.id),
+    };
     return crypto.createHash('sha256').update(JSON.stringify(sig)).digest('hex');
 }
 
 function saleHashKey(machineId: string) {
-    return 'vmsale:' + machineId + ':hashP';
+    return 'vmsale:' + machineId + ':' + ':hashP';
 }
 
-async function computeSaleHash(machineId: string, ownerUuid: string): Promise<string> {
+async function computeSaleHash(
+    machineId: string,
+    ownerUuid: string,
+): Promise<string> {
     const sEnt = VendingMachineSaleFactory(
         EEntity.vendingmachinesale + '_' + ownerUuid,
         dbConnection,
     );
     await sEnt.sync();
     const rows = await sEnt.findAll({ where: { machineId } });
-    return saleCatalogSig(rows.map((r: any) => r.toJSON ? r.toJSON() : r));
+    return saleCatalogSig(
+        machineId,
+        rows.map((r: any) => (r.toJSON ? r.toJSON() : r)),
+    );
 }
 
-async function bumpSaleHash(machineId: string, ownerUuid: string): Promise<string> {
+async function bumpSaleHash(
+    machineId: string,
+    ownerUuid: string,
+): Promise<string> {
     const hashP = await computeSaleHash(machineId, ownerUuid);
     try {
         await redisClient.set(saleHashKey(machineId), hashP);
@@ -11814,7 +11830,11 @@ async function bumpSaleHash(machineId: string, ownerUuid: string): Promise<strin
     return hashP;
 }
 
-async function readSaleHash(machineId: string, ownerUuid: string): Promise<string> {
+async function readSaleHash(
+    machineId: string,
+    otp: string,
+    ownerUuid: string,
+): Promise<string> {
     try {
         const hit = await redisClient.get(saleHashKey(machineId));
         if (hit) return hit;

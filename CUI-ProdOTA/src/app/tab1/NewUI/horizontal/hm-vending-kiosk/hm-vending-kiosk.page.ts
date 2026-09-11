@@ -113,25 +113,21 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
       this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
       return;
     }
-    // Dock still calls apiService.myTab1.* — this PAGE is the host, not Tab1.
     this.apiService.myTab1 = this as any;
     this.bindWebsocket();
     this.saleList = ApiService.vendingOnSale || [];
     this.localLoad();
-    this.loadStock();
+   await this.loadStock();
+await this.pullSaleIfChanged();
     this.loadBalance();
     this.loadPhotos();
     this.showcase.sync().then(() => this.ref.detectChanges());
-
-    // Must finish before paid → Remainingbills drop (Tab1.connect is skipped on v3).
     await this.connect();
     this.apiService.isAds = false;
-    try {
-      this.idleService?.closeAds?.();
-    } catch { }
+    try { this.idleService?.closeAds?.(); } catch { }
     this.armIdle();
     this.armAttract();
-    this.sfxAdd.load()
+    this.sfxAdd.load();
   }
 
   ngOnDestroy(): void {
@@ -162,7 +158,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
         this.apiService.wsAlive.time = new Date();
         this.apiService.wsAlive.isAlive = true;
       }
-      this.loadStock();
+      this.loadStock().then(() => this.pullSaleIfChanged());
+
       this.ref.detectChanges();
     });
 
@@ -273,7 +270,64 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
       localStorage.setItem('vendingPendingSum', JSON.stringify(this.getTotalSale));
     } catch { }
   }
+  async pullSaleIfChanged(): Promise<void> {
+    const localHash = localStorage.getItem('saleListHashP') || '';
+    try {
+      const hx: any = await this.apiService.post('machineSaleListHash', {
+        hashP: localHash,
+        data: { hashP: localHash },
+      });
+      const row = (hx?.data?.data || hx?.data || [])[0] || {};
+      const remote = String(row.hashP || '');
+      if (row.match && remote && remote === localHash) {
+        console.log('saleList hash match — keep local');
+        return;
+      }
+      const rx: any = await this.apiService.loadVendingSale('yes');
+      const server = rx?.data?.data || rx?.data || [];
+      if (!Array.isArray(server)) return;
+      this.mergeSaleCatalog(server);
+      if (remote) localStorage.setItem('saleListHashP', remote);
+    } catch (e) {
+      console.warn('pullSaleIfChanged', e);
+    }
+  }
 
+  /** Server catalog wins for product/price/image/position. Local qtty always kept. */
+  mergeSaleCatalog(server: any[]): void {
+    const local = this.asSaleList(this.saleList);
+    const byPos = new Map<number, any>();
+    for (const sl of local) byPos.set(Number(sl.position), sl);
+
+    for (const s of server) {
+      const pos = Number(s.position);
+      const cur = byPos.get(pos);
+      if (!cur) {
+        const add = JSON.parse(JSON.stringify(s));
+        if (add.stock) add.stock.qtty = Number(add.stock.qtty || 0);
+        byPos.set(pos, add);
+        continue;
+      }
+      const qtty = Number(cur.stock?.qtty || 0);
+      cur.stock = { ...(s.stock || cur.stock), qtty };
+      cur.max = s.max != null ? s.max : cur.max;
+      cur.isActive = s.isActive;
+      cur.machineId = s.machineId || cur.machineId;
+      cur.id = s.id || cur.id;
+      cur.uuid = s.uuid || cur.uuid;
+    }
+
+    const next = Array.from(byPos.values()).sort(
+      (a, b) => Number(a.position) - Number(b.position),
+    );
+    this.saleList = next;
+    this.syncVendingOnSale(next);
+    try {
+      this.storage.set('saleStock', next, 'stock');
+    } catch { }
+    this.loadPhotos();
+    this.ref.detectChanges();
+  }
   localLoad(): { orders: IVendingMachineSale[]; sum: { q: number; t: number } } {
     try {
       const orders = JSON.parse(localStorage.getItem('vendingPendingOrders') || '[]');
@@ -289,18 +343,32 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     return { orders: this.orders, sum: this.getTotalSale };
   }
 
-  loadStock(): void {
-    this.storage.get('saleStock', 'stock').then((s) => {
+  loadStock(): Promise<void> {
+  return this.storage.get('saleStock', 'stock').then((s) => {
+    try {
+      let raw = s?.v ?? s;
+      if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) {
+        raw = (raw as any).v;
+      }
+      const fallback = ApiService.vendingOnSale || [];
+      const items = JSON.parse(
+        JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback),
+      ) as IVendingMachineSale[];
+      this.saleList = items;
+      this.syncVendingOnSale(items);
+      this.ref.detectChanges();
+    } catch {}
+  });
+}
+  async loadStockAsync(): Promise<void> {
+    return this.storage.get('saleStock', 'stock').then((s) => {
       try {
         let raw = s?.v ?? s;
-        // Older kiosk writes double-wrapped { v: { v: list } } via storage.set
-        if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) {
-          raw = (raw as any).v;
-        }
+        if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) raw = (raw as any).v;
         const fallback = ApiService.vendingOnSale || [];
         const items = JSON.parse(
-          JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback)
-        ) as IVendingMachineSale[];
+          JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback),
+        );
         this.saleList = items;
         this.syncVendingOnSale(items);
         this.ref.detectChanges();
@@ -444,13 +512,17 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   handleRefresh(ev?: any): void {
-    this.loadStock();
-    this.localLoad();
-    this.loadBalance();
-    this.loadPhotos();
-    this.showcase.sync().then(() => this.ref.detectChanges());
-    setTimeout(() => ev?.target?.complete?.(), 600);
-  }
+  this.localLoad();
+  this.loadStock()
+    .then(() => this.pullSaleIfChanged())
+    .then(() => {
+      this.loadBalance();
+      this.loadPhotos();
+      return this.showcase.sync();
+    })
+    .then(() => this.ref.detectChanges())
+    .finally(() => setTimeout(() => ev?.target?.complete?.(), 600));
+}
 
   focusShelf(): void {
     document.getElementById('shelf')?.scrollTo({ top: 0, behavior: 'smooth' });
