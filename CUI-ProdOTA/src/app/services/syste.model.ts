@@ -1230,6 +1230,7 @@ export interface IProductShowcase {
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  image?:string;
   ownerUuid?: string;
   stockId: number;
   globalProductId?: string;

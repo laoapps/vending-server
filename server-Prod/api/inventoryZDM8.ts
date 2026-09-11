@@ -1400,7 +1400,11 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const image = String(req.body?.image || req.body?.data?.image || '').trim();
                         if (!image) throw new Error('image required');
-                        const ownerUuid = res.locals['ownerUuid'] || '';
+                        
+                        const machineId = res.locals['machineId'];
+                        if (!machineId) throw new Error('machine is not exist');
+                        const m = await machineClientIDEntity.findOne({ where: { machineId: machineId.machineId } });
+                        const ownerUuid = m?.ownerUuid || '';
 
                         const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
                         await pEnt.sync();
