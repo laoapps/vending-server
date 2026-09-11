@@ -106,42 +106,7 @@ export class KioskShowcaseService {
     await this.bindLocalMedia();
   }
 
-  videoSrc(hash: string): string {
-    if (!hash) return '';
-    return this.videoPlay[hash] || downloadFileUrl(hash);
-  }
-
-  getBySale(sl: any): IProductShowcase | null {
-    const ids = [sl?.stock?.id, sl?.stockId, sl?.id]
-      .map((x) => Number(x))
-      .filter((n) => n > 0);
-    for (const id of ids) {
-      if (this.map[id]) return this.map[id];
-    }
-    return null;
-  }
-
-  /** Info tap: pull this product if missing, cache video/photos. */
-  async ensure(sl: any): Promise<IProductShowcase | null> {
-    const id = Number(sl?.stock?.id || sl?.stockId || sl?.id);
-    if (!id) return this.getBySale(sl);
-    if (!this.map[id]) await this.hydrate();
-    if (!this.map[id] || this.needsMedia(this.map[id])) {
-      try {
-        const rx: any = await this.post('productShowcasePull', { stockIds: [id] });
-        const row = (rx?.data || [])[0];
-        if (row?.stockId) {
-          this.map[Number(row.stockId)] = row;
-          await this.cacheMedia(row);
-          await this.persist();
-        }
-      } catch {}
-    } else if (this.map[id]?.video && !this.videoPlay[this.map[id].video]) {
-      await this.cacheMedia(this.map[id]);
-    }
-    await this.bindLocalMedia();
-    return this.map[id] || null;
-  }
+  
 
   private needsMedia(s: IProductShowcase): boolean {
     if (s.video && !this.videoPlay[s.video]) return true;
@@ -230,4 +195,35 @@ export class KioskShowcaseService {
       } catch {}
     }
   }
+
+ getBySale(sl: any) {
+  const ids = [sl?.stock?.id, sl?.stockId, sl?.id].map(Number).filter(n => n > 0);
+  for (const id of ids) if (this.map[id]) return this.map[id];
+  return null;
+}
+
+videoSrc(hash: string) {
+  if (!hash) return '';
+  return this.videoPlay[hash] || downloadFileUrl(hash);
+}
+
+async ensure(sl: any) {
+  const id = Number(sl?.stock?.id || sl?.stockId || sl?.id);
+  if (!id) return this.getBySale(sl);
+  if (!this.map[id]) await this.hydrate();
+  try {
+    const rx: any = await this.post('productShowcasePull', { stockIds: [id] });
+    const row = (rx?.data || [])[0];
+    if (row?.stockId) {
+      const sid = Number(row.stockId);
+      if (!this.map[sid] || this.map[sid].hashP !== row.hashP) {
+        this.map[sid] = row;
+        await this.cacheMedia(row);
+        await this.persist();
+      }
+    }
+  } catch (e) { console.warn('showcase ensure', e); }
+  await this.bindLocalMedia();
+  return this.map[id] || this.getBySale(sl);
+}
 }

@@ -513,25 +513,17 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
 
 
-  showcaseOf = (sl: any) => this.showcase.get(Number(sl?.stock?.id));
+  showcaseOf = (sl: any) =>
+  this.showcase.getBySale(sl) || this.showcase.get(Number(sl?.stock?.id));
 
-  /** Legacy sync hint only; attract resolves via VideoCacheService.resolvePlayable. */
-  videoSrcOf = (hash: string) => {
-    try {
-      const cached = this.videoCache.getPlayableUrl?.(hash);
-      if (cached && (cached.startsWith('blob:') || cached.startsWith('data:') || cached.startsWith('capacitor:'))) {
-        return cached;
-      }
-      return '';
-    } catch {
-      return '';
-    }
-  };
-  /** Product card Details button */
-  openShowcase(sl: any, ev?: Event) {
-    ev?.stopPropagation();
-    this.openAttractModal({ sl, auto: false });
-  }
+videoSrcOf = (hash: string) => this.showcase.videoSrc(hash);
+
+async openShowcase(sl: any, ev?: Event) {
+  ev?.stopPropagation();
+  await this.showcase.ensure(sl);   // POST productShowcasePull
+  this.ref.detectChanges();
+  this.openAttractModal({ sl, auto: false });
+}
   async openAttractModal(opts?: { sl?: any; auto?: boolean }): Promise<void> {
     if (this.attractModal) return;
     this.apiService.isAds = false;
