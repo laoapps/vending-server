@@ -1409,7 +1409,7 @@ export class InventoryZDM8 implements IBaseClass {
                         await pEnt.sync();
                         const p = await pEnt.findOne({ where: { image } });
                         if (!p) {
-                            return res.send(PrintSucceeded('productShowcaseByImage', [], EMessage.succeeded, returnLog(req, res)));
+                            return res.send(PrintSucceeded('productShowcaseByImage', [`${p} ${EEntity.product + '_' + ownerUuid} ${image}`], EMessage.succeeded, returnLog(req, res)));
                         }
 
                         const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
@@ -1446,7 +1446,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
                         await sEnt.sync();
                         const row = await sEnt.findOne({ where: { stockId: p.id } });
-                        res.send(PrintSucceeded('productShowcaseListByImage', row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded('productShowcaseListByImage '+`${p} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         res.send(PrintError('productShowcaseListByImage', error, EMessage.error, returnLog(req, res, true)));
                     }
