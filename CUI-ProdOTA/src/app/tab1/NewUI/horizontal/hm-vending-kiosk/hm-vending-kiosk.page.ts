@@ -318,34 +318,34 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   private hiBusy = new Set<string>();
 
   photoOf(sl: any, _size = 256): string {
-  const id = sl?.stock?.image;
-  if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
-  if (!id) return this.hmLogo || 'assets/icon/logo.png';
-  const cached = this.unwrapPhoto(this.apiService?.imageList?.[id]);
-  if (this.isPhotoData(cached)) return this.asImageData(cached);
-  return this.hmLogo || 'assets/icon/logo.png';
-}
-
-private unwrapPhoto(raw: any): string {
-  if (!raw) return '';
-  try {
-    const y = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    return String(y?.v || y || '');
-  } catch {
-    return String(raw);
+    const id = sl?.stock?.image;
+    if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
+    if (!id) return this.hmLogo || 'assets/icon/logo.png';
+    const cached = this.unwrapPhoto(this.apiService?.imageList?.[id]);
+    if (this.isPhotoData(cached)) return this.asImageData(cached);
+    return this.hmLogo || 'assets/icon/logo.png';
   }
-}
 
-private isPhotoData(s: string): boolean {
-  return typeof s === 'string' && (s.startsWith('data:image') || s.startsWith('data:application/octet-stream') || s.startsWith('blob:'));
-}
-
-private asImageData(s: string): string {
-  if (s.startsWith('data:application/octet-stream')) {
-    return 'data:image/jpeg;base64,' + s.split(',')[1];
+  private unwrapPhoto(raw: any): string {
+    if (!raw) return '';
+    try {
+      const y = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return String(y?.v || y || '');
+    } catch {
+      return String(raw);
+    }
   }
-  return s;
-}
+
+  private isPhotoData(s: string): boolean {
+    return typeof s === 'string' && (s.startsWith('data:image') || s.startsWith('data:application/octet-stream') || s.startsWith('blob:'));
+  }
+
+  private asImageData(s: string): string {
+    if (s.startsWith('data:application/octet-stream')) {
+      return 'data:image/jpeg;base64,' + s.split(',')[1];
+    }
+    return s;
+  }
 
   hydrateHi = (sl: any): Promise<void> => this.ensureHi(sl);
 
@@ -354,23 +354,15 @@ private asImageData(s: string): string {
     if (!id) return;
     const key = id + '@1024';
     if (this.isPhotoData(this.unwrapPhoto(this.apiService?.imageList?.[key]))) return;
-
+    const thumb = this.unwrapPhoto(this.apiService?.imageList?.[id]);
+    if (this.isPhotoData(thumb)) {
+      this.apiService.imageList[key] = this.asImageData(thumb);
+      return;
+    }
     const url = downloadPhotoUrl(id, 1024, 1024);
     const stored = await this.appCaching.getPhoto(url + key);
     const hit = this.asImageData(this.unwrapPhoto(stored));
-    if (this.isPhotoData(hit)) {
-      this.apiService.imageList[key] = hit;
-      return;
-    }
-    if (navigator.onLine === false) return;
-
-    const raw = await this.appCaching.saveCachingPhoto(
-      url,
-      new Date(sl?.stock?.updatedAt || 0), // 0 = never force-refresh
-      key,
-    );
-    const v = this.asImageData(this.unwrapPhoto(raw));
-    if (this.isPhotoData(v)) this.apiService.imageList[key] = v;
+    if (this.isPhotoData(hit)) this.apiService.imageList[key] = hit;
   }
 
   onPhotoError(ev: Event): void {
@@ -509,12 +501,12 @@ private asImageData(s: string): string {
 
   videoSrcOf = (hash: string) => this.showcase.videoSrc(hash);
 
-async openShowcase(sl: any, ev?: Event) {
-  ev?.stopPropagation();
-  this.openAttractModal({ sl, auto: false });          // local getBySale
-  this.showcase.ensure(sl).then(() => this.ref.detectChanges());
-}
-  
+  async openShowcase(sl: any, ev?: Event) {
+    ev?.stopPropagation();
+    this.openAttractModal({ sl, auto: false });          // local getBySale
+    this.showcase.ensure(sl).then(() => this.ref.detectChanges());
+  }
+
   async openAttractModal(opts?: { sl?: any; auto?: boolean }): Promise<void> {
     if (this.attractModal) return;
     this.apiService.isAds = false;

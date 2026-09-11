@@ -9,20 +9,20 @@
   <ng-container *ngIf="featured as sl">
 
     <div class="attract__media" (click)="$event.stopPropagation()">
-      <img
-        *ngIf="!videoSrc"
-        class="attract__photo"
-        [src]="featuredSrc"
-        [alt]="sl?.stock?.name" />
+      <button type="button" class="attract__photo-wrap" (click)="openGallery(0)">
+        <img class="attract__photo" [src]="featuredSrc" [alt]="sl?.stock?.name" />
+      </button>
       <video
         *ngIf="phase === 'detail' && videoSrc"
+        #vdo
         class="attract__video"
         [src]="videoSrc"
-        [poster]="featuredSrc"
         autoplay
         muted
         playsinline
         loop
+        (loadeddata)="playVid()"
+        (canplay)="playVid()"
         (error)="videoSrc = ''"></video>
     </div>
 
@@ -38,14 +38,33 @@
 
       <div class="attract__story" *ngIf="phase === 'detail'">
         <div class="attract__html" *ngIf="storyHtml" [innerHTML]="storyHtml"></div>
-        <p class="attract__empty" *ngIf="!storyHtml && !videoSrc && !extraPhotos.length">
+        <p class="attract__empty" *ngIf="!storyHtml && !videoSrc && !gallery.length">
           ຍັງບໍ່ມີລາຍລະອຽດ
         </p>
-        <div class="attract__shots" *ngIf="extraPhotos.length">
-          <img *ngFor="let p of extraPhotos" [src]="shotSrc(p)" alt="" />
+        <div class="attract__shots" *ngIf="gallery.length">
+          <button
+            type="button"
+            class="attract__shot"
+            *ngFor="let p of gallery; let i = index"
+            (click)="openGallery(i)">
+            <img [src]="shotSrc(p)" alt="" />
+          </button>
         </div>
       </div>
     </aside>
 
   </ng-container>
+
+  <div class="lightbox" *ngIf="galleryOpen" (click)="closeGallery()">
+    <button type="button" class="lightbox__nav lightbox__nav--prev" (click)="prevShot(); $event.stopPropagation()">‹</button>
+    <img
+      class="lightbox__img"
+      [src]="shotSrc(gallery[galleryIndex])"
+      alt=""
+      (click)="$event.stopPropagation()"
+      (touchstart)="onSwipeStart($event)"
+      (touchend)="onSwipeEnd($event)" />
+    <button type="button" class="lightbox__nav lightbox__nav--next" (click)="nextShot(); $event.stopPropagation()">›</button>
+    <span class="lightbox__count">{{ galleryIndex + 1 }} / {{ gallery.length }}</span>
+  </div>
 </div>

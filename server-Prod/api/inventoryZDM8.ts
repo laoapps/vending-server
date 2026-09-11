@@ -3263,7 +3263,8 @@ export class InventoryZDM8 implements IBaseClass {
                                         //     );
                                         sEnt
                                             .create(o)
-                                            .then((r) => {
+                                            .then(async (r) => {
+                                                await bumpSaleHash(o.machineId, ownerUuid);
                                                 res.send(
                                                     PrintSucceeded("addSale", r, EMessage.succeeded, returnLog(req, res))
                                                 );
@@ -3303,6 +3304,10 @@ export class InventoryZDM8 implements IBaseClass {
                             .then(async (r) => {
                                 if (!r)
                                     return res.send(PrintError("deleteSale", [], EMessage.error, returnLog(req, res, true)));
+
+                                const row = await sEnt.findByPk(id);
+                                await sEnt.destroy({ where: { id } });
+                                if (row) await bumpSaleHash(row.machineId, ownerUuid);
 
                                 res.send(PrintSucceeded("deleteSale", r, EMessage.succeeded, returnLog(req, res)));
                             })
@@ -3345,6 +3350,8 @@ export class InventoryZDM8 implements IBaseClass {
                                     );
                                 r.isActive = isActive;
                                 r.changed("isActive", true);
+                                await bumpSaleHash(r.machineId, ownerUuid);
+
                                 res.send(
                                     PrintSucceeded(
                                         "disableSale",
@@ -3555,6 +3562,7 @@ export class InventoryZDM8 implements IBaseClass {
                                         });
                                         // r.changed('stock', true);
                                         // console.log("update Sale", r);
+                                        await bumpSaleHash(r.machineId, ownerUuid);
 
                                         res.send(
                                             PrintSucceeded(
@@ -5238,7 +5246,49 @@ export class InventoryZDM8 implements IBaseClass {
                 }
             );
 
+            router.post(
+                this.path + '/machineSaleListHash',
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        const machineId = res.locals['machineId'];
+                        if (!machineId) throw new Error('machine is not exist');
+                        const m = await machineClientIDEntity.findOne({
+                            where: { machineId: machineId.machineId },
+                        });
+                        const ownerUuid = m?.ownerUuid || '';
+                        const clientHash = String(req.body?.data?.hashP || req.body?.hashP || '').trim();
+                        const hashP = await readSaleHash(machineId.machineId, ownerUuid);
+                        res.send(
+                            PrintSucceeded(
+                                'machineSaleListHash',
+                                [{ hashP, match: !!clientHash && clientHash === hashP }],
+                                EMessage.succeeded,
+                                returnLog(req, res),
+                            ),
+                        );
+                    } catch (error) {
+                        res.send(PrintError('machineSaleListHash', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                },
+            );
 
+            /**
+             * In addSale success (after sEnt.create):
+             *   await bumpSaleHash(o.machineId, ownerUuid);
+             * In updateSale / disableSale after r.save():
+             *   await bumpSaleHash(r.machineId, ownerUuid);
+             * In deleteSale after destroy — need machineId from the row BEFORE destroy:
+             *   const row = await sEnt.findByPk(id);
+             *   await sEnt.destroy({ where: { id } });
+             *   if (row) await bumpSaleHash(row.machineId, ownerUuid);
+             *
+             * Optional: include hashP on machineSaleList response:
+             *   const hashP = await bumpSaleHash(machineId.machineId, ownerUuid);
+             *   res.send(PrintSucceeded('listSale', { rows: r, hashP }, ...));
+             *   — or keep data as array and set res header / extra field in PrintSucceeded data:
+             *   res.send(PrintSucceeded('listSale', r, ..., )); then client uses machineSaleListHash only.
+             */
 
             router.post(
                 this.path + "/machineSaleList",
@@ -5273,6 +5323,8 @@ export class InventoryZDM8 implements IBaseClass {
                             .findAll({ where: { isActive: { [Op.in]: actives }, machineId: machineId.machineId } })
                             .then((r) => {
                                 res.send(PrintSucceeded("listSale", r, EMessage.succeeded, returnLog(req, res)));
+                                // const hashP = await bumpSaleHash(machineId.machineId, ownerUuid);
+                                // res.send(PrintSucceeded('listSale', { rows: r, hashP }, ...));
                             })
                             .catch((e) => {
                                 console.log("error list sale", e);
@@ -11721,4 +11773,51 @@ function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
 
 function imageOf(d: any): string {
     return String(d?.image || d?.photos?.[0] || '').trim();
+}
+function saleCatalogSig(rows: any[]): string {
+    const sig = (rows || [])
+        .map((r) => ({
+            id: r.id,
+            p: Number(r.position),
+            a: !!r.isActive,
+            max: Number(r.max || 0),
+            sid: r.stock?.id,
+            n: r.stock?.name,
+            img: r.stock?.image,
+            pr: Number(r.stock?.price || 0),
+        }))
+        .sort((a, b) => a.p - b.p || a.id - b.id);
+    return crypto.createHash('sha256').update(JSON.stringify(sig)).digest('hex');
+}
+
+function saleHashKey(machineId: string) {
+    return 'vmsale:' + machineId + ':hashP';
+}
+
+async function computeSaleHash(machineId: string, ownerUuid: string): Promise<string> {
+    const sEnt = VendingMachineSaleFactory(
+        EEntity.vendingmachinesale + '_' + ownerUuid,
+        dbConnection,
+    );
+    await sEnt.sync();
+    const rows = await sEnt.findAll({ where: { machineId } });
+    return saleCatalogSig(rows.map((r: any) => r.toJSON ? r.toJSON() : r));
+}
+
+async function bumpSaleHash(machineId: string, ownerUuid: string): Promise<string> {
+    const hashP = await computeSaleHash(machineId, ownerUuid);
+    try {
+        await redisClient.set(saleHashKey(machineId), hashP);
+    } catch (e) {
+        console.warn('redis set sale hash', e);
+    }
+    return hashP;
+}
+
+async function readSaleHash(machineId: string, ownerUuid: string): Promise<string> {
+    try {
+        const hit = await redisClient.get(saleHashKey(machineId));
+        if (hit) return hit;
+    } catch { }
+    return bumpSaleHash(machineId, ownerUuid);
 }

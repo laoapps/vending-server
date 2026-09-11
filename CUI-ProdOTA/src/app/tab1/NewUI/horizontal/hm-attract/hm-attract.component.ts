@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Input,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
@@ -28,18 +30,26 @@ export class HmAttractComponent implements OnInit, OnDestroy {
   @Input() auto = true;
   @Input() startAt: any = null;
 
+  @ViewChild('vdo') vdo?: ElementRef<HTMLVideoElement>;
+
   featured: any = null;
   featuredSrc = '';
   phase: 'photo' | 'detail' = 'photo';
   storyHtml: SafeHtml | null = null;
   videoSrc = '';
   extraPhotos: string[] = [];
+  gallery: string[] = [];
+  galleryOpen = false;
+  galleryIndex = 0;
   showcaseTitle = '';
   showcasePrice = 0;
   running = false;
 
   private holdTimer: any = null;
   private seq = 0;
+  private swipeX = 0;
+  private videoPoll: any = null;
+  private videoHash = '';
 
   constructor(
     private ref: ChangeDetectorRef,
@@ -53,6 +63,7 @@ export class HmAttractComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stop();
+    this.stopVideoWait();
   }
 
   play(): void {
@@ -64,6 +75,7 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     this.running = false;
     this.seq++;
     clearTimeout(this.holdTimer);
+    this.stopVideoWait();
   }
 
   async dismiss(): Promise<void> {
@@ -138,13 +150,44 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     this.storyHtml = sc.html
       ? this.sanitizer.bypassSecurityTrustHtml(sc.html)
       : null;
-    const main = sl?.stock?.image;
-    this.extraPhotos = (sc.photos || []).filter((h: string) => h && h !== main);
-    if (!this.extraPhotos.length && (sc.photos || []).length) {
-      this.extraPhotos = sc.photos.filter(Boolean);
-    }
+    const main = String(sl?.stock?.image || '');
+    const shots = (sc.photos || []).filter(Boolean);
+    this.extraPhotos = shots.filter((h: string) => h !== main);
+    this.gallery = [main, ...this.extraPhotos].filter(Boolean);
+    this.videoHash = sc.video || '';
     this.videoSrc = sc.video ? this.videoSrcOf?.(sc.video) || '' : '';
+    if (this.videoHash && !this.videoSrc) this.waitForVideo(this.videoHash);
+    else if (this.videoSrc) setTimeout(() => this.playVid(), 50);
     return true;
+  }
+
+  private waitForVideo(hash: string): void {
+    this.stopVideoWait();
+    let n = 0;
+    this.videoPoll = setInterval(() => {
+      const u = this.videoSrcOf?.(hash) || '';
+      if (u) {
+        this.videoSrc = u;
+        this.ref.detectChanges();
+        this.stopVideoWait();
+        setTimeout(() => this.playVid(), 30);
+        return;
+      }
+      if (++n > 80) this.stopVideoWait();
+    }, 200);
+  }
+
+  playVid(): void {
+    const el = this.vdo?.nativeElement;
+    if (!el || !this.videoSrc) return;
+    el.muted = true;
+    const p = el.play();
+    if (p && p.catch) p.catch(() => {});
+  }
+
+  private stopVideoWait(): void {
+    clearInterval(this.videoPoll);
+    this.videoPoll = null;
   }
 
   /** info tap (immediate=true) → detail now. auto loop → photo, then detail. */
@@ -153,6 +196,8 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     this.videoSrc = '';
     this.storyHtml = null;
     this.extraPhotos = [];
+    this.gallery = [];
+    this.galleryOpen = false;
     this.applyPhoto(sl);
     this.ref.detectChanges();
 
@@ -178,6 +223,37 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     const a = this.photoOf?.({ stock: { image: hash } }, 1024) || '';
     if (a.startsWith('data:') || a.startsWith('blob:') || a.startsWith('http')) return a;
     return this.fallback;
+  }
+
+  openGallery(i: number): void {
+    if (!this.gallery.length) return;
+    this.galleryIndex = Math.max(0, Math.min(i, this.gallery.length - 1));
+    this.galleryOpen = true;
+  }
+
+  closeGallery(): void {
+    this.galleryOpen = false;
+  }
+
+  prevShot(): void {
+    if (!this.gallery.length) return;
+    this.galleryIndex = (this.galleryIndex - 1 + this.gallery.length) % this.gallery.length;
+  }
+
+  nextShot(): void {
+    if (!this.gallery.length) return;
+    this.galleryIndex = (this.galleryIndex + 1) % this.gallery.length;
+  }
+
+  onSwipeStart(ev: TouchEvent): void {
+    this.swipeX = ev.changedTouches?.[0]?.clientX || 0;
+  }
+
+  onSwipeEnd(ev: TouchEvent): void {
+    const x = ev.changedTouches?.[0]?.clientX || 0;
+    const d = x - this.swipeX;
+    if (d > 40) this.prevShot();
+    else if (d < -40) this.nextShot();
   }
 
   private scrollTo(sl: any): void {

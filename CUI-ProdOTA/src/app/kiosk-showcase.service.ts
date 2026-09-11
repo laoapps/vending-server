@@ -66,7 +66,7 @@ export class KioskShowcaseService {
 
   videoSrc(hash: string): string {
     if (!hash) return '';
-    return this.videoPlay[hash] || downloadFileUrl(hash);
+    return this.videoPlay[hash] || '';
   }
 
   getBySale(sl: any): IProductShowcase | null {
@@ -97,7 +97,8 @@ export class KioskShowcaseService {
       return local;
     }
 
-    if (local && remoteHash && local.hashP === remoteHash) {
+    if (local && remoteHash && String(local.hashP) === String(remoteHash)) {
+      console.log('showcase hash match — local only', image);
       await this.bindLocalMedia();
       return local;
     }
@@ -160,14 +161,41 @@ export class KioskShowcaseService {
     }
   }
 
+  /** Always blob: + video/mp4. Filemanager is octet-stream and <video> will not play it. */
+  private async asMp4(hash: string): Promise<string> {
+    if (!hash) return '';
+    if (this.videoPlay[hash]) return this.videoPlay[hash];
+    const url = downloadFileUrl(hash);
+    try {
+      const path = await this.videos.getLocalPath?.(url);
+      if (path && (path.startsWith('blob:') || path.startsWith('data:'))) {
+        this.videoPlay[hash] = path;
+        return path;
+      }
+    } catch {}
+    try {
+      const path = await this.videos.downloadIfNotExist(url);
+      if (path && (path.startsWith('blob:') || path.startsWith('data:'))) {
+        this.videoPlay[hash] = path;
+        return path;
+      }
+    } catch {}
+    const res = await fetch(url);
+    const raw = await res.blob();
+    if (!raw || raw.size < 1000) return '';
+    const mp4 = new Blob([raw], { type: 'video/mp4' });
+    const obj = URL.createObjectURL(mp4);
+    this.videoPlay[hash] = obj;
+    return obj;
+  }
+
   /** hash match — reuse Ionic Storage / video cache only */
   private async bindLocalMedia(): Promise<void> {
     if (!this.api.imageList) this.api.imageList = {};
     for (const s of Object.values(this.byImage).length ? Object.values(this.byImage) : Object.values(this.map)) {
       if (s.video && !this.videoPlay[s.video]) {
         try {
-          const path = await this.videos.getLocalPath?.(downloadFileUrl(s.video));
-          if (path) this.videoPlay[s.video] = this.videos.getPlayableUrl(path);
+          await this.asMp4(s.video);
         } catch {}
       }
       for (const h of s.photos || []) {
@@ -190,8 +218,7 @@ export class KioskShowcaseService {
     if (!this.api.imageList) this.api.imageList = {};
     if (s.video) {
       try {
-        const path = await this.videos.downloadIfNotExist(downloadFileUrl(s.video));
-        if (path) this.videoPlay[s.video] = this.videos.getPlayableUrl(path);
+        await this.asMp4(s.video);
       } catch {}
     }
     for (const h of s.photos || []) {
