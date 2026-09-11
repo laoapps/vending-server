@@ -178,7 +178,7 @@ import { BlockchainValueAPI } from "./blockchain.routes";
 import { addValue } from "../controllers/blockchain.controller";
 import { AnomalyDetector } from "../services/anomalyDetection";
 import multer from 'multer';
-import {  ProductShowcaseGlobalFactory } from "../entities/product-showcase.entity";
+import { ProductShowcaseGlobalFactory } from "../entities/product-showcase.entity";
 
 
 
@@ -1394,6 +1394,31 @@ export class InventoryZDM8 implements IBaseClass {
  */
 
             const SHOWCASE_TABLE = 'productshowcase_global';
+
+            router.post(
+                this.path + '/productShowcaseHashByImage',
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        const image = String(req.body?.image || req.body?.data?.image || '').trim();
+                        if (!image) throw new Error('image required');
+                        const sEnt = ProductShowcaseGlobalFactory(SHOWCASE_TABLE, dbConnection);
+                        await sEnt.sync();
+                        const row = await sEnt.findOne({
+                            where: { image, isActive: true },
+                            attributes: ['image', 'hashP'],
+                        });
+                        res.send(PrintSucceeded(
+                            'productShowcaseHashByImage',
+                            row ? [{ image: row.image, hashP: row.hashP }] : [],
+                            EMessage.succeeded,
+                            returnLog(req, res),
+                        ));
+                    } catch (error) {
+                        res.send(PrintError('productShowcaseHashByImage', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                },
+            );
 
             router.post(
                 this.path + '/productShowcaseByImage',

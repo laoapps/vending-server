@@ -65,6 +65,7 @@ export class AdminProductShowcasePage implements OnInit {
   empty() {
     return {
       stockId: null,
+      image: '',
       title: '',
       html: '',
       story: '',
@@ -166,14 +167,16 @@ export class AdminProductShowcasePage implements OnInit {
     this.selected = st;
     this.form = this.empty();
     this.form.stockId = st.id;
+    this.form.image = st.image || '';
     this.form.title = st.name;
     this.form.price = Number(st.price) || 0;
     this.form.photos = st.image ? [st.image] : [];
-    this.loadOne(st.id);
+    this.loadOne();
   }
 
-  loadOne(stockId: number) {
-    const image = this.selected?.image || this.form.photos?.[0] || '';
+  loadOne() {
+    const image = String(this.selected?.image || this.form.image || '').trim();
+    if (!image) return;
     this.api.http
       .post<any>(
         this.api.url + '/productShowcaseListByImage',
@@ -187,7 +190,8 @@ export class AdminProductShowcasePage implements OnInit {
             this.form = {
               ...this.empty(),
               ...row,
-              stockId,
+              image,
+              stockId: this.selected?.id,
               photos: row.photos?.length ? row.photos : this.form.photos,
             };
             this.hydrateThumbs((this.form.photos || []).map((h: string) => ({ hash: h, date: row.updatedAt })));
@@ -201,12 +205,14 @@ export class AdminProductShowcasePage implements OnInit {
   }
 
   save() {
-    if (!this.form.stockId) return;
+    const image = this.selected?.image || this.form.image || this.form.photos?.[0];
+    if (!image) return;
     this.syncHtml();
+    this.form.image = image;
     this.saving = true;
     this.api.http
       .post<any>(
-        this.api.url + '/productShowcaseSave',
+        this.api.url + '/productShowcaseSaveByImage',
         { ...this.authBody(), data: this.form },
         { headers: (this.api as any).headerBase() },
       )

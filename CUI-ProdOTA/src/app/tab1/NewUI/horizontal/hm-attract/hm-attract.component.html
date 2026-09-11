@@ -9,15 +9,21 @@
   <ng-container *ngIf="featured as sl">
 
     <div class="attract__media" (click)="$event.stopPropagation()">
-      <img class="attract__photo" [src]="featuredSrc" [alt]="sl?.stock?.name" />
+      <img
+        *ngIf="!videoSrc"
+        class="attract__photo"
+        [src]="featuredSrc"
+        [alt]="sl?.stock?.name" />
       <video
         *ngIf="phase === 'detail' && videoSrc"
         class="attract__video"
         [src]="videoSrc"
+        [poster]="featuredSrc"
         autoplay
         muted
         playsinline
-        loop></video>
+        loop
+        (error)="videoSrc = ''"></video>
     </div>
 
     <aside class="attract__side" (click)="$event.stopPropagation()">

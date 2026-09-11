@@ -7,6 +7,7 @@ export interface IProductShowcase {
   createdAt?: Date;
   updatedAt?: Date;
   ownerUuid?: string;
+  image:string;
   stockId: number;
   globalProductId?: string;
   title?: string;
@@ -77,5 +78,5 @@ export function ProductShowcaseGlobalFactory(name: string, sequelize: Sequelize)
   x.beforeCreate(async (o: any) => {
     if (!o.uuid) o.uuid = uuid.v4();
   });
-  return x;
+  return x as unknown as ProductShowcaseStatic;
 }

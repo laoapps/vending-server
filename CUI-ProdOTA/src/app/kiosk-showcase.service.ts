@@ -61,50 +61,6 @@ export class KioskShowcaseService {
 
   async sync(): Promise<void> {
     await this.hydrate();
-
-    let remote: { stockId: number; hashP: string }[] = [];
-    try {
-      const rx: any = await this.post('productShowcaseHashes', {});
-      if (rx?.status !== 1) {
-        await this.bindLocalMedia();
-        return;
-      }
-      remote = Array.isArray(rx.data) ? rx.data : [];
-    } catch {
-      await this.bindLocalMedia();
-      return;
-    }
-
-    const remoteIds = new Set(remote.map((r) => Number(r.stockId)));
-    let dirty = false;
-    for (const id of Object.keys(this.map)) {
-      if (!remoteIds.has(Number(id))) {
-        delete this.map[Number(id)];
-        dirty = true;
-      }
-    }
-
-    const miss: number[] = [];
-    for (const r of remote) {
-      const id = Number(r.stockId);
-      if (!id) continue;
-      if (this.map[id]?.hashP !== r.hashP) miss.push(id);
-    }
-
-    if (miss.length) {
-      try {
-        const rx: any = await this.post('productShowcasePull', { stockIds: miss });
-        const rows: IProductShowcase[] = rx?.data || [];
-        for (const s of rows) {
-          if (!s?.stockId) continue;
-          this.map[Number(s.stockId)] = s;
-          await this.cacheMedia(s);
-          dirty = true;
-        }
-      } catch {}
-    }
-
-    if (dirty) await this.persist();
     await this.bindLocalMedia();
   }
 
@@ -116,37 +72,54 @@ export class KioskShowcaseService {
   getBySale(sl: any): IProductShowcase | null {
     const img = String(sl?.stock?.image || '').trim();
     if (img && this.byImage[img]) return this.byImage[img];
-    const ids = [sl?.stock?.id, sl?.stockId, sl?.id]
-      .map((x) => Number(x))
-      .filter((n) => n > 0);
-    for (const id of ids) {
-      if (this.map[id]) return this.map[id];
-    }
     return null;
   }
 
-  /** (i) → POST productShowcaseByImage { image: stock.image } */
+  /**
+   * Local first. Network only if hashP changed.
+   * 1. Ionic Storage
+   * 2. POST productShowcaseHashByImage { image } → { hashP }
+   * 3. same hashP → bind local, no ByImage, no filemanager
+   * 4. miss / different → ByImage + cacheMedia
+   */
   async ensure(sl: any): Promise<IProductShowcase | null> {
     const image = String(sl?.stock?.image || '').trim();
-    if (!image) return this.getBySale(sl);
+    if (!image) return null;
     await this.hydrate();
+    const local = this.byImage[image] || null;
+
+    let remoteHash = '';
+    try {
+      const hx: any = await this.post('productShowcaseHashByImage', { image });
+      remoteHash = String((hx?.data || [])[0]?.hashP || '');
+    } catch {
+      await this.bindLocalMedia();
+      return local;
+    }
+
+    if (local && remoteHash && local.hashP === remoteHash) {
+      await this.bindLocalMedia();
+      return local;
+    }
+    if (!remoteHash) {
+      await this.bindLocalMedia();
+      return local;
+    }
+
     try {
       const rx: any = await this.post('productShowcaseByImage', { image });
       const row: IProductShowcase = (rx?.data || [])[0];
       if (row) {
-        const local = this.byImage[image];
-        if (!local || local.hashP !== row.hashP) {
-          this.byImage[image] = row;
-          if (row.stockId) this.map[Number(row.stockId)] = row;
-          await this.cacheMedia(row);
-          await this.persist();
-        }
+        row.image = image;
+        this.byImage[image] = row;
+        await this.cacheMedia(row);
+        await this.persist();
       }
     } catch (e) {
-      console.warn('showcase ensure', e);
+      console.warn('showcase pull', e);
     }
     await this.bindLocalMedia();
-    return this.byImage[image] || this.getBySale(sl);
+    return this.byImage[image] || local;
   }
 
   private async persist(): Promise<void> {

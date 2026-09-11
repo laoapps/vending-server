@@ -1447,37 +1447,23 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     const id = sl?.stock?.image;
     if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
     if (!id) return this.hmLogo || 'assets/icon/logo.png';
-
     const cached = this.unwrapPhoto(this.apiService?.imageList?.[id]);
     if (this.isPhotoData(cached)) return this.asImageData(cached);
-
     return this.hmLogo || 'assets/icon/logo.png';
   }
 
-  onPhotoError(ev: Event): void {
-    const img = ev.target as HTMLImageElement;
-    if (img) img.src = this.hmLogo || 'assets/icon/logo.png';
-  }
-
-  private unwrapPhoto(x: any): string {
-    if (!x) return '';
-    if (typeof x === 'string') {
-      const s = x.trim();
-      if (s.startsWith('data:') || s.startsWith('blob:')) return s;
-      if (s.startsWith('{')) {
-        try { return this.unwrapPhoto(JSON.parse(s)); } catch { return ''; }
-      }
-      return '';
+  private unwrapPhoto(raw: any): string {
+    if (!raw) return '';
+    try {
+      const y = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      return String(y?.v || y || '');
+    } catch {
+      return String(raw);
     }
-    return this.unwrapPhoto(x.v || x.file || '');
   }
 
-  private isPhotoData(s: any): boolean {
-    return typeof s === 'string' && (
-      s.startsWith('data:image') ||
-      s.startsWith('data:application/octet-stream') ||
-      s.startsWith('blob:')
-    );
+  private isPhotoData(s: string): boolean {
+    return typeof s === 'string' && (s.startsWith('data:image') || s.startsWith('data:application/octet-stream') || s.startsWith('blob:'));
   }
 
   private asImageData(s: string): string {
@@ -1487,6 +1473,13 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
     return s;
   }
 
+  onPhotoError(ev: Event): void {
+    const img = ev.target as HTMLImageElement;
+    if (img) img.src = this.hmLogo || 'assets/icon/logo.png';
+  }
+
+
+
 
 
   private qrDebounce: any;
@@ -1494,54 +1487,54 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
   private qrAbort: AbortController | null = null;
   qrWaitLeft = 0;
   qrFloat = false;
-    // dock
-  qrWaitMs =environment.qrWaitMs|| 1500;    // quiet time after add/remove, then QR + float debounce generate + float
+  // dock
+  qrWaitMs = environment.qrWaitMs || 1500;    // quiet time after add/remove, then QR + float debounce generate + float
 
   private qrTick: any
-ngOnChanges(changes: SimpleChanges): void {
-  this.ensureDefaultPayment();
-  if (!changes['orders'] && !changes['getTotalSale']) return;
-  this.scheduleQr();
-}
-/** cancel only — never call scheduleQr from here */
-cancelQr(): void {
-  this.qrRequestId++;
-  try { this.qrAbort?.abort(); } catch {}
-  this.qrAbort = new AbortController();
-  clearTimeout(this.qrDebounce);
-  clearInterval(this.qrTick);
-}
+  ngOnChanges(changes: SimpleChanges): void {
+    this.ensureDefaultPayment();
+    if (!changes['orders'] && !changes['getTotalSale']) return;
+    this.scheduleQr();
+  }
+  /** cancel only — never call scheduleQr from here */
+  cancelQr(): void {
+    this.qrRequestId++;
+    try { this.qrAbort?.abort(); } catch { }
+    this.qrAbort = new AbortController();
+    clearTimeout(this.qrDebounce);
+    clearInterval(this.qrTick);
+  }
   /** Call this from removeAt / parent add as well if ngOnChanges misses it. */
   scheduleQr(): void {
-  this.cancelQr();
+    this.cancelQr();
 
-  if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
-    this.qrDataUrl = '';
-    this.isQrGenerating = false;
-    this.qrWaitLeft = 0;
+    if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
+      this.qrDataUrl = '';
+      this.isQrGenerating = false;
+      this.qrWaitLeft = 0;
+      this.qrFloat = false;
+      return;
+    }
+
     this.qrFloat = false;
-    return;
+    this.qrDataUrl = '';
+    this.isQrGenerating = true;
+    this.qrWaitLeft = Math.ceil(this.qrWaitMs / 1000);
+
+    this.qrAbort = new AbortController();
+    const requestId = ++this.qrRequestId;
+
+    this.qrTick = setInterval(() => {
+      if (requestId !== this.qrRequestId) return;
+      this.qrWaitLeft = Math.max(0, this.qrWaitLeft - 1);
+    }, 1000);
+
+    this.qrDebounce = setTimeout(() => {
+      clearInterval(this.qrTick);
+      if (requestId !== this.qrRequestId) return;
+      this.generateLaoQr(requestId, this.qrAbort?.signal);
+    }, this.qrWaitMs);
   }
-
-  this.qrFloat = false;
-  this.qrDataUrl = '';
-  this.isQrGenerating = true;
-  this.qrWaitLeft = Math.ceil(this.qrWaitMs / 1000);
-
-  this.qrAbort = new AbortController();
-  const requestId = ++this.qrRequestId;
-
-  this.qrTick = setInterval(() => {
-    if (requestId !== this.qrRequestId) return;
-    this.qrWaitLeft = Math.max(0, this.qrWaitLeft - 1);
-  }, 1000);
-
-  this.qrDebounce = setTimeout(() => {
-    clearInterval(this.qrTick);
-    if (requestId !== this.qrRequestId) return;
-    this.generateLaoQr(requestId, this.qrAbort?.signal);
-  }, this.qrWaitMs);
-}
 
   invalidateQr(): void {
     this.qrFloat = false;
@@ -1585,10 +1578,10 @@ cancelQr(): void {
     this.qrDebounce = setTimeout(() => this.generateLaoQr(requestId, signal), 120);
   }
 
-retryGenerateQr(): void {
-  this.showQrRetry = false;
-  this.scheduleQr();
-}
+  retryGenerateQr(): void {
+    this.showQrRetry = false;
+    this.scheduleQr();
+  }
 
   private generateLaoQr(requestId: number, signal?: AbortSignal) {
     if (requestId !== this.qrRequestId || signal?.aborted) return;

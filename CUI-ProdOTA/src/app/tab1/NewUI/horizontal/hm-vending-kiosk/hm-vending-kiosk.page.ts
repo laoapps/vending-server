@@ -317,18 +317,35 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
   private hiBusy = new Set<string>();
 
-  photoOf(sl: any, size = 256): string {
-    const id = sl?.stock?.image;
-    if (!id) return this.hmLogo;
-    if (size >= 800) {
-      const hi = this.unwrapPhoto(this.apiService?.imageList?.[id + '@1024']);
-      if (this.isPhotoData(hi)) return this.asImageData(hi);
-    }
-    const lo = this.unwrapPhoto(this.apiService?.imageList?.[id]);
-    if (this.isPhotoData(lo)) return this.asImageData(lo);
-    if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
-    return this.hmLogo;
+  photoOf(sl: any, _size = 256): string {
+  const id = sl?.stock?.image;
+  if (typeof id === 'string' && this.isPhotoData(id)) return this.asImageData(id);
+  if (!id) return this.hmLogo || 'assets/icon/logo.png';
+  const cached = this.unwrapPhoto(this.apiService?.imageList?.[id]);
+  if (this.isPhotoData(cached)) return this.asImageData(cached);
+  return this.hmLogo || 'assets/icon/logo.png';
+}
+
+private unwrapPhoto(raw: any): string {
+  if (!raw) return '';
+  try {
+    const y = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return String(y?.v || y || '');
+  } catch {
+    return String(raw);
   }
+}
+
+private isPhotoData(s: string): boolean {
+  return typeof s === 'string' && (s.startsWith('data:image') || s.startsWith('data:application/octet-stream') || s.startsWith('blob:'));
+}
+
+private asImageData(s: string): string {
+  if (s.startsWith('data:application/octet-stream')) {
+    return 'data:image/jpeg;base64,' + s.split(',')[1];
+  }
+  return s;
+}
 
   hydrateHi = (sl: any): Promise<void> => this.ensureHi(sl);
 
@@ -361,33 +378,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     if (img) img.src = this.hmLogo || 'assets/icon/logo.png';
   }
 
-  private unwrapPhoto(x: any): string {
-    if (!x) return '';
-    if (typeof x === 'string') {
-      const s = x.trim();
-      if (s.startsWith('data:') || s.startsWith('blob:')) return s;
-      if (s.startsWith('{')) {
-        try { return this.unwrapPhoto(JSON.parse(s)); } catch { return ''; }
-      }
-      return '';
-    }
-    return this.unwrapPhoto(x.v || x.file || '');
-  }
 
-  private isPhotoData(s: any): boolean {
-    return typeof s === 'string' && (
-      s.startsWith('data:image') ||
-      s.startsWith('data:application/octet-stream') ||
-      s.startsWith('blob:')
-    );
-  }
-
-  private asImageData(s: string): string {
-    if (s.startsWith('data:application/octet-stream')) {
-      return 'data:image/jpeg;base64,' + s.split(',')[1];
-    }
-    return s;
-  }
 
   async loadPhotos(): Promise<void> {
     if (!this.apiService.imageList) this.apiService.imageList = {};
@@ -518,12 +509,11 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
   videoSrcOf = (hash: string) => this.showcase.videoSrc(hash);
 
-  async openShowcase(sl: any, ev?: Event) {
-    ev?.stopPropagation();
-    await this.showcase.ensure(sl);   // POST productShowcasePull
-    this.ref.detectChanges();
-    this.openAttractModal({ sl, auto: false });
-  }
+async openShowcase(sl: any, ev?: Event) {
+  ev?.stopPropagation();
+  this.openAttractModal({ sl, auto: false });          // local getBySale
+  this.showcase.ensure(sl).then(() => this.ref.detectChanges());
+}
   
   async openAttractModal(opts?: { sl?: any; auto?: boolean }): Promise<void> {
     if (this.attractModal) return;
