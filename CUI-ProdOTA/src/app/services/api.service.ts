@@ -2302,9 +2302,17 @@ export class ApiService {
     );
   }
 
+
+
     post(url: string,data:any) {
-      return axios.post<IResModel>(this.url + '/'+url, data, { headers: this.headerBase() });
-    }
+
+    return apiQueue.add(() => {
+      return this.apiBase.post<IResModel>(this.url + '/'+url, data,{
+        headers: this.headerBase(),
+        timeout: REQUEST_TIME_OUT,
+      });
+    }) as Promise<AxiosResponse<IResModel>>;
+  }
   // retryProcessBillNew(T: string, position: number, ownerUuid: string, trandID: string) {
   //   return axios.post<IResModel>(
   //     this.url + '/retryProcessBillNew?T=' + T + '&position=' + position,

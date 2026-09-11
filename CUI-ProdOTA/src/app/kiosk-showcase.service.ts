@@ -6,6 +6,7 @@ import { IProductShowcase } from './services/syste.model';
 import { CachingService } from 'src/app/services/caching.service';
 import { downloadFileUrl, downloadPhotoUrl } from './filemanager-url';
 import { VideoCacheService } from './video-cache.service';
+import cryptojs, { mode } from 'crypto-js';
 
 const STORE = 'productShowcase';
 
@@ -119,13 +120,19 @@ export class KioskShowcaseService {
 
   private async post(cmd: string, data: any) {
     const mid = this.api.machineId as any;
+    
+    const id = (mid?.machineId || mid) + localStorage.getItem('otp');
+    console.log('ID',id)
     const body = {
-      token: localStorage.getItem('token') || localStorage.getItem('lva_token'),
+      token: cryptojs
+        .SHA256(id)
+        .toString(cryptojs.enc.Hex),
       machineId: mid?.machineId || mid,
       otp: localStorage.getItem('otp'),
       data,
       stockIds: data?.stockIds,
     };
+    console.log('POST PULL',body)
     const rx = await this.api.post(cmd, body); // axios → Promise
     return rx?.data; // IResModel { status, data, ... }
   }
