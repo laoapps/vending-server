@@ -28,7 +28,7 @@ export class KioskShowcaseService {
     private storage: IonicStorageService,
     private photos: CachingService,
     private videos: VideoCacheService,
-  ) {}
+  ) { }
 
   get(stockId: number): IProductShowcase | null {
     return this.map[Number(stockId)] || null;
@@ -99,14 +99,14 @@ export class KioskShowcaseService {
           await this.cacheMedia(s);
           dirty = true;
         }
-      } catch {}
+      } catch { }
     }
 
     if (dirty) await this.persist();
     await this.bindLocalMedia();
   }
 
-  
+
 
   private needsMedia(s: IProductShowcase): boolean {
     if (s.video && !this.videoPlay[s.video]) return true;
@@ -118,8 +118,7 @@ export class KioskShowcaseService {
   }
 
   private async post(cmd: string, data: any) {
-    const url = String((this.api as any).url || '').replace(/\/?$/, '/') + cmd;
-    const mid = (this.api as any).machineId;
+    const mid = this.api.machineId as any;
     const body = {
       token: localStorage.getItem('token') || localStorage.getItem('lva_token'),
       machineId: mid?.machineId || mid,
@@ -127,7 +126,8 @@ export class KioskShowcaseService {
       data,
       stockIds: data?.stockIds,
     };
-    return firstValueFrom((this.api as any).http.post(url, body));
+    const rx = await this.api.post(cmd, body); // axios → Promise
+    return rx?.data; // IResModel { status, data, ... }
   }
 
   private unwrap(raw: any): string {
@@ -152,7 +152,7 @@ export class KioskShowcaseService {
         try {
           const path = await this.videos.getLocalPath?.(downloadFileUrl(s.video));
           if (path) this.videoPlay[s.video] = this.videos.getPlayableUrl(path);
-        } catch {}
+        } catch { }
       }
       for (const h of s.photos || []) {
         if (this.api.imageList[h + '@1024']?.startsWith?.('data:')) continue;
@@ -164,7 +164,7 @@ export class KioskShowcaseService {
             this.api.imageList[h] = v;
             this.api.imageList[h + '@1024'] = v;
           }
-        } catch {}
+        } catch { }
       }
     }
   }
@@ -176,7 +176,7 @@ export class KioskShowcaseService {
       try {
         const path = await this.videos.downloadIfNotExist(downloadFileUrl(s.video));
         if (path) this.videoPlay[s.video] = this.videos.getPlayableUrl(path);
-      } catch {}
+      } catch { }
     }
     for (const h of s.photos || []) {
       if (!h) continue;
@@ -192,38 +192,38 @@ export class KioskShowcaseService {
           this.api.imageList[h] = v;
           this.api.imageList[h + '@1024'] = v;
         }
-      } catch {}
+      } catch { }
     }
   }
 
- getBySale(sl: any) {
-  const ids = [sl?.stock?.id, sl?.stockId, sl?.id].map(Number).filter(n => n > 0);
-  for (const id of ids) if (this.map[id]) return this.map[id];
-  return null;
-}
+  getBySale(sl: any) {
+    const ids = [sl?.stock?.id, sl?.stockId, sl?.id].map(Number).filter(n => n > 0);
+    for (const id of ids) if (this.map[id]) return this.map[id];
+    return null;
+  }
 
-videoSrc(hash: string) {
-  if (!hash) return '';
-  return this.videoPlay[hash] || downloadFileUrl(hash);
-}
+  videoSrc(hash: string) {
+    if (!hash) return '';
+    return this.videoPlay[hash] || downloadFileUrl(hash);
+  }
 
-async ensure(sl: any) {
-  const id = Number(sl?.stock?.id || sl?.stockId || sl?.id);
-  if (!id) return this.getBySale(sl);
-  if (!this.map[id]) await this.hydrate();
-  try {
-    const rx: any = await this.post('productShowcasePull', { stockIds: [id] });
-    const row = (rx?.data || [])[0];
-    if (row?.stockId) {
-      const sid = Number(row.stockId);
-      if (!this.map[sid] || this.map[sid].hashP !== row.hashP) {
-        this.map[sid] = row;
-        await this.cacheMedia(row);
-        await this.persist();
+  async ensure(sl: any) {
+    const id = Number(sl?.stock?.id || sl?.stockId || sl?.id);
+    if (!id) return this.getBySale(sl);
+    if (!this.map[id]) await this.hydrate();
+    try {
+      const rx: any = await this.post('productShowcasePull', { stockIds: [id] });
+      const row = (rx?.data || [])[0];
+      if (row?.stockId) {
+        const sid = Number(row.stockId);
+        if (!this.map[sid] || this.map[sid].hashP !== row.hashP) {
+          this.map[sid] = row;
+          await this.cacheMedia(row);
+          await this.persist();
+        }
       }
-    }
-  } catch (e) { console.warn('showcase ensure', e); }
-  await this.bindLocalMedia();
-  return this.map[id] || this.getBySale(sl);
-}
+    } catch (e) { console.warn('showcase ensure', e); }
+    await this.bindLocalMedia();
+    return this.map[id] || this.getBySale(sl);
+  }
 }

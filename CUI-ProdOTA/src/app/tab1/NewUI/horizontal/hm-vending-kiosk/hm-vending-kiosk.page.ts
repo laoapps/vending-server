@@ -64,10 +64,10 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
    * 3000 = 3 seconds (demo). 180000 = 3 minutes (production).
    */
   // kiosk
-  demoStartMs = environment.demoStartMs||3000;  // attract auto  (demo: 3000) ==>180000
-  idleClearMs = environment.idleClearMs||180000;  // clear checkout ==>180000
-  demoItemMs = environment.demoItemMs||10000;   // each product photo in attract
-  cartMax = environment.cartMax ||10;
+  demoStartMs = environment.demoStartMs || 3000;  // attract auto  (demo: 3000) ==>180000
+  idleClearMs = environment.idleClearMs || 180000;  // clear checkout ==>180000
+  demoItemMs = environment.demoItemMs || 10000;   // each product photo in attract
+  cartMax = environment.cartMax || 10;
 
 
   photoOfBound = (sl: any, size?: number) => this.photoOf(sl, size);
@@ -514,16 +514,16 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
 
   showcaseOf = (sl: any) =>
-  this.showcase.getBySale(sl) || this.showcase.get(Number(sl?.stock?.id));
+    this.showcase.getBySale(sl) || this.showcase.get(Number(sl?.stock?.id));
 
-videoSrcOf = (hash: string) => this.showcase.videoSrc(hash);
+  videoSrcOf = (hash: string) => this.showcase.videoSrc(hash);
 
-async openShowcase(sl: any, ev?: Event) {
-  ev?.stopPropagation();
-  await this.showcase.ensure(sl);   // POST productShowcasePull
-  this.ref.detectChanges();
-  this.openAttractModal({ sl, auto: false });
-}
+  async openShowcase(sl: any, ev?: Event) {
+    ev?.stopPropagation();
+    await this.showcase.ensure(sl);   // POST productShowcasePull
+    this.ref.detectChanges();
+    this.openAttractModal({ sl, auto: false });
+  }
   async openAttractModal(opts?: { sl?: any; auto?: boolean }): Promise<void> {
     if (this.attractModal) return;
     this.apiService.isAds = false;
