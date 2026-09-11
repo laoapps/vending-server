@@ -8,9 +8,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { environment } from '../../../../../environments/environment';
-import { VideoCacheService } from 'src/app/video-cache.service';
-import { downloadFileUrl } from 'src/app/filemanager-url';
 
 @Component({
   selector: 'app-hm-attract',
@@ -20,15 +17,13 @@ import { downloadFileUrl } from 'src/app/filemanager-url';
   styleUrls: ['./hm-attract.component.scss'],
 })
 export class HmAttractComponent implements OnInit, OnDestroy {
-  /** photo hold — default 10s, overridable per product */
-  @Input() itemHoldMs = environment.holdMs || 10000;
+  @Input() itemHoldMs = 10000;
   @Input() shelfId = 'shelf';
   @Input() products: any[] = [];
   @Input() photoOf: (sl: any, size?: number) => string = () => '';
   @Input() fallback = 'assets/icon/logo.png';
   @Input() hydrateHi?: (sl: any) => Promise<void>;
   @Input() showcaseOf?: (sl: any) => any;
-  /** @deprecated prefer internal VideoCacheService.resolvePlayable */
   @Input() videoSrcOf?: (hash: string) => string;
   @Input() auto = true;
   @Input() startAt: any = null;
@@ -39,17 +34,17 @@ export class HmAttractComponent implements OnInit, OnDestroy {
   storyHtml: SafeHtml | null = null;
   videoSrc = '';
   extraPhotos: string[] = [];
+  showcaseTitle = '';
+  showcasePrice = 0;
   running = false;
 
   private holdTimer: any = null;
   private seq = 0;
-  private activeVideoPlayable = '';
 
   constructor(
     private ref: ChangeDetectorRef,
     private modalCtrl: ModalController,
     private sanitizer: DomSanitizer,
-    private videos: VideoCacheService,
   ) {}
 
   ngOnInit(): void {
@@ -69,7 +64,6 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     this.running = false;
     this.seq++;
     clearTimeout(this.holdTimer);
-    this.releaseVideo();
   }
 
   async dismiss(): Promise<void> {
@@ -77,6 +71,10 @@ export class HmAttractComponent implements OnInit, OnDestroy {
     try {
       await this.modalCtrl.dismiss();
     } catch {}
+  }
+
+  onPanelClick(): void {
+    if (this.auto) this.dismiss();
   }
 
   private async start(): Promise<void> {
@@ -89,7 +87,7 @@ export class HmAttractComponent implements OnInit, OnDestroy {
       return;
     }
     if (!this.auto) {
-      await this.showOne(list[0], token);
+      await this.showOne(list[0], token, true);
       return;
     }
     const forward = [...(this.products || [])];
@@ -113,18 +111,15 @@ export class HmAttractComponent implements OnInit, OnDestroy {
   private async playPass(list: any[], token: number): Promise<void> {
     for (const sl of list) {
       if (!this.running || token !== this.seq) return;
-      await this.showOne(sl, token);
+      await this.showOne(sl, token, false);
     }
   }
 
-  private async showOne(sl: any, token: number): Promise<void> {
+  private applyPhoto(sl: any): void {
     this.featured = sl;
-    this.phase = 'photo';
-    this.releaseVideo();
-    this.storyHtml = null;
-    this.extraPhotos = [];
     this.featuredSrc = this.srcOf(sl);
-    this.ref.detectChanges();
+    this.showcaseTitle = sl?.stock?.name || '';
+    this.showcasePrice = Number(sl?.stock?.price) || 0;
     this.scrollTo(sl);
     this.hydrateHi?.(sl)?.then(() => {
       if (this.featured === sl && this.running) {
@@ -132,52 +127,57 @@ export class HmAttractComponent implements OnInit, OnDestroy {
         this.ref.detectChanges();
       }
     });
+  }
+
+  private applyDetail(sl: any, sc: any): boolean {
+    const real = !!(sc && (sc.html || sc.video || (sc.photos || []).length));
+    if (!real) return false;
+    this.phase = 'detail';
+    this.showcaseTitle = sc.title || sl?.stock?.name || '';
+    this.showcasePrice = Number(sc.price) || Number(sl?.stock?.price) || 0;
+    this.storyHtml = sc.html
+      ? this.sanitizer.bypassSecurityTrustHtml(sc.html)
+      : null;
+    const main = sl?.stock?.image;
+    this.extraPhotos = (sc.photos || []).filter((h: string) => h && h !== main);
+    if (!this.extraPhotos.length && (sc.photos || []).length) {
+      this.extraPhotos = sc.photos.filter(Boolean);
+    }
+    this.videoSrc = sc.video ? this.videoSrcOf?.(sc.video) || '' : '';
+    return true;
+  }
+
+  /** info tap (immediate=true) → detail now. auto loop → photo, then detail. */
+  private async showOne(sl: any, token: number, immediate: boolean): Promise<void> {
+    this.phase = 'photo';
+    this.videoSrc = '';
+    this.storyHtml = null;
+    this.extraPhotos = [];
+    this.applyPhoto(sl);
+    this.ref.detectChanges();
 
     const sc = this.showcaseOf?.(sl);
+
+    if (immediate) {
+      this.applyDetail(sl, sc);
+      this.ref.detectChanges();
+      await this.sleep(86400000, token);
+      return;
+    }
+
     const hold = Number(sc?.holdMs) > 0 ? Number(sc.holdMs) : this.itemHoldMs;
     await this.sleep(hold, token);
     if (!this.running || token !== this.seq) return;
-
-    if (sc && (sc.video || sc.html || sc.story || (sc.photos || []).length)) {
-      this.phase = 'detail';
-      this.storyHtml = this.sanitizer.bypassSecurityTrustHtml(
-        sc.html || (sc.story ? `<p>${sc.story}</p>` : ''),
-      );
-      this.extraPhotos = sc.photos || [];
-      if (sc.video) {
-        await this.loadShowcaseVideo(sc.video, token);
-      }
-      this.ref.detectChanges();
-      const vms = Number(sc.videoMs) > 0 ? Number(sc.videoMs) : 12000;
-      await this.sleep(vms, token);
-    }
+    if (!this.applyDetail(sl, sc)) return;
+    this.ref.detectChanges();
+    const vms = Number(sc?.videoMs) > 0 ? Number(sc.videoMs) : 12000;
+    await this.sleep(vms, token);
   }
 
-  private async loadShowcaseVideo(hash: string, token: number): Promise<void> {
-    try {
-      const playable = await this.videos.resolvePlayable(downloadFileUrl(hash));
-      if (!this.running || token !== this.seq) {
-        this.videos.releasePlayable(playable);
-        return;
-      }
-      if (this.activeVideoPlayable && this.activeVideoPlayable !== playable) {
-        this.videos.releasePlayable(this.activeVideoPlayable);
-      }
-      this.activeVideoPlayable = playable;
-      this.videoSrc = playable;
-    } catch {
-      // Optional legacy sync fallback only if already a local/blob URL.
-      const legacy = this.videoSrcOf?.(hash) || '';
-      this.videoSrc = legacy.startsWith('blob:') || legacy.startsWith('data:') ? legacy : '';
-    }
-  }
-
-  private releaseVideo(): void {
-    if (this.activeVideoPlayable) {
-      this.videos.releasePlayable(this.activeVideoPlayable);
-      this.activeVideoPlayable = '';
-    }
-    this.videoSrc = '';
+  shotSrc(hash: string): string {
+    const a = this.photoOf?.({ stock: { image: hash } }, 1024) || '';
+    if (a.startsWith('data:') || a.startsWith('blob:') || a.startsWith('http')) return a;
+    return this.fallback;
   }
 
   private scrollTo(sl: any): void {

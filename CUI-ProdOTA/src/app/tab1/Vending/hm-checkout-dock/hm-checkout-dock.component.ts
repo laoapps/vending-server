@@ -31,7 +31,7 @@ import { downloadPhotoUrl } from '../../../filemanager-url';
 export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
   private loadVendingWalletCoinBalanceProcess: LoadVendingWalletCoinBalanceProcess;
 
-  @Input() orders: Array<IVendingMachineSale> = [];
+  @Input() orders: Array<IVendingMachineSale>=[];
   @Input() getTotalSale = { q: 0, t: 0 };
   @Input() contact = localStorage.getItem('contact') || '55516321';
   @Input() machineId = {} as IMachineId;
@@ -55,9 +55,9 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
   lists: Array<any> = [];
   drawCircle: Array<any> = [];
   billDate: Date = new Date();
-  paymentmethod: string = '';
-  paymentText: string = '';
-  paymentLogo: string = '';
+  paymentmethod: string='';
+  paymentText: string='';
+  paymentLogo: string='';
   isPayment: boolean = false;
   // isLoading: boolean = false;
 
@@ -333,8 +333,8 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
       this.close();
     });
 
-    this.scheduleGenerate();
-    this.bumpIdle();
+this.scheduleGenerate(); 
+this.bumpIdle();
 
 
   }
@@ -542,7 +542,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
         }, 1000);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -577,7 +577,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
           }
         }, 1000);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -692,7 +692,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-      } catch (error: any) {
+      } catch (error:any) {
         this.handleQrGenerateFailed(`CATCH Generate QR :${error?.message || error}`);
         resolve(error.message);
       }
@@ -904,7 +904,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-      } catch (error: any) {
+      } catch (error:any) {
         // this.apiService.alertError(error.message);
 
         // when choose payment method and it does not work this process will auto loop check laab balance
@@ -1000,7 +1000,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
         }, 1000);
 
-      } catch (error: any) {
+      } catch (error:any) {
         // this.apiService.alertError(error.message);
 
         // when choose payment method and it does not work this process will auto loop check laab balance
@@ -1089,7 +1089,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
           }
         }, 1000);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1117,7 +1117,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
           }
         }, 1000);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1140,7 +1140,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
         resolve(IENMessage.success);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1198,7 +1198,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
         // resolve(await this._processLoopDestroyNew());
 
 
-      } catch (error: any) {
+      } catch (error:any) {
 
         this.apiService.alertError(error.message);
         resolve(error.message);
@@ -1248,7 +1248,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
         } else {
           this.apiService.alertError('ສ້າງ QR Code ບໍ່ສຳເຫຼັດ ກະລຸນາເລືອກຕົວເລືອກອື່ນແທນ ຫຼືລອງອີກຄັ້ງໃນພາຍຫຼັງ');
         }
-      } catch (error: any) {
+      } catch (error:any) {
 
         this.apiService.alertError(error.message);
         resolve(error.message);
@@ -1274,7 +1274,7 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
         setTimeout(() => {
           this.isEnableCheckCallback = true;
         }, 5000);
-      } catch (error: any) {
+      } catch (error:any) {
 
         this.apiService.alertError(error.message);
         resolve(error.message);
@@ -1422,119 +1422,123 @@ export class HmCheckoutDockComponent implements OnInit, OnDestroy, OnChanges {
 
 
 
-  private qrDebounce: any;
-  private idleTimer: any;
-  private qrAbort: AbortController | null = null;
-  readonly idleMs = 5 * 60 * 1000;
-  hmLogo = 'assets/icon/logo.png'
-  /** Kiosk + dock — never return HTTP. */
+private qrDebounce: any;
+private idleTimer: any;
+private qrAbort: AbortController | null = null;
+readonly idleMs = 5 * 60 * 1000;
 
-  photoOf(sl: any, _size = 256): string {
-    const id = sl?.stock?.image;
-    if (!id) return this.hmLogo;
-    const cached = this.apiService?.imageList?.[id];
-    if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
-    return this.hmLogo;
+photoOf(order: any, size = 96): string {
+  const id = order?.stock?.image;
+  if (!id) return '';
+  const cached = this.apiService?.imageList?.[id];
+  if (typeof cached === 'string' && cached.startsWith('data:image')) return cached;
+  if (typeof cached === 'string' && cached.startsWith('http')) return cached;
+  return downloadPhotoUrl(id, size, size);
+}
+
+onPhotoError(ev: Event, order: any): void {
+  const img = ev.target as HTMLImageElement;
+  if (!img) return;
+  const id = order?.stock?.image;
+  if (id && img.dataset['step'] !== '1') {
+    img.dataset['step'] = '1';
+    img.src = downloadPhotoUrl(id, 64, 64);
   }
+}
 
-  onPhotoError(ev: Event): void {
-    const img = ev.target as HTMLImageElement;
-    if (img) img.src = this.hmLogo;
-  }
+ngOnChanges(changes: SimpleChanges): void {
+  if (!changes['orders'] && !changes['getTotalSale']) return;
+  this.invalidateQr();
+  this.scheduleGenerate();
+  this.bumpIdle();
+}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (!changes['orders'] && !changes['getTotalSale']) return;
-    this.invalidateQr();
-    this.scheduleGenerate();
-    this.bumpIdle();
-  }
+removeOrder(index: number) {
+  this.removeAt.emit(index);
+}
 
-  removeOrder(index: number) {
-    this.removeAt.emit(index);
-  }
+clearCartOnly() {
+  this.invalidateQr();
+  this.qrDataUrl = '';
+  this.isPayment = false;
+  this.isQrGenerating = false;
+  this.showQrRetry = false;
+  this.cartCleared.emit();
+}
 
-  clearCartOnly() {
-    this.invalidateQr();
+invalidateQr() {
+  this.qrRequestId++;
+  try {
+    this.qrAbort?.abort();
+  } catch {}
+  this.qrAbort = new AbortController();
+  clearTimeout(this.qrDebounce);
+}
+
+scheduleGenerate() {
+  if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
     this.qrDataUrl = '';
-    this.isPayment = false;
     this.isQrGenerating = false;
-    this.showQrRetry = false;
-    this.cartCleared.emit();
+    this.isPayment = false;
+    return;
   }
+  this.isQrGenerating = true;
+  this.showQrRetry = false;
+  const requestId = this.qrRequestId;
+  const signal = this.qrAbort?.signal;
+  this.qrDebounce = setTimeout(() => this.generateLaoQr(requestId, signal), 120);
+}
 
-  invalidateQr() {
-    this.qrRequestId++;
-    try {
-      this.qrAbort?.abort();
-    } catch { }
-    this.qrAbort = new AbortController();
-    clearTimeout(this.qrDebounce);
-  }
+retryGenerateQr() {
+  this.qrRetryCount++;
+  this.invalidateQr();
+  this.scheduleGenerate();
+}
 
-  scheduleGenerate() {
-    if (!this.getTotalSale?.q || !this.getTotalSale?.t) {
-      this.qrDataUrl = '';
-      this.isQrGenerating = false;
-      this.isPayment = false;
-      return;
-    }
-    this.isQrGenerating = true;
-    this.showQrRetry = false;
-    const requestId = this.qrRequestId;
-    const signal = this.qrAbort?.signal;
-    this.qrDebounce = setTimeout(() => this.generateLaoQr(requestId, signal), 120);
-  }
-
-  retryGenerateQr() {
-    this.qrRetryCount++;
-    this.invalidateQr();
-    this.scheduleGenerate();
-  }
-
-  private generateLaoQr(requestId: number, signal?: AbortSignal) {
-    if (requestId !== this.qrRequestId || signal?.aborted) return;
-    this.isQrGenerating = true;
-    this.showQrRetry = false;
-    const orders = this.orders;
-    const total = this.getTotalSale.t;
-    this.apiService
-      .buyLaoQRQ(orders, total)
-      .then(async (rx) => {
-        if (requestId !== this.qrRequestId || signal?.aborted) return;
-        const response: any = rx?.data;
-        if (response?.status != 1 || !response?.data?.qr) {
-          this.showQrRetry = true;
-          this.isQrGenerating = false;
-          return;
-        }
-        const run = response.data;
-        localStorage.setItem('transactionID', run.transactionID);
-        try {
-          const canvas: any = await Promise.race([
-            new qrlogo({ content: run.qr }).getCanvas(),
-            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
-          ]);
-          if (requestId !== this.qrRequestId || signal?.aborted) return;
-          this.qrDataUrl = canvas.toDataURL();
-          this.isPayment = true;
-          this.isQrGenerating = false;
-        } catch {
-          if (requestId !== this.qrRequestId) return;
-          this.showQrRetry = true;
-          this.isQrGenerating = false;
-        }
-      })
-      .catch(() => {
-        if (requestId !== this.qrRequestId || signal?.aborted) return;
+private generateLaoQr(requestId: number, signal?: AbortSignal) {
+  if (requestId !== this.qrRequestId || signal?.aborted) return;
+  this.isQrGenerating = true;
+  this.showQrRetry = false;
+  const orders = this.orders;
+  const total = this.getTotalSale.t;
+  this.apiService
+    .buyLaoQRQ(orders, total)
+    .then(async (rx) => {
+      if (requestId !== this.qrRequestId || signal?.aborted) return;
+      const response: any = rx?.data;
+      if (response?.status != 1 || !response?.data?.qr) {
         this.showQrRetry = true;
         this.isQrGenerating = false;
-      });
-  }
+        return;
+      }
+      const run = response.data;
+      localStorage.setItem('transactionID', run.transactionID);
+      try {
+        const canvas: any = await Promise.race([
+          new qrlogo({ content: run.qr }).getCanvas(),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
+        ]);
+        if (requestId !== this.qrRequestId || signal?.aborted) return;
+        this.qrDataUrl = canvas.toDataURL();
+        this.isPayment = true;
+        this.isQrGenerating = false;
+      } catch {
+        if (requestId !== this.qrRequestId) return;
+        this.showQrRetry = true;
+        this.isQrGenerating = false;
+      }
+    })
+    .catch(() => {
+      if (requestId !== this.qrRequestId || signal?.aborted) return;
+      this.showQrRetry = true;
+      this.isQrGenerating = false;
+    });
+}
 
-  bumpIdle() {
-    clearTimeout(this.idleTimer);
-    this.idleTimer = setTimeout(() => this.clearCartOnly(), this.idleMs);
-  }
+bumpIdle() {
+  clearTimeout(this.idleTimer);
+  this.idleTimer = setTimeout(() => this.clearCartOnly(), this.idleMs);
+}
 
 
 }
@@ -1565,11 +1569,11 @@ class PaymentStation {
   // paramters
   private orders: Array<any> = [];
   private getTotalSale: any = {} as any;
-  private paymentmethod: string = '';
+  private paymentmethod: string='';
 
   // props
   refund: number = 0;
-  qrcode: string = '';
+  qrcode: string ='';
 
 
   constructor(
@@ -1608,7 +1612,7 @@ class PaymentStation {
         // (await this.workload).dismiss();
         resolve(this.Commit());
 
-      } catch (error: any) {
+      } catch (error:any) {
         // (await this.workload).dismiss();
         resolve(error.message);
       }
@@ -1634,7 +1638,7 @@ class PaymentStation {
         // (await this.workload).dismiss();
         resolve(this.Commit());
 
-      } catch (error: any) {
+      } catch (error:any) {
         // (await this.workload).dismiss();
         resolve(error.message);
       }
@@ -1673,7 +1677,7 @@ class PaymentStation {
 
         resolve(IENMessage.success);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1700,7 +1704,7 @@ class PaymentStation {
 
         resolve(IENMessage.success);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1730,7 +1734,7 @@ class PaymentStation {
 
         resolve(IENMessage.success);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1769,7 +1773,7 @@ class LAABPayment {
 
   private orders: Array<any> = [];
   private getTotalSale: any = {} as any;
-  private amount: number = -1;
+  private amount: number=-1;
 
   // props
   private data: Array<any> = [];
@@ -1802,7 +1806,7 @@ class LAABPayment {
 
         resolve(this.Commit());
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1855,7 +1859,7 @@ class LAABPayment {
 
         resolve(IENMessage.success);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -1906,7 +1910,7 @@ class LaoQRPayment {
   private data: Array<any> = [];
   private qtty: number = 0;
   private total: number = 0;
-  private qrcode: string = '';
+  private qrcode: string='';
 
   constructor(
     apiService: ApiService,
@@ -1937,7 +1941,7 @@ class LaoQRPayment {
 
         resolve(this.Commit());
 
-      } catch (error: any) {
+      } catch (error :any) {
         resolve(error.message);
       }
     });
@@ -1948,7 +1952,7 @@ class LaoQRPayment {
       try {
         const run = await this.generateLaoQRCodeProcess.CheckLaoQRPaid();
         resolve(run);
-      } catch (error: any) {
+      } catch (error :any) {
         resolve({ status: 0, message: error.message });
       }
     }
@@ -2019,7 +2023,7 @@ class LaoQRPayment {
 
         resolve(IENMessage.success);
 
-      } catch (error: any) {
+      } catch (error :any) {
         resolve(error.message);
       }
     });
@@ -2064,7 +2068,7 @@ class MMoneyPayment {
   private data: Array<any> = [];
   private qtty: number = 0;
   private total: number = 0;
-  private qrcode: string = '';
+  private qrcode: string='';
 
   constructor(
     apiService: ApiService,
@@ -2096,7 +2100,7 @@ class MMoneyPayment {
 
         resolve(this.Commit());
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
@@ -2167,7 +2171,7 @@ class MMoneyPayment {
 
         resolve(IENMessage.success);
 
-      } catch (error: any) {
+      } catch (error:any) {
         resolve(error.message);
       }
     });
