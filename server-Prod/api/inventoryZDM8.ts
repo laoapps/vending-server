@@ -1415,7 +1415,13 @@ export class InventoryZDM8 implements IBaseClass {
                         const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
                         await sEnt.sync();
                         const row = await sEnt.findOne({ where: { stockId: p.id } });
-                        res.send(PrintSucceeded('productShowcaseByImage 2'+`${JSON.stringify(row)} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                        // res.send(PrintSucceeded('productShowcaseByImage 2' + `${JSON.stringify(row)} ${JSON.stringify(p)} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded(
+                            `ByImage owner=${ownerUuid} p.id=${p?.id} image=${image} row.id=${row?.id}`,
+                            row ? [row] : [],
+                            EMessage.succeeded,
+                            returnLog(req, res),
+                        ));
                     } catch (error) {
                         res.send(PrintError('productShowcaseByImage', error, EMessage.error, returnLog(req, res, true)));
                     }
@@ -1446,7 +1452,13 @@ export class InventoryZDM8 implements IBaseClass {
                         const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
                         await sEnt.sync();
                         const row = await sEnt.findOne({ where: { stockId: p.id } });
-                        res.send(PrintSucceeded('productShowcaseListByImage '+`${JSON.stringify(row)} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                        // res.send(PrintSucceeded('productShowcaseListByImage '+`${JSON.stringify(row)} ${JSON.stringify(p)} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded(
+                            `ByImage owner=${ownerUuid} p.id=${p?.id} image=${image} row.id=${row?.id}`,
+                            row ? [row] : [],
+                            EMessage.succeeded,
+                            returnLog(req, res),
+                        ));
                     } catch (error) {
                         res.send(PrintError('productShowcaseListByImage', error, EMessage.error, returnLog(req, res, true)));
                     }
