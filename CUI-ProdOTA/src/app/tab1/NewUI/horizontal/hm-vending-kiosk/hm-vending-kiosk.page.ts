@@ -117,8 +117,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.bindWebsocket();
     this.saleList = ApiService.vendingOnSale || [];
     this.localLoad();
-   await this.loadStock();
-await this.pullSaleIfChanged();
+    await this.loadStock();
+    await this.pullSaleIfChanged();
     this.loadBalance();
     this.loadPhotos();
     this.showcase.sync().then(() => this.ref.detectChanges());
@@ -270,8 +270,19 @@ await this.pullSaleIfChanged();
       localStorage.setItem('vendingPendingSum', JSON.stringify(this.getTotalSale));
     } catch { }
   }
+
+
+  /** localStorage per machine — not a global key */
+
+  saleHashKey(): string {
+    const id = this.machineId?.machineId || localStorage.getItem('machineId') || '';
+    const otp = this.machineId?.otp || localStorage.getItem('otp') || '';
+    return 'saleListHashP_' + id + '_' + otp;
+  }
+
   async pullSaleIfChanged(): Promise<void> {
-    const localHash = localStorage.getItem('saleListHashP') || '';
+    const key = this.saleHashKey();
+    const localHash = localStorage.getItem(key) || '';
     try {
       const hx: any = await this.apiService.post('machineSaleListHash', {
         hashP: localHash,
@@ -280,20 +291,19 @@ await this.pullSaleIfChanged();
       const row = (hx?.data?.data || hx?.data || [])[0] || {};
       const remote = String(row.hashP || '');
       if (row.match && remote && remote === localHash) {
-        console.log('saleList hash match — keep local');
+        console.log('saleList hash match', key);
         return;
       }
       const rx: any = await this.apiService.loadVendingSale('yes');
       const server = rx?.data?.data || rx?.data || [];
       if (!Array.isArray(server)) return;
       this.mergeSaleCatalog(server);
-      if (remote) localStorage.setItem('saleListHashP', remote);
+      if (remote) localStorage.setItem(key, remote);
     } catch (e) {
       console.warn('pullSaleIfChanged', e);
     }
   }
 
-  /** Server catalog wins for product/price/image/position. Local qtty always kept. */
   mergeSaleCatalog(server: any[]): void {
     const local = this.asSaleList(this.saleList);
     const byPos = new Map<number, any>();
@@ -328,6 +338,10 @@ await this.pullSaleIfChanged();
     this.loadPhotos();
     this.ref.detectChanges();
   }
+
+
+
+
   localLoad(): { orders: IVendingMachineSale[]; sum: { q: number; t: number } } {
     try {
       const orders = JSON.parse(localStorage.getItem('vendingPendingOrders') || '[]');
@@ -344,22 +358,22 @@ await this.pullSaleIfChanged();
   }
 
   loadStock(): Promise<void> {
-  return this.storage.get('saleStock', 'stock').then((s) => {
-    try {
-      let raw = s?.v ?? s;
-      if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) {
-        raw = (raw as any).v;
-      }
-      const fallback = ApiService.vendingOnSale || [];
-      const items = JSON.parse(
-        JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback),
-      ) as IVendingMachineSale[];
-      this.saleList = items;
-      this.syncVendingOnSale(items);
-      this.ref.detectChanges();
-    } catch {}
-  });
-}
+    return this.storage.get('saleStock', 'stock').then((s) => {
+      try {
+        let raw = s?.v ?? s;
+        if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) {
+          raw = (raw as any).v;
+        }
+        const fallback = ApiService.vendingOnSale || [];
+        const items = JSON.parse(
+          JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback),
+        ) as IVendingMachineSale[];
+        this.saleList = items;
+        this.syncVendingOnSale(items);
+        this.ref.detectChanges();
+      } catch { }
+    });
+  }
   async loadStockAsync(): Promise<void> {
     return this.storage.get('saleStock', 'stock').then((s) => {
       try {
@@ -512,17 +526,17 @@ await this.pullSaleIfChanged();
   }
 
   handleRefresh(ev?: any): void {
-  this.localLoad();
-  this.loadStock()
-    .then(() => this.pullSaleIfChanged())
-    .then(() => {
-      this.loadBalance();
-      this.loadPhotos();
-      return this.showcase.sync();
-    })
-    .then(() => this.ref.detectChanges())
-    .finally(() => setTimeout(() => ev?.target?.complete?.(), 600));
-}
+    this.localLoad();
+    this.loadStock()
+      .then(() => this.pullSaleIfChanged())
+      .then(() => {
+        this.loadBalance();
+        this.loadPhotos();
+        return this.showcase.sync();
+      })
+      .then(() => this.ref.detectChanges())
+      .finally(() => setTimeout(() => ev?.target?.complete?.(), 600));
+  }
 
   focusShelf(): void {
     document.getElementById('shelf')?.scrollTo({ top: 0, behavior: 'smooth' });
