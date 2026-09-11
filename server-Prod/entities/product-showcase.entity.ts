@@ -46,32 +46,15 @@ export type ProductShowcaseStatic = typeof Model & {
   new (values?: object, options?: BuildOptions): ProductShowcaseModel;
 };
 
-export const ProductShowcaseFactory = (
-  name: string,
-  sequelize: Sequelize,
-): ProductShowcaseStatic => {
-  const attributes: ModelAttributes<ProductShowcaseModel> = {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      unique: true,
-      autoIncrement: true,
-      autoIncrementIdentity: true,
-    },
-    uuid: {
-      allowNull: false,
-      unique: true,
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-    },
+export function ProductShowcaseGlobalFactory(name: string, sequelize: Sequelize) {
+  const attributes = {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    uuid: { type: DataTypes.UUID, unique: true, defaultValue: DataTypes.UUIDV4 },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-    ownerUuid: { type: DataTypes.STRING },
-    /** real product id = stock.id */
+    image: { type: DataTypes.STRING, unique: true, allowNull: false },
     stockId: { type: DataTypes.INTEGER },
-    /** shareable catalog id (same snack on many machines) */
-    globalProductId: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4 },
     title: { type: DataTypes.STRING },
     html: { type: DataTypes.TEXT },
     story: { type: DataTypes.TEXT },
@@ -81,18 +64,18 @@ export const ProductShowcaseFactory = (
     holdMs: { type: DataTypes.INTEGER, defaultValue: 10000 },
     videoMs: { type: DataTypes.INTEGER, defaultValue: 12000 },
     hashP: { type: DataTypes.STRING },
-  } as ModelAttributes<ProductShowcaseModel>;
+  } as ModelAttributes<Model>;
 
   const x = sequelize.define(name, attributes, { tableName: name, freezeTableName: true });
-  x.beforeUpdate(async (o) => {
+  x.beforeUpdate(async (o: any) => {
     if (o.changed('uuid')) o.uuid = o.previous().uuid;
     if (o.changed('id')) o.id = o.previous().id;
+    if (o.changed('image')) o.image = o.previous().image;
     o.createdAt = o.previous().createdAt;
     o.updatedAt = new Date();
   });
-  x.beforeCreate(async (o) => {
+  x.beforeCreate(async (o: any) => {
     if (!o.uuid) o.uuid = uuid.v4();
-    if (!o.globalProductId) o.globalProductId = uuid.v4();
   });
-  return x as unknown as ProductShowcaseStatic;
-};
+  return x;
+}

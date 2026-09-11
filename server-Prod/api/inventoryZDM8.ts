@@ -178,7 +178,7 @@ import { BlockchainValueAPI } from "./blockchain.routes";
 import { addValue } from "../controllers/blockchain.controller";
 import { AnomalyDetector } from "../services/anomalyDetection";
 import multer from 'multer';
-import { ProductShowcaseFactory } from "../entities/product-showcase.entity";
+import {  ProductShowcaseGlobalFactory } from "../entities/product-showcase.entity";
 
 
 
@@ -1393,6 +1393,8 @@ export class InventoryZDM8 implements IBaseClass {
  * ownerUuid comes from admin token or machine token.
  */
 
+            const SHOWCASE_TABLE = 'productshowcase_global';
+
             router.post(
                 this.path + '/productShowcaseByImage',
                 this.checkMachineIdToken.bind(this),
@@ -1400,35 +1402,16 @@ export class InventoryZDM8 implements IBaseClass {
                     try {
                         const image = String(req.body?.image || req.body?.data?.image || '').trim();
                         if (!image) throw new Error('image required');
-                        const machineId = res.locals['machineId'];
-                        if (!machineId) throw new Error('machine is not exist');
-                        const m = await machineClientIDEntity.findOne({ where: { machineId: machineId.machineId } });
-                        const ownerUuid = m?.ownerUuid || '';
-
-                        const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
-                        await pEnt.sync();
-                        const p = await pEnt.findOne({ where: { image } });
-                        if (!p) {
-                            return res.send(PrintSucceeded('productShowcaseByImage', [`${p} ${EEntity.product + '_' + ownerUuid} ${image}`], EMessage.succeeded, returnLog(req, res)));
-                        }
-
-                        const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
+                        const sEnt = ProductShowcaseGlobalFactory(SHOWCASE_TABLE, dbConnection);
                         await sEnt.sync();
-                        const row = await sEnt.findOne({ where: { stockId: p.id } });
-                        // res.send(PrintSucceeded('productShowcaseByImage 2' + `${JSON.stringify(row)} ${JSON.stringify(p)} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
-                        res.send(PrintSucceeded(
-                            `ByImage machine ID ${ machineId.machineId} owner=${ownerUuid} p.id=${p?.id} image=${image} row.id=${row?.id}`,
-                            row ? [row] : [],
-                            EMessage.succeeded,
-                            returnLog(req, res),
-                        ));
+                        const row = await sEnt.findOne({ where: { image, isActive: true } });
+                        res.send(PrintSucceeded('productShowcaseByImage', row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         res.send(PrintError('productShowcaseByImage', error, EMessage.error, returnLog(req, res, true)));
                     }
                 },
             );
 
-            /** same find for admin (listProduct image → showcase) */
             router.post(
                 this.path + '/productShowcaseListByImage',
                 this.checkSuperAdmin,
@@ -1436,161 +1419,66 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const image = String(req.query['image'] || req.body?.image || req.body?.data?.image || '').trim();
-                        const ownerUuid = res.locals['ownerUuid'] || '';
+                        const sEnt = ProductShowcaseGlobalFactory(SHOWCASE_TABLE, dbConnection);
+                        await sEnt.sync();
                         if (!image) {
-                            const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
-                            await sEnt.sync();
                             const rows = await sEnt.findAll({ where: { isActive: true }, order: [['id', 'DESC']] });
                             return res.send(PrintSucceeded('productShowcaseListByImage', rows, EMessage.succeeded, returnLog(req, res)));
                         }
-                        const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
-                        await pEnt.sync();
-                        const p = await pEnt.findOne({ where: { image } });
-                        if (!p) {
-                            return res.send(PrintSucceeded('productShowcaseListByImage', [], EMessage.succeeded, returnLog(req, res)));
-                        }
-                        const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
-                        await sEnt.sync();
-                        const row = await sEnt.findOne({ where: { stockId: p.id } });
-                        // res.send(PrintSucceeded('productShowcaseListByImage '+`${JSON.stringify(row)} ${JSON.stringify(p)} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
-                        res.send(PrintSucceeded(
-                            `ByImage owner=${ownerUuid} p.id=${p?.id} image=${image} row.id=${row?.id}`,
-                            row ? [row] : [],
-                            EMessage.succeeded,
-                            returnLog(req, res),
-                        ));
+                        const row = await sEnt.findOne({ where: { image } });
+                        res.send(PrintSucceeded('productShowcaseListByImage', row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         res.send(PrintError('productShowcaseListByImage', error, EMessage.error, returnLog(req, res, true)));
                     }
                 },
             );
 
-            /* ===== ADMIN ===== */
-
             router.post(
-                this.path + '/productShowcaseList',
+                this.path + '/productShowcaseSaveByImage',
                 this.checkSuperAdmin,
                 this.checkAdmin,
                 async (req, res) => {
                     try {
-                        const ownerUuid = res.locals['ownerUuid'] || '';
-                        const stockId = req.query['stockId'] ? Number(req.query['stockId']) : null;
-                        const ent = await showcaseEnt(ownerUuid);
-                        const where: any = { isActive: true };
-                        if (stockId) where.stockId = stockId;
-                        const rows = await ent.findAll({ where, order: [['id', 'DESC']] });
-                        res.send(PrintSucceeded('productShowcaseList', rows, EMessage.succeeded, returnLog(req, res)));
-                    } catch (error) {
-                        res.send(PrintError('productShowcaseList', error, EMessage.error, returnLog(req, res, true)));
-                    }
-                },
-            );
-
-            router.post(
-                this.path + '/productShowcaseSave',
-                this.checkSuperAdmin,
-                this.checkAdmin,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals['ownerUuid'] || '';
-                        const d = (req.body?.data || req.body) as any;
-                        if (!d?.stockId) throw new Error('stockId required');
-                        const ent = await showcaseEnt(ownerUuid);
-                        const hashP = showcaseHash(d);
-                        let row = await ent.findOne({ where: { ownerUuid, stockId: Number(d.stockId) } });
-                        const body = {
-                            ownerUuid,
-                            stockId: Number(d.stockId),
-                            globalProductId: d.globalProductId || undefined,
-                            title: d.title || '',
-                            html: d.html || '',
+                        const d = req.body?.data || req.body || {};
+                        const image = String(d.image || '').trim();
+                        if (!image) throw new Error('image required');
+                        const sEnt = ProductShowcaseGlobalFactory(SHOWCASE_TABLE, dbConnection);
+                        await sEnt.sync();
+                        const hashP = require('crypto').createHash('sha256').update(JSON.stringify({
+                            title: d.title || '', html: d.html || '', video: d.video || '',
+                            photos: d.photos || [], price: d.price || 0,
+                        })).digest('hex');
+                        const payload = {
+                            image,
+                            stockId: d.stockId || null,
+                            title: d.title,
+                            html: d.html,
                             story: d.story || '',
-                            price: Number(d.price) || 0,
-                            video: d.video || '',
-                            photos: Array.isArray(d.photos) ? d.photos : [],
-                            holdMs: Number(d.holdMs) || 10000,
-                            videoMs: Number(d.videoMs) || 12000,
+                            price: d.price,
+                            video: d.video,
+                            photos: d.photos || [],
+                            holdMs: d.holdMs || 10000,
+                            videoMs: d.videoMs || 12000,
                             hashP,
                             isActive: d.isActive !== false,
+                            updatedAt: new Date(),
                         };
-                        if (row) {
-                            Object.assign(row, body);
-                            await row.save();
-                        } else {
-                            row = await ent.create(body);
-                        }
-                        res.send(PrintSucceeded('productShowcaseSave', row, EMessage.succeeded, returnLog(req, res)));
+                        const old = await sEnt.findOne({ where: { image } });
+                        const row = old ? await old.update(payload) : await sEnt.create(payload);
+                        res.send(PrintSucceeded('productShowcaseSaveByImage', [row], EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
-                        res.send(PrintError('productShowcaseSave', error, EMessage.error, returnLog(req, res, true)));
+                        res.send(PrintError('productShowcaseSaveByImage', error, EMessage.error, returnLog(req, res, true)));
                     }
                 },
             );
 
-            router.post(
-                this.path + '/productShowcaseDelete',
-                this.checkSuperAdmin,
-                this.checkAdmin,
-                async (req, res) => {
-                    try {
-                        const ownerUuid = res.locals['ownerUuid'] || '';
-                        const stockId = Number(req.query['stockId'] || req.body?.stockId);
-                        const ent = await showcaseEnt(ownerUuid);
-                        const row = await ent.findOne({ where: { ownerUuid, stockId } });
-                        if (!row) {
-                            return res.send(PrintError('productShowcaseDelete', [], EMessage.notfound, returnLog(req, res, true)));
-                        }
-                        row.isActive = false;
-                        await row.save();
-                        res.send(PrintSucceeded('productShowcaseDelete', row, EMessage.succeeded, returnLog(req, res)));
-                    } catch (error) {
-                        res.send(PrintError('productShowcaseDelete', error, EMessage.error, returnLog(req, res, true)));
-                    }
-                },
-            );
+            /* ===== ADMIN ===== */
+
+
+
 
             /* ===== KIOSK (machine token) — hashes first, full body only on miss ===== */
 
-            router.post(
-                this.path + '/productShowcaseHashes',
-                this.checkMachineIdToken.bind(this),
-                async (req, res) => {
-                    try {
-                        const machineId = res.locals['machineId'];
-                        if (!machineId) throw new Error('machine is not exist');
-                        const m = await machineClientIDEntity.findOne({ where: { machineId: machineId.machineId } });
-                        const ownerUuid = m?.ownerUuid || '';
-                        const ent = await showcaseEnt(ownerUuid);
-                        const rows = await ent.findAll({
-                            where: { isActive: true },
-                            attributes: ['stockId', 'hashP', 'updatedAt', 'globalProductId'],
-                        });
-                        res.send(PrintSucceeded('productShowcaseHashes', rows, EMessage.succeeded, returnLog(req, res)));
-                    } catch (error) {
-                        res.send(PrintError('productShowcaseHashes', error, EMessage.error, returnLog(req, res, true)));
-                    }
-                },
-            );
-
-            router.post(
-                this.path + '/productShowcasePull',
-                this.checkMachineIdToken.bind(this),
-                async (req, res) => {
-                    try {
-                        const machineId = res.locals['machineId'];
-                        if (!machineId) throw new Error('machine is not exist');
-                        const m = await machineClientIDEntity.findOne({ where: { machineId: machineId.machineId } });
-                        const ownerUuid = m?.ownerUuid || '';
-                        const ids = (req.body?.data?.stockIds || req.body?.stockIds || []) as number[];
-                        const ent = await showcaseEnt(ownerUuid);
-                        const where: any = { isActive: true };
-                        if (ids.length) where.stockId = { [Op.in]: ids.map(Number) };
-                        const rows = await ent.findAll({ where });
-                        res.send(PrintSucceeded('productShowcasePull', rows, EMessage.succeeded, returnLog(req, res)));
-                    } catch (error) {
-                        res.send(PrintError('productShowcasePull', error, EMessage.error, returnLog(req, res, true)));
-                    }
-                },
-            );
 
 
 
@@ -11794,11 +11682,7 @@ function showcaseHash(s: any): string {
     return crypto.createHash('sha256').update(payload).digest('hex');
 }
 
-async function showcaseEnt(ownerUuid: string) {
-    const ent = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
-    await ent.sync();
-    return ent;
-}
+
 
 
 function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
@@ -11808,24 +11692,7 @@ function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
     return diffInSeconds > t;
 }
 
-/**
- * GLOBAL showcase — one table, keyed by product image hash.
- * Same Coca on machine A and B → same description / video.
- *
- * PASTE next to productShowcase* routes.
- * Table: productshowcase_global  (NOT per-owner)
- */
 
-async function showcaseGlobalEnt() {
-    const ent = ProductShowcaseFactory('productshowcase_global', dbConnection);
-    await ent.sync();
-    try {
-        await ent.sequelize.query(
-            'CREATE UNIQUE INDEX IF NOT EXISTS productshowcase_global_image ON productshowcase_global (image)',
-        );
-    } catch { }
-    return ent;
-}
 
 function imageOf(d: any): string {
     return String(d?.image || d?.photos?.[0] || '').trim();
