@@ -1381,6 +1381,75 @@ export class InventoryZDM8 implements IBaseClass {
  */
 
 
+
+            /* ===== ADMIN: upsert by image hash ===== */
+            /**
+ * SIMPLE lookup: image hash → product.id → showcase.stockId
+ *
+ * 1. product_{ownerUuid}  WHERE image = hash  →  id 147
+ * 2. productshowcase_{ownerUuid}  WHERE stockId = 147
+ *
+ * PASTE into Inventory router. No new table. No image column on showcase.
+ * ownerUuid comes from admin token or machine token.
+ */
+
+            router.post(
+                this.path + '/productShowcaseByImage',
+                this.checkMachineIdToken.bind(this),
+                async (req, res) => {
+                    try {
+                        const image = String(req.body?.image || req.body?.data?.image || '').trim();
+                        if (!image) throw new Error('image required');
+                        const ownerUuid = res.locals['ownerUuid'] || '';
+
+                        const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
+                        await pEnt.sync();
+                        const p = await pEnt.findOne({ where: { image } });
+                        if (!p) {
+                            return res.send(PrintSucceeded('productShowcaseByImage', [], EMessage.succeeded, returnLog(req, res)));
+                        }
+
+                        const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync();
+                        const row = await sEnt.findOne({ where: { stockId: p.id, isActive: true } });
+                        res.send(PrintSucceeded('productShowcaseByImage', row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        res.send(PrintError('productShowcaseByImage', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                },
+            );
+
+            /** same find for admin (listProduct image → showcase) */
+            router.post(
+                this.path + '/productShowcaseListByImage',
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const image = String(req.query['image'] || req.body?.image || req.body?.data?.image || '').trim();
+                        const ownerUuid = res.locals['ownerUuid'] || '';
+                        if (!image) {
+                            const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
+                            await sEnt.sync();
+                            const rows = await sEnt.findAll({ where: { isActive: true }, order: [['id', 'DESC']] });
+                            return res.send(PrintSucceeded('productShowcaseListByImage', rows, EMessage.succeeded, returnLog(req, res)));
+                        }
+                        const pEnt = StockFactory(EEntity.product + '_' + ownerUuid, dbConnection);
+                        await pEnt.sync();
+                        const p = await pEnt.findOne({ where: { image } });
+                        if (!p) {
+                            return res.send(PrintSucceeded('productShowcaseListByImage', [], EMessage.succeeded, returnLog(req, res)));
+                        }
+                        const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
+                        await sEnt.sync();
+                        const row = await sEnt.findOne({ where: { stockId: p.id } });
+                        res.send(PrintSucceeded('productShowcaseListByImage', row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        res.send(PrintError('productShowcaseListByImage', error, EMessage.error, returnLog(req, res, true)));
+                    }
+                },
+            );
+
             /* ===== ADMIN ===== */
 
             router.post(
@@ -11722,4 +11791,27 @@ function isMoreThan5SecondsAgo(fromTimeStr, toTimeStr, t = 5) {
     const to = new Date(toTimeStr);
     const diffInSeconds = (to.getTime() - from.getTime()) / 1000;
     return diffInSeconds > t;
+}
+
+/**
+ * GLOBAL showcase — one table, keyed by product image hash.
+ * Same Coca on machine A and B → same description / video.
+ *
+ * PASTE next to productShowcase* routes.
+ * Table: productshowcase_global  (NOT per-owner)
+ */
+
+async function showcaseGlobalEnt() {
+    const ent = ProductShowcaseFactory('productshowcase_global', dbConnection);
+    await ent.sync();
+    try {
+        await ent.sequelize.query(
+            'CREATE UNIQUE INDEX IF NOT EXISTS productshowcase_global_image ON productshowcase_global (image)',
+        );
+    } catch { }
+    return ent;
+}
+
+function imageOf(d: any): string {
+    return String(d?.image || d?.photos?.[0] || '').trim();
 }

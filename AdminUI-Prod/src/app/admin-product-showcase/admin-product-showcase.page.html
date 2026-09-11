@@ -4,7 +4,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="showcase-admin">
+<ion-content class="showcase-admin" [scrollY]="false">
   <div class="sa">
     <aside class="sa__list">
       <input class="sa__search" type="search" [(ngModel)]="q" placeholder="ຄົ້ນຫາຊື່ / #id" />
@@ -55,7 +55,9 @@
       </div>
 
       <div class="sa__video" *ngIf="form.video">
-        <video [src]="filemanagerURL + form.video" controls playsinline></video>
+        <video *ngIf="videoPlay" [src]="videoPlay" controls playsinline></video>
+        <p *ngIf="!videoPlay">loading video…</p>
+        <small>{{ form.video }}</small>
         <button type="button" class="sa__danger" (click)="deleteVideo()">Delete video</button>
       </div>
 

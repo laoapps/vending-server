@@ -14,6 +14,7 @@ import { CachingService } from 'src/app/services/caching.service';
 import { FilemanagerApiService } from 'src/app/services/filemanager-api.service';
 import { environment } from 'src/environments/environment';
 
+
 @Component({
   selector: 'app-admin-product-showcase',
   templateUrl: './admin-product-showcase.page.html',
@@ -34,6 +35,7 @@ export class AdminProductShowcasePage implements OnInit {
   thumbs: Record<string, string> = {};
   /** hash → filemanager record for del */
   fileMeta: Record<string, { id?: number; uuid?: string; url: string }> = {};
+  videoPlay = '';
   filemanagerURL =
     ((localStorage.getItem('filemanagerurl') || (environment as any).filemanagerurl || '') as string)
       .replace(/\/?$/, '/') + 'download/';
@@ -187,6 +189,7 @@ export class AdminProductShowcasePage implements OnInit {
               photos: row.photos?.length ? row.photos : this.form.photos,
             };
             this.hydrateThumbs((this.form.photos || []).map((h: string) => ({ hash: h, date: row.updatedAt })));
+            this.bindRemoteVideo(this.form.video);
           }
           setTimeout(() => {
             if (this.rt) this.rt.nativeElement.innerHTML = this.form.html || '';
@@ -248,8 +251,10 @@ export class AdminProductShowcasePage implements OnInit {
         this.ref.detectChanges();
       };
       reader.readAsDataURL(file);
-      if (kind === 'video') this.form.video = hash;
-      else this.addPhoto(hash);
+      if (kind === 'video') {
+        this.form.video = hash;
+        this.setLocalVideo(file);
+      } else this.addPhoto(hash);
     } catch {
       this.fm.cancelWriteFile({ uuid: fileuuid }).subscribe();
     } finally {
@@ -302,6 +307,44 @@ export class AdminProductShowcasePage implements OnInit {
     if (!confirm('Delete this video from filemanager?')) return;
     this.delFile(this.form.video);
     this.form.video = '';
+    this.clearVideoPlay();
+  }
+
+  videoUrl(hash: string): string {
+    return this.fm.downloadFileUrl(hash);
+  }
+
+  private setLocalVideo(file: File) {
+    this.clearVideoPlay();
+    const typed = file.type.startsWith('video/')
+      ? file
+      : new File([file], file.name || 'v.mp4', { type: 'video/mp4' });
+    this.videoPlay = URL.createObjectURL(typed);
+    this.ref.detectChanges();
+  }
+
+  private async bindRemoteVideo(hash: string) {
+    this.clearVideoPlay();
+    if (!hash) return;
+    const url = this.fm.downloadFileUrl(hash);
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const typed = blob.type.startsWith('video/')
+        ? blob
+        : new Blob([await blob.arrayBuffer()], { type: 'video/mp4' });
+      this.videoPlay = URL.createObjectURL(typed);
+    } catch {
+      this.videoPlay = url;
+    }
+    this.ref.detectChanges();
+  }
+
+  private clearVideoPlay() {
+    if (this.videoPlay?.startsWith('blob:')) {
+      try { URL.revokeObjectURL(this.videoPlay); } catch {}
+    }
+    this.videoPlay = '';
   }
 
   /* ===== rich text (no extra npm) ===== */
