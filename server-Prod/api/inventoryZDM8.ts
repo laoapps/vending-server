@@ -1415,7 +1415,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const sEnt = ProductShowcaseFactory(EEntity.productshowcase + '_' + ownerUuid, dbConnection);
                         await sEnt.sync();
                         const row = await sEnt.findOne({ where: { stockId: p.id, isActive: true } });
-                        res.send(PrintSucceeded('productShowcaseByImage'+`${p} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded('productShowcaseByImage 2'+`${p} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         res.send(PrintError('productShowcaseByImage', error, EMessage.error, returnLog(req, res, true)));
                     }
