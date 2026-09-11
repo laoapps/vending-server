@@ -524,6 +524,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.ref.detectChanges();
     this.openAttractModal({ sl, auto: false });
   }
+  
   async openAttractModal(opts?: { sl?: any; auto?: boolean }): Promise<void> {
     if (this.attractModal) return;
     this.apiService.isAds = false;

@@ -173,10 +173,11 @@ export class AdminProductShowcasePage implements OnInit {
   }
 
   loadOne(stockId: number) {
+    const image = this.selected?.image || this.form.photos?.[0] || '';
     this.api.http
       .post<any>(
-        this.api.url + '/productShowcaseList?stockId=' + stockId,
-        this.authBody(),
+        this.api.url + '/productShowcaseListByImage',
+        { ...this.authBody(), image },
         { headers: (this.api as any).headerBase() },
       )
       .subscribe({
@@ -186,6 +187,7 @@ export class AdminProductShowcasePage implements OnInit {
             this.form = {
               ...this.empty(),
               ...row,
+              stockId,
               photos: row.photos?.length ? row.photos : this.form.photos,
             };
             this.hydrateThumbs((this.form.photos || []).map((h: string) => ({ hash: h, date: row.updatedAt })));

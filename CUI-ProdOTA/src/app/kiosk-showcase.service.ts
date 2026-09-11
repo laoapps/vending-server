@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import * as cryptojs from 'crypto-js';
 import { ApiService } from 'src/app/services/api.service';
 import { IonicStorageService } from 'src/app/ionic-storage.service';
 import { IProductShowcase } from './services/syste.model';
 import { CachingService } from 'src/app/services/caching.service';
 import { downloadFileUrl, downloadPhotoUrl } from './filemanager-url';
 import { VideoCacheService } from './video-cache.service';
-import cryptojs, { mode } from 'crypto-js';
 
 const STORE = 'productShowcase';
 
@@ -22,6 +21,7 @@ const STORE = 'productShowcase';
 @Injectable({ providedIn: 'root' })
 export class KioskShowcaseService {
   map: Record<number, IProductShowcase> = {};
+  byImage: Record<string, IProductShowcase> = {};
   videoPlay: Record<string, string> = {};
 
   constructor(
@@ -29,7 +29,7 @@ export class KioskShowcaseService {
     private storage: IonicStorageService,
     private photos: CachingService,
     private videos: VideoCacheService,
-  ) { }
+  ) {}
 
   get(stockId: number): IProductShowcase | null {
     return this.map[Number(stockId)] || null;
@@ -52,6 +52,7 @@ export class KioskShowcaseService {
       this.map = {};
       for (const s of list) {
         if (s?.stockId) this.map[Number(s.stockId)] = s;
+        if (s?.image) this.byImage[s.image] = s;
       }
     } catch {
       this.map = {};
@@ -100,41 +101,76 @@ export class KioskShowcaseService {
           await this.cacheMedia(s);
           dirty = true;
         }
-      } catch { }
+      } catch {}
     }
 
     if (dirty) await this.persist();
     await this.bindLocalMedia();
   }
 
+  videoSrc(hash: string): string {
+    if (!hash) return '';
+    return this.videoPlay[hash] || downloadFileUrl(hash);
+  }
 
+  getBySale(sl: any): IProductShowcase | null {
+    const img = String(sl?.stock?.image || '').trim();
+    if (img && this.byImage[img]) return this.byImage[img];
+    const ids = [sl?.stock?.id, sl?.stockId, sl?.id]
+      .map((x) => Number(x))
+      .filter((n) => n > 0);
+    for (const id of ids) {
+      if (this.map[id]) return this.map[id];
+    }
+    return null;
+  }
 
-  private needsMedia(s: IProductShowcase): boolean {
-    if (s.video && !this.videoPlay[s.video]) return true;
-    return false;
+  /** (i) → POST productShowcaseByImage { image: stock.image } */
+  async ensure(sl: any): Promise<IProductShowcase | null> {
+    const image = String(sl?.stock?.image || '').trim();
+    if (!image) return this.getBySale(sl);
+    await this.hydrate();
+    try {
+      const rx: any = await this.post('productShowcaseByImage', { image });
+      const row: IProductShowcase = (rx?.data || [])[0];
+      if (row) {
+        const local = this.byImage[image];
+        if (!local || local.hashP !== row.hashP) {
+          this.byImage[image] = row;
+          if (row.stockId) this.map[Number(row.stockId)] = row;
+          await this.cacheMedia(row);
+          await this.persist();
+        }
+      }
+    } catch (e) {
+      console.warn('showcase ensure', e);
+    }
+    await this.bindLocalMedia();
+    return this.byImage[image] || this.getBySale(sl);
   }
 
   private async persist(): Promise<void> {
-    await this.storage.set(STORE, { v: Object.values(this.map), d: new Date() }, 'stock');
+    await this.storage.set(STORE, { v: Object.values(this.byImage).length ? Object.values(this.byImage) : Object.values(this.map), d: new Date() }, 'stock');
   }
 
   private async post(cmd: string, data: any) {
     const mid = this.api.machineId as any;
-    
-    const id = (mid?.machineId || mid) + localStorage.getItem('otp');
-    console.log('ID',id)
+    const machineId = String(mid?.machineId || mid || localStorage.getItem('machineId') || '');
+    const otp = String(localStorage.getItem('otp') || mid?.otp || '');
+    const token = cryptojs.SHA256(machineId + otp).toString(cryptojs.enc.Hex);
     const body = {
-      token: cryptojs
-        .SHA256(id)
-        .toString(cryptojs.enc.Hex),
-      machineId: mid?.machineId || mid,
-      otp: localStorage.getItem('otp'),
+      token,
+      machineId,
+      otp,
       data,
       stockIds: data?.stockIds,
     };
-    console.log('POST PULL',body)
-    const rx = await this.api.post(cmd, body); // axios → Promise
-    return rx?.data; // IResModel { status, data, ... }
+    const rx = await this.api.post(cmd, body);
+    const res = rx?.data;
+    if (res?.status !== 1) {
+      console.warn('showcase', cmd, res?.message || res);
+    }
+    return res;
   }
 
   private unwrap(raw: any): string {
@@ -154,12 +190,12 @@ export class KioskShowcaseService {
   /** hash match — reuse Ionic Storage / video cache only */
   private async bindLocalMedia(): Promise<void> {
     if (!this.api.imageList) this.api.imageList = {};
-    for (const s of Object.values(this.map)) {
+    for (const s of Object.values(this.byImage).length ? Object.values(this.byImage) : Object.values(this.map)) {
       if (s.video && !this.videoPlay[s.video]) {
         try {
           const path = await this.videos.getLocalPath?.(downloadFileUrl(s.video));
           if (path) this.videoPlay[s.video] = this.videos.getPlayableUrl(path);
-        } catch { }
+        } catch {}
       }
       for (const h of s.photos || []) {
         if (this.api.imageList[h + '@1024']?.startsWith?.('data:')) continue;
@@ -171,7 +207,7 @@ export class KioskShowcaseService {
             this.api.imageList[h] = v;
             this.api.imageList[h + '@1024'] = v;
           }
-        } catch { }
+        } catch {}
       }
     }
   }
@@ -183,7 +219,7 @@ export class KioskShowcaseService {
       try {
         const path = await this.videos.downloadIfNotExist(downloadFileUrl(s.video));
         if (path) this.videoPlay[s.video] = this.videos.getPlayableUrl(path);
-      } catch { }
+      } catch {}
     }
     for (const h of s.photos || []) {
       if (!h) continue;
@@ -199,38 +235,7 @@ export class KioskShowcaseService {
           this.api.imageList[h] = v;
           this.api.imageList[h + '@1024'] = v;
         }
-      } catch { }
+      } catch {}
     }
-  }
-
-  getBySale(sl: any) {
-    const ids = [sl?.stock?.id, sl?.stockId, sl?.id].map(Number).filter(n => n > 0);
-    for (const id of ids) if (this.map[id]) return this.map[id];
-    return null;
-  }
-
-  videoSrc(hash: string) {
-    if (!hash) return '';
-    return this.videoPlay[hash] || downloadFileUrl(hash);
-  }
-
-  async ensure(sl: any) {
-    const id = Number(sl?.stock?.id || sl?.stockId || sl?.id);
-    if (!id) return this.getBySale(sl);
-    if (!this.map[id]) await this.hydrate();
-    try {
-      const rx: any = await this.post('productShowcasePull', { stockIds: [id] });
-      const row = (rx?.data || [])[0];
-      if (row?.stockId) {
-        const sid = Number(row.stockId);
-        if (!this.map[sid] || this.map[sid].hashP !== row.hashP) {
-          this.map[sid] = row;
-          await this.cacheMedia(row);
-          await this.persist();
-        }
-      }
-    } catch (e) { console.warn('showcase ensure', e); }
-    await this.bindLocalMedia();
-    return this.map[id] || this.getBySale(sl);
   }
 }
