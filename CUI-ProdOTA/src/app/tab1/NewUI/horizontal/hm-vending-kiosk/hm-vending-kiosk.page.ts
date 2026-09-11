@@ -198,9 +198,11 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   get filteredSaleList(): IVendingMachineSale[] {
-    return this.asSaleList(this.saleList).filter(
-      (sl) => Number(sl?.stock?.qtty) - this.checkCartCount(sl.position) > 0,
-    );
+    return this.asSaleList(this.saleList);
+  }
+
+  soldOut(sl: any): boolean {
+    return Number(sl?.stock?.qtty) - this.checkCartCount(sl.position) <= 0;
   }
 
   trackByPosition(_i: number, sl: IVendingMachineSale) {
@@ -212,6 +214,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   addOrder(sl: IVendingMachineSale): void {
+    if (this.soldOut(sl)) return;
     this.bumpActivity();
     if (!sl?.stock || sl.stock.price == 0) return;
     if (this.checkCartCount(sl.position) >= sl.stock.qtty) return;
@@ -271,75 +274,109 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     } catch { }
   }
 
-
+  private machineToken(): string {
+  const mid: any = this.machineId || this.apiService.machineId;
+  return CryptoJS
+    .SHA256(String(mid?.machineId || localStorage.getItem('machineId') || '') +
+            String(mid?.otp || localStorage.getItem('otp') || ''))
+    .toString(CryptoJS.enc.Hex);
+}
   /** localStorage per machine — not a global key */
 
   saleHashKey(): string {
-    const id = this.machineId?.machineId || localStorage.getItem('machineId') || '';
-    const otp = this.machineId?.otp || localStorage.getItem('otp') || '';
-    return 'saleListHashP_' + id + '_' + otp;
+  return 'saleListHashP';
+}
+
+private machineAuthBody(extra: any = {}): any {
+  const mid: any = this.machineId || this.apiService.machineId;
+  const machineId = mid?.machineId || mid || localStorage.getItem('machineId');
+  const otp = mid?.otp || localStorage.getItem('otp') || '';
+  const token = CryptoJS.SHA256(String(machineId) + otp).toString(CryptoJS.enc.Hex);
+  return { token, ...extra };
+}
+
+private saleRows(rx: any): any[] {
+  const d = rx?.data?.data ?? rx?.data ?? rx;
+  return Array.isArray(d) ? d : [];
+}
+
+private async fetchSaleRows(): Promise<any[]> {
+  try {
+    const rx: any = await this.apiService.loadVendingSale('yes');
+    return this.saleRows(rx);
+  } catch (e) {
+    console.warn('machineSaleList', e);
+    return [];
+  }
+}
+
+async pullSaleIfChanged(): Promise<void> {
+  const storedId = String(localStorage.getItem('machineId') || '');
+  if (storedId && this.machineId) this.machineId.machineId = storedId as any;
+  const mid = String(this.machineId?.machineId || storedId || '');
+
+  let remote = '';
+  try {
+    const hx: any = await this.apiService.post('machineSaleListHash', {
+  command: 'list',
+  token: this.machineToken(),
+  time: new Date().toString(),
+  data: { clientId: this.apiService.clientId?.clientId },
+});
+    remote = String(this.saleRows(hx)[0]?.hashP || '');
+  } catch (e) {
+    console.warn('machineSaleListHash', e);
   }
 
-  async pullSaleIfChanged(): Promise<void> {
-    const key = this.saleHashKey();
-    const localHash = localStorage.getItem(key) || '';
-    try {
-      const hx: any = await this.apiService.post('machineSaleListHash', {
-        hashP: localHash,
-        data: { hashP: localHash },
-      });
-      const row = (hx?.data?.data || hx?.data || [])[0] || {};
-      const remote = String(row.hashP || '');
-      if (row.match && remote && remote === localHash) {
-        console.log('saleList hash match', key);
-        return;
-      }
-      const rx: any = await this.apiService.loadVendingSale('yes');
-      const server = rx?.data?.data || rx?.data || [];
-      if (!Array.isArray(server)) return;
-      this.mergeSaleCatalog(server);
-      if (remote) localStorage.setItem(key, remote);
-    } catch (e) {
-      console.warn('pullSaleIfChanged', e);
-    }
+  const fingerprint = remote + mid;
+  const localFp = localStorage.getItem(this.saleHashKey()) || '';
+  const same = !!remote && localFp === fingerprint;
+  const haveRows = this.asSaleList(this.saleList).some((s) => s?.stock);
+
+  console.log('sale checksum', { mid, remote: remote.slice(0, 8), same, haveRows });
+
+  if (same && haveRows) return;
+
+  await this.wipeLocalSale();
+
+  const server = await this.fetchSaleRows();
+  console.log('sale rows from server', server.length, mid);
+  if (!server.length) return;
+
+  await this.replaceSaleCatalog(server);
+  if (remote) localStorage.setItem(this.saleHashKey(), fingerprint);
+  localStorage.setItem('saleListMachineId', mid);
+}
+
+private async wipeLocalSale(_oldId?: string): Promise<void> {
+  this.saleList = [];
+  this.orders = [];
+  this.getTotalSale = { q: 0, t: 0 };
+  try { this.recalcTotals(); } catch {}
+  try { this.localSave(); } catch {}
+  try { await this.storage.remove('saleStock', 'stock'); } catch {}
+  try { await this.storage.remove('saleStock'); } catch {}
+  try { localStorage.removeItem('saleListHashP'); } catch {}
+  try { localStorage.removeItem('saleListMachineId'); } catch {}
+  this.ref.detectChanges();
+}
+
+async replaceSaleCatalog(server: any[]): Promise<void> {
+  await this.commitSale((server || []).map((s) => JSON.parse(JSON.stringify(s))));
+}
+
+private async commitSale(list: any[]): Promise<void> {
+  const next = list.sort((a, b) => Number(a.position) - Number(b.position));
+  this.saleList = next;
+  this.syncVendingOnSale(next);
+  try {
+    await this.storage.set('saleStock', next, 'stock');
+  } catch {
+    await this.storage.set('saleStock', next);
   }
-
-  mergeSaleCatalog(server: any[]): void {
-    const local = this.asSaleList(this.saleList);
-    const byPos = new Map<number, any>();
-    for (const sl of local) byPos.set(Number(sl.position), sl);
-
-    for (const s of server) {
-      const pos = Number(s.position);
-      const cur = byPos.get(pos);
-      if (!cur) {
-        const add = JSON.parse(JSON.stringify(s));
-        if (add.stock) add.stock.qtty = Number(add.stock.qtty || 0);
-        byPos.set(pos, add);
-        continue;
-      }
-      const qtty = Number(cur.stock?.qtty || 0);
-      cur.stock = { ...(s.stock || cur.stock), qtty };
-      cur.max = s.max != null ? s.max : cur.max;
-      cur.isActive = s.isActive;
-      cur.machineId = s.machineId || cur.machineId;
-      cur.id = s.id || cur.id;
-      cur.uuid = s.uuid || cur.uuid;
-    }
-
-    const next = Array.from(byPos.values()).sort(
-      (a, b) => Number(a.position) - Number(b.position),
-    );
-    this.saleList = next;
-    this.syncVendingOnSale(next);
-    try {
-      this.storage.set('saleStock', next, 'stock');
-    } catch { }
-    this.loadPhotos();
-    this.ref.detectChanges();
-  }
-
-
+  this.loadPhotos();
+  this.ref.detectChanges();
+}
 
 
   localLoad(): { orders: IVendingMachineSale[]; sum: { q: number; t: number } } {
