@@ -13,16 +13,20 @@
       controlslist="nofullscreen nodownload noremoteplayback"></video>
   </div>
   <div class="ads-banner__slot">
-    <div class="ads-banner__images" *ngIf="bannerItems.length; else slotContent">
+    <div
+      class="ads-banner__images"
+      [class.is-animating]="bannerAnimating"
+      *ngIf="bannerItems.length; else slotContent">
       <img
         *ngIf="bannerPrevSrc"
-        class="ads-banner__img ads-banner__img--prev"
+        class="ads-banner__img ads-banner__img--leave"
         [src]="bannerPrevSrc"
         alt=""
       />
       <img
         class="ads-banner__img"
-        [class.ads-banner__img--in]="bannerFade"
+        [class.ads-banner__img--enter]="bannerAnimating"
+        [class.ads-banner__img--idle]="!bannerAnimating"
         [src]="bannerSrc"
         alt="banner"
         (error)="onBannerError()"

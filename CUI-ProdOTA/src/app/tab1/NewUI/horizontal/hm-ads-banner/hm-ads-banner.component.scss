@@ -70,32 +70,46 @@
   object-fit: cover;
   object-position: center;
   display: block;
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 0.55s ease, transform 0.55s ease;
   pointer-events: none;
   background: #0d1014;
+  will-change: transform, opacity;
 }
 
-.ads-banner__img--prev {
-  opacity: 0;
-  transform: translateX(-8%);
-  z-index: 1;
-}
-
-.ads-banner__img--in {
-  animation: banner-slide-in 0.55s ease both;
+.ads-banner__img--idle {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
   z-index: 2;
 }
 
-@keyframes banner-slide-in {
+.ads-banner__img--enter {
+  z-index: 3;
+  animation: banner-soft-enter 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.ads-banner__img--leave {
+  z-index: 2;
+  animation: banner-soft-leave 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes banner-soft-enter {
   from {
-    opacity: 0.35;
-    transform: translateX(10%);
+    opacity: 0;
+    transform: translate3d(6%, 0, 0) scale(1.02);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes banner-soft-leave {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(-5%, 0, 0) scale(1.01);
   }
 }
 
@@ -104,7 +118,7 @@
   left: 0;
   right: 0;
   bottom: 10px;
-  z-index: 3;
+  z-index: 4;
   display: flex;
   justify-content: center;
   gap: 6px;
@@ -116,6 +130,7 @@
   height: 7px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.35);
+  transition: background 0.45s ease, transform 0.45s ease;
 }
 
 .ads-banner__dot.is-on {

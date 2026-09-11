@@ -4,7 +4,8 @@ import { VideoCacheService } from 'src/app/video-cache.service';
 import { ApiService } from 'src/app/services/api.service';
 import { downloadFileUrl, downloadPhotoUrl } from 'src/app/filemanager-url';
 
-const BANNER_HOLD_MS = 6000;
+const BANNER_HOLD_MS = 6500;
+const BANNER_ANIM_MS = 1200;
 
 @Component({
   selector: 'app-hm-ads-banner',
@@ -25,7 +26,7 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
   bannerIndex = 0;
   bannerSrc = '';
   bannerPrevSrc = '';
-  bannerFade = false;
+  bannerAnimating = false;
 
   private playToken = 0;
   private activePlayable: string | null = null;
@@ -156,7 +157,7 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     this.bannerItems = next;
     this.bannerIndex = 0;
     this.bannerPrevSrc = '';
-    this.bannerFade = false;
+    this.bannerAnimating = false;
     if (!this.bannerItems.length) {
       this.bannerSrc = '';
       this.stopBannerTimer();
@@ -191,17 +192,25 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
   }
 
   private advanceBanner(): void {
-    if (!this.bannerItems.length) return;
-    this.bannerIndex = (this.bannerIndex + 1) % this.bannerItems.length;
-    const nextSrc = this.resolveBannerSrc(this.bannerItems[this.bannerIndex]);
-    this.bannerPrevSrc = this.bannerSrc;
-    this.bannerFade = false;
-    // Force reflow then fade in next image.
-    requestAnimationFrame(() => {
-      this.bannerSrc = nextSrc;
-      this.bannerFade = true;
+    if (!this.bannerItems.length || this.bannerAnimating) return;
+    const nextIndex = (this.bannerIndex + 1) % this.bannerItems.length;
+    const nextSrc = this.resolveBannerSrc(this.bannerItems[nextIndex]);
+    if (!nextSrc || nextSrc === this.bannerSrc) {
+      this.bannerIndex = nextIndex;
       this.scheduleBannerAdvance();
-    });
+      return;
+    }
+
+    this.bannerAnimating = true;
+    this.bannerPrevSrc = this.bannerSrc;
+    this.bannerSrc = nextSrc;
+    this.bannerIndex = nextIndex;
+
+    this.bannerTimer = setTimeout(() => {
+      this.bannerPrevSrc = '';
+      this.bannerAnimating = false;
+      this.scheduleBannerAdvance();
+    }, BANNER_ANIM_MS);
   }
 
   private stopBannerTimer(): void {
