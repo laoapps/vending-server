@@ -23,4 +23,7 @@ export class FilemanagerApiService {
   cancelWriteFile(data: any): Observable<any>{
     return this.http.post(environment.filemanagerurl + `del`, data, { headers: this.setHeader });
   }
+  deleteFile(id: number) {
+  return this.http.post(environment.filemanagerurl + 'del/' + id, {}, { headers: this.setHeader });
+}
 }

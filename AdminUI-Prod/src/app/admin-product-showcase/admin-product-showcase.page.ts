@@ -1,26 +1,63 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from 'src/app/services/api.service';
+import { CachingService } from 'src/app/services/caching.service';
+import { FilemanagerApiService } from 'src/app/services/filemanager-api.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-admin-product-showcase',
-  // standalone: true,
-  // imports: [CommonModule, FormsModule, IonicModule],
   templateUrl: './admin-product-showcase.page.html',
   styleUrls: ['./admin-product-showcase.page.scss'],
 })
 export class AdminProductShowcasePage implements OnInit {
+  @ViewChild('rt') rt?: ElementRef<HTMLDivElement>;
+
   stocks: any[] = [];
+  gallery: any[] = [];
   selected: any = null;
+  q = '';
   form: any = this.empty();
   saving = false;
+  uploading = false;
+  loadError = '';
+  hmLogo = 'assets/icon/logo.png';
+  thumbs: Record<string, string> = {};
+  /** hash → filemanager record for del */
+  fileMeta: Record<string, { id?: number; uuid?: string; url: string }> = {};
+  filemanagerURL =
+    ((localStorage.getItem('filemanagerurl') || (environment as any).filemanagerurl || '') as string)
+      .replace(/\/?$/, '/') + 'download/';
 
-  constructor(public api: ApiService) {}
+  constructor(
+    public api: ApiService,
+    private photos: CachingService,
+    private fm: FilemanagerApiService,
+    private ref: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadStocks();
+    this.loadGallery();
+  }
+
+  get filtered(): any[] {
+    const q = (this.q || '').trim().toLowerCase();
+    if (!q) return this.stocks;
+    return this.stocks.filter((s) => {
+      const name = String(s?.name || '').toLowerCase();
+      const id = String(s?.id ?? '');
+      return name.includes(q) || id.includes(q);
+    });
   }
 
   empty() {
@@ -38,13 +75,88 @@ export class AdminProductShowcasePage implements OnInit {
     };
   }
 
-  async loadStocks() {
+  private authBody() {
+    return {
+      token: localStorage.getItem('lva_token'),
+      shopPhonenumber: localStorage.getItem('phoneNumberLocal'),
+      secret: localStorage.getItem('secretLocal'),
+    };
+  }
+
+  private uid(): string {
+    return (crypto as any).randomUUID?.() || ('u' + Date.now() + Math.random().toString(16).slice(2));
+  }
+
+  photoSrc(hash: string): string {
+    if (!hash) return this.hmLogo;
+    if (hash.startsWith('data:') || hash.startsWith('blob:')) return hash;
+    return this.thumbs[hash] || this.hmLogo;
+  }
+
+  onPhotoError(ev: Event): void {
+    const img = ev.target as HTMLImageElement;
+    if (img) img.src = this.hmLogo;
+  }
+
+  loadStocks() {
+    this.loadError = '';
+    this.api.listProduct('yes').subscribe({
+      next: (r: any) => {
+        if (r?.status !== 1) {
+          this.stocks = [];
+          this.loadError = r?.message || 'loadListFail';
+          return;
+        }
+        this.stocks = r.data || [];
+        this.hydrateThumbs(this.stocks.map((s) => ({ hash: s.image, date: s.updatedAt })));
+      },
+      error: (e) => {
+        this.stocks = [];
+        this.loadError = e?.message || 'listProduct failed';
+      },
+    });
+  }
+
+  loadGallery() {
+    this.api.listProductImages('all').subscribe({
+      next: (r: any) => {
+        this.gallery = r?.status === 1 ? r.data || [] : [];
+        this.hydrateThumbs(this.gallery.map((g) => ({ hash: g.imageURL || g.image, date: g.updatedAt })));
+      },
+      error: () => (this.gallery = []),
+    });
+  }
+
+  private async hydrateThumbs(items: { hash: string; date?: string | Date }[]) {
+    for (const it of items) {
+      const hash = it.hash;
+      if (!hash || this.thumbs[hash]) continue;
+      const url = this.filemanagerURL + hash;
+      try {
+        const stored = await this.photos.getPhoto(url + hash);
+        const hit = this.unwrap(stored);
+        if (hit) {
+          this.thumbs[hash] = hit;
+          continue;
+        }
+        const raw = await this.photos.saveCachingPhoto(url, new Date(it.date || 0), hash);
+        const v = this.unwrap(raw);
+        if (v) this.thumbs[hash] = v;
+      } catch {}
+    }
+    this.thumbs = { ...this.thumbs };
+    this.ref.detectChanges();
+  }
+
+  private unwrap(raw: any): string {
     try {
-      const rx: any = await this.api.http.post(this.api.url + 'listStock', {}).toPromise?.()
-        || await (this.api as any).listStock?.();
-      this.stocks = rx?.data || rx || [];
+      const y = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      let v = y?.v || y;
+      if (typeof v !== 'string') return '';
+      if (v.startsWith('data:application/octet-stream')) v = 'data:image/jpeg;base64,' + v.split(',')[1];
+      return v.startsWith('data:') ? v : '';
     } catch {
-      this.stocks = [];
+      return typeof raw === 'string' && raw.startsWith('data:') ? raw : '';
     }
   }
 
@@ -53,33 +165,157 @@ export class AdminProductShowcasePage implements OnInit {
     this.form = this.empty();
     this.form.stockId = st.id;
     this.form.title = st.name;
-    this.form.price = st.price;
+    this.form.price = Number(st.price) || 0;
+    this.form.photos = st.image ? [st.image] : [];
     this.loadOne(st.id);
   }
 
-  async loadOne(stockId: number) {
-    try {
-      const rx: any =  this.api.post('productShowcaseList',{ stockId });
-      const row = (rx?.data || [])[0];
-      if (row) this.form = { ...this.empty(), ...row, photos: row.photos || [] };
-    } catch {}
+  loadOne(stockId: number) {
+    this.api.http
+      .post<any>(
+        this.api.url + '/productShowcaseList?stockId=' + stockId,
+        this.authBody(),
+        { headers: (this.api as any).headerBase() },
+      )
+      .subscribe({
+        next: (r) => {
+          const row = (r?.data || [])[0];
+          if (row) {
+            this.form = {
+              ...this.empty(),
+              ...row,
+              photos: row.photos?.length ? row.photos : this.form.photos,
+            };
+            this.hydrateThumbs((this.form.photos || []).map((h: string) => ({ hash: h, date: row.updatedAt })));
+          }
+          setTimeout(() => {
+            if (this.rt) this.rt.nativeElement.innerHTML = this.form.html || '';
+          });
+        },
+      });
   }
 
-  async save() {
+  save() {
     if (!this.form.stockId) return;
+    this.syncHtml();
     this.saving = true;
+    this.api.http
+      .post<any>(
+        this.api.url + '/productShowcaseSave',
+        { ...this.authBody(), data: this.form },
+        { headers: (this.api as any).headerBase() },
+      )
+      .subscribe({
+        next: () => (this.saving = false),
+        error: () => (this.saving = false),
+      });
+  }
+
+  /* ===== filemanager upload / delete ===== */
+
+  onPickFile(ev: Event, kind: 'photo' | 'video') {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (file) this.upload(file, kind);
+  }
+
+  private async upload(file: File, kind: 'photo' | 'video') {
+    this.uploading = true;
+    const fileuuid = this.uid();
+    const formfile = new FormData();
+    formfile.append('docs', file, file.name);
+    formfile.append('uuid', fileuuid);
     try {
-      await this.api.post('productShowcaseSave', { data: this.form });
+      const r: any = await firstValueFrom(this.fm.writeFile(formfile));
+      if (r?.status != 1) {
+        this.fm.cancelWriteFile({ uuid: fileuuid }).subscribe();
+        (this.api as any).simpleMessage?.('writeFileFail');
+        return;
+      }
+      const info = r.data?.[0]?.info || r.data?.[0] || {};
+      const hash = info.fileUrl || info.url;
+      if (!hash) throw new Error('no fileUrl');
+      this.fileMeta[hash] = {
+        id: info.id ?? r.data?.[0]?.id,
+        uuid: fileuuid,
+        url: hash,
+      };
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.thumbs[hash] = reader.result as string;
+        this.thumbs = { ...this.thumbs };
+        this.ref.detectChanges();
+      };
+      reader.readAsDataURL(file);
+      if (kind === 'video') this.form.video = hash;
+      else this.addPhoto(hash);
+    } catch {
+      this.fm.cancelWriteFile({ uuid: fileuuid }).subscribe();
     } finally {
-      this.saving = false;
+      this.uploading = false;
+      this.ref.detectChanges();
     }
   }
 
   addPhoto(hash: string) {
-    if (hash) this.form.photos = [...(this.form.photos || []), hash];
+    hash = (hash || '').trim();
+    if (!hash) return;
+    if (!this.form.photos.includes(hash)) this.form.photos = [...this.form.photos, hash];
+    this.hydrateThumbs([{ hash }]);
   }
 
-  removePhoto(i: number) {
+  addFromGallery(g: any) {
+    const hash = g?.imageURL || g?.image;
+    this.addPhoto(hash);
+    if (hash) {
+      this.fileMeta[hash] = {
+        id: g.id,
+        uuid: g.uuid,
+        url: hash,
+      };
+    }
+  }
+
+  private delFile(hash: string) {
+    const meta = this.fileMeta[hash];
+    const id = Number(meta?.id);
+    if (!id) {
+      (this.api as any).simpleMessage?.('File id missing — cannot del');
+      return;
+    }
+    this.fm.deleteFile(id).subscribe();
+    delete this.fileMeta[hash];
+    delete this.thumbs[hash];
+  }
+
+  deletePhoto(i: number) {
+    const hash = this.form.photos[i];
+    if (!hash) return;
+    if (!confirm('Delete this photo from filemanager?')) return;
+    this.delFile(hash);
     this.form.photos = this.form.photos.filter((_, x) => x !== i);
+  }
+
+  deleteVideo() {
+    if (!this.form.video) return;
+    if (!confirm('Delete this video from filemanager?')) return;
+    this.delFile(this.form.video);
+    this.form.video = '';
+  }
+
+  /* ===== rich text (no extra npm) ===== */
+
+  fmt(cmd: string, val?: string) {
+    document.execCommand(cmd, false, val);
+    this.syncHtml();
+  }
+
+  onHtmlInput() {
+    this.syncHtml();
+  }
+
+  private syncHtml() {
+    this.form.html = this.rt?.nativeElement?.innerHTML || this.form.html || '';
   }
 }
