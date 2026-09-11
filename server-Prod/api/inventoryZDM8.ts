@@ -1417,7 +1417,7 @@ export class InventoryZDM8 implements IBaseClass {
                         const row = await sEnt.findOne({ where: { stockId: p.id } });
                         // res.send(PrintSucceeded('productShowcaseByImage 2' + `${JSON.stringify(row)} ${JSON.stringify(p)} ${EEntity.product + '_' + ownerUuid} ${image}`, row ? [row] : [], EMessage.succeeded, returnLog(req, res)));
                         res.send(PrintSucceeded(
-                            `ByImage owner=${ownerUuid} p.id=${p?.id} image=${image} row.id=${row?.id}`,
+                            `ByImage machine ID ${ machineId.machineId} owner=${ownerUuid} p.id=${p?.id} image=${image} row.id=${row?.id}`,
                             row ? [row] : [],
                             EMessage.succeeded,
                             returnLog(req, res),
