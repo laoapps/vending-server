@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import CryptoJS from 'crypto-js';
 import { Toast } from '@capacitor/toast';
 import { ApiService } from 'src/app/services/api.service';
-import { EMACHINE_COMMAND, IBillProcess, IMachineId, IVendingMachineSale } from 'src/app/services/syste.model';
+import { EMACHINE_COMMAND, IBillProcess, IMachineId, ISerialService, IVendingMachineSale } from 'src/app/services/syste.model';
 import { IonicStorageService } from 'src/app/ionic-storage.service';
 import { BlockchainDbService } from 'src/app/blockchain-db';
 import { CachingService } from 'src/app/services/caching.service';
@@ -26,6 +26,7 @@ import { HmAttractComponent } from '../hm-attract/hm-attract.component';
 import { KioskShowcaseService } from '../../../../kiosk-showcase.service';
 import { AppcachingserviceService } from '../../../../services/appcachingservice.service';
 import { VideoCacheService } from '../../../../video-cache.service';
+import { VendingIndexServiceService } from 'src/app/vending-index-service.service';
 @Component({
   selector: 'app-hm-vending-kiosk',
   templateUrl: './hm-vending-kiosk.page.html',
@@ -46,7 +47,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   isShowLaabTabEnabled = false;
   compensation = 0;
   _machineStatus: { status?: { temp?: string | number } } = { status: {} };
-  serial: any = null;
+  serial: ISerialService | null = null;
+  private serialConnecting = false;
   menuOpen = false;
   qrMode = localStorage.getItem('qrMode') ? true : false;
   private numpadModal?: HTMLIonModalElement;
@@ -96,6 +98,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     private showcase: KioskShowcaseService,
     private videoCache: VideoCacheService,
     private router: Router,
+    private vendingIndex: VendingIndexServiceService,
   ) {
     this.machineId = this.apiService.machineId;
     // Sync from localStorage in case Admin/setting changed while on this URL.
@@ -105,7 +108,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (this.apiService.checkoutUiVersion !== 'v3') {
       this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
       return;
@@ -120,7 +123,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.loadPhotos();
     this.showcase.sync().then(() => this.ref.detectChanges());
 
-    this.connect();
+    // Must finish before paid → Remainingbills drop (Tab1.connect is skipped on v3).
+    await this.connect();
     this.apiService.isAds = false;
     try {
       this.idleService?.closeAds?.();
@@ -1010,10 +1014,45 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.ref.detectChanges();
   }
 
+  /**
+   * Open hardware serial for drop (Tab1 is skipped on v3, so kiosk must own this).
+   * Idempotent: reuses apiService.serialPort / vendingIndex.task if already open.
+   */
   async connect(): Promise<void> {
     try {
-      this.serial = this.apiService.serialPort || this.serial;
-    } catch { }
+      if (this.apiService.serialPort) {
+        this.serial = this.apiService.serialPort;
+        return;
+      }
+      if (this.serial) {
+        this.apiService.serialPort = this.serial;
+        return;
+      }
+      if (this.serialConnecting) return;
+      this.serialConnecting = true;
+
+      const serial = await this.vendingIndex.ensureSerialConnected({
+        machineId: this.machineId?.machineId || localStorage.getItem('machineId') || '11111111',
+        otp: this.machineId?.otp || localStorage.getItem('otp') || '111111',
+        existing: this.apiService.serialPort || this.serial,
+        onSerialAction: () => {
+          try {
+            this.apiService.setLastSerialAction();
+          } catch { /* ignore */ }
+        },
+      });
+
+      if (serial) {
+        this.serial = serial;
+        this.apiService.serialPort = serial;
+      } else {
+        console.warn('Kiosk serial not initialized');
+      }
+    } catch (e) {
+      console.error('Kiosk connect error', e);
+    } finally {
+      this.serialConnecting = false;
+    }
   }
 
   async loadPaidBills(): Promise<void> {
@@ -1073,13 +1112,16 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   showBills(): void {
-    this.apiService.loadDeliveryingBillsNew().then((r) => {
+    this.apiService.loadDeliveryingBillsNew().then(async (r) => {
       try {
         if (r.length > 0) {
           this.apiService.pb = r as Array<IBillProcess>;
           if (this.apiService.pb.length) {
             this.apiService.isDropStock = true;
             if (!this.apiService.isRemainingBillsModalOpen) {
+              if (!this.serial) {
+                await this.connect();
+              }
               if (this.serial) {
                 if (localStorage.getItem('device') != 'ZDM8') {
                   const lastClick = this.apiService.checkOverLastSerialAction();

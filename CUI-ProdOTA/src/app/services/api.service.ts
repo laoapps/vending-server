@@ -1014,7 +1014,9 @@ export class ApiService {
       //   });
       //   // this.showModal(RemainingbillsPage, { r });
       // }
-      this.waitingDelivery(r, this.serialPort).then((r) => {
+      // Prefer live host serial (kiosk/Tab1) if serialPort was set after subscribe started.
+      const serial = this.serialPort || (this.myTab1 as any)?.serial || null;
+      this.waitingDelivery(r, serial).then((r) => {
         console.log('waitingDelivery result:', r);
         if (r === EMessage.succeeded) {
           this.toast.create({ message: 'Delivery successful ' + JSON.stringify(r || {}), duration: 2000 }).then((r) => {
@@ -1099,7 +1101,15 @@ export class ApiService {
 
               if (pb.length) {
                 if (!this.isRemainingBillsModalOpen) {
-                  this.showModal(RemainingbillsPage, { r: pb, serial: serial }, false).then((r) => {
+                  let dropSerial = serial || this.serialPort || (this.myTab1 as any)?.serial || null;
+                  // Only kiosk (v3) may lack serialPort — never re-run Tab1.connect() from here.
+                  if (!dropSerial && this.checkoutUiVersion === 'v3' && typeof (this.myTab1 as any)?.connect === 'function') {
+                    try {
+                      await (this.myTab1 as any).connect();
+                    } catch { /* ignore */ }
+                    dropSerial = this.serialPort || (this.myTab1 as any)?.serial || null;
+                  }
+                  this.showModal(RemainingbillsPage, { r: pb, serial: dropSerial }, false).then((r) => {
                     this.isRemainingBillsModalOpen = true;
                     this.IndexedLogDB.addBillProcess({ errorData: `RemainingbillsPage Open In API Service` })
                     r.present();

@@ -191,7 +191,97 @@ export class VendingIndexServiceService {
     });
   }
 
+  /**
+   * Single-flight serial open for hosts that skip Tab1 (e.g. kiosk v3).
+   * Reuses an already-open port; does not replace Tab1's connect()/event handlers.
+   */
+  private ensureConnectInflight: Promise<ISerialService | null> | null = null;
+  private ensureEventsBound = false;
 
+  async ensureSerialConnected(opts: {
+    machineId: string;
+    otp: string;
+    existing?: ISerialService | null;
+    onSerialAction?: () => void;
+  }): Promise<ISerialService | null> {
+    const existing = opts.existing || (this.task as ISerialService | undefined) || null;
+    if (existing) {
+      this.task = existing;
+      this.bindEnsureSerialEvents(existing, opts.onSerialAction);
+      return existing;
+    }
+    if (this.ensureConnectInflight) {
+      return this.ensureConnectInflight;
+    }
 
+    this.ensureConnectInflight = (async () => {
+      const device = localStorage.getItem('device') || 'adh814';
+      const portName = localStorage.getItem('portName') || '/dev/ttyS1';
+      const baudRate = Number(localStorage.getItem('baudRate') || 38400);
+      const isNative = ESerialPortType.Serial;
+      const machineId = opts.machineId || '11111111';
+      const otp = opts.otp || '111111';
+
+      let serial: ISerialService | null = null;
+      try {
+        if (device === 'VMC') {
+          serial = await this.initVMC(portName, baudRate, '', '', isNative);
+        } else if (device === 'ZDM8') {
+          serial = await this.initZDM8(portName, baudRate, machineId, otp, isNative);
+        } else if (device === 'adh814') {
+          serial = await this.initADH814(portName, baudRate, machineId, otp, isNative);
+          // Same one-time board setup as Tab1.startAHD814 (skip if already done).
+          const swapDone = localStorage.getItem('swapAndTwoWireMode') === 'true';
+          if (!swapDone && serial) {
+            try {
+              setTimeout(() => {
+                try {
+                  this.adh814.setSwap();
+                } catch { /* ignore */ }
+              }, 5000);
+              this.adh814.setTwoWires();
+              localStorage.setItem('swapAndTwoWireMode', 'true');
+            } catch { /* ignore */ }
+          }
+        } else {
+          console.warn('ensureSerialConnected: unsupported device', device);
+          return null;
+        }
+      } catch (e) {
+        console.error('ensureSerialConnected failed', e);
+        return null;
+      }
+
+      if (serial) {
+        this.bindEnsureSerialEvents(serial, opts.onSerialAction);
+      }
+      return serial;
+    })();
+
+    try {
+      return await this.ensureConnectInflight;
+    } finally {
+      this.ensureConnectInflight = null;
+    }
+  }
+
+  private bindEnsureSerialEvents(serial: ISerialService, onSerialAction?: () => void) {
+    if (this.ensureEventsBound || !serial?.getSerialEvents || !onSerialAction) return;
+    try {
+      this.ensureEventsBound = true;
+      serial.getSerialEvents().subscribe((event: any) => {
+        try {
+          if (
+            event?.event === 'dataReceived' ||
+            event?.event === 'commandAcknowledged'
+          ) {
+            onSerialAction();
+          }
+        } catch { /* ignore */ }
+      });
+    } catch {
+      this.ensureEventsBound = false;
+    }
+  }
 
 }
