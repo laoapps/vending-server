@@ -35,7 +35,7 @@ export class KioskShowcaseService {
   }
 
   has(sl: any): boolean {
-    const s = this.get(Number(sl?.stock?.id));
+    const s = this.getBySale(sl) || this.get(Number(sl?.stock?.id));
     if (!s) return false;
     return !!(s.html || s.video || (s.photos && s.photos.length));
   }
@@ -108,7 +108,44 @@ export class KioskShowcaseService {
 
   videoSrc(hash: string): string {
     if (!hash) return '';
-    return this.videoPlay[hash] || '';
+    return this.videoPlay[hash] || downloadFileUrl(hash);
+  }
+
+  getBySale(sl: any): IProductShowcase | null {
+    const ids = [sl?.stock?.id, sl?.stockId, sl?.id]
+      .map((x) => Number(x))
+      .filter((n) => n > 0);
+    for (const id of ids) {
+      if (this.map[id]) return this.map[id];
+    }
+    return null;
+  }
+
+  /** Info tap: pull this product if missing, cache video/photos. */
+  async ensure(sl: any): Promise<IProductShowcase | null> {
+    const id = Number(sl?.stock?.id || sl?.stockId || sl?.id);
+    if (!id) return this.getBySale(sl);
+    if (!this.map[id]) await this.hydrate();
+    if (!this.map[id] || this.needsMedia(this.map[id])) {
+      try {
+        const rx: any = await this.post('productShowcasePull', { stockIds: [id] });
+        const row = (rx?.data || [])[0];
+        if (row?.stockId) {
+          this.map[Number(row.stockId)] = row;
+          await this.cacheMedia(row);
+          await this.persist();
+        }
+      } catch {}
+    } else if (this.map[id]?.video && !this.videoPlay[this.map[id].video]) {
+      await this.cacheMedia(this.map[id]);
+    }
+    await this.bindLocalMedia();
+    return this.map[id] || null;
+  }
+
+  private needsMedia(s: IProductShowcase): boolean {
+    if (s.video && !this.videoPlay[s.video]) return true;
+    return false;
   }
 
   private async persist(): Promise<void> {
