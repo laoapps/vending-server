@@ -131,8 +131,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.bindWebsocket();
     this.saleList = ApiService.vendingOnSale || [];
     this.localLoad();
-    await this.loadStock();
-    await this.pullSaleIfChanged();
+    this.loadStock();              // fire, do not await
     this.loadBalance();
     this.loadPhotos();
     this.showcase.sync().then(() => this.ref.detectChanges());
@@ -173,7 +172,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
         this.apiService.wsAlive.time = new Date();
         this.apiService.wsAlive.isAlive = true;
       }
-      this.loadStock().then(() => this.pullSaleIfChanged());
+      this.loadStock();
 
       this.ref.detectChanges();
     });
@@ -498,109 +497,75 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   private machineToken(): string {
-  const mid: any = this.machineId || this.apiService.machineId;
-  return CryptoJS
-    .SHA256(String(mid?.machineId || localStorage.getItem('machineId') || '') +
-            String(mid?.otp || localStorage.getItem('otp') || ''))
-    .toString(CryptoJS.enc.Hex);
-}
+    const mid: any = this.machineId || this.apiService.machineId;
+    return CryptoJS
+      .SHA256(String(mid?.machineId || localStorage.getItem('machineId') || '') +
+        String(mid?.otp || localStorage.getItem('otp') || ''))
+      .toString(CryptoJS.enc.Hex);
+  }
   /** localStorage per machine — not a global key */
-
-  saleHashKey(): string {
-  return 'saleListHashP';
-}
-
-private machineAuthBody(extra: any = {}): any {
-  const mid: any = this.machineId || this.apiService.machineId;
-  const machineId = mid?.machineId || mid || localStorage.getItem('machineId');
-  const otp = mid?.otp || localStorage.getItem('otp') || '';
-  const token = CryptoJS.SHA256(String(machineId) + otp).toString(CryptoJS.enc.Hex);
-  return { token, ...extra };
-}
-
-private saleRows(rx: any): any[] {
-  const d = rx?.data?.data ?? rx?.data ?? rx;
-  return Array.isArray(d) ? d : [];
-}
-
-private async fetchSaleRows(): Promise<any[]> {
-  try {
-    const rx: any = await this.apiService.loadVendingSale('yes');
-    return this.saleRows(rx);
-  } catch (e) {
-    console.warn('machineSaleList', e);
+  private saleRows(rx: any): any[] {
+    const d = rx?.data?.data ?? rx?.data ?? rx;
+    if (Array.isArray(d)) return d;
+    if (Array.isArray(d?.data)) return d.data;
     return [];
   }
-}
 
-async pullSaleIfChanged(): Promise<void> {
-  const storedId = String(localStorage.getItem('machineId') || '');
-  if (storedId && this.machineId) this.machineId.machineId = storedId as any;
-  const mid = String(this.machineId?.machineId || storedId || '');
-
-  let remote = '';
-  try {
-    const hx: any = await this.apiService.post('machineSaleListHash', {
-  command: 'list',
-  token: this.machineToken(),
-  time: new Date().toString(),
-  data: { clientId: this.apiService.clientId?.clientId },
-});
-    remote = String(this.saleRows(hx)[0]?.hashP || '');
-  } catch (e) {
-    console.warn('machineSaleListHash', e);
+  private applySale(rows: any[]): void {
+    const next = JSON.parse(JSON.stringify(rows || [])).sort(
+      (a: any, b: any) => Number(a.position) - Number(b.position),
+    );
+    this.saleList = next;
+    try { this.syncVendingOnSale(next); } catch { }
+    if (next[0]?.position == 0) this.compensation = 1;
+    this.ref.detectChanges();
   }
 
-  const fingerprint = remote + mid;
-  const localFp = localStorage.getItem(this.saleHashKey()) || '';
-  const same = !!remote && localFp === fingerprint;
-  const haveRows = this.asSaleList(this.saleList).some((s) => s?.stock);
+  async loadStock(): Promise<void> {
+    try {
+      const s = await this.storage.get('saleStock', 'stock');
+      const raw = s?.v ?? s;
+      const local = Array.isArray(raw) ? raw : Array.isArray(raw?.v) ? raw.v : [];
+      console.log('loadStock local', local.length);
 
-  console.log('sale checksum', { mid, remote: remote.slice(0, 8), same, haveRows });
+      if (local.length) {
+        this.applySale(JSON.parse(JSON.stringify(local)));
+        this.loadPhotos();
+        return;
+      }
+      console.log('salelist',this.saleList,'s',s)
+      if (this.saleList?.length) {
+        this.loadPhotos();
+        return;
+      }
 
-  if (same && haveRows) return;
-
-  await this.wipeLocalSale();
-
-  const server = await this.fetchSaleRows();
-  console.log('sale rows from server', server.length, mid);
-  if (!server.length) return;
-
-  await this.replaceSaleCatalog(server);
-  if (remote) localStorage.setItem(this.saleHashKey(), fingerprint);
-  localStorage.setItem('saleListMachineId', mid);
-}
-
-private async wipeLocalSale(_oldId?: string): Promise<void> {
-  this.saleList = [];
-  this.orders = [];
-  this.getTotalSale = { q: 0, t: 0 };
-  try { this.recalcTotals(); } catch {}
-  try { this.localSave(); } catch {}
-  try { await this.storage.remove('saleStock', 'stock'); } catch {}
-  try { await this.storage.remove('saleStock'); } catch {}
-  try { localStorage.removeItem('saleListHashP'); } catch {}
-  try { localStorage.removeItem('saleListMachineId'); } catch {}
-  this.ref.detectChanges();
-}
-
-async replaceSaleCatalog(server: any[]): Promise<void> {
-  await this.commitSale((server || []).map((s) => JSON.parse(JSON.stringify(s))));
-}
-
-private async commitSale(list: any[]): Promise<void> {
-  const next = list.sort((a, b) => Number(a.position) - Number(b.position));
-  this.saleList = next;
-  this.syncVendingOnSale(next);
-  try {
-    await this.storage.set('saleStock', next, 'stock');
-  } catch {
-    await this.storage.set('saleStock', next);
+      const rx: any = await Promise.race([
+        this.apiService.recoverSale(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('recover timeout')), 8000)),
+      ]);
+      const r = rx?.data ?? rx;
+      const rows = this.saleRows(r);
+      if (r?.status && rows.length) {
+        this.applySale(rows);
+        await this.storage.set('saleStock', rows, 'stock');
+      }
+      this.loadPhotos();
+    } catch (e) {
+      console.warn('loadStock', e);
+    } finally {
+      this.ref.detectChanges();
+    }
   }
-  this.loadPhotos();
-  this.ref.detectChanges();
-}
 
+  /** Manual only */
+  async replaceSaleFromServer(): Promise<void> {
+    const rx: any = await this.apiService.loadVendingSale('yes');
+    const rows = this.saleRows(rx);
+    if (!rows.length) return;
+    await this.storage.set('saleStock', rows, 'stock');
+    this.applySale(rows);
+    this.loadPhotos();
+  }
 
   localLoad(): { orders: IVendingMachineSale[]; sum: { q: number; t: number } } {
     try {
@@ -617,38 +582,7 @@ private async commitSale(list: any[]): Promise<void> {
     return { orders: this.orders, sum: this.getTotalSale };
   }
 
-  loadStock(): Promise<void> {
-    return this.storage.get('saleStock', 'stock').then((s) => {
-      try {
-        let raw = s?.v ?? s;
-        if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) {
-          raw = (raw as any).v;
-        }
-        const fallback = ApiService.vendingOnSale || [];
-        const items = JSON.parse(
-          JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback),
-        ) as IVendingMachineSale[];
-        this.saleList = items;
-        this.syncVendingOnSale(items);
-        this.ref.detectChanges();
-      } catch { }
-    });
-  }
-  async loadStockAsync(): Promise<void> {
-    return this.storage.get('saleStock', 'stock').then((s) => {
-      try {
-        let raw = s?.v ?? s;
-        if (raw && !Array.isArray(raw) && Array.isArray((raw as any).v)) raw = (raw as any).v;
-        const fallback = ApiService.vendingOnSale || [];
-        const items = JSON.parse(
-          JSON.stringify(Array.isArray(raw) && raw.length ? raw : fallback),
-        );
-        this.saleList = items;
-        this.syncVendingOnSale(items);
-        this.ref.detectChanges();
-      } catch { }
-    });
-  }
+
 
   /** StocksalePage reads ApiService.vendingOnSale — keep it in sync with kiosk shelf. */
   private syncVendingOnSale(items: IVendingMachineSale[]): void {
@@ -788,7 +722,6 @@ private async commitSale(list: any[]): Promise<void> {
   handleRefresh(ev?: any): void {
     this.localLoad();
     this.loadStock()
-      .then(() => this.pullSaleIfChanged())
       .then(() => {
         this.loadBalance();
         this.loadPhotos();
