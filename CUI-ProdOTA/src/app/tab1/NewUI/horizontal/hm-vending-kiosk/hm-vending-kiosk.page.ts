@@ -19,6 +19,7 @@ import { StocksalePage } from 'src/app/stocksale/stocksale.page';
 import { QrOpenStockPage } from 'src/app/qr-open-stock/qr-open-stock.page';
 import { RemainingbillsPage } from 'src/app/remainingbills/remainingbills.page';
 import { BillNotDropPage } from 'src/app/bill-not-drop/bill-not-drop.page';
+import { CloseStytemPage } from 'src/app/close-stytem/close-stytem.page';
 import { NumpadModalComponent } from 'src/app/components/numpad-modal/numpad-modal.component';
 import { environment } from 'src/environments/environment';
 import { downloadPhotoUrl } from '../../../../filemanager-url';
@@ -84,6 +85,19 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   private waitSub: Subscription | null = null;
   lastUpdate = Date.now();
 
+  /** Parity with Tab1 aliveSubscription state (remote admin settings). */
+  readyState = false;
+  selectedDevice = localStorage.getItem('device') || 'adh814';
+  NV9USB = localStorage.getItem('NV9USB') || 'false';
+  allowVending = true;
+  allowCashIn = false;
+  offlineMode: boolean = localStorage.getItem('offlineMode') === 'true';
+  isRobotMuted = localStorage.getItem('isRobotMuted') ? true : false;
+  isMusicMuted = localStorage.getItem('isMusicMuted') ? true : false;
+  musicVolume = localStorage.getItem('musicVolume') ? Number(localStorage.getItem('musicVolume')) : 6;
+  light = { start: 3, end: 2 };
+  tempStatus: { lowTemp: number; highTemp: number } = { lowTemp: 5, highTemp: 10 };
+
   constructor(
     private ref: ChangeDetectorRef,
     public apiService: ApiService,
@@ -123,6 +137,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.loadPhotos();
     this.showcase.sync().then(() => this.ref.detectChanges());
     await this.connect();
+    this.readyState = true;
     this.apiService.isAds = false;
     try { this.idleService?.closeAds?.(); } catch { }
     this.armIdle();
@@ -163,17 +178,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
       this.ref.detectChanges();
     });
 
-    this.aliveSub = this.WSAPIService.aliveSubscription?.subscribe((res: any) => {
-      this.lastUpdate = Date.now();
-      if (this.apiService.wsAlive) {
-        this.apiService.wsAlive.time = new Date();
-        this.apiService.wsAlive.isAlive = true;
-      }
-      const r = res?.data?.setting;
-      if (r?.refresh) this.apiService.reloadPage?.();
-      if (r?.checkoutUiVersion != null && r?.checkoutUiVersion !== '') {
-        this.apiService.applyRemoteCheckoutUiVersionAndReload(r.checkoutUiVersion);
-      }
+    this.aliveSub = this.WSAPIService.aliveSubscription?.subscribe(async (res: any) => {
+      await this.onAliveFromServer(res);
     });
 
     this.billSub = this.WSAPIService.billProcessSubscription?.subscribe((bill: any) => {
@@ -190,6 +196,223 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     // AppComponent already connected. Do not call reconnect() — that closes loginok.
   }
 
+  /**
+   * Copied from Tab1.aliveSubscription — remote admin / machine settings.
+   * Hardware calls are guarded; NV9 cash enable/disable (Tab1-only methods) skipped.
+   */
+  private async onAliveFromServer(res: any): Promise<void> {
+    try {
+      this.lastUpdate = Date.now();
+      if (this.apiService.wsAlive) {
+        this.apiService.wsAlive.time = new Date();
+        this.apiService.wsAlive.isAlive = true;
+      }
+
+      const r = res?.data?.setting;
+      if (res?.data?.sendWSMode) {
+        localStorage.setItem('sendWSMode', res?.data?.sendWSMode ? 'yes' : 'no');
+      }
+
+      if (r) {
+        try {
+          if (r?.refresh) {
+            Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
+            return this.refresh();
+          }
+          if (r?.exit) {
+            setTimeout(() => {
+              Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
+              this.apiService.exitApp();
+            }, 5000);
+            return;
+          }
+          if (r?.reboot) {
+            setTimeout(() => {
+              Toast.show({ text: 'Refresh ' + r.refresh, duration: 'long' });
+              this.apiService.rebootMachine();
+            }, 5000);
+            return;
+          }
+          if (r?.takeSnapshot) {
+            this.apiService.takeScreenshotAndUpload(`${environment.url}/saveScreenshot`);
+            return;
+          }
+          if (r?.recoverSale) {
+            Toast.show({ text: 'recoverSale ' + r.recoverSale, duration: 'long' });
+            this.storage.set('saleStock', [], 'stock');
+            setTimeout(() => this.refresh(), 1000);
+            return;
+          }
+          if (r?.brightness) {
+            this.setBrightness(r?.brightness);
+          }
+          if (r?.startTestMotor) {
+            localStorage.setItem('startTestMotor', 'true');
+            this.refresh();
+            return;
+          }
+          if (this.apiService.checkProcessTime()) {
+            this.apiService.takeScreenshotAndUpload(`${environment.url}/saveScreenshot`);
+          }
+        } catch (err) {
+          this.apiService.IndexedLogDB.addBillProcess({
+            errorData: `Err refresh or exit app is :${JSON.stringify(err)}`,
+          });
+        }
+      }
+
+      if (r && this.readyState) {
+        if (this.allowVending !== r.allowVending) {
+          this.allowVending = r.allowVending;
+          const currentRoute = await this.apiService.modalCtrl.getTop();
+          if (this.allowVending) {
+            await this.apiService.toast
+              .create({ message: 'Close Tab CloseSystem', duration: 3000 })
+              .then((t) => t.present());
+            if (currentRoute?.component === CloseStytemPage) {
+              currentRoute.dismiss();
+            }
+          } else {
+            if (!currentRoute) {
+              this.apiService
+                .showModal(CloseStytemPage, {}, false, 'full-modal')
+                .then((modal) => modal?.present());
+            }
+            await this.apiService.toast
+              .create({ message: 'Open Tab CloseSystem', duration: 3000 })
+              .then((t) => t.present());
+          }
+        }
+
+        if (this.isMusicMuted != r.isMusicMuted) {
+          this.isMusicMuted = r.isMusicMuted;
+          localStorage.setItem('isMusicMuted', this.isMusicMuted ? 'yes' : '');
+          this.apiService.backgrounSound = this.isMusicMuted;
+          if (this.isMusicMuted) {
+            this.apiService.backGroundMusicElement?.pause?.();
+          } else {
+            this.apiService.playBackGroundMusic();
+          }
+        }
+
+        if (this.offlineMode != r.offlineMode) {
+          this.offlineMode = !!r.offlineMode;
+          localStorage.setItem('offlineMode', this.offlineMode ? 'true' : 'false');
+        }
+
+        if (this.isRobotMuted != r.isRobotMuted) {
+          this.isRobotMuted = r.isRobotMuted;
+          localStorage.setItem('isRobotMuted', this.isRobotMuted ? 'yes' : '');
+          this.apiService.muteSound = this.isRobotMuted;
+          if (!this.isRobotMuted) {
+            this.apiService.audioElement?.pause?.();
+          }
+        }
+
+        if (this.musicVolume != r.musicVolume) {
+          this.musicVolume = r.musicVolume;
+          localStorage.setItem('musicVolume', String(this.musicVolume ?? 6));
+          this.apiService.musicVolume = this.musicVolume;
+        }
+
+        if (r?.checkoutUiVersion != null && r?.checkoutUiVersion !== '') {
+          this.apiService.applyRemoteCheckoutUiVersionAndReload(r.checkoutUiVersion);
+        }
+        if (r?.brightness) {
+          this.setBrightness(r?.brightness || 1);
+        }
+
+        if (this.platform.is('android')) {
+          if (r.versionId && r?.versionId !== '0.0.0') {
+            const updateVersion = localStorage.getItem('updateVersion') ?? environment.versionId;
+            if (updateVersion != r.versionId) {
+              localStorage.setItem('updateVersion', r?.versionId ?? environment.versionId);
+              this.apiService.toast
+                .create({
+                  message: `Update versionId to ${r?.versionId} from version ${updateVersion}`,
+                  duration: 3000,
+                })
+                .then((t) => t.present());
+              this.apiService.IndexedLogDB.addBillProcess({
+                errorData: `Update versionId to ${r?.versionId}`,
+              });
+            }
+          }
+        }
+
+        // Device hardware settings (same as Tab1; errors must not break alive loop)
+        try {
+          if (this.selectedDevice == 'VMC') {
+            if (this.allowCashIn != r.allowCashIn) {
+              this.allowCashIn = r.allowCashIn;
+              this.apiService.allowCashIn = !!this.allowCashIn;
+              if (this.allowCashIn) {
+                await this.vendingIndex.vmc.enableCashIn();
+                Toast.show({ text: 'CashIn enabled', duration: 'long' });
+              } else {
+                await this.vendingIndex.vmc.disableCashIn();
+                Toast.show({ text: 'CashIn disabled', duration: 'long' });
+              }
+            }
+            if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
+              this.tempStatus.lowTemp = r.lowTemp;
+              this.tempStatus.highTemp = r.highTemp;
+              this.vendingIndex.vmc.setTemperature(this.tempStatus.lowTemp, this.tempStatus.highTemp);
+            }
+            // Match Tab1: compare r.start/r.end then assign r.light
+            if (this.light.start !== r.start || this.light.end !== r.end) {
+              this.light = r.light || { start: r.start, end: r.end };
+              this.vendingIndex.vmc.setLights(this.light.start, this.light.end);
+            }
+          }
+
+          if (this.selectedDevice == 'adh814') {
+            if (this.tempStatus.lowTemp !== r.lowTemp || this.tempStatus.highTemp !== r.highTemp) {
+              this.tempStatus.lowTemp = r.lowTemp;
+              this.tempStatus.highTemp = r.highTemp;
+              Toast.show({ text: `Update Tem to ${this.tempStatus.lowTemp}` });
+              await this.vendingIndex.adh814.setTemperature(0x01, this.tempStatus.lowTemp);
+            }
+          }
+
+          // Tab1 calls enableCash/disableCash for NV9 — those methods are Tab1-only.
+          // Persist allowCashIn only so server setting is not lost on kiosk.
+          if (this.NV9USB) {
+            if (this.allowCashIn != r.allowCashIn) {
+              this.allowCashIn = r.allowCashIn;
+              this.apiService.allowCashIn = !!this.allowCashIn;
+            }
+          }
+        } catch (hwErr) {
+          this.apiService.IndexedLogDB.addBillProcess({
+            errorData: `Kiosk alive hardware setting error :${JSON.stringify(hwErr)}`,
+          });
+        }
+      } else if (!r) {
+        // no setting payload
+      }
+    } catch (error) {
+      Toast.show({ text: 'Error alive ' + JSON.stringify(error || '{}'), duration: 'long' });
+    }
+  }
+
+  /** Same as Tab1.refresh — used by alive remote commands. */
+  refresh(): void {
+    this.apiService.reloadPage();
+  }
+
+  /** Same as Tab1.setBrightness (no-op resolve; keeps alive path parity). */
+  setBrightness(level = 1): Promise<string> {
+    return new Promise(async (resolve) => {
+      try {
+        if (level < 0 || level > 1 || level == null || isNaN(level)) level = 1;
+        resolve('success');
+      } catch (error: any) {
+        resolve(error?.message || 'error');
+      }
+    });
+  }
+
   private asSaleList(x: any): IVendingMachineSale[] {
     if (Array.isArray(x)) return x;
     if (Array.isArray(x?.v)) return x.v;
@@ -198,7 +421,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   get filteredSaleList(): IVendingMachineSale[] {
-    return this.asSaleList(this.saleList);
+    return this.asSaleList(this.saleList.filter((sl) => sl.stock.qtty > 0));
   }
 
   soldOut(sl: any): boolean {
