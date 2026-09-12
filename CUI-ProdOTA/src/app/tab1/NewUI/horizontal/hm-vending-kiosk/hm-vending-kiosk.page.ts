@@ -521,41 +521,78 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.ref.detectChanges();
   }
 
-  async loadStock(): Promise<void> {
-    try {
-      const s = await this.storage.get('saleStock', 'stock');
-      const raw = s?.v ?? s;
-      const local = Array.isArray(raw) ? raw : Array.isArray(raw?.v) ? raw.v : [];
-      console.log('loadStock local', local.length);
+  private currentMachineId(): string {
+  return String(
+    this.machineId?.machineId ||
+      this.apiService?.machineId?.machineId ||
+      localStorage.getItem('machineId') ||
+      '',
+  );
+}
 
-      if (local.length) {
-        this.applySale(JSON.parse(JSON.stringify(local)));
-        this.loadPhotos();
-        return;
-      }
-      console.log('salelist',this.saleList,'s',s)
-      if (this.saleList?.length) {
-        this.loadPhotos();
-        return;
-      }
-
-      const rx: any = await Promise.race([
-        this.apiService.recoverSale(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('recover timeout')), 8000)),
-      ]);
-      const r = rx?.data ?? rx;
-      const rows = this.saleRows(r);
-      if (r?.status && rows.length) {
-        this.applySale(rows);
-        await this.storage.set('saleStock', rows, 'stock');
-      }
-      this.loadPhotos();
-    } catch (e) {
-      console.warn('loadStock', e);
-    } finally {
-      this.ref.detectChanges();
-    }
+private async readSaleStock(): Promise<any[]> {
+  try {
+    const s = await this.storage.get('saleStock', 'stock');
+    const raw = s?.v ?? s;
+    const list = Array.isArray(raw) ? raw : Array.isArray(raw?.v) ? raw.v : [];
+    return JSON.parse(JSON.stringify(list));
+  } catch {
+    return [];
   }
+}
+
+private async wipeSaleLocal(): Promise<void> {
+  this.saleList = [];
+  try { this.syncVendingOnSale([]); } catch {}
+  try { await this.storage.remove('saleStock', 'stock'); } catch {}
+  try { await this.storage.remove('saleStock'); } catch {}
+  try { localStorage.removeItem('saleListMachineId'); } catch {}
+}
+  async loadStock(): Promise<void> {
+  try {
+    const mid = String(
+      this.machineId?.machineId ||
+      this.apiService?.machineId?.machineId ||
+      localStorage.getItem('machineId') || '',
+    );
+    const storedMid = localStorage.getItem('saleListMachineId') || '';
+    const local = await this.readSaleStock();
+    const machineChanged = !!storedMid && !!mid && storedMid !== mid;
+
+    console.log('loadStock', { local: local.length, mid, storedMid, machineChanged });
+
+    if (local.length && !machineChanged) {
+      if (!storedMid && mid) localStorage.setItem('saleListMachineId', mid);
+      this.applySale(local);
+      this.loadPhotos();
+      return;
+    }
+
+    if (machineChanged) await this.wipeSaleLocal();
+
+    await this.recoverAndStore();   // recoverSale + save saleStock + stamp mid
+    this.loadPhotos();
+  } catch (e) {
+    console.warn('loadStock', e);
+  } finally {
+    this.ref.detectChanges();
+  }
+}
+private async recoverAndStore(): Promise<void> {
+  const rx: any = await Promise.race([
+    this.apiService.recoverSale(),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('recover timeout')), 8000)),
+  ]);
+  const r = rx?.data ?? rx;
+  const rows = this.saleRows(r);
+  if (r?.status && rows.length) {
+    this.applySale(rows);
+    await this.storage.set('saleStock', rows, 'stock');
+    localStorage.setItem('saleListMachineId', this.currentMachineId());
+  } else {
+    this.saleList = [];
+  }
+}
 
   /** Manual only */
   async replaceSaleFromServer(): Promise<void> {
