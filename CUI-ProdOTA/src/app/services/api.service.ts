@@ -887,6 +887,17 @@ export class ApiService {
     this.wsapi.onBillProcess((r) => {
       if (!r) return console.log('empty');
       console.log('ws process subscription', r);
+
+      // Kiosk v3 (+ remaining-bills drop flow): stock is deducted once in
+      // reconfirmStockAndDrop after serial dispense. Skipping here avoids qtty-- twice.
+      if (
+        this.checkoutUiVersion === 'v3' ||
+        this.isDropStock ||
+        this.isRemainingBillsModalOpen
+      ) {
+        return;
+      }
+
       const message =
         'processing slot ' +
         r.position +

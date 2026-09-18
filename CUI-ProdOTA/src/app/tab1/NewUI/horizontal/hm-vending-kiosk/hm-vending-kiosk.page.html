@@ -67,7 +67,7 @@
 
       <button type="button" class="action-bar__btn" (click)="openTestMotor()" title="Test motors">
         <ion-icon name="thermometer-outline"></ion-icon>
-        <span>{{ _machineStatus?.status?.temp || '—' }}°</span>
+        <span>{{ _machineStatus?.status?.temp ?? '—' }}°</span>
       </button>
 
       <button type="button" class="action-bar__btn" (click)="loadPaidBills()" title="Pending drop">

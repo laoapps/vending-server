@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import CryptoJS from 'crypto-js';
 import { Toast } from '@capacitor/toast';
 import { ApiService } from 'src/app/services/api.service';
-import { EMACHINE_COMMAND, IBillProcess, IMachineId, ISerialService, IVendingMachineSale } from 'src/app/services/syste.model';
+import { EMACHINE_COMMAND, IBillProcess, IMachineId, ISerialService, IVendingMachineSale, machineVMCStatus } from 'src/app/services/syste.model';
 import { IonicStorageService } from 'src/app/ionic-storage.service';
 import { BlockchainDbService } from 'src/app/blockchain-db';
 import { CachingService } from 'src/app/services/caching.service';
@@ -50,6 +50,9 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   _machineStatus: { status?: { temp?: string | number } } = { status: {} };
   serial: ISerialService | null = null;
   private serialConnecting = false;
+  /** Lightweight serial → temp only (parity with Tab1). Does not process drop/credit. */
+  private serialTempSub: Subscription | null = null;
+  private tempEventsBound = false;
   menuOpen = false;
   qrMode = localStorage.getItem('qrMode') ? true : false;
   private numpadModal?: HTMLIonModalElement;
@@ -83,6 +86,16 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   private aliveSub: Subscription | null = null;
   private billSub: Subscription | null = null;
   private waitSub: Subscription | null = null;
+  /** Sync shelf qty when remainingbills deducts stock after dispense. */
+  private readonly onStockDeducted = (item: IVendingMachineSale) => {
+    const pos = item?.position;
+    if (pos == null) return;
+    const qtty = item?.stock?.qtty;
+    const row = this.saleList.find((sl) => sl.position === pos);
+    if (!row?.stock || qtty == null) return;
+    if (row.stock.qtty !== qtty) row.stock.qtty = qtty;
+    this.ref.detectChanges();
+  };
   lastUpdate = Date.now();
 
   /** Parity with Tab1 aliveSubscription state (remote admin settings). */
@@ -155,6 +168,12 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.aliveSub?.unsubscribe();
     this.billSub?.unsubscribe();
     this.waitSub?.unsubscribe();
+    this.serialTempSub?.unsubscribe();
+    this.serialTempSub = null;
+    this.tempEventsBound = false;
+    try {
+      this.apiService.eventEmitter.removeListener('stockdeduct', this.onStockDeducted);
+    } catch { }
   }
 
   /** Subscribe only. AppComponent already owns connect/ping. Do not reconnect if OPEN. */
@@ -191,6 +210,9 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     });
     try {
       this.WSAPIService.onBillProcess?.((data: any) => this.onPaymentConfirmed(data));
+    } catch { }
+    try {
+      this.apiService.eventEmitter.on('stockdeduct', this.onStockDeducted);
     } catch { }
     // AppComponent already connected. Do not call reconnect() — that closes loginok.
   }
@@ -892,7 +914,7 @@ private async recoverAndStore(): Promise<void> {
     this.clearStockAfterLAABGo();
   }
 
-  /** WS command `confirm` / waitingt — deduct stock then empty cart. */
+  /** WS command `confirm` / waitingt — clear cart only; stock deducts on dispense (Tab1 parity). */
   onPaymentConfirmed(bill: any): void {
     if (!this.orders?.length) return;
     const tid = localStorage.getItem('transactionID');
@@ -900,29 +922,9 @@ private async recoverAndStore(): Promise<void> {
     this.clearStockAfterLAABGo();
   }
 
-  deductStockFromOrders(): void {
-    if (!this.orders?.length) return;
-    const next = this.saleList.map((sl) => {
-      const n = this.orders.filter((o) => o.position == sl.position).length;
-      if (!n) return sl;
-      const copy = JSON.parse(JSON.stringify(sl));
-      copy.stock.qtty = Math.max(0, Number(copy.stock.qtty || 0) - n);
-      return copy;
-    });
-    this.saleList = next;
-    this.syncVendingOnSale(next);
-    try {
-      // storage.set already wraps { v, d } — pass the list only
-      this.storage.set('saleStock', next, 'stock');
-    } catch { }
-    this.ref.detectChanges();
-  }
-
-  /** Host API the dock still calls via apiService.myTab1 */
+  /** Host API the dock still calls via apiService.myTab1 — cart only, no stock deduct. */
   clearStockAfterLAABGo(): void {
-    this.deductStockFromOrders();
     this.clearCart();
-    this.ref.detectChanges();
   }
 
   showSetting(): void {
@@ -1313,10 +1315,12 @@ private async recoverAndStore(): Promise<void> {
     try {
       if (this.apiService.serialPort) {
         this.serial = this.apiService.serialPort;
+        this.bindMachineTempListener(this.serial);
         return;
       }
       if (this.serial) {
         this.apiService.serialPort = this.serial;
+        this.bindMachineTempListener(this.serial);
         return;
       }
       if (this.serialConnecting) return;
@@ -1336,6 +1340,7 @@ private async recoverAndStore(): Promise<void> {
       if (serial) {
         this.serial = serial;
         this.apiService.serialPort = serial;
+        this.bindMachineTempListener(serial);
       } else {
         console.warn('Kiosk serial not initialized');
       }
@@ -1344,6 +1349,56 @@ private async recoverAndStore(): Promise<void> {
     } finally {
       this.serialConnecting = false;
     }
+  }
+
+  /**
+   * Read cabinet temp from serial frames only (ADH814 0xA3 / VMC fafb52) — same sources as Tab1.
+   * No sendStatus, drop/credit handling, or fatal exits.
+   */
+  private bindMachineTempListener(serial: ISerialService | null): void {
+    if (!serial?.getSerialEvents || this.tempEventsBound) return;
+    try {
+      this.tempEventsBound = true;
+      this.serialTempSub = serial.getSerialEvents().subscribe((event: any) => {
+        try {
+          if (event?.event !== 'dataReceived' || event?.data == null) return;
+          this.updateTempFromSerial(event.data);
+        } catch { /* ignore */ }
+      });
+    } catch {
+      this.tempEventsBound = false;
+    }
+  }
+
+  private updateTempFromSerial(raw: unknown): void {
+    const hex = String(raw ?? '').replace(/\s/g, '').toLowerCase();
+    if (hex.length < 8) return;
+
+    let temp: string | number | undefined;
+
+    if (hex.startsWith('fafb52')) {
+      try {
+        temp = machineVMCStatus(hex).temperature;
+      } catch {
+        return;
+      }
+    } else {
+      // ADH814 poll status (0xA3) — same byte layout as Tab1.processResponseADH814
+      const command = parseInt(hex.slice(2, 4), 16);
+      if (command !== 0xa3) return;
+      const data = hex.slice(4, -4).match(/.{2}/g) || [];
+      if (data.length !== 9) return;
+      const t = parseInt(data[8], 16);
+      if (Number.isNaN(t)) return;
+      temp = t > 127 ? t - 256 : t;
+    }
+
+    if (temp === undefined || temp === this._machineStatus.status?.temp) return;
+    if (!this._machineStatus.status) this._machineStatus.status = {};
+    this._machineStatus.status.temp = temp;
+    try {
+      this.ref.detectChanges();
+    } catch { /* ignore */ }
   }
 
   async loadPaidBills(): Promise<void> {
