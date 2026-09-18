@@ -1895,6 +1895,9 @@ export class InventoryZDM8 implements IBaseClass {
                         const shopPhone = (req?.body?.data?.shopPhone != null)
                             ? String(req.body.data.shopPhone).trim()
                             : '';
+                        const simNumber = (req?.body?.data?.simNumber != null)
+                            ? String(req.body.data.simNumber).trim()
+                            : '';
                         const latitudeRaw = req?.body?.data?.latitude;
                         const longitudeRaw = req?.body?.data?.longitude;
                         const latitude = (latitudeRaw != null && latitudeRaw !== '' && Number.isFinite(Number(latitudeRaw)))
@@ -1918,11 +1921,12 @@ export class InventoryZDM8 implements IBaseClass {
 
                         let a = r.data.find((v: any) => v?.settingName == 'setting');
                         if (!a) {
-                            a = { settingName: 'setting', location, shopPhone, latitude, longitude };
+                            a = { settingName: 'setting', location, shopPhone, simNumber, latitude, longitude };
                             r.data.push(a);
                         } else {
                             a.location = location;
                             a.shopPhone = shopPhone;
+                            a.simNumber = simNumber;
                             a.latitude = latitude;
                             a.longitude = longitude;
                         }
@@ -1967,7 +1971,7 @@ export class InventoryZDM8 implements IBaseClass {
                                 );
                         });
 
-                        res.send(PrintSucceeded("updateMachineLocationAdmin", { machineId, location, shopPhone, latitude, longitude }, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("updateMachineLocationAdmin", { machineId, location, shopPhone, simNumber, latitude, longitude }, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         console.log("Error updateMachineLocationAdmin", error);
                         res.send(PrintError("updateMachineLocationAdmin", error, EMessage.error, returnLog(req, res, true)));
@@ -5661,6 +5665,9 @@ export class InventoryZDM8 implements IBaseClass {
                                     ? ((longitudeRaw != null && longitudeRaw !== '' && Number.isFinite(Number(longitudeRaw))) ? Number(longitudeRaw) : null)
                                     : (a?.longitude ?? null);
                                 const shopPhone = o.data[0]?.shopPhone || '';
+                                const simNumber = (o.data[0]?.simNumber != null)
+                                    ? String(o.data[0].simNumber).trim()
+                                    : (a?.simNumber || '');
 
 
                                 const imgh = o.data[0]?.imgHeader;
@@ -5675,7 +5682,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, checkoutUiVersion: checkoutUiVersion, adsList: adsList, bannerList: bannerList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode, dropDelay: dropDelay, brightness: brightness, location: location, latitude: latitude, longitude: longitude, shopPhone: shopPhone };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, checkoutUiVersion: checkoutUiVersion, adsList: adsList, bannerList: bannerList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode, dropDelay: dropDelay, brightness: brightness, location: location, latitude: latitude, longitude: longitude, shopPhone: shopPhone, simNumber: simNumber };
                                     r.data.push(a);
                                 }
                                 else {
@@ -5700,6 +5707,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.latitude = latitude;
                                     a.longitude = longitude;
                                     a.shopPhone = shopPhone;
+                                    a.simNumber = simNumber;
                                 }
 
                                 // r.data = [a];

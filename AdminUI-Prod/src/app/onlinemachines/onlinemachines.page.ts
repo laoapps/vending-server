@@ -44,6 +44,7 @@ interface MachineData {
   createdAt?: string;
   location?: string;
   shopPhone?: string;
+  simNumber?: string;
   latitude?: string | number | null;
   longitude?: string | number | null;
   savingLocation?: boolean;
@@ -212,6 +213,9 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         const shopPhone = (d?.shopPhone != null && String(d.shopPhone).trim() !== '')
           ? String(d.shopPhone).trim()
           : '';
+        const simNumber = (d?.simNumber != null && String(d.simNumber).trim() !== '')
+          ? String(d.simNumber).trim()
+          : '';
         const latitude = (d?.latitude != null && d?.latitude !== '' && Number.isFinite(Number(d.latitude)))
           ? Number(d.latitude)
           : '';
@@ -237,6 +241,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           createdAt: machine?.createdAt,
           location,
           shopPhone,
+          simNumber,
           latitude,
           longitude,
         });
@@ -331,6 +336,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
     const location = (machine.location != null) ? String(machine.location).trim() : '';
     const shopPhone = (machine.shopPhone != null) ? String(machine.shopPhone).trim() : '';
+    const simNumber = (machine.simNumber != null) ? String(machine.simNumber).trim() : '';
     const latitudeRaw = machine.latitude;
     const longitudeRaw = machine.longitude;
     const latitude = (latitudeRaw != null && latitudeRaw !== '' && Number.isFinite(Number(latitudeRaw)))
@@ -342,6 +348,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
 
     machine.location = location;
     machine.shopPhone = shopPhone;
+    machine.simNumber = simNumber;
     machine.latitude = latitude ?? '';
     machine.longitude = longitude ?? '';
     machine.savingLocation = true;
@@ -357,6 +364,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
           machineId: machine.machineId,
           location,
           shopPhone,
+          simNumber,
           latitude,
           longitude,
         },
@@ -366,6 +374,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
         if (!machine.settings) machine.settings = {};
         machine.settings.location = location;
         machine.settings.shopPhone = shopPhone;
+        machine.settings.simNumber = simNumber;
         machine.settings.latitude = latitude;
         machine.settings.longitude = longitude;
         this.apiService.alertSuccess('ອັບເດດທີ່ຕັ້ງສຳເຫຼັດ');
