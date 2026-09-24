@@ -65,9 +65,10 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
   /**
    * Attract demo delay after last touch.
-   * 3000 = 3 seconds (demo). 180000 = 3 minutes (production).
+   * Defaults from environment; overridden by Admin machine setting via alive.
    */
   // kiosk
+  allowAttract = true;
   demoStartMs = environment.demoStartMs || 3000;  // attract auto  (demo: 3000) ==>180000
   idleClearMs = environment.idleClearMs || 180000;  // clear checkout ==>180000
   demoItemMs = environment.demoItemMs || 10000;   // each product photo in attract
@@ -342,6 +343,9 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
         if (r?.brightness) {
           this.setBrightness(r?.brightness || 1);
         }
+
+        // Kiosk attract / idle / cart — from Admin machine setting
+        this.applyAttractSettings(r);
 
         if (this.platform.is('android')) {
           if (r.versionId && r?.versionId !== '0.0.0') {
@@ -808,6 +812,7 @@ private async recoverAndStore(): Promise<void> {
   }
 
   startDemoTour(): void {
+    if (!this.allowAttract) return;
     this.clearCart();
     this.openAttractModal();
   }
@@ -816,6 +821,57 @@ private async recoverAndStore(): Promise<void> {
     this.closeAttractModal();
     this.armIdle();
     this.armAttract();
+  }
+
+  /** Apply Admin kiosk attract / idle / cart settings from alive payload. */
+  private applyAttractSettings(r: any): void {
+    if (!r || typeof r !== 'object') return;
+
+    let rearm = false;
+
+    if (Object.prototype.hasOwnProperty.call(r, 'allowAttract')) {
+      const next = !!r.allowAttract;
+      if (this.allowAttract !== next) {
+        this.allowAttract = next;
+        if (!this.allowAttract) {
+          clearTimeout(this.attractArm);
+          this.closeAttractModal();
+        } else {
+          rearm = true;
+        }
+      }
+    }
+
+    const pickMs = (raw: any, cur: number, fallback: number): number => {
+      const n = Number(raw);
+      if (Number.isFinite(n) && n > 0) return Math.floor(n);
+      return cur > 0 ? cur : fallback;
+    };
+
+    if (r.demoStartMs != null) {
+      const next = pickMs(r.demoStartMs, this.demoStartMs, environment.demoStartMs || 180000);
+      if (next !== this.demoStartMs) {
+        this.demoStartMs = next;
+        rearm = true;
+      }
+    }
+    if (r.idleClearMs != null) {
+      const next = pickMs(r.idleClearMs, this.idleClearMs, environment.idleClearMs || 180000);
+      if (next !== this.idleClearMs) {
+        this.idleClearMs = next;
+        this.armIdle();
+      }
+    }
+    if (r.demoItemMs != null) {
+      this.demoItemMs = pickMs(r.demoItemMs, this.demoItemMs, environment.demoItemMs || 10000);
+    }
+    if (r.cartMax != null) {
+      this.cartMax = pickMs(r.cartMax, this.cartMax, environment.cartMax || 10);
+    }
+
+    if (rearm && this.allowAttract) {
+      this.armAttract();
+    }
   }
 
   armIdle(): void {
@@ -828,6 +884,10 @@ private async recoverAndStore(): Promise<void> {
 
   armAttract(): void {
     clearTimeout(this.attractArm);
+    if (!this.allowAttract) {
+      this.closeAttractModal();
+      return;
+    }
     if (this.attractModal) return;
     this.attractArm = setTimeout(() => this.openAttractModal(), this.demoStartMs);
   }
@@ -847,6 +907,8 @@ private async recoverAndStore(): Promise<void> {
 
   async openAttractModal(opts?: { sl?: any; auto?: boolean }): Promise<void> {
     if (this.attractModal) return;
+    // Manual product info (auto:false) always allowed; auto tour respects allowAttract
+    if (opts?.auto !== false && !this.allowAttract) return;
     this.apiService.isAds = false;
     try {
       this.idleService?.closeAds?.();

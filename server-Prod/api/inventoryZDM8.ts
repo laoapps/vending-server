@@ -5669,6 +5669,25 @@ export class InventoryZDM8 implements IBaseClass {
                                     ? String(o.data[0].simNumber).trim()
                                     : (a?.simNumber || '');
 
+                                // Kiosk attract / idle / cart (CUI v3) — preserve when older Admin omits fields
+                                let allowAttract: boolean;
+                                if (Object.prototype.hasOwnProperty.call(o.data[0] || {}, 'allowAttract')) {
+                                    allowAttract = !!o.data[0].allowAttract;
+                                } else {
+                                    allowAttract = a?.allowAttract !== false;
+                                }
+                                const pickMs = (raw: any, prev: any, fallback: number) => {
+                                    const n = Number(raw);
+                                    if (Number.isFinite(n) && n > 0) return Math.floor(n);
+                                    const p = Number(prev);
+                                    if (Number.isFinite(p) && p > 0) return Math.floor(p);
+                                    return fallback;
+                                };
+                                const demoStartMs = pickMs(o.data[0]?.demoStartMs, a?.demoStartMs, 180000);
+                                const idleClearMs = pickMs(o.data[0]?.idleClearMs, a?.idleClearMs, 180000);
+                                const demoItemMs = pickMs(o.data[0]?.demoItemMs, a?.demoItemMs, 10000);
+                                const cartMax = pickMs(o.data[0]?.cartMax, a?.cartMax, 10);
+
 
                                 const imgh = o.data[0]?.imgHeader;
                                 const imgf = o.data[0]?.imgFooter;
@@ -5682,7 +5701,7 @@ export class InventoryZDM8 implements IBaseClass {
                                     throw new Error('Length can not be less than 8 ')
                                 }
                                 if (!a) {
-                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, checkoutUiVersion: checkoutUiVersion, adsList: adsList, bannerList: bannerList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode, dropDelay: dropDelay, brightness: brightness, location: location, latitude: latitude, longitude: longitude, shopPhone: shopPhone, simNumber: simNumber };
+                                    a = { settingName: 'setting', allowVending: x, allowCashIn: y, lowTemp: u, highTemp: z, light: w, limiter: l, imei: t, imgHeader: imgh, imgFooter: imgf, imgLogo: imgl, isAds: isAds, isMusicMuted: isMusicMuted, isRobotMuted: isRobotMuted, musicVolume: musicVolume, checkoutUiVersion: checkoutUiVersion, adsList: adsList, bannerList: bannerList, versionId: versionId, qrPayment: qrPayment, isTopUp: isTopUp, isFranciseMode: isFranciseMode, dropDelay: dropDelay, brightness: brightness, location: location, latitude: latitude, longitude: longitude, shopPhone: shopPhone, simNumber: simNumber, allowAttract: allowAttract, demoStartMs: demoStartMs, idleClearMs: idleClearMs, demoItemMs: demoItemMs, cartMax: cartMax };
                                     r.data.push(a);
                                 }
                                 else {
@@ -5708,6 +5727,11 @@ export class InventoryZDM8 implements IBaseClass {
                                     a.longitude = longitude;
                                     a.shopPhone = shopPhone;
                                     a.simNumber = simNumber;
+                                    a.allowAttract = allowAttract;
+                                    a.demoStartMs = demoStartMs;
+                                    a.idleClearMs = idleClearMs;
+                                    a.demoItemMs = demoItemMs;
+                                    a.cartMax = cartMax;
                                 }
 
                                 // r.data = [a];

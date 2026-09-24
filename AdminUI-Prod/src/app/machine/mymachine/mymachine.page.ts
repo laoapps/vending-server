@@ -185,6 +185,11 @@ export class MymachinePage implements OnInit {
             setting.imgFooter = '';
             setting.imgLogo = '';
           }
+          if (setting.allowAttract == null) setting.allowAttract = true;
+          if (!(Number(setting.demoStartMs) > 0)) setting.demoStartMs = 180000;
+          if (!(Number(setting.idleClearMs) > 0)) setting.idleClearMs = 180000;
+          if (!(Number(setting.demoItemMs) > 0)) setting.demoItemMs = 10000;
+          if (!(Number(setting.cartMax) > 0)) setting.cartMax = 10;
 
           this.settings[v.machineId] = setting;
         })
@@ -228,6 +233,11 @@ export class MymachinePage implements OnInit {
             setting.bannerList = [];
 
             setting.imei = '';
+            setting.allowAttract = true;
+            setting.demoStartMs = 180000;
+            setting.idleClearMs = 180000;
+            setting.demoItemMs = 10000;
+            setting.cartMax = 10;
           }
           if (typeof setting.light == 'boolean') {
             setting.light = { start: 3, end: 2 };
@@ -244,6 +254,11 @@ export class MymachinePage implements OnInit {
           if (setting.checkoutUiVersion === 'kiosk') {
             setting.checkoutUiVersion = 'v3';
           }
+          if (setting.allowAttract == null) setting.allowAttract = true;
+          if (!(Number(setting.demoStartMs) > 0)) setting.demoStartMs = 180000;
+          if (!(Number(setting.idleClearMs) > 0)) setting.idleClearMs = 180000;
+          if (!(Number(setting.demoItemMs) > 0)) setting.demoItemMs = 10000;
+          if (!(Number(setting.cartMax) > 0)) setting.cartMax = 10;
           setting.adsList = setting.adsList?.join(',')
           setting.bannerList = Array.isArray(setting.bannerList)
             ? setting.bannerList.join(',')

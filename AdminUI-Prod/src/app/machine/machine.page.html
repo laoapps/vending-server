@@ -285,6 +285,50 @@
                         <ion-input type="number" [(ngModel)]="settings[p.machineId].dropDelay"></ion-input>
                       </label>
 
+                      <label class="setting-field setting-check">
+                        <span class="field-label">
+                          <ion-icon name="images-outline"></ion-icon>
+                          Allow Attract
+                        </span>
+                        <ion-checkbox [(ngModel)]="settings[p.machineId].allowAttract"></ion-checkbox>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="timer-outline"></ion-icon>
+                          Attract Start (ms)
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].demoStartMs"
+                          placeholder="180000"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="hourglass-outline"></ion-icon>
+                          Idle Clear (ms)
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].idleClearMs"
+                          placeholder="180000"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="albums-outline"></ion-icon>
+                          Attract Item (ms)
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].demoItemMs"
+                          placeholder="10000"></ion-input>
+                      </label>
+
+                      <label class="setting-field">
+                        <span class="field-label">
+                          <ion-icon name="cart-outline"></ion-icon>
+                          Cart Max
+                        </span>
+                        <ion-input type="number" [(ngModel)]="settings[p.machineId].cartMax"
+                          placeholder="10"></ion-input>
+                      </label>
+
                       <label class="setting-field">
                         <span class="field-label">
                           <ion-icon name="sunny-outline"></ion-icon>

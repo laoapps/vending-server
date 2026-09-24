@@ -150,6 +150,35 @@
           </ion-select>
         </ion-item>
 
+        <ion-item>
+          <ion-label>Allow Attract</ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="settings[p.machineId].allowAttract"></ion-checkbox>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Attract Start (ms)</ion-label>
+          <ion-input slot="end" type="number" [(ngModel)]="settings[p.machineId].demoStartMs"
+            placeholder="180000"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Idle Clear (ms)</ion-label>
+          <ion-input slot="end" type="number" [(ngModel)]="settings[p.machineId].idleClearMs"
+            placeholder="180000"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Attract Item (ms)</ion-label>
+          <ion-input slot="end" type="number" [(ngModel)]="settings[p.machineId].demoItemMs"
+            placeholder="10000"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Cart Max</ion-label>
+          <ion-input slot="end" type="number" [(ngModel)]="settings[p.machineId].cartMax"
+            placeholder="10"></ion-input>
+        </ion-item>
+
         <ion-button expand="block" (click)="updateSetting(p.machineId)">Update Setting</ion-button>
         <ion-button expand="block" color="medium" (click)="refreshMachine(p.machineId)">Refresh Machine</ion-button>
       </div>
