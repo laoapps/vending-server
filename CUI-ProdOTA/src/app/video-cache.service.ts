@@ -12,15 +12,20 @@ export class VideoCacheService {
   public downloadProgress = 0;
   /** Web only: remote URL → object URL. Keep small; revoke when unused. */
   private blobUrls = new Map<string, string>();
+  /** Dedupes concurrent downloads of the same banner image. */
+  private imageInflight = new Map<string, Promise<string>>();
 
   constructor(private ngZone: NgZone) {
-    try {
-      Filesystem.addListener('progress', (status) => {
-        this.ngZone.run(() => {
-          this.downloadProgress = Math.round((status.bytes / status.contentLength) * 100);
+    // Native progress fires often. Keep it outside Angular so playback is not
+    // interrupted by change detection on every chunk.
+    this.ngZone.runOutsideAngular(() => {
+      try {
+        Filesystem.addListener('progress', (status) => {
+          const total = status.contentLength || 0;
+          this.downloadProgress = total > 0 ? Math.round((status.bytes / total) * 100) : 0;
         });
-      });
-    } catch {}
+      } catch {}
+    });
   }
 
   private filemanagerBase(): string {
@@ -134,6 +139,47 @@ export class VideoCacheService {
     if (url.startsWith('blob:') || url.startsWith('data:')) return url;
     const local = await this.downloadIfNotExist(url);
     return this.toPlayable(local);
+  }
+
+  /**
+   * Cache-first image for Android banners.
+   * Downloads the URL into Directory.Data, then returns a file src for <img>.
+   */
+  async resolveImagePlayable(url: string): Promise<string> {
+    if (!url) return '';
+    if (url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('assets/')) return url;
+    const remote = /^https?:\/\//i.test(url) ? url : this.remoteUrl(url);
+    const pending = this.imageInflight.get(remote);
+    if (pending) return pending;
+    const job = this.downloadImage(remote).finally(() => this.imageInflight.delete(remote));
+    this.imageInflight.set(remote, job);
+    return job;
+  }
+
+  private imageFileName(remote: string): string {
+    const hash = this.resolveMediaHash(remote).replace(/[^a-zA-Z0-9._-]/g, '') || 'banner';
+    const base = hash.replace(/\.[a-z0-9]+$/i, '');
+    const w = remote.match(/[?&]w=(\d+)/i)?.[1] || '0';
+    return `banner-${base}-${w}.jpg`;
+  }
+
+  private async downloadImage(remote: string): Promise<string> {
+    if (Capacitor.getPlatform() === 'web') {
+      await this.webDownload(remote);
+      return this.materializeBlob(remote);
+    }
+    const name = this.imageFileName(remote);
+    try {
+      const existing = await Filesystem.stat({ path: name, directory: Directory.Data });
+      if (existing?.uri) return this.getPlayableUrl(existing.uri);
+    } catch {}
+    await Filesystem.downloadFile({
+      url: remote,
+      path: name,
+      directory: Directory.Data,
+    });
+    const stat = await Filesystem.stat({ path: name, directory: Directory.Data });
+    return this.getPlayableUrl(stat.uri);
   }
 
   /** Sync helper for native file URIs / existing blob URLs. Prefer resolvePlayable on web. */

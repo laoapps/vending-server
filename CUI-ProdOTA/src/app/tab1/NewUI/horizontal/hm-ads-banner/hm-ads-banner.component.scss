@@ -72,45 +72,26 @@
   display: block;
   pointer-events: none;
   background: #0d1014;
-  will-change: transform, opacity;
 }
 
 .ads-banner__img--idle {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
   z-index: 2;
 }
 
 .ads-banner__img--enter {
   z-index: 3;
-  animation: banner-soft-enter 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: banner-fade 0.28s linear both;
 }
 
 .ads-banner__img--leave {
   z-index: 2;
-  animation: banner-soft-leave 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  opacity: 1;
 }
 
-@keyframes banner-soft-enter {
-  from {
-    opacity: 0;
-    transform: translate3d(6%, 0, 0) scale(1.02);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes banner-soft-leave {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translate3d(-5%, 0, 0) scale(1.01);
-  }
+@keyframes banner-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .ads-banner__dots {
@@ -130,10 +111,8 @@
   height: 7px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.35);
-  transition: background 0.45s ease, transform 0.45s ease;
 }
 
 .ads-banner__dot.is-on {
   background: #fff;
-  transform: scale(1.15);
 }

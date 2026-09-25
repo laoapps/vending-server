@@ -1,11 +1,20 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { VideoCacheService } from 'src/app/video-cache.service';
 import { ApiService } from 'src/app/services/api.service';
 import { downloadFileUrl, downloadPhotoUrl } from 'src/app/filemanager-url';
 
 const BANNER_HOLD_MS = 6500;
-const BANNER_ANIM_MS = 1200;
+const BANNER_ANIM_MS = 280;
 
 @Component({
   selector: 'app-hm-ads-banner',
@@ -13,6 +22,7 @@ const BANNER_ANIM_MS = 1200;
   imports: [CommonModule],
   templateUrl: './hm-ads-banner.component.html',
   styleUrls: ['./hm-ads-banner.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HmAdsBannerComponent implements OnInit, OnDestroy {
   @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
@@ -35,10 +45,15 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
   private failStreak = 0;
   private bannerTimer: ReturnType<typeof setTimeout> | null = null;
   private listPoll: ReturnType<typeof setInterval> | null = null;
+  /** Local file src already on disk, so slide changes do not touch the filesystem. */
+  private bannerReady = new Map<string, string>();
+  private warmed = false;
 
   constructor(
     private videoService: VideoCacheService,
     private api: ApiService,
+    private zone: NgZone,
+    private ref: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -47,12 +62,12 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     } catch {
       this.playlist = [];
     }
-    this.reloadBanners(true);
     if (this.playlist.length) {
       void this.playVideo(0);
+    } else {
+      void this.reloadBanners(true);
     }
-    void this.videoService.preloadAll(this.playlist);
-    this.listPoll = setInterval(() => this.reloadBanners(false), 8000);
+    this.listPoll = setInterval(() => void this.reloadBanners(false), 8000);
   }
 
   ngOnDestroy(): void {
@@ -71,12 +86,9 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     this.currentIndex = ((index % this.playlist.length) + this.playlist.length) % this.playlist.length;
     const url = this.playlist[this.currentIndex];
 
-    this.detachListeners();
-    this.pauseElement();
-
     let playable = '';
     try {
-      playable = await this.videoService.resolvePlayable(url);
+      playable = await this.zone.runOutsideAngular(() => this.videoService.resolvePlayable(url));
     } catch {
       if (token !== this.playToken) return;
       this.failStreak++;
@@ -100,20 +112,52 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     this.videoService.releaseAllBlobsExcept(playable);
     this.activePlayable = playable;
     this.currentSrc = playable;
+    this.attachAndPlay(playable, token);
+  }
 
-    setTimeout(() => {
-      if (token !== this.playToken) return;
-      const video = this.videoPlayer?.nativeElement;
-      if (!video) return;
-      video.setAttribute('playsinline', 'true');
-      video.setAttribute('webkit-playsinline', 'true');
-      video.setAttribute('x5-playsinline', 'true');
-      video.controls = false;
-      (video as any).disablePictureInPicture = true;
-      this.attachListeners(video);
-      video.load();
+  /** Download the rest only after the current clip is already playing. */
+  private async warmMedia(): Promise<void> {
+    await this.zone.runOutsideAngular(async () => {
+      await this.videoService.preloadAll(this.playlist);
+    });
+    await this.reloadBanners(true);
+  }
+
+  private attachAndPlay(playable: string, token: number): void {
+    const video = this.videoPlayer?.nativeElement;
+    if (!video || token !== this.playToken) return;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    video.setAttribute('x5-playsinline', 'true');
+    video.muted = true;
+    video.controls = false;
+    (video as any).disablePictureInPicture = true;
+    this.attachListeners(video);
+    const same = video.getAttribute('data-src') === playable;
+    if (same) {
+      try {
+        video.currentTime = 0;
+      } catch {}
       video.play().catch(() => {});
-    }, 50);
+      return;
+    }
+    video.setAttribute('data-src', playable);
+    video.src = playable;
+    const start = () => {
+      if (token !== this.playToken) return;
+      video.play().catch(() => {});
+    };
+    if (video.readyState >= 2) start();
+    else video.addEventListener('canplay', start, { once: true });
+    if (!this.warmed) {
+      const warm = () => {
+        if (this.warmed || token !== this.playToken) return;
+        this.warmed = true;
+        void this.warmMedia();
+      };
+      if (!video.paused && video.readyState >= 2) warm();
+      else video.addEventListener('playing', warm, { once: true });
+    }
   }
 
   onEnded(): void {
@@ -138,7 +182,7 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     this.currentSrc = null;
   }
 
-  private reloadBanners(forceRestart: boolean): void {
+  private async reloadBanners(forceRestart: boolean): Promise<void> {
     let next: string[] = [];
     try {
       if (Array.isArray(this.api.bannerList) && this.api.bannerList.length) {
@@ -163,8 +207,38 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
       this.stopBannerTimer();
       return;
     }
-    this.bannerSrc = this.resolveBannerSrc(this.bannerItems[0]);
+    await this.zone.runOutsideAngular(() => this.preloadBanners());
+    this.bannerSrc = this.bannerReady.get(this.bannerItems[0]) || '';
     this.scheduleBannerAdvance();
+    this.ref.markForCheck();
+  }
+
+  private async preloadBanners(): Promise<void> {
+    const keep = new Set(this.bannerItems);
+    for (const key of [...this.bannerReady.keys()]) {
+      if (!keep.has(key)) this.bannerReady.delete(key);
+    }
+    for (const raw of this.bannerItems) {
+      if (this.bannerReady.has(raw)) continue;
+      try {
+        const src = await this.cachedBannerSrc(raw);
+        if (src) this.bannerReady.set(raw, src);
+      } catch {}
+    }
+  }
+
+  private async cachedBannerSrc(raw: string): Promise<string> {
+    const remote = this.resolveBannerSrc(raw);
+    if (!remote) return '';
+    if (remote.startsWith('data:') || remote.startsWith('blob:') || remote.startsWith('assets/')) {
+      return remote;
+    }
+    try {
+      return await this.videoService.resolveImagePlayable(remote);
+    } catch (e) {
+      console.warn('banner cache skip, using remote', remote, e);
+      return remote;
+    }
   }
 
   private resolveBannerSrc(raw: string): string {
@@ -179,7 +253,7 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     }
     // Prefer photo endpoint for image banners; fall back to file download for hashes.
     try {
-      return downloadPhotoUrl(raw, 1920, 1080) || downloadFileUrl(raw);
+      return downloadPhotoUrl(raw, 1280, 720) || downloadFileUrl(raw);
     } catch {
       return downloadFileUrl(raw);
     }
@@ -194,10 +268,11 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
   private advanceBanner(): void {
     if (!this.bannerItems.length || this.bannerAnimating) return;
     const nextIndex = (this.bannerIndex + 1) % this.bannerItems.length;
-    const nextSrc = this.resolveBannerSrc(this.bannerItems[nextIndex]);
+    const nextSrc = this.bannerReady.get(this.bannerItems[nextIndex]) || '';
     if (!nextSrc || nextSrc === this.bannerSrc) {
       this.bannerIndex = nextIndex;
       this.scheduleBannerAdvance();
+      this.ref.markForCheck();
       return;
     }
 
@@ -205,11 +280,13 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     this.bannerPrevSrc = this.bannerSrc;
     this.bannerSrc = nextSrc;
     this.bannerIndex = nextIndex;
+    this.ref.markForCheck();
 
     this.bannerTimer = setTimeout(() => {
       this.bannerPrevSrc = '';
       this.bannerAnimating = false;
       this.scheduleBannerAdvance();
+      this.ref.markForCheck();
     }, BANNER_ANIM_MS);
   }
 
@@ -225,8 +302,6 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     if (!video) return;
     try {
       video.pause();
-      video.removeAttribute('src');
-      video.load();
     } catch {}
   }
 
