@@ -3,9 +3,12 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Input,
   NgZone,
+  OnChanges,
   OnDestroy,
   OnInit,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -24,7 +27,10 @@ const BANNER_ANIM_MS = 280;
   styleUrls: ['./hm-ads-banner.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HmAdsBannerComponent implements OnInit, OnDestroy {
+export class HmAdsBannerComponent implements OnInit, OnChanges, OnDestroy {
+  @Input() allowAdSound = true;
+  /** Admin musicVolume is 0–100. video.volume is 0–1. */
+  @Input() musicVolume = 6;
   @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
 
   playlist: string[] = [];
@@ -68,6 +74,10 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
       void this.reloadBanners(true);
     }
     this.listPoll = setInterval(() => void this.reloadBanners(false), 8000);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['allowAdSound'] || changes['musicVolume']) this.applyAdSound();
   }
 
   ngOnDestroy(): void {
@@ -123,13 +133,21 @@ export class HmAdsBannerComponent implements OnInit, OnDestroy {
     await this.reloadBanners(true);
   }
 
+  private applyAdSound(): void {
+    const video = this.videoPlayer?.nativeElement;
+    if (!video) return;
+    const level = Math.max(0, Math.min(100, Number(this.musicVolume) || 0)) / 100;
+    video.muted = !this.allowAdSound;
+    video.volume = this.allowAdSound ? level : 0;
+  }
+
   private attachAndPlay(playable: string, token: number): void {
     const video = this.videoPlayer?.nativeElement;
     if (!video || token !== this.playToken) return;
     video.setAttribute('playsinline', 'true');
     video.setAttribute('webkit-playsinline', 'true');
     video.setAttribute('x5-playsinline', 'true');
-    video.muted = true;
+    this.applyAdSound();
     video.controls = false;
     (video as any).disablePictureInPicture = true;
     this.attachListeners(video);

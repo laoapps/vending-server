@@ -69,6 +69,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
    */
   // kiosk
   allowAttract = true;
+  allowAdSound = true;
   demoStartMs = environment.demoStartMs || 3000;  // attract auto  (demo: 3000) ==>180000
   idleClearMs = environment.idleClearMs || 180000;  // clear checkout ==>180000
   demoItemMs = environment.demoItemMs || 10000;   // each product photo in attract
@@ -828,6 +829,10 @@ private async recoverAndStore(): Promise<void> {
     if (!r || typeof r !== 'object') return;
 
     let rearm = false;
+
+    if (Object.prototype.hasOwnProperty.call(r, 'allowAdSound')) {
+      this.allowAdSound = !!r.allowAdSound;
+    }
 
     if (Object.prototype.hasOwnProperty.call(r, 'allowAttract')) {
       const next = !!r.allowAttract;

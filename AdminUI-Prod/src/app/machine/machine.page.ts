@@ -199,6 +199,7 @@ export class MachinePage implements OnInit {
           if (!setting.checkoutUiVersion) setting.checkoutUiVersion = 'default';
           if (setting.checkoutUiVersion === 'kiosk') setting.checkoutUiVersion = 'v3';
           if (setting.allowAttract == null) setting.allowAttract = true;
+          if (setting.allowAdSound == null) setting.allowAdSound = true;
           if (!(Number(setting.demoStartMs) > 0)) setting.demoStartMs = 180000;
           if (!(Number(setting.idleClearMs) > 0)) setting.idleClearMs = 180000;
           if (!(Number(setting.demoItemMs) > 0)) setting.demoItemMs = 10000;
@@ -249,6 +250,7 @@ export class MachinePage implements OnInit {
             setting.imei = '';
             setting.location = '';
             setting.allowAttract = true;
+            setting.allowAdSound = true;
             setting.demoStartMs = 180000;
             setting.idleClearMs = 180000;
             setting.demoItemMs = 10000;
@@ -273,6 +275,7 @@ export class MachinePage implements OnInit {
             setting.checkoutUiVersion = 'v3';
           }
           if (setting.allowAttract == null) setting.allowAttract = true;
+          if (setting.allowAdSound == null) setting.allowAdSound = true;
           if (!(Number(setting.demoStartMs) > 0)) setting.demoStartMs = 180000;
           if (!(Number(setting.idleClearMs) > 0)) setting.idleClearMs = 180000;
           if (!(Number(setting.demoItemMs) > 0)) setting.demoItemMs = 10000;

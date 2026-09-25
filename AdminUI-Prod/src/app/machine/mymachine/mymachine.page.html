@@ -156,6 +156,11 @@
         </ion-item>
 
         <ion-item>
+          <ion-label>Ad Sound</ion-label>
+          <ion-checkbox slot="end" [(ngModel)]="settings[p.machineId].allowAdSound"></ion-checkbox>
+        </ion-item>
+
+        <ion-item>
           <ion-label>Attract Start (ms)</ion-label>
           <ion-input slot="end" type="number" [(ngModel)]="settings[p.machineId].demoStartMs"
             placeholder="180000"></ion-input>

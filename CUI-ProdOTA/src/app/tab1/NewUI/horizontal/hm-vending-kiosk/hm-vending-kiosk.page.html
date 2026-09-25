@@ -2,7 +2,7 @@
   <div class="kiosk" [class.kiosk--paying]="getTotalSale?.q > 0" [class.kiosk--menu]="menuOpen"
     (click)="onKioskPointer($event)" (touchstart)="onKioskPointer($event)">
 
-    <app-hm-ads-banner class="kiosk-ads"></app-hm-ads-banner>
+    <app-hm-ads-banner class="kiosk-ads" [allowAdSound]="allowAdSound" [musicVolume]="musicVolume"></app-hm-ads-banner>
 
     <section class="shelf" id="shelf">
       <div class="product-grid">
