@@ -403,11 +403,8 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
           // Tab1 calls enableCash/disableCash for NV9 — those methods are Tab1-only.
           // Persist allowCashIn only so server setting is not lost on kiosk.
-          if (this.NV9USB) {
-            if (this.allowCashIn != r.allowCashIn) {
-              this.allowCashIn = r.allowCashIn;
-              this.apiService.allowCashIn = !!this.allowCashIn;
-            }
+          if (this.NV9USB === 'true' || this.NV9USB === 'yes') {
+            await this.applyNv9CashFromAlive(r);
           }
         } catch (hwErr) {
           this.apiService.IndexedLogDB.addBillProcess({
@@ -549,77 +546,77 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
   }
 
   private currentMachineId(): string {
-  return String(
-    this.machineId?.machineId ||
+    return String(
+      this.machineId?.machineId ||
       this.apiService?.machineId?.machineId ||
       localStorage.getItem('machineId') ||
       '',
-  );
-}
-
-private async readSaleStock(): Promise<any[]> {
-  try {
-    const s = await this.storage.get('saleStock', 'stock');
-    const raw = s?.v ?? s;
-    const list = Array.isArray(raw) ? raw : Array.isArray(raw?.v) ? raw.v : [];
-    return JSON.parse(JSON.stringify(list));
-  } catch {
-    return [];
-  }
-}
-
-private async wipeSaleLocal(): Promise<void> {
-  this.saleList = [];
-  try { this.syncVendingOnSale([]); } catch {}
-  try { await this.storage.remove('saleStock', 'stock'); } catch {}
-  try { await this.storage.remove('saleStock'); } catch {}
-  try { localStorage.removeItem('saleListMachineId'); } catch {}
-}
-  async loadStock(): Promise<void> {
-  try {
-    const mid = String(
-      this.machineId?.machineId ||
-      this.apiService?.machineId?.machineId ||
-      localStorage.getItem('machineId') || '',
     );
-    const storedMid = localStorage.getItem('saleListMachineId') || '';
-    const local = await this.readSaleStock();
-    const machineChanged = !!storedMid && !!mid && storedMid !== mid;
+  }
 
-    console.log('loadStock', { local: local.length, mid, storedMid, machineChanged });
-
-    if (local.length && !machineChanged) {
-      if (!storedMid && mid) localStorage.setItem('saleListMachineId', mid);
-      this.applySale(local);
-      this.loadPhotos();
-      return;
+  private async readSaleStock(): Promise<any[]> {
+    try {
+      const s = await this.storage.get('saleStock', 'stock');
+      const raw = s?.v ?? s;
+      const list = Array.isArray(raw) ? raw : Array.isArray(raw?.v) ? raw.v : [];
+      return JSON.parse(JSON.stringify(list));
+    } catch {
+      return [];
     }
-
-    if (machineChanged) await this.wipeSaleLocal();
-
-    await this.recoverAndStore();   // recoverSale + save saleStock + stamp mid
-    this.loadPhotos();
-  } catch (e) {
-    console.warn('loadStock', e);
-  } finally {
-    this.ref.detectChanges();
   }
-}
-private async recoverAndStore(): Promise<void> {
-  const rx: any = await Promise.race([
-    this.apiService.recoverSale(),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('recover timeout')), 8000)),
-  ]);
-  const r = rx?.data ?? rx;
-  const rows = this.saleRows(r);
-  if (r?.status && rows.length) {
-    this.applySale(rows);
-    await this.storage.set('saleStock', rows, 'stock');
-    localStorage.setItem('saleListMachineId', this.currentMachineId());
-  } else {
+
+  private async wipeSaleLocal(): Promise<void> {
     this.saleList = [];
+    try { this.syncVendingOnSale([]); } catch { }
+    try { await this.storage.remove('saleStock', 'stock'); } catch { }
+    try { await this.storage.remove('saleStock'); } catch { }
+    try { localStorage.removeItem('saleListMachineId'); } catch { }
   }
-}
+  async loadStock(): Promise<void> {
+    try {
+      const mid = String(
+        this.machineId?.machineId ||
+        this.apiService?.machineId?.machineId ||
+        localStorage.getItem('machineId') || '',
+      );
+      const storedMid = localStorage.getItem('saleListMachineId') || '';
+      const local = await this.readSaleStock();
+      const machineChanged = !!storedMid && !!mid && storedMid !== mid;
+
+      console.log('loadStock', { local: local.length, mid, storedMid, machineChanged });
+
+      if (local.length && !machineChanged) {
+        if (!storedMid && mid) localStorage.setItem('saleListMachineId', mid);
+        this.applySale(local);
+        this.loadPhotos();
+        return;
+      }
+
+      if (machineChanged) await this.wipeSaleLocal();
+
+      await this.recoverAndStore();   // recoverSale + save saleStock + stamp mid
+      this.loadPhotos();
+    } catch (e) {
+      console.warn('loadStock', e);
+    } finally {
+      this.ref.detectChanges();
+    }
+  }
+  private async recoverAndStore(): Promise<void> {
+    const rx: any = await Promise.race([
+      this.apiService.recoverSale(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('recover timeout')), 8000)),
+    ]);
+    const r = rx?.data ?? rx;
+    const rows = this.saleRows(r);
+    if (r?.status && rows.length) {
+      this.applySale(rows);
+      await this.storage.set('saleStock', rows, 'stock');
+      localStorage.setItem('saleListMachineId', this.currentMachineId());
+    } else {
+      this.saleList = [];
+    }
+  }
 
   /** Manual only */
   async replaceSaleFromServer(): Promise<void> {
@@ -1418,24 +1415,24 @@ private async recoverAndStore(): Promise<void> {
     }
   }
 
-  /**
-   * Read cabinet temp from serial frames only (ADH814 0xA3 / VMC fafb52) — same sources as Tab1.
-   * No sendStatus, drop/credit handling, or fatal exits.
-   */
-  private bindMachineTempListener(serial: ISerialService | null): void {
-    if (!serial?.getSerialEvents || this.tempEventsBound) return;
-    try {
-      this.tempEventsBound = true;
-      this.serialTempSub = serial.getSerialEvents().subscribe((event: any) => {
-        try {
-          if (event?.event !== 'dataReceived' || event?.data == null) return;
-          this.updateTempFromSerial(event.data);
-        } catch { /* ignore */ }
-      });
-    } catch {
-      this.tempEventsBound = false;
-    }
-  }
+  // /**
+  //  * Read cabinet temp from serial frames only (ADH814 0xA3 / VMC fafb52) — same sources as Tab1.
+  //  * No sendStatus, drop/credit handling, or fatal exits.
+  //  */
+  // private bindMachineTempListener(serial: ISerialService | null): void {
+  //   if (!serial?.getSerialEvents || this.tempEventsBound) return;
+  //   try {
+  //     this.tempEventsBound = true;
+  //     this.serialTempSub = serial.getSerialEvents().subscribe((event: any) => {
+  //       try {
+  //         if (event?.event !== 'dataReceived' || event?.data == null) return;
+  //         this.updateTempFromSerial(event.data);
+  //       } catch { /* ignore */ }
+  //     });
+  //   } catch {
+  //     this.tempEventsBound = false;
+  //   }
+  // }
 
   private updateTempFromSerial(raw: unknown): void {
     const hex = String(raw ?? '').replace(/\s/g, '').toLowerCase();
@@ -1598,8 +1595,684 @@ private async recoverAndStore(): Promise<void> {
   }
 
 
+  /**
+   * Paste into HmVendingKioskPage (hm-vending-kiosk.page.ts).
+   *
+   * 1. Add IResModel to the syste.model import if it is not there.
+   * 2. Replace bindMachineTempListener with the one below.
+   * 3. Paste the rest of this file inside the class (before the last closing brace).
+   *
+   * Board is already this.selectedDevice ('adh814' | 'VMC' | 'ZDM8').
+   * connect() stays. It already calls bindMachineTempListener().
+   * Do not subscribe a second time.
+   */
+
+  private lastCallTime = 0;
+  private timeoutId: any = null;
+  private queues: Array<{ data: string; command: any }> = [];
+  private creditPending: any[] = [];
+  private firstCredit = true;
+  machinestatus: { data: any } = { data: '' };
+
+  private bindMachineTempListener(serial: ISerialService | null): void {
+    if (!serial?.getSerialEvents || this.tempEventsBound) return;
+    try {
+      this.tempEventsBound = true;
+      this.serialTempSub = serial.getSerialEvents().subscribe(async (event: any) => {
+        try {
+          const device = String(this.selectedDevice || localStorage.getItem('device') || 'adh814');
+          if (event?.event === 'dataReceived' && event?.data != null) {
+            this.updateTempFromSerial(event.data);
+          }
+          if (device === 'VMC') {
+            this.onVmcSerial(event);
+            return;
+          }
+          if (device === 'ZDM8') {
+            this.onZdm8Serial(event);
+            return;
+          }
+          await this.onAdh814Serial(event);
+        } catch (error) {
+          console.error('kiosk serial', error);
+        }
+      });
+    } catch {
+      this.tempEventsBound = false;
+    }
+  }
+
+  private async onAdh814Serial(event: any): Promise<void> {
+    try {
+      if (event?.event === 'dataReceived') {
+        const rawData = event?.data;
+        console.log('ADH814 Received from device:', rawData);
+        if (rawData) {
+          const result = this.processResponseADH814(rawData);
+          this.sendStatus(
+            JSON.stringify(result?.data),
+            new Date().getTime(),
+            EMACHINE_COMMAND.ADH814_STATUS,
+          );
+          console.log('ADH814 Processed response:', result);
+          if (result?.status == 1) this.apiService.setLastSerialAction();
+        } else {
+          console.error('Serial event:', event);
+        }
+      }
+      if (event?.event === 'nv9Event') this.handleNV9Event(event?.data);
+    } catch (error) {
+      console.error('Error processing ADH814 event:', error);
+    }
+  }
+
+  private onZdm8Serial(event: any): void {
+    try {
+      console.log('zdm8 service event received: ' + JSON.stringify(event));
+      if (event?.event === 'nv9Event') this.handleNV9Event(event?.data);
+    } catch (error: any) {
+      console.error('Error processing event:', error);
+      Toast.show({ text: 'Error processing event: ' + error.message });
+    }
+  }
+
+  private onVmcSerial(event: any): void {
+    try {
+      if (event?.event === 'dataReceived') {
+        this.processVMCResponse(event.data);
+        this.apiService.setLastSerialAction();
+      } else if (event?.event === 'commandAcknowledged') {
+        this.apiService.setLastSerialAction();
+      } else if (event?.event === 'error') {
+        console.error('Serial error:', event);
+      }
+      if (event?.event === 'nv9Event') this.handleNV9Event(event?.data);
+    } catch (error: any) {
+      console.error('Error processing event:', error);
+    }
+  }
+
+
+
+  sendStatus(b: string, t: number, c: any = EMACHINE_COMMAND.MACHINE_STATUS): void {
+    this.lastCallTime = Date.now();
+    if (this.timeoutId !== null) clearTimeout(this.timeoutId);
+    console.log('machine send', b, t, c);
+    if (this.queues.find((v) => v.command == c && v.data == b)) {
+      console.log('Already in queue');
+      return;
+    }
+    this.queues.push({ data: b, command: c });
+    try {
+      const timeOut = this.queues.length;
+      const that = this;
+      setTimeout(() => {
+        that.apiService.updateStatus({ data: b, transactionID: t, command: c }).then(async (rx: any) => {
+          const r = rx.data;
+          that.queues.shift();
+          console.log('QUEUES', that.queues);
+          if (r?.command === EMACHINE_COMMAND.CREDIT_NOTE || r?.command === EMACHINE_COMMAND.VMC_CREDIT_NOTE) {
+            if (r.transactionID) {
+              const x = that.creditPending.find((v) => v.transactionID === r.transactionID);
+              if (x) {
+                await that.deleteCredit(x.transactionID);
+                that.creditPending = that.creditPending.filter((v) => v.transactionID !== r.transactionID);
+              }
+            } else {
+              setTimeout(() => that.sendStatus(b, t, c), 5000);
+            }
+          }
+        });
+      }, 1000 * timeOut);
+    } catch (error) {
+      console.log('vmc service send error', error);
+    }
+  }
+
+  private processVMCResponse(hex: string): void {
+    const t = Number('-21' + Date.now());
+    if (!hex) return;
+
+    if (hex.startsWith('fafb04')) {
+      console.log('Dispensing status:', hex);
+      if (hex.substring(10, 12) == '01') {
+        this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_DISPENSE);
+        Toast.show({ text: 'Dispensing' });
+      }
+      if (hex.substring(10, 12) == '02') {
+        this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_DISPENSED);
+        Toast.show({ text: 'Dispensed' });
+      }
+      if (hex.substring(10, 12) == '03') {
+        this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_DISPENSEFAILED);
+        Toast.show({ text: 'Drop failed' });
+      }
+    } else if (hex.startsWith('fafb21')) {
+      const mode = hex.substring(10, 12);
+      if (mode === '01') {
+        const value = this.getNoteValue(hex) / 100;
+        const tid = Number('-21' + Date.now());
+        if (this.firstCredit) {
+          this.firstCredit = false;
+          return;
+        }
+        if (this.offlineMode) {
+          this.apiService.updateNewLocalBalance?.(value + '');
+          this.updateBalance(value);
+        } else {
+          const mid = this.machineId?.machineId || '';
+          const hash = CryptoJS.SHA256(mid + value).toString(CryptoJS.enc.Hex);
+          const credit = {
+            id: -1,
+            name: 'credit',
+            data: { raw: hex, data: hash, t: Date.now(), transactionID: tid.toString(), command: EMACHINE_COMMAND.VMC_CREDIT_NOTE },
+            transactionID: tid.toString(),
+            description: '',
+          };
+          this.creditPending.push(credit);
+          this.addOrUpdateCredit(credit);
+          const note = this.initHashBankNotes(mid).find((v) => v.hash === hash);
+          if (!note) {
+            console.log('Hash not found', hash);
+            return;
+          }
+          this.sendStatus(hash, tid, EMACHINE_COMMAND.VMC_CREDIT_NOTE);
+        }
+      } else if (mode == '08') {
+        Toast.show({ text: 'Banknote swollen' });
+        this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_BANK_SWALLOWED);
+      }
+    } else if (hex.startsWith('fafb52')) {
+      const resultStatus = machineVMCStatus(hex);
+      if (!this._machineStatus.status) this._machineStatus.status = {};
+      this._machineStatus.status.temp = resultStatus.temperature + '';
+      this.machinestatus.data = hex;
+      this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_MACHINE_STATUS);
+      this.ref.detectChanges();
+    } else if (!hex.startsWith('fafb23')) {
+      this.sendStatus(hex, t, EMACHINE_COMMAND.VMC_UNKNOWN);
+      this.apiService.IndexedLogDB?.addBillProcess?.({ errorData: hex });
+      console.log('Unhandled response:', hex);
+    }
+  }
+
+  private getNoteValue(hex: string): number {
+    const h = String(hex || '').replace(/\s/g, '').toLowerCase();
+    const amountHex = h.substring(12, 20);
+    const n = parseInt(amountHex, 16);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  private initHashBankNotes(machineId: string): Array<{ value: number; hash: string }> {
+    const values = [500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
+    return values.map((value) => ({
+      value,
+      hash: CryptoJS.SHA256(String(machineId) + value).toString(CryptoJS.enc.Hex),
+    }));
+  }
+
+  private readCredits(): any[] {
+    try {
+      return JSON.parse(localStorage.getItem('creditPending') || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  private addOrUpdateCredit(credit: any): void {
+    const list = this.readCredits();
+    const i = list.findIndex((v) => v.transactionID === credit.transactionID);
+    if (i >= 0) list[i] = credit;
+    else list.push(credit);
+    localStorage.setItem('creditPending', JSON.stringify(list));
+  }
+
+  private async deleteCredit(transactionID: any): Promise<void> {
+    const list = this.readCredits().filter((v) => v.transactionID !== transactionID);
+    localStorage.setItem('creditPending', JSON.stringify(list));
+  }
+
+  private processResponseADH814(rawData: string): any {
+    try {
+      const hexData = rawData?.replace(/\s/g, '').toLowerCase();
+      if (!hexData) {
+        return { command: '', status: 0, data: { rawData }, message: 'empty', transactionID: 0 };
+      }
+      if (hexData.length > 44) {
+        this.apiService.IndexedLogDB?.addBillProcess?.({ errorData: hexData });
+        console.error('FATAL: Response too long', hexData.length);
+        return { command: '', status: 0, data: { rawData }, message: 'Response too long - hardware error', transactionID: 0 };
+      }
+      if (hexData.length < 8) {
+        return { command: '', status: 0, data: { rawData }, message: 'Invalid response: Too short', transactionID: 0 };
+      }
+
+      const address = parseInt(hexData.slice(0, 2), 16);
+      const command = parseInt(hexData.slice(2, 4), 16);
+      const data = hexData.slice(4, -4).match(/.{2}/g) || [];
+
+      if (command !== 0xa1 && address !== 0x00) {
+        return { command: '', status: 0, data: { rawData }, message: 'Invalid address', transactionID: 0 };
+      }
+      if (command === 0xa1 && (address < 0x01 || address > 0x04)) {
+        return { command: '', status: 0, data: { rawData }, message: 'Invalid address', transactionID: 0 };
+      }
+
+      let result: any;
+      switch (command) {
+        case 0xa1:
+          if (data.length !== 16) {
+            result = { command: EMACHINE_COMMAND.READ_ID, status: 0, data: { rawData }, message: 'Invalid ID response length', transactionID: 0 };
+            break;
+          }
+          result = {
+            command: EMACHINE_COMMAND.READ_ID,
+            status: 1,
+            data: { firmwareVersion: data.map((byte) => String.fromCharCode(parseInt(byte, 16))).join('').trim(), rawData },
+            message: 'ID retrieved successfully',
+            transactionID: 0,
+          };
+          break;
+        case 0xa2:
+          if (data.length !== 18) {
+            result = { command: EMACHINE_COMMAND.SCAN_DOOR, status: 0, data: { rawData }, message: 'Invalid SCAN response length', transactionID: 0 };
+            break;
+          }
+          result = {
+            command: EMACHINE_COMMAND.SCAN_DOOR,
+            status: 1,
+            data: { doorFeedback: data.map((byte) => parseInt(byte, 16)), rawData },
+            message: 'Scan door feedback retrieved successfully',
+            transactionID: 0,
+          };
+          break;
+        case 0xa3:
+          if (data.length !== 9) {
+            result = { command: EMACHINE_COMMAND.READ_EVENTS, status: 0, data: { rawData }, message: 'Invalid POLL status data length', transactionID: 0 };
+            break;
+          }
+          {
+            const statusData = data.map((byte) => parseInt(byte, 16));
+            const temperature = statusData[8] > 127 ? statusData[8] - 256 : statusData[8];
+            result = {
+              command: EMACHINE_COMMAND.READ_EVENTS,
+              status: 1,
+              data: {
+                status: statusData[0],
+                motorNumber: statusData[1],
+                executionResult: statusData[2],
+                dropSuccess: !(statusData[2] & 0x04),
+                faultCode: statusData[2] & 0x03,
+                maxCurrent: (statusData[3] << 8) | statusData[4],
+                avgCurrent: (statusData[5] << 8) | statusData[6],
+                runTime: statusData[7],
+                temperature,
+                rawData,
+              },
+              message: 'Poll status retrieved successfully',
+              transactionID: 0,
+            };
+            if (!this._machineStatus.status) this._machineStatus.status = {};
+            this._machineStatus.status.temp = temperature;
+            this.machinestatus.data = result.data;
+            this.ref.detectChanges();
+          }
+          break;
+        case 0xa4:
+          if (data.length !== 3) {
+            result = { command: EMACHINE_COMMAND.SET_TEMP, status: 0, data: { rawData }, message: 'Invalid TEMP response length', transactionID: 0 };
+            break;
+          }
+          result = {
+            command: EMACHINE_COMMAND.SET_TEMP,
+            status: 1,
+            data: { mode: parseInt(data[0], 16), tempValue: (parseInt(data[1], 16) << 8) | parseInt(data[2], 16), rawData },
+            message: 'Temperature set successfully',
+            transactionID: 0,
+          };
+          break;
+        case 0xa5:
+          if (data.length !== 1) {
+            result = { command: EMACHINE_COMMAND.shippingcontrol, status: 0, data: { rawData }, message: 'Invalid RUN response length', transactionID: 0 };
+            break;
+          }
+          result = {
+            command: EMACHINE_COMMAND.shippingcontrol,
+            status: parseInt(data[0], 16) === 0 ? 1 : 0,
+            data: { executionStatus: parseInt(data[0], 16), rawData },
+            message: parseInt(data[0], 16) === 0 ? 'Motor started successfully' : 'Motor error',
+            transactionID: 0,
+          };
+          break;
+        case 0xb5:
+          if (data.length !== 1) {
+            result = { command: EMACHINE_COMMAND.START_MOTOR_MERGED, status: 0, data: { rawData }, message: 'Invalid RUN2 response length', transactionID: 0 };
+            break;
+          }
+          result = {
+            command: EMACHINE_COMMAND.START_MOTOR_MERGED,
+            status: parseInt(data[0], 16) === 0 ? 1 : 0,
+            data: { executionStatus: parseInt(data[0], 16), rawData },
+            message: parseInt(data[0], 16) === 0 ? 'Merged motor started successfully' : 'Merged motor error',
+            transactionID: 0,
+          };
+          break;
+        case 0xa6:
+          if (data.length !== 0) {
+            result = { command: EMACHINE_COMMAND.CLEAR_RESULT, status: 0, data: { rawData }, message: 'Invalid ACK response length', transactionID: 0 };
+            break;
+          }
+          result = {
+            command: EMACHINE_COMMAND.CLEAR_RESULT,
+            status: 1,
+            data: { acknowledged: true, rawData },
+            message: 'Result acknowledged successfully',
+            transactionID: 0,
+          };
+          break;
+        default:
+          result = { command: '', status: 0, data: { rawData }, message: 'Unsupported command', transactionID: 0 };
+      }
+      return result;
+    } catch (error: any) {
+      return { command: '', status: 0, data: {}, message: 'Error processing response: ' + error.message, transactionID: 0 };
+    }
+  }
 
 
 
 
+
+
+
+
+
+
+  /**
+ * Paste inside HmVendingKioskPage.
+ *
+ * Tab1 still does NV9. On v3, Tab1 ngOnInit returns before connect(),
+ * so the kiosk must own this.
+ *
+ * Do NOT paste a second updateBalance / topUpEwallet / loadBalance /
+ * resetCashAcceptor / syncToServer. The kiosk already has those.
+ * CREDIT_NOTE calls the kiosk updateBalance().
+ *
+ * If you already pasted PASTE-KIOSK-SERIAL.ts, delete its
+ * handleNV9Event and showToast. Keep bindMachineTempListener.
+ * It already calls this.handleNV9Event on nv9Event.
+ *
+ * In onAliveFromServer, replace the NV9USB block with:
+ *   if (this.NV9USB) await this.applyNv9CashFromAlive(r);
+ */
+
+  isNV9Ready = false;
+  isNV9Enabled = false;
+  isCashboxPresent = true;
+  isReadingNote = false;
+  currentReadingChannel = -1;
+  nv9SerialNumber = '';
+  nv9ChannelValues: number[] = [];
+  transactions: any[] = [];
+  shouldAutoEnable = true;
+
+  /** Same as Tab1 alive: NV9USB + allowCashIn → enableCash / disableCash. */
+  private async applyNv9CashFromAlive(r: any): Promise<void> {
+    if (this.allowCashIn != r.allowCashIn) {
+      this.allowCashIn = r.allowCashIn;
+      this.apiService.allowCashIn = !!this.allowCashIn;
+      if (this.allowCashIn) {
+        this.enableCash();
+        Toast.show({ text: 'CashIn enabled', duration: 'long' });
+      } else {
+        this.disableCash();
+        Toast.show({ text: 'CashIn disabled', duration: 'long' });
+      }
+    }
+  }
+
+  private handleNV9Event(nv9Event: any): void {
+    if (!nv9Event) return;
+    console.log('NV9 Event Type:', nv9Event.event);
+    console.log('NV9 Event Data:', nv9Event);
+
+    switch (nv9Event.event) {
+      case 'READ_NOTE': {
+        const readData = JSON.parse(nv9Event.data);
+        this.showToast('Reading note on channel ' + readData.channel, 'primary');
+        this.isReadingNote = true;
+        this.currentReadingChannel = readData.channel;
+        break;
+      }
+      case 'CREDIT_NOTE': {
+        const creditData = JSON.parse(nv9Event.data);
+        const channelValues: { [key: number]: number } = {
+          0: 500,
+          1: 1000,
+          2: 2000,
+          3: 5000,
+          4: 10000,
+          5: 20000,
+          6: 50000,
+          7: 100000,
+          8: 200000,
+        };
+        const amount = channelValues[creditData.channel] || 0;
+        this.showToast('+' + amount + ' LAK credited', 'success');
+        this.updateBalance(amount);
+        this.addTransaction({
+          type: 'CASH_IN',
+          amount,
+          channel: creditData.channel,
+          timestamp: new Date(),
+        });
+        this.isReadingNote = false;
+        break;
+      }
+      case 'NOTE_STACKED':
+        this.showToast('Note stored in cashbox', 'secondary');
+        break;
+      case 'NOTE_REJECTING':
+        this.showToast('Note rejected - please remove', 'warning');
+        break;
+      case 'NOTE_REJECTED': {
+        const rejectData = JSON.parse(nv9Event.data);
+        const rejectMessages: { [key: number]: string } = {
+          0x01: 'Note length incorrect',
+          0x06: 'Channel inhibited',
+          0x07: 'Second note inserted',
+          0x0b: 'Note too long',
+          0x0d: 'Mechanism slow/stalled',
+          0x0f: 'Fraud channel reject',
+          0x11: 'Peak detect fail',
+          0x12: 'Twisted note detected',
+          0x13: 'Escrow timeout',
+          0x14: 'Bar code scan fail',
+        };
+        const rejectMessage = rejectMessages[rejectData.code] || 'Unknown reject reason';
+        this.showToast('Note rejected: ' + rejectMessage, 'danger');
+        this.isReadingNote = false;
+        break;
+      }
+      case 'ENABLED':
+        this.isNV9Enabled = true;
+        this.showToast('Cash acceptor ready', 'success');
+        break;
+      case 'DISABLED':
+        this.isNV9Enabled = false;
+        break;
+      case 'STACKER_FULL':
+        this.showToast('Cashbox full - please empty', 'danger');
+        break;
+      case 'CASHBOX_REMOVED':
+        this.isCashboxPresent = false;
+        this.showToast('Cashbox removed', 'warning');
+        break;
+      case 'CASHBOX_REPLACED':
+        this.isCashboxPresent = true;
+        this.showToast('Cashbox replaced', 'success');
+        if (this.shouldAutoEnable) {
+          // this.enableCash();
+        }
+        break;
+      case 'FRAUD_ATTEMPT':
+        this.showToast('Fraud attempt detected', 'danger');
+        break;
+      case 'SAFE_NOTE_JAM':
+        this.showToast('Paper jam - please clear', 'danger');
+        break;
+      case 'UNSAFE_NOTE_JAM':
+        this.showToast('Critical jam - service required', 'danger');
+        break;
+      case 'NOTE_HELD_IN_BEZEL': {
+        const bezelData = JSON.parse(nv9Event.data);
+        this.showTakeNotePrompt(bezelData.value);
+        break;
+      }
+      case 'NOTE_CLEARED_FROM_FRONT':
+        this.showToast('Note returned to user', 'secondary');
+        break;
+      case 'NOTE_CLEARED_TO_CASHBOX':
+        break;
+      case 'CHANNEL_DISABLE': {
+        const channelData = JSON.parse(nv9Event.data);
+        console.log('Channel disabled', channelData.channel);
+        break;
+      }
+      case 'nv9Ready':
+        this.isNV9Ready = true;
+        this.showToast('NV9 cash acceptor ready', 'success');
+        this.getNV9DeviceInfo();
+        break;
+      case 'nv9Error':
+        console.error('NV9 Error:', nv9Event.error);
+        this.showToast('NV9 Error: ' + nv9Event.error, 'danger');
+        if (String(nv9Event.error || '').includes('timed out') || String(nv9Event.error || '').includes('communication')) {
+          setTimeout(() => this.reinitializeNV9(), 5000);
+        }
+        break;
+      case 'nv9Retrying':
+        this.showToast(
+          'Connecting to NV9... (' + nv9Event.retryCount + '/' + nv9Event.maxRetries + ')',
+          'secondary',
+        );
+        break;
+      case 'usbDeviceEvent':
+        this.handleUSBEvent(nv9Event.data);
+        break;
+      default:
+        console.log('Unknown NV9 event:', nv9Event);
+    }
+  }
+
+  private handleUSBEvent(usbEvent: any): void {
+    if (!usbEvent) return;
+    switch (usbEvent.event) {
+      case 'usbAttached':
+        this.showToast('USB device detected', 'secondary');
+        break;
+      case 'usbDetached':
+        this.isNV9Ready = false;
+        this.showToast('USB device disconnected', 'warning');
+        break;
+      case 'usbPermissionGranted':
+        break;
+      case 'usbScanComplete':
+        break;
+      case 'usbAutoConnected':
+        console.log('USB NV9 auto-connected');
+        break;
+      case 'usbAutoConnectFailed':
+        console.log('USB NV9 auto-connect failed', usbEvent.reason);
+        break;
+    }
+  }
+
+  private showToast(message: string, _color: string = 'primary'): void {
+    Toast.show({ text: message, duration: 'long' });
+    this.saveLogs(message);
+  }
+
+  saveLogs(message: string): void {
+    try {
+      let logs: Array<{ message: string; timestamp: string }> = [];
+      const stored = localStorage.getItem('nv9Logs');
+      if (stored) logs = JSON.parse(stored);
+      logs.push({ message, timestamp: new Date().toISOString() });
+      localStorage.setItem('nv9Logs', JSON.stringify(logs));
+    } catch (err) {
+      console.error('Failed to save log:', err);
+    }
+  }
+
+  private async syncLogsToServer(): Promise<void> {
+    const stored = localStorage.getItem('nv9Logs');
+    if (!stored || stored === '[]') return;
+    let logs: Array<{ message: string; timestamp: string }> = [];
+    try {
+      logs = JSON.parse(stored);
+      if (!Array.isArray(logs) || !logs.length) return;
+    } catch {
+      localStorage.setItem('nv9Logs', '[]');
+      return;
+    }
+    try {
+      await this.apiService.blockChainSyncLog(logs);
+      localStorage.setItem('nv9Logs', '[]');
+    } catch (err) {
+      console.error('Log sync failed:', err);
+    }
+  }
+
+  private addTransaction(transaction: any): void {
+    this.transactions.unshift(transaction);
+    if (this.transactions.length > 50) this.transactions.pop();
+  }
+
+  private showTakeNotePrompt(value: number): void {
+    this.showToast('Please take your ' + value + ' LAK note', 'warning');
+  }
+
+  private async getNV9DeviceInfo(): Promise<void> {
+    try {
+      const serialResult = await this.serial?.nv9Command?.(EMACHINE_COMMAND.NV9_GET_SERIAL, {}, Date.now());
+      if (serialResult?.data?.serial_number) {
+        this.nv9SerialNumber = serialResult.data.serial_number;
+      }
+      const setupResult = await this.serial?.nv9Command?.(EMACHINE_COMMAND.NV9_SETUP_REQUEST, {}, Date.now());
+      if (setupResult?.data?.channel_values) {
+        this.nv9ChannelValues = setupResult.data.channel_values;
+      }
+    } catch (error) {
+      console.error('Failed to get NV9 device info:', error);
+    }
+  }
+
+  async reinitializeNV9(): Promise<boolean> {
+    try {
+      const result = await this.serial?.nv9Command?.(EMACHINE_COMMAND.NV9_REINIT, {}, 1);
+      return !!result?.status;
+    } catch (error) {
+      console.error('Error sending reinit command:', error);
+      return false;
+    }
+  }
+
+  enableCash(): void {
+    this.serial?.nv9Command?.(EMACHINE_COMMAND.NV9_ENABLE, { enable: true }, 1)
+      .then(async (r: any) => {
+        console.log('enableCash', r);
+        await Toast.show({ text: 'enableCash' + JSON.stringify(r) });
+      })
+      .catch((e: any) => {
+        console.error('enableCash error', e);
+        Toast.show({ text: 'enableCash error' + JSON.stringify(e) });
+      });
+  }
+
+  disableCash(): void {
+    this.serial?.nv9Command?.(EMACHINE_COMMAND.NV9_DISABLE, { enable: false }, 1)
+      .then((r: any) => console.log('disableCash', r))
+      .catch((e: any) => console.error('disableCash error', e));
+  }
 }
