@@ -5191,6 +5191,44 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
             router.post(
+                this.path + "/compareVendingMachineSaleBillReport",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const data = req.body;
+                        const machines = data.machines;
+                        if (!Array.isArray(machines) || machines.length < 2) {
+                            res.send(PrintError("compareVendingMachineSaleBillReport", { message: "select at least 2 machines" }, EMessage.error, returnLog(req, res, true)));
+                            return;
+                        }
+                        if (machines.length > 40) {
+                            res.send(PrintError("compareVendingMachineSaleBillReport", { message: "too many machines" }, EMessage.error, returnLog(req, res, true)));
+                            return;
+                        }
+
+                        const fromDate = momenttz.tz(data.fromDate, SERVER_TIME_ZONE).startOf('day');
+                        const toDate = momenttz.tz(data.toDate, SERVER_TIME_ZONE).endOf('day');
+                        if (!fromDate.isValid() || !toDate.isValid() || fromDate.toDate() > toDate.toDate()) {
+                            res.send(PrintError("compareVendingMachineSaleBillReport", { message: "invalid date range" }, EMessage.error, returnLog(req, res, true)));
+                            return;
+                        }
+
+                        const response = await this.compareVendingMachineSaleReports(
+                            machines,
+                            fromDate.toDate(),
+                            toDate.toDate(),
+                            String(res.locals["ownerUuid"] || ""),
+                            Boolean(res.locals["secret"]),
+                        );
+                        res.send(PrintSucceeded("compareVendingMachineSaleBillReport", response, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        res.send(PrintError("compareVendingMachineSaleBillReport", error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+            router.post(
                 this.path + "/loadVendingMachineDropPositionReport",
                 this.checkSuperAdmin,
 
@@ -11233,6 +11271,169 @@ export class InventoryZDM8 implements IBaseClass {
             },
             order: [['id', 'DESC']]
         });
+    }
+
+    /** shopPhone is 8 digits. imei is 20 + those 8 digits. Keep the last 8. */
+    private normalizeCompareShopPhone(raw: any): string {
+        const digits = String(raw ?? '').replace(/\D/g, '');
+        return digits.length >= 8 ? digits.slice(-8) : '';
+    }
+
+    private billLineStats(bill: any): { qty: number; amount: number; lines: Array<{ stockId: string; name: string; qty: number; price: number; amount: number }> } {
+        const sales = Array.isArray(bill?.vendingsales) ? bill.vendingsales : [];
+        const lines = sales.map((vs: any) => {
+            const qty = Number(vs?.stock?.qtty) || 1;
+            const price = Number(vs?.stock?.price) || 0;
+            return {
+                stockId: String(vs?.stock?.id ?? vs?.stock?.uuid ?? `${vs?.stock?.name || '-'}|${price}`),
+                name: vs?.stock?.name || '-',
+                qty,
+                price,
+                amount: qty * price,
+            };
+        });
+        const qty = lines.reduce((sum, line) => sum + line.qty, 0) || lines.length || 1;
+        return { qty, amount: Number(bill?.totalvalue) || 0, lines };
+    }
+
+    private buildCompareTopProducts(bills: any[], limit = 8) {
+        const map = new Map<string, { name: string; qty: number; amount: number; price: number }>();
+        for (const bill of bills) {
+            for (const line of this.billLineStats(bill).lines) {
+                const current = map.get(line.stockId) || { name: line.name, qty: 0, amount: 0, price: line.price };
+                current.qty += line.qty;
+                current.amount += line.amount;
+                map.set(line.stockId, current);
+            }
+        }
+        return [...map.values()]
+            .sort((a, b) => b.qty - a.qty || b.amount - a.amount)
+            .slice(0, limit)
+            .map((product, index) => ({
+                rank: index + 1,
+                name: product.name,
+                qty: product.qty,
+                amount: product.amount,
+                price: product.price,
+            }));
+    }
+
+    /**
+     * Each machine is read from the bill table of its own shop.
+     * shopPhonenumber last-8 digits maps to owner uuid via +85620.
+     */
+    private async compareVendingMachineSaleReports(
+        machines: any[],
+        fromDate: Date,
+        toDate: Date,
+        sessionOwnerUuid: string,
+        crossOwner: boolean,
+    ) {
+        const requested: Array<{ machineId: string; shopPhonenumber: string }> = [];
+        const seen = new Set<string>();
+        for (const item of machines) {
+            const machineId = String(item?.machineId ?? '').trim();
+            if (!machineId || seen.has(machineId)) continue;
+            seen.add(machineId);
+            requested.push({
+                machineId,
+                shopPhonenumber: this.normalizeCompareShopPhone(item?.shopPhonenumber),
+            });
+        }
+
+        const ownerByPhone = new Map<string, string>();
+        if (crossOwner) {
+            const phones = [...new Set(requested.map((item) => item.shopPhonenumber).filter(Boolean))];
+            await Promise.all(phones.map(async (phone) => {
+                try {
+                    const found = await findUuidByPhoneNumberOnUserManager(`+85620${phone}`);
+                    ownerByPhone.set(phone, found?.uuid ? String(found.uuid) : '');
+                } catch (error) {
+                    console.error('compare shop phone lookup failed', phone, error);
+                    ownerByPhone.set(phone, '');
+                }
+            }));
+        }
+
+        const unresolved: Array<{ machineId: string; shopPhonenumber: string; reason: string }> = [];
+        const idsByOwner = new Map<string, string[]>();
+        for (const item of requested) {
+            let ownerUuid = '';
+            let reason = '';
+            if (crossOwner) {
+                if (!item.shopPhonenumber) {
+                    reason = 'missing shopPhone and imei';
+                } else {
+                    ownerUuid = ownerByPhone.get(item.shopPhonenumber) || '';
+                    if (!ownerUuid) reason = 'owner not found for shop phone';
+                }
+            } else {
+                ownerUuid = sessionOwnerUuid;
+                if (!ownerUuid) reason = 'missing owner';
+            }
+            if (!ownerUuid) {
+                unresolved.push({ machineId: item.machineId, shopPhonenumber: item.shopPhonenumber, reason });
+                continue;
+            }
+            const ids = idsByOwner.get(ownerUuid) || [];
+            ids.push(item.machineId);
+            idsByOwner.set(ownerUuid, ids);
+        }
+
+        const billsByMachine = new Map<string, any[]>();
+        requested.forEach((item) => billsByMachine.set(item.machineId, []));
+        await Promise.all([...idsByOwner.entries()].map(async ([ownerUuid, ids]) => {
+            const run = await this.getReportSaleManyMachine(ids, fromDate, toDate, ownerUuid);
+            for (const row of run?.rows || []) {
+                const plain = typeof (row as any)?.get === 'function' ? (row as any).get({ plain: true }) : row;
+                const machineId = String(plain?.machineId ?? '');
+                const bucket = billsByMachine.get(machineId);
+                if (!bucket) continue;
+                bucket.push(plain);
+            }
+        }));
+
+        const unresolvedIds = new Set(unresolved.map((item) => item.machineId));
+        const machineRows = requested.map((item) => {
+            const bills = billsByMachine.get(item.machineId) || [];
+            const qty = bills.reduce((sum, bill) => sum + this.billLineStats(bill).qty, 0);
+            const amount = bills.reduce((sum, bill) => sum + (Number(bill?.totalvalue) || 0), 0);
+            const top = this.buildCompareTopProducts(bills, 1)[0];
+            return {
+                machineId: item.machineId,
+                shopPhonenumber: item.shopPhonenumber,
+                orderCount: bills.length,
+                qty,
+                amount,
+                avgOrder: bills.length ? amount / bills.length : 0,
+                sharePct: 0,
+                vsAverage: 0,
+                topProduct: top?.name || '-',
+                topProductQty: top?.qty || 0,
+                unresolved: unresolvedIds.has(item.machineId),
+            };
+        });
+
+        const totalAmount = machineRows.reduce((sum, row) => sum + row.amount, 0);
+        const average = machineRows.length ? totalAmount / machineRows.length : 0;
+        machineRows.forEach((row) => {
+            row.sharePct = totalAmount > 0 ? (row.amount / totalAmount) * 100 : 0;
+            row.vsAverage = row.amount - average;
+        });
+        machineRows.sort((a, b) => b.amount - a.amount || b.qty - a.qty || a.machineId.localeCompare(b.machineId));
+
+        const allBills = [...billsByMachine.values()].reduce((all, bills) => all.concat(bills), [] as any[]);
+        return {
+            machines: machineRows,
+            unresolved,
+            totals: {
+                amount: totalAmount,
+                qty: machineRows.reduce((sum, row) => sum + row.qty, 0),
+                orderCount: machineRows.reduce((sum, row) => sum + row.orderCount, 0),
+            },
+            topProducts: this.buildCompareTopProducts(allBills, 8),
+            message: IENMessage.success,
+        };
     }
 
 

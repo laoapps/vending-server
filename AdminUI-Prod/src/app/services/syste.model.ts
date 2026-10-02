@@ -1646,6 +1646,8 @@ export interface MapMachine {
   machineId: string;
   location: string;
   shopPhone: string;
+  /** Device id from getAllMachines data[0].imei, format 20 + 8-digit shop phone. */
+  imei?: string;
   latitude: number;
   longitude: number;
   status: 'Online' | 'Broken' | 'Unknown';
@@ -1678,6 +1680,7 @@ export interface SaleOrderLine {
 
 export interface SaleOrderBill {
   id?: number | string;
+  machineId?: string;
   createdAt: string;
   paymentstatus: string;
   totalvalue: number;

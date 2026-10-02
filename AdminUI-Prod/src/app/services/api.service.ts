@@ -610,6 +610,15 @@ export class ApiService {
         return this.http.post(this.url + '/loadVendingMachineSaleBillReportManyMachine', payload, { headers: this.headerBase() });
     }
 
+    compareVendingMachineSaleBillReport(data: any) {
+        const secret = localStorage.getItem('secretLocal');
+        const payload = {
+            ...data,
+            secret,
+        };
+        return this.http.post(this.url + '/compareVendingMachineSaleBillReport', payload, { headers: this.headerBase() });
+    }
+
     loadAllVendingMachinesTodaySalesSummary() {
         const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
         const shopPhonenumber = localStorage.getItem('phoneNumberLocal');

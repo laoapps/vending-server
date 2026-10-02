@@ -18,6 +18,21 @@ const TZ7_ZONE = 'Asia/Vientiane';
 const HIDDEN_STORAGE_KEY = 'machineMapHiddenIds';
 const SORT_STORAGE_KEY = 'machineMapSortMode';
 
+interface CompareMachineRow {
+  machineId: string;
+  location: string;
+  owner: string;
+  status: string;
+  orderCount: number;
+  qty: number;
+  amount: number;
+  sharePct: number;
+  avgOrder: number;
+  topProduct: string;
+  topProductQty: number;
+  vsAverage: number;
+}
+
 Chart.register(...registerables);
 @Component({
   selector: 'app-machine-map',
@@ -132,6 +147,33 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   private insightWeekdayChart: Chart | null = null;
   private insightHourChart: Chart | null = null;
   private insightLoadToken = 0;
+
+  // Multi-machine sales comparison
+  compareMachineIds: string[] = [];
+  compareOpen = false;
+  comparePeriod: InsightPeriodKey | 'custom' = 'thisMonth';
+  compareFromDate = '';
+  compareToDate = '';
+  compareLoading = false;
+  compareError = '';
+  compareRows: CompareMachineRow[] = [];
+  compareTopProducts: TopSaleProduct[] = [];
+  compareTotalQty = 0;
+  compareTotalAmount = 0;
+  compareTotalOrders = 0;
+  readonly comparePeriodOptions: Array<{ key: InsightPeriodKey; label: string }> = [
+    { key: 'today', label: 'ມື້ນີ້' },
+    { key: 'yesterday', label: 'ມື້ວານ' },
+    { key: 'thisWeek', label: 'ອາທິດນີ້' },
+    { key: 'lastWeek', label: 'ອາທິດກ່ອນ' },
+    { key: 'thisMonth', label: 'ເດືອນນີ້' },
+    { key: 'lastMonth', label: 'ເດືອນກ່ອນ' },
+  ];
+  private compareChart: Chart | null = null;
+  private compareLoadToken = 0;
+  private compareReloadTimer?: ReturnType<typeof setTimeout>;
+  private suppressCompareDateChange = false;
+
   listView: MachineListView = 'machine';
 
   constructor(
@@ -245,6 +287,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
   }
 
   openInsightPanel(m: MapMachine) {
+    if (this.compareOpen) this.closeComparePanel();
     this.insightMachine = m;
     this.insightOpen = true;
     this.insightError = '';
@@ -368,6 +411,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     this.flashClearTimers.clear();
     if (this.latestOrderBannerTimer) clearTimeout(this.latestOrderBannerTimer);
     this.destroyInsightCharts();
+    this.destroyCompareChart();
+    if (this.compareReloadTimer) clearTimeout(this.compareReloadTimer);
     this.destroyMap();
   }
 
@@ -515,10 +560,12 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
     return `${y}-${m}-${day}`;
   }
 
-  /** Use setting.shopPhone for API shopPhonenumber (last 8 digits). */
+  /** Prefer shopPhone (8 digits). Fall back to imei, which is 20 + those 8 digits. */
   private resolveShopPhonenumber(machine?: MapMachine | null): string {
-    const raw = String(machine?.shopPhone || '').replace(/\D/g, '');
-    return raw.slice(-8);
+    const shopPhone = String(machine?.shopPhone || '').replace(/\D/g, '');
+    if (shopPhone) return shopPhone.slice(-8);
+    const imei = String(machine?.imei || '').replace(/\D/g, '');
+    return imei.slice(-8);
   }
 
   /** Convert API timezone-0 (UTC) datetime → Asia/Vientiane (+7) wall clock. */
@@ -548,6 +595,9 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const lineQty = lines.reduce((s, l) => s + (l.qty || 0), 0);
       return {
         id: bill?.id,
+        machineId: bill?.machineId != null
+          ? String(bill.machineId)
+          : (bill?.dataValues?.machineId != null ? String(bill.dataValues.machineId) : undefined),
         createdAt: this.convertUtcToTz7(bill?.createdAt),
         paymentstatus: bill?.paymentstatus,
         totalvalue: Number(bill?.totalvalue) || 0,
@@ -1503,6 +1553,9 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
         const shopPhone = (d?.shopPhone != null && String(d.shopPhone).trim() !== '')
           ? String(d.shopPhone).trim()
           : '';
+        const imei = (d?.imei != null && String(d.imei).trim() !== '')
+          ? String(d.imei).trim()
+          : '';
 
         const sales = this.todaySalesByMachine.get(machine.machineId);
         const monthSales = this.monthSalesByMachine.get(machine.machineId);
@@ -1511,6 +1564,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           machineId: machine.machineId,
           location,
           shopPhone,
+          imei,
           latitude: lat,
           longitude: lng,
           status,
@@ -1574,6 +1628,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const statusClass = m.status === 'Online' ? 'online' : 'offline';
       const flashClass = this.isFlashing(m.machineId) ? 'order-flash' : '';
       const selectedClass = this.selectedMachineId === m.machineId ? 'selected' : '';
+      const comparedClass = this.isCompared(m.machineId) ? 'compared' : '';
       const salesLine = `${m.qtyToday || 0} ຊິ້ນ · ${this.formatAmount(m.amountToday)} LAK`;
       const monthLine = `ເດືອນນີ້: ${m.qtyMonth || 0} ຊິ້ນ · ${this.formatAmount(m.amountMonth)} LAK`;
       const lastOrderLine = m.lastOrderAt
@@ -1584,7 +1639,7 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
       const icon = L.divIcon({
         className: 'machine-marker',
         html: `
-          <div class="marker-wrap ${statusClass} ${flashClass} ${selectedClass}">
+          <div class="marker-wrap ${statusClass} ${flashClass} ${selectedClass} ${comparedClass}">
             <div class="marker-label">${this.escapeHtml(label)}</div>
             <div class="marker-sales">${this.escapeHtml(salesLine)}</div>
             <div class="marker-month">${this.escapeHtml(monthLine)}</div>
@@ -1774,6 +1829,298 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
 
   get ownerGroups(): MachineGroup[] {
     return this.buildGroups((m) => (m.owner || '').trim() || 'Unknown');
+  }
+
+  isCompared(machineId: string): boolean {
+    return this.compareMachineIds.includes(machineId);
+  }
+
+  get comparePreview(): string {
+    const ids = this.compareMachineIds;
+    if (ids.length <= 3) return ids.join(', ');
+    return `${ids.slice(0, 3).join(', ')} +${ids.length - 3}`;
+  }
+
+  get compareBest(): CompareMachineRow | null {
+    return this.compareRows[0] || null;
+  }
+
+  get compareWeakest(): CompareMachineRow | null {
+    if (this.compareRows.length < 2) return null;
+    return this.compareRows[this.compareRows.length - 1];
+  }
+
+  get compareAverageAmount(): number {
+    if (!this.compareRows.length) return 0;
+    return this.compareTotalAmount / this.compareRows.length;
+  }
+
+  get compareChartHeight(): number {
+    return Math.min(520, Math.max(180, this.compareRows.length * 36));
+  }
+
+  isGroupFullyCompared(g: MachineGroup): boolean {
+    return g.machines.length > 0 && g.machines.every((m) => this.isCompared(m.machineId));
+  }
+
+  toggleCompare(machineId: string, event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (this.isCompared(machineId)) {
+      this.compareMachineIds = this.compareMachineIds.filter((id) => id !== machineId);
+    } else {
+      this.compareMachineIds = [...this.compareMachineIds, machineId];
+    }
+    this.renderMarkers(false);
+    this.scheduleCompareReload();
+  }
+
+  toggleGroupCompare(g: MachineGroup, event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const ids = g.machines.map((m) => m.machineId);
+    if (this.isGroupFullyCompared(g)) {
+      const drop = new Set(ids);
+      this.compareMachineIds = this.compareMachineIds.filter((id) => !drop.has(id));
+    } else {
+      const next = new Set(this.compareMachineIds);
+      ids.forEach((id) => next.add(id));
+      this.compareMachineIds = [...next];
+    }
+    this.renderMarkers(false);
+    this.scheduleCompareReload();
+  }
+
+  selectFilteredForCompare() {
+    const next = new Set(this.compareMachineIds);
+    this.filteredMachines.forEach((m) => next.add(m.machineId));
+    this.compareMachineIds = [...next];
+    this.renderMarkers(false);
+    this.scheduleCompareReload();
+  }
+
+  clearCompareSelection() {
+    this.compareMachineIds = [];
+    this.compareRows = [];
+    this.compareTopProducts = [];
+    this.compareTotalQty = 0;
+    this.compareTotalAmount = 0;
+    this.compareTotalOrders = 0;
+    this.compareError = '';
+    this.destroyCompareChart();
+    this.renderMarkers(false);
+  }
+
+  openComparePanel() {
+    if (this.compareMachineIds.length < 2) {
+      this.compareError = 'ເລືອກຢ່າງໜ້ອຍ 2 ຕູ້ເພື່ອທຽບ';
+      return;
+    }
+    if (this.insightOpen) this.closeInsightPanel();
+    if (!this.compareFromDate || !this.compareToDate || this.comparePeriod !== 'custom') {
+      this.applyComparePeriodDates(this.comparePeriod === 'custom' ? 'thisMonth' : this.comparePeriod);
+    }
+    this.compareOpen = true;
+    this.compareError = '';
+    this.loadCompare();
+    setTimeout(() => this.map?.invalidateSize(), 220);
+  }
+
+  closeComparePanel() {
+    this.compareOpen = false;
+    this.compareLoading = false;
+    this.compareLoadToken++;
+    this.destroyCompareChart();
+    setTimeout(() => this.map?.invalidateSize(), 220);
+  }
+
+  setComparePeriod(key: InsightPeriodKey) {
+    this.comparePeriod = key;
+    this.applyComparePeriodDates(key);
+    if (this.compareOpen) this.loadCompare();
+  }
+
+  onCompareDatesChange() {
+    if (this.suppressCompareDateChange || this.comparePeriod === 'custom') return;
+    this.comparePeriod = 'custom';
+  }
+
+  isWeakestRow(index: number, row: CompareMachineRow): boolean {
+    const best = this.compareBest;
+    return index === this.compareRows.length - 1
+      && this.compareRows.length > 1
+      && !!best
+      && row.machineId !== best.machineId
+      && row.amount < best.amount;
+  }
+
+  formatShare(value?: number): string {
+    return (Number(value) || 0).toLocaleString('en-US', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+  }
+
+  private applyComparePeriodDates(key: InsightPeriodKey) {
+    const range = this.getInsightDateRanges()[key];
+    this.suppressCompareDateChange = true;
+    this.compareFromDate = range.fromDate;
+    this.compareToDate = range.toDate;
+    setTimeout(() => {
+      this.suppressCompareDateChange = false;
+    });
+  }
+
+  private scheduleCompareReload() {
+    if (!this.compareOpen) return;
+    if (this.compareMachineIds.length < 2) {
+      this.compareRows = [];
+      this.compareTopProducts = [];
+      this.compareTotalQty = 0;
+      this.compareTotalAmount = 0;
+      this.compareTotalOrders = 0;
+      this.compareError = 'ເລືອກຢ່າງໜ້ອຍ 2 ຕູ້ເພື່ອທຽບ';
+      this.destroyCompareChart();
+      return;
+    }
+    if (this.compareReloadTimer) clearTimeout(this.compareReloadTimer);
+    this.compareReloadTimer = setTimeout(() => this.loadCompare(), 400);
+  }
+
+  async loadCompare() {
+    if (this.compareMachineIds.length < 2) {
+      this.compareError = 'ເລືອກຢ່າງໜ້ອຍ 2 ຕູ້ເພື່ອທຽບ';
+      return;
+    }
+    if (!this.compareFromDate || !this.compareToDate) {
+      this.compareError = 'ເລືອກວັນທີ່ເລີ່ມ ແລະ ວັນທີ່ສິ້ນສຸດ';
+      return;
+    }
+    if (this.compareFromDate > this.compareToDate) {
+      this.compareError = 'ວັນທີ່ເລີ່ມຕ້ອງບໍ່ຫຼາຍກວ່າວັນທີ່ສິ້ນສຸດ';
+      return;
+    }
+
+    const token = ++this.compareLoadToken;
+    this.compareLoading = true;
+    this.compareError = '';
+    const authToken = localStorage.getItem('token') || localStorage.getItem('lva_token');
+    const machines = this.compareMachineIds.map((machineId) => {
+      const machine = this.machines.find((item) => item.machineId === machineId);
+      return {
+        machineId,
+        shopPhonenumber: this.resolveShopPhonenumber(machine),
+      };
+    });
+
+    try {
+      const res: any = await firstValueFrom(
+        this.apiService.compareVendingMachineSaleBillReport({
+          machines,
+          fromDate: this.compareFromDate,
+          toDate: this.compareToDate,
+          token: authToken,
+        }),
+      );
+      if (token !== this.compareLoadToken) return;
+      if (res?.status !== 1) {
+        this.compareError = res?.message || 'ໂຫຼດລາຍງານທຽບບໍ່ສຳເລັດ';
+        this.compareRows = [];
+        this.compareTopProducts = [];
+        return;
+      }
+      this.applyServerCompare(res?.data || {});
+      const unresolved = Array.isArray(res?.data?.unresolved) ? res.data.unresolved : [];
+      if (unresolved.length) {
+        const ids = unresolved.map((item: any) => item?.machineId).filter(Boolean).join(', ');
+        this.compareError = `ດຶງບາງຕູ້ບໍ່ໄດ້ເພາະບໍ່ມີ shopPhone/imei ຫຼື ຫາເຈົ້າຂອງບໍ່ເຈີ: ${ids}`;
+      }
+    } catch (err: any) {
+      if (token !== this.compareLoadToken) return;
+      console.error('compare report failed', err);
+      this.compareError = err?.message || 'ໂຫຼດລາຍງານທຽບບໍ່ສຳເລັດ';
+      this.compareRows = [];
+      this.compareTopProducts = [];
+    } finally {
+      if (token === this.compareLoadToken) {
+        this.compareLoading = false;
+        setTimeout(() => {
+          if (token !== this.compareLoadToken || !this.compareOpen) return;
+          this.renderCompareChart();
+        }, 80);
+      }
+    }
+  }
+
+  private applyServerCompare(payload: any) {
+    const list = Array.isArray(payload?.machines) ? payload.machines : [];
+    const totals = payload?.totals || {};
+    this.compareRows = list.map((item: any) => {
+      const machineId = String(item?.machineId || '');
+      const machine = this.machines.find((entry) => entry.machineId === machineId);
+      return {
+        machineId,
+        location: machine?.location || '',
+        owner: machine?.owner || '',
+        status: machine?.status || 'Unknown',
+        orderCount: Number(item?.orderCount) || 0,
+        qty: Number(item?.qty) || 0,
+        amount: Number(item?.amount) || 0,
+        sharePct: Number(item?.sharePct) || 0,
+        avgOrder: Number(item?.avgOrder) || 0,
+        topProduct: item?.topProduct || '-',
+        topProductQty: Number(item?.topProductQty) || 0,
+        vsAverage: Number(item?.vsAverage) || 0,
+      };
+    });
+    this.compareTotalAmount = Number(totals.amount) || 0;
+    this.compareTotalQty = Number(totals.qty) || 0;
+    this.compareTotalOrders = Number(totals.orderCount) || 0;
+    this.compareTopProducts = Array.isArray(payload?.topProducts) ? payload.topProducts : [];
+  }
+
+  private destroyCompareChart() {
+    this.compareChart?.destroy();
+    this.compareChart = null;
+  }
+
+  private renderCompareChart() {
+    const canvas = document.getElementById('compare-amount-chart') as HTMLCanvasElement | null;
+    if (!canvas || !this.compareRows.length) {
+      this.destroyCompareChart();
+      return;
+    }
+
+    const bestAmount = this.compareRows[0]?.amount || 0;
+    const colors = this.compareRows.map((row, index) => {
+      if (index === 0 && this.compareRows.length > 1 && row.amount > 0) return 'rgba(46, 125, 50, 0.88)';
+      if (index === this.compareRows.length - 1 && row.amount < bestAmount) return 'rgba(239, 108, 0, 0.88)';
+      return 'rgba(25, 118, 210, 0.78)';
+    });
+
+    this.compareChart?.destroy();
+    this.compareChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: this.compareRows.map((row) => row.machineId),
+        datasets: [
+          {
+            label: 'ຍອດເງິນ (LAK)',
+            data: this.compareRows.map((row) => row.amount),
+            backgroundColor: colors,
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        ...this.chartBaseOptions(),
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'ທຽບຍອດເງິນຕາມຕູ້' },
+        },
+        scales: {
+          x: { beginAtZero: true },
+        },
+      },
+    });
   }
 
   focusGroup(g: MachineGroup, event?: Event) {

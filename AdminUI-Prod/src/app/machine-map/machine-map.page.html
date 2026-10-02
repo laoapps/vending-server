@@ -14,7 +14,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" [scrollY]="!insightOpen">
+<ion-content [fullscreen]="true" [scrollY]="!insightOpen && !compareOpen">
   <div class="page-shell" [class.insight-mode]="insightOpen">
     <div class="map-toolbar">
       <div class="stat">
@@ -64,7 +64,15 @@
       <span class="rt-time">ຄຳສັ່ງລ່າສຸດ {{ formatOrderTime(latestOrder.at) }}</span>
     </div>
 
-    <div class="map-layout" [class.insight-open]="insightOpen">
+    <div class="compare-bar" *ngIf="compareMachineIds.length">
+      <strong>ເລືອກແລ້ວ {{ compareMachineIds.length }} ຕູ້</strong>
+      <span class="compare-ids">{{ comparePreview }}</span>
+      <button type="button" class="compare-open-btn" (click)="openComparePanel()"
+        [disabled]="compareMachineIds.length < 2">ທຽບຍອດຂາຍ</button>
+      <button type="button" class="compare-clear-btn" (click)="clearCompareSelection()">ລ້າງ</button>
+    </div>
+
+    <div class="map-layout" [class.insight-open]="insightOpen" [class.compare-open]="compareOpen">
       <aside class="machine-list-panel" *ngIf="!insightOpen">
         <div class="list-header">
           <div class="list-title">
@@ -90,6 +98,12 @@
               <button type="button" class="link-btn" (click)="hideAll()"
                 [disabled]="!machines.length">ເຊື່ອງທັງໝົດ</button>
             </div>
+            <div class="list-actions">
+              <button type="button" class="link-btn" (click)="selectFilteredForCompare()"
+                [disabled]="filteredMachines.length < 2">ເລືອກທຽບລາຍການນີ້</button>
+              <button type="button" class="link-btn" (click)="clearCompareSelection()"
+                [disabled]="!compareMachineIds.length">ລ້າງການເລືອກ</button>
+            </div>
           </div>
 
           <input class="list-search" type="search" [(ngModel)]="listFilter" (keydown)="onListSearchKeydown($event)"
@@ -107,16 +121,22 @@
           <ng-container *ngIf="listView === 'location' || listView === 'owner'">
             <section class="location-group"
               *ngFor="let g of (listView === 'owner' ? ownerGroups : locationGroups); trackBy: trackByGroupKey">
-              <button type="button" class="location-group-head" (click)="focusGroup(g, $event)">
-                <div class="location-group-title">
-                  <strong>{{ g.label }}</strong>
-                  <span>{{ g.machines.length }} ຕູ້ · {{ g.onlineCount }} ອອນລາຍ</span>
-                </div>
-                <div class="location-group-totals">
-                  <strong>{{ g.qtyToday || 0 }} ຊິ້ນ · {{ formatAmount(g.amountToday) }} LAK</strong>
-                  <span>ເດືອນນີ້: {{ g.qtyMonth || 0 }} ຊິ້ນ · {{ formatAmount(g.amountMonth) }} LAK</span>
-                </div>
-              </button>
+              <div class="location-group-head">
+                <button type="button" class="location-group-main" (click)="focusGroup(g, $event)">
+                  <div class="location-group-title">
+                    <strong>{{ g.label }}</strong>
+                    <span>{{ g.machines.length }} ຕູ້ · {{ g.onlineCount }} ອອນລາຍ</span>
+                  </div>
+                  <div class="location-group-totals">
+                    <strong>{{ g.qtyToday || 0 }} ຊິ້ນ · {{ formatAmount(g.amountToday) }} LAK</strong>
+                    <span>ເດືອນນີ້: {{ g.qtyMonth || 0 }} ຊິ້ນ · {{ formatAmount(g.amountMonth) }} LAK</span>
+                  </div>
+                </button>
+                <button type="button" class="compare-chip" [class.on]="isGroupFullyCompared(g)"
+                  [disabled]="g.machines.length < 1" (click)="toggleGroupCompare(g, $event)">
+                  {{ isGroupFullyCompared(g) ? '✓ ຖອນທຽບກຸ່ມ' : 'ເລືອກທຽບກຸ່ມ' }}
+                </button>
+              </div>
 
               <ng-container *ngFor="let m of g.machines; trackBy: trackByMachineId">
                 <ng-container
@@ -129,7 +149,7 @@
         <ng-template #machineRow let-m="m" let-hideOwner="hideOwner" let-hideLocation="hideLocation">
           <div class="machine-item" [class.nested]="listView !== 'machine'"
             [class.hidden-on-map]="!isVisible(m.machineId)" [class.order-flash]="isFlashing(m.machineId)"
-            [class.selected]="selectedMachineId === m.machineId">
+            [class.selected]="selectedMachineId === m.machineId" [class.compared]="isCompared(m.machineId)">
             <input type="checkbox" [checked]="isVisible(m.machineId)"
               (change)="toggleMachine(m.machineId, $any($event.target).checked)" (click)="$event.stopPropagation()" />
             <span class="status-dot" [class.online]="m.status === 'Online'"
@@ -149,9 +169,15 @@
               </span>
             </button>
 
-            <button type="button" class="sales-btn" (click)="openSalesPanel(m, $event)">
-              ເບີ່ງຍອດຂາຍ
-            </button>
+            <div class="machine-actions">
+              <button type="button" class="compare-chip" [class.on]="isCompared(m.machineId)"
+                (click)="toggleCompare(m.machineId, $event)">
+                {{ isCompared(m.machineId) ? '✓ ທຽບ' : 'ທຽບ' }}
+              </button>
+              <button type="button" class="sales-btn" (click)="openSalesPanel(m, $event)">
+                ເບີ່ງຍອດຂາຍ
+              </button>
+            </div>
           </div>
         </ng-template>
 
@@ -408,6 +434,129 @@
               </div>
             </section>
           </div>
+        </div>
+      </aside>
+
+      <aside class="compare-panel" *ngIf="compareOpen">
+        <div class="compare-header">
+          <div>
+            <strong>ທຽບຍອດຂາຍ {{ compareMachineIds.length }} ຕູ້</strong>
+            <div class="compare-sub">{{ compareFromDate }} → {{ compareToDate }}</div>
+          </div>
+          <button type="button" class="insight-close" (click)="closeComparePanel()" aria-label="close">×</button>
+        </div>
+
+        <div class="compare-body">
+          <div class="compare-periods">
+            <button type="button" *ngFor="let opt of comparePeriodOptions" [class.active]="comparePeriod === opt.key"
+              (click)="setComparePeriod(opt.key)">{{ opt.label }}</button>
+          </div>
+
+          <div class="compare-dates">
+            <label>
+              ຈາກວັນທີ
+              <input type="date" [(ngModel)]="compareFromDate" (ngModelChange)="onCompareDatesChange()" />
+            </label>
+            <label>
+              ຫາວັນທີ
+              <input type="date" [(ngModel)]="compareToDate" (ngModelChange)="onCompareDatesChange()" />
+            </label>
+            <button type="button" class="sales-load-btn" (click)="loadCompare()" [disabled]="compareLoading">
+              {{ compareLoading ? 'ກຳລັງໂຫຼດ...' : 'ດຶງລາຍງານ' }}
+            </button>
+          </div>
+
+          <div class="compare-error" *ngIf="compareError">{{ compareError }}</div>
+          <div class="compare-loading" *ngIf="compareLoading">ກຳລັງດຶງລາຍງານຍອດຂາຍຂອງຕູ້ທີ່ເລືອກ...</div>
+
+          <ng-container *ngIf="!compareLoading && compareRows.length">
+            <div class="compare-summary">
+              <div>
+                <span>ລວມທັງໝົດ</span>
+                <strong>{{ formatAmount(compareTotalAmount) }} LAK</strong>
+                <em>{{ compareTotalQty }} ຊິ້ນ · {{ compareTotalOrders }} orders</em>
+              </div>
+              <div>
+                <span>ສະເລ່ຍຕໍ່ຕູ້</span>
+                <strong>{{ formatAmount(compareAverageAmount) }} LAK</strong>
+                <em>{{ compareRows.length }} ຕູ້</em>
+              </div>
+              <div class="best" *ngIf="compareBest">
+                <span>ຂາຍດີສຸດ</span>
+                <strong>{{ compareBest.machineId }}</strong>
+                <em>{{ formatAmount(compareBest.amount) }} LAK · {{ formatShare(compareBest.sharePct) }}%</em>
+              </div>
+              <div class="weak" *ngIf="compareWeakest && compareBest && compareWeakest.machineId !== compareBest.machineId">
+                <span>ຂາຍໜ້ອຍສຸດ</span>
+                <strong>{{ compareWeakest.machineId }}</strong>
+                <em>ຕ່ຳກວ່າຕູ້ທີ່ດີສຸດ {{ formatAmount(compareBest.amount - compareWeakest.amount) }} LAK</em>
+              </div>
+            </div>
+
+            <div class="compare-chart" [style.height.px]="compareChartHeight">
+              <canvas id="compare-amount-chart"></canvas>
+            </div>
+
+            <div class="compare-table-wrap">
+              <table class="compare-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ຕູ້</th>
+                    <th>ຍອດເງິນ</th>
+                    <th>ສ່ວນແບ່ງ</th>
+                    <th>ຊິ້ນ</th>
+                    <th>Orders</th>
+                    <th>ສະເລ່ຍ/order</th>
+                    <th>ທຽບສະເລ່ຍ</th>
+                    <th>ສິນຄ້າຂາຍດີ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of compareRows; let i = index" [class.best]="i === 0 && row.amount > 0"
+                    [class.weak]="isWeakestRow(i, row)">
+                    <td>{{ i + 1 }}</td>
+                    <td>
+                      <strong>{{ row.machineId }}</strong>
+                      <span>{{ row.location || '-' }}</span>
+                      <span>{{ row.owner || '-' }} · {{ row.status === 'Online' ? 'ອອນລາຍ' : 'ອອບລາຍ' }}</span>
+                    </td>
+                    <td>{{ formatAmount(row.amount) }}</td>
+                    <td>
+                      <div class="share-track">
+                        <div class="share-fill" [style.width.%]="row.sharePct"></div>
+                      </div>
+                      {{ formatShare(row.sharePct) }}%
+                    </td>
+                    <td>{{ row.qty }}</td>
+                    <td>{{ row.orderCount }}</td>
+                    <td>{{ formatAmount(row.avgOrder) }}</td>
+                    <td [class.up]="row.vsAverage > 0" [class.down]="row.vsAverage < 0">
+                      {{ row.vsAverage > 0 ? '+' : '' }}{{ formatAmount(row.vsAverage) }}
+                    </td>
+                    <td>{{ row.topProduct }}<span *ngIf="row.topProductQty"> · {{ row.topProductQty }} ຊິ້ນ</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="compare-top" *ngIf="compareTopProducts.length">
+              <div class="top5-title">Top ສິນຄ້າຂາຍດີລວມທຸກຕູ້ທີ່ເລືອກ</div>
+              <div class="top5-list">
+                <article class="top5-item" *ngFor="let prod of compareTopProducts">
+                  <span class="top5-rank">#{{ prod.rank }}</span>
+                  <div class="top5-meta">
+                    <strong>{{ prod.name }}</strong>
+                    <span>{{ formatAmount(prod.price) }} LAK / ຊິ້ນ</span>
+                  </div>
+                  <div class="top5-stats">
+                    <strong>{{ prod.qty }} ຊິ້ນ</strong>
+                    <span>{{ formatAmount(prod.amount) }} LAK</span>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </ng-container>
         </div>
       </aside>
     </div>

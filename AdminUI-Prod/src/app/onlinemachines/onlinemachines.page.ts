@@ -527,6 +527,13 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       .then((modal) => modal.present());
   }
 
+  /** shopPhone is 8 digits; imei is 20 + those 8 digits. Prefer shopPhone when present. */
+  accountId(machine: MachineData): string {
+    const shopPhone = String(machine?.shopPhone ?? '').trim();
+    if (shopPhone) return shopPhone;
+    return String(machine?.imei ?? '').trim();
+  }
+
   showBilling(machineId: string, phoneNumber: string, ownerPhone: string) {
     localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
     localStorage.setItem('phoneMmoney', ownerPhone.slice(-8));
