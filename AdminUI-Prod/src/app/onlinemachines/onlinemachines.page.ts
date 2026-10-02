@@ -25,6 +25,7 @@ import { PickLocationModalComponent } from '../modals/pick-location-modal/pick-l
 import { TicketListPage } from '../ticket-list/ticket-list.page';
 import { SettingConfigPage } from '../setting-config/setting-config.page';
 import { CompareExcelPage } from '../compare-excel/compare-excel.page';
+import { CuiSalePage } from '../sale/cui-sale/cui-sale.page';
 
 interface MachineData {
   machineId: string;
@@ -87,6 +88,19 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   showAllSecrets = true;
   isRefreshing = false;
   flashClass = '';
+  toolsMachine: MachineData | null = null;
+
+  readonly machineTools: Array<{ id: string; label: string; icon: string; tone: string }> = [
+    { id: 'account', label: 'My Account', icon: 'person-outline', tone: 'account' },
+    { id: 'machine', label: 'My Machine', icon: 'laptop-outline', tone: 'machine' },
+    { id: 'products', label: 'My Products', icon: 'storefront-outline', tone: 'products' },
+    { id: 'images', label: 'Images', icon: 'images-outline', tone: 'images' },
+    { id: 'sale', label: 'My Sale', icon: 'pricetags-outline', tone: 'sale' },
+    { id: 'epin', label: 'EPIN Admin', icon: 'qr-code-outline', tone: 'epin' },
+    { id: 'find', label: 'Find My EPIN', icon: 'search-outline', tone: 'find' },
+    { id: 'ads', label: 'Advertisement', icon: 'megaphone-outline', tone: 'ads' },
+    { id: 'version', label: 'Version', icon: 'apps-outline', tone: 'version' },
+  ];
 
   constructor(public apiService: ApiService, private modalCtrl: ModalController) { }
 
@@ -358,7 +372,7 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       const secret = localStorage.getItem('secretLocal');
       const response = await axios.post(`${environment.url}/updateMachineLocationAdmin`, {
         secret,
-        shopPhonenumber: '',
+        shopPhonenumber: this.bindMachineShop(machine),
         token,
         data: {
           machineId: machine.machineId,
@@ -389,10 +403,20 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     }
   }
 
-  async exitApp(machineId: string) {
+  /** Remember this cabinet's shopPhone, else imei, before any request. localStorage is only the fallback. */
+  private bindMachineShop(machine?: MachineData | null): string {
+    if (!machine) return this.apiService.shopPhonenumber() || '';
+    this.apiService.rememberShop(machine);
+    const phone = this.apiService.shopPhonenumber(machine) || '';
+    if (phone) localStorage.setItem('phoneNumberLocal', phone);
+    return phone;
+  }
+
+  async exitApp(machine: MachineData) {
+    const machineId = machine?.machineId;
     try {
       const token = localStorage.getItem('token');
-      const shopPhonenumber = '';
+      const shopPhonenumber = this.bindMachineShop(machine);
       const secret = localStorage.getItem('secretLocal');
       const response = await axios.post(`${environment.url}/exitAppMachineAdmin`, {
         secret,
@@ -460,10 +484,11 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     }
   }
 
-  async refreshMachine(machineId: string) {
+  async refreshMachine(machine: MachineData) {
+    const machineId = machine?.machineId;
     try {
       const token = localStorage.getItem('token');
-      const shopPhonenumber = '';
+      const shopPhonenumber = this.bindMachineShop(machine);
       const secret = localStorage.getItem('secretLocal');
       const response = await axios.post(`${environment.url}/refreshMachineAdmin`, {
         secret,
@@ -483,7 +508,9 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     }
   }
 
-  showLogTemp(machineId: string) {
+  showLogTemp(machine: MachineData) {
+    this.bindMachineShop(machine);
+    const machineId = machine?.machineId;
     this.apiService.modal
       .create({
         component: LogTempPage,
@@ -494,7 +521,9 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       .then((modal) => modal.present());
   }
 
-  showClientLog(machineId: string) {
+  showClientLog(machine: MachineData) {
+    this.bindMachineShop(machine);
+    const machineId = machine?.machineId;
     this.apiService.modal
       .create({
         component: ReportClientPage,
@@ -516,62 +545,107 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       .then((modal) => modal.present());
   }
 
-  showSettings(settings: any) {
+  showSettings(machine: MachineData) {
+    this.bindMachineShop(machine);
     this.apiService.modal
       .create({
         component: SettingsModalPage,
-        componentProps: { settings },
+        componentProps: { settings: machine?.settings },
         cssClass: 'custom-modal',
         backdropDismiss: true,
       })
       .then((modal) => modal.present());
   }
 
-  /** shopPhone is 8 digits; imei is 20 + those 8 digits. Prefer shopPhone when present. */
-  accountId(machine: MachineData): string {
-    const shopPhone = String(machine?.shopPhone ?? '').trim();
-    if (shopPhone) return shopPhone;
-    return String(machine?.imei ?? '').trim();
-  }
-
-  showBilling(machineId: string, phoneNumber: string, ownerPhone: string) {
-    localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
+  showBilling(machine: MachineData) {
+    this.bindMachineShop(machine);
+    const ownerPhone = String(machine?.owner ?? '');
     localStorage.setItem('phoneMmoney', ownerPhone.slice(-8));
 
     this.apiService.modal
       .create({
         component: BillingPage,
-        componentProps: { machineId: machineId },
+        componentProps: { machineId: machine?.machineId },
         cssClass: 'custom-modal-full',
         backdropDismiss: true,
       })
       .then((modal) => modal.present());
   }
 
-  showBillNotPaid(machineId: string, otp: string, ownerUuid: any) {
-    this.apiService.showModal(BillnotPaidPage, { machineId: machineId, otp: otp, ownerUuid: ownerUuid }).then(r => {
+  showBillNotPaid(machine: MachineData) {
+    this.bindMachineShop(machine);
+    this.apiService.showModal(BillnotPaidPage, {
+      machineId: machine?.machineId,
+      otp: machine?.otp,
+      ownerUuid: machine?.ownerUuid,
+    }).then(r => {
       r.present();
       r.onDidDismiss().then(() => { });
     });
   }
 
-  showReportSale(machineId: string, otp: string) {
-    const props = { machineId: machineId, otp: otp };
+  showReportSale(machine: MachineData) {
+    this.bindMachineShop(machine);
+    const props = { machineId: machine?.machineId, otp: machine?.otp };
     this.apiService.showModal(SaleReportPage, props).then(r => {
       r.present();
     });
   }
 
-  showReportStock(machineId: string, otp: string) {
-    const props = { machineId: machineId, otp: otp };
+  showReportStock(machine: MachineData) {
+    this.bindMachineShop(machine);
+    const props = { machineId: machine?.machineId, otp: machine?.otp };
     this.apiService.showModal(StockReportPage, props).then(r => {
       r.present();
     });
   }
 
-  manage(phoneNumber: string, i: number = 1) {
-    localStorage.setItem('phoneNumberLocal', phoneNumber.slice(-8));
-    this.apiService.router.navigate(['/tabs/tab1']);
+  showCuiSale(machine: MachineData) {
+    this.bindMachineShop(machine);
+    this.apiService.showModal(CuiSalePage, {
+      machineId: machine?.machineId,
+      otp: machine?.otp,
+    }).then((modal) => {
+      modal?.present();
+    });
+  }
+
+  openMachineTools(machine: MachineData) {
+    if (!machine) return;
+    this.toolsMachine = machine;
+  }
+
+  closeMachineTools() {
+    this.toolsMachine = null;
+  }
+
+  pickMachineTool(id: string) {
+    const machine = this.toolsMachine;
+    this.toolsMachine = null;
+    if (!machine) return;
+    const pages: Record<string, any> = {
+      account: MyaccountPage,
+      machine: MachinePage,
+      products: ProductsPage,
+      images: ImagesproductPage,
+      sale: SalePage,
+      epin: EpinAdminPage,
+      find: FindMyEpinPage,
+      ads: AdvertisementPage,
+      version: VersionControlPage,
+    };
+    const component = pages[id];
+    if (component) this.openShopTool(machine, component);
+  }
+
+  private openShopTool(machine: MachineData, component: any) {
+    this.bindMachineShop(machine);
+    this.apiService.ownerUuid = localStorage.getItem('lva_ownerUuid');
+    this.apiService.passkeys = localStorage.getItem('lva_passkeys');
+    this.apiService.name = localStorage.getItem('lva_name');
+    this.apiService.showModal(component, {}).then((modal) => {
+      modal?.present();
+    });
   }
 
   triggerFlash() {
@@ -635,10 +709,11 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     await modal.present();
   }
 
-  async showTickets(machineId: string) {
+  async showTickets(machine: MachineData) {
+    this.bindMachineShop(machine);
     const modal = await this.modalCtrl.create({
       component: TicketListPage,
-      componentProps: { machineId },
+      componentProps: { machineId: machine?.machineId },
       cssClass: 'full-screen-modal',
       backdropDismiss: true,
       showBackdrop: true,

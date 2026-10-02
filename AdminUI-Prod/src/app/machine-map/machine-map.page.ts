@@ -515,6 +515,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
         fromDate: this.salesFromDate,
         toDate: this.salesToDate,
         token,
+        shopPhone: this.salesMachine.shopPhone,
+        imei: this.salesMachine.imei,
         shopPhonenumber: shopPhonenumber || undefined,
       })
       .subscribe({
@@ -770,6 +772,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
               fromDate: period.fromDate,
               toDate: period.toDate,
               token: authToken,
+              shopPhone: machine.shopPhone,
+              imei: machine.imei,
               shopPhonenumber: shopPhonenumber || undefined,
             }),
           );
@@ -836,6 +840,8 @@ export class MachineMapPage implements AfterViewInit, OnDestroy {
           fromDate: period.fromDate,
           toDate: period.toDate,
           token: authToken,
+          shopPhone: machine.shopPhone,
+          imei: machine.imei,
           shopPhonenumber: shopPhonenumber || undefined,
         }),
       );

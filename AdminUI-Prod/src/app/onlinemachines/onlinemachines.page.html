@@ -259,69 +259,75 @@
       <ion-grid class="button-grid">
         <ion-row>
           <ion-col size="4">
-            <ion-button expand="block" color="primary" (click)="showTickets(machine.machineId)">
+            <ion-button expand="block" color="primary" (click)="showTickets(machine)">
               <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
               Show Tickets
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="danger" (click)="exitApp(machine.machineId)">
+            <ion-button expand="block" color="danger" (click)="exitApp(machine)">
               <ion-icon slot="start" name="refresh-circle-outline"></ion-icon>
               Exit
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="warning" (click)="refreshMachine(machine.machineId)">
+            <ion-button expand="block" color="warning" (click)="refreshMachine(machine)">
               <ion-icon slot="start" name="sync-circle-outline"></ion-icon>
               Refresh
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="secondary" (click)="showLogTemp(machine.machineId)">
+            <ion-button expand="block" color="secondary" (click)="showLogTemp(machine)">
               <ion-icon slot="start" name="thermometer-outline"></ion-icon>
               Logs
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="secondary" (click)="showClientLog(machine.machineId)">
+            <ion-button expand="block" color="secondary" (click)="showClientLog(machine)">
               <ion-icon slot="start" name="thermometer-outline"></ion-icon>
               Client Logs
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="primary" (click)="manage(accountId(machine), 1)">
+            <ion-button expand="block" color="primary" (click)="openMachineTools(machine)">
               <ion-icon slot="start" name="laptop-outline"></ion-icon>
-              My Account
+              จัดการตู้
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="tertiary" (click)="showSettings(machine.settings)">
+            <ion-button expand="block" color="success" (click)="showCuiSale(machine)">
+              <ion-icon slot="start" name="grid-outline"></ion-icon>
+              CUI Sale
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="tertiary" (click)="showSettings(machine)">
               <ion-icon slot="start" name="settings-outline"></ion-icon>
               Settings
             </ion-button>
           </ion-col>
           <ion-col size="4">
             <ion-button expand="block" color="tertiary"
-              (click)="showBilling(machine.machineId, accountId(machine), machine.owner)">
+              (click)="showBilling(machine)">
               <ion-icon slot="start" name="bill"></ion-icon>
               Billing
             </ion-button>
           </ion-col>
           <ion-col size="4">
             <ion-button expand="block" color="tertiary"
-              (click)="showBillNotPaid(machine.machineId,machine.otp,machine.ownerUuid)">
+              (click)="showBillNotPaid(machine)">
               <ion-icon slot="start" name="bill"></ion-icon>
               ບິນບໍ່ທັນຈ່າຍ
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="tertiary" (click)="showReportSale(machine.machineId,machine.otp)">
+            <ion-button expand="block" color="tertiary" (click)="showReportSale(machine)">
               <ion-icon slot="start" name="bill"></ion-icon>
               ລາຍງານການຂາຍ
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="tertiary" (click)="showReportStock(machine.machineId,machine.otp)">
+            <ion-button expand="block" color="tertiary" (click)="showReportStock(machine)">
               <ion-icon slot="start" name="bill"></ion-icon>
               ລາຍງານ stock
             </ion-button>
@@ -331,3 +337,24 @@
     </ion-card-content>
   </ion-card>
 </ng-template>
+
+<div class="tools-backdrop" *ngIf="toolsMachine" (click)="closeMachineTools()">
+  <div class="tools-panel" (click)="$event.stopPropagation()" role="dialog" aria-label="จัดการตู้">
+    <div class="tools-head">
+      <div>
+        <strong>จัดการตู้</strong>
+        <span>เลือกหน้าที่ต้องการเปิด</span>
+      </div>
+      <button type="button" class="tools-close" (click)="closeMachineTools()" aria-label="ปิด">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+    <div class="tools-grid">
+      <button type="button" class="tool" *ngFor="let tool of machineTools" [class]="'tool tone-' + tool.tone"
+        (click)="pickMachineTool(tool.id)">
+        <span class="tool-icon"><ion-icon [name]="tool.icon"></ion-icon></span>
+        <span>{{ tool.label }}</span>
+      </button>
+    </div>
+  </div>
+</div>

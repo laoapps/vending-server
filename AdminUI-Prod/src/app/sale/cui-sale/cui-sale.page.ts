@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import axios from 'axios';
 import { ApiService } from 'src/app/services/api.service';
 import { CUISaleProcess } from '../processes/cuiSale.process';
 import { IENMessage } from 'src/app/models/base.model';
@@ -7,6 +8,7 @@ import { StockReportPage } from '../stock-report/stock-report.page';
 import { ReportdropPage } from 'src/app/reportdrop/reportdrop.page';
 import { IVendingMachineSale } from '../../services/syste.model';
 import { NewReportSalePage } from 'src/app/new-report-sale/new-report-sale.page';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-cui-sale',
@@ -39,6 +41,32 @@ export class CuiSalePage implements OnInit {
     this.apiService.modal.dismiss();
   }
 
+  /** Sale screen passes ready images in _l. Slots still holding a file id are loaded here. */
+  private async attachImages() {
+    const pending = new Map<string, IVendingMachineSale[]>();
+    for (const item of this.lists || []) {
+      const image = String(item?.stock?.image ?? '').trim();
+      if (!image || image.startsWith('data:') || image.startsWith('http')) continue;
+      const bucket = pending.get(image) || [];
+      bucket.push(item);
+      pending.set(image, bucket);
+    }
+
+    await Promise.all([...pending.entries()].map(async ([name, items]) => {
+      try {
+        const url = `${environment.filemanagerurl}downloadphoto?url=${name}&w=100&h=248`;
+        const run = await axios.get(url, { responseType: 'blob' });
+        const file = await this.apiService.convertBlobToBase64(run.data);
+        items.forEach((item) => {
+          item.stock.imageurl = name;
+          item.stock.image = file;
+        });
+      } catch (error) {
+        console.error('CUI sale image failed', name, error);
+      }
+    }));
+  }
+
   loadCUISaleList(): Promise<IVendingMachineSale[]> {
     return new Promise<any>(async (resolve, reject) => {
       try {
@@ -53,11 +81,12 @@ export class CuiSalePage implements OnInit {
         console.log(`list`, this.lists);
 
         if (this.lists != undefined && this.lists.length > 0) {
-          // const instock = this.lists.filter(item => item.stock.id != -1);
           this.lists.forEach(v => {
             const x = this._l?.find(x => x.stock?.name === v.stock?.name);
             if (x) { v.stock.image = x.stock.image; v.stock.imageurl = x.stock.imageurl }
           })
+          await this.attachImages();
+          this.lists = [...this.lists];
         }
         resolve(IENMessage.success);
 

@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import axios from 'axios';
 import { AlertController } from '@ionic/angular';
 import { environment } from 'src/environments/environment.prod';
+import { ApiService } from 'src/app/services/api.service';
 
 @Component({
   selector: 'app-new-report-sale',
@@ -16,7 +17,7 @@ export class NewReportSalePage implements OnInit {
   showToPicker = false;
   reports: any[] = [];
 
-  constructor(private alertCtrl: AlertController) { }
+  constructor(private alertCtrl: AlertController, private apiService: ApiService) { }
 
   ngOnInit() { }
 
@@ -38,7 +39,7 @@ export class NewReportSalePage implements OnInit {
       toDate: this.toDate,
       machineId: this.machineId,
       token: localStorage.getItem('lva_token'),
-      shopPhonenumber: localStorage.getItem('phoneNumberLocal'),
+      shopPhonenumber: this.apiService.shopPhonenumber(),
       secret: localStorage.getItem('secretLocal'),
     };
 

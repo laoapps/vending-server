@@ -81,7 +81,7 @@ export class AdminProductShowcasePage implements OnInit {
   private authBody() {
     return {
       token: localStorage.getItem('lva_token'),
-      shopPhonenumber: localStorage.getItem('phoneNumberLocal'),
+      shopPhonenumber: this.api.shopPhonenumber(),
       secret: localStorage.getItem('secretLocal'),
     };
   }
