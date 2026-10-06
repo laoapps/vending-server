@@ -292,25 +292,13 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
 
   async changeStock(position: number) {
     try {
-      const api: any = this.apiService;
-      let rx: any;
-      if (typeof api.listProduct === 'function') {
-        const call = api.listProduct('yes');
-        rx = call?.toPromise ? await call.toPromise() : await call;
-      } else {
-        const res = await api.post('listProduct?isActive=yes', {
-          token: localStorage.getItem('token') || localStorage.getItem('lva_token'),
-          machineId: api.machineId?.machineId || api.machineId,
-          otp: localStorage.getItem('otp'),
-        });
-        rx = res?.data ?? res;
-      }
-      const rows = (Array.isArray(rx?.data) ? rx.data : []).filter(
-        (p: any) => p?.isActive === true || p?.isActive === 1,
-      );
-      if (!rows.length) return alert('no stock');
-      this.apiService.stock = rows;
-      this.stock = rows;
+      const rx = await this.apiService.loadVendingSale();
+      const r = rx?.data;
+      if (!r?.status) return alert(r?.message || 'no stock');
+      const saleServer = (r.data || []) as Array<IVendingMachineSale>;
+      this.apiService.newProductItems(saleServer);
+      this.stock = this.apiService.stock || [];
+      if (!this.stock.length) return alert('no stock');
     } catch (e) {
       console.log(e);
       return alert('no stock');
