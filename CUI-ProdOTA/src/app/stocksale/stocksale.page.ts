@@ -290,38 +290,40 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
     return false;
   }
 
-  async changeStock(position: number) {
-    try {
-      const rx = await this.apiService.loadVendingSale();
-      const r = rx?.data;
-      if (!r?.status) return alert(r?.message || 'no stock');
-      const saleServer = (r.data || []) as Array<IVendingMachineSale>;
-      this.apiService.newProductItems(saleServer);
-      this.stock = this.apiService.stock || [];
-      if (!this.stock.length) return alert('no stock');
-    } catch (e) {
-      console.log(e);
-      return alert('no stock');
-    }
-
-    const s = await this.apiService.showModal(StockPage);
-    s.onDidDismiss().then(r => {
-      try {
-        if (r.data) {
-          const picked = JSON.parse(JSON.stringify(r.data.data)) as IStock;
-          const x = this.saleStock.find(v => v.position == position);
-          const qtt = x.stock.qtty;
-          if (x) Object.keys(x.stock).forEach(k => x.stock[k] = picked[k]);
-          x.stock.qtty = qtt;
-          if (this.saleStock[0].position == 0) this.compensation = 1;
-          this.save();
-        }
-      } catch (error) {
-        console.log(error);
-      }
+ async changeStock(position: number) {
+  try {
+    const run = await this.loadStockListProcess.Init({
+      ownerUuid: this.ownerUuid,
+      filemanagerURL: this.filemanagerURL,
     });
-    s.present();
+    if (run.message != IENMessage.success) return alert(run.message || 'no stock');
+    this.apiService.newProductItems(run.data[0].lists);
+    this.apiService.imageList = run.data[0].imageObject;
+    this.stock = this.apiService.stock || [];
+    if (!this.stock.length) return alert('no stock');
+  } catch (e) {
+    console.log(e);
+    return alert('no stock');
   }
+
+  const s = await this.apiService.showModal(StockPage);
+  s.onDidDismiss().then(r => {
+    try {
+      if (r.data) {
+        const picked = JSON.parse(JSON.stringify(r.data.data)) as IStock;
+        const x = this.saleStock.find(v => v.position == position);
+        const qtt = x.stock.qtty;
+        if (x) Object.keys(x.stock).forEach(k => x.stock[k] = picked[k]);
+        x.stock.qtty = qtt;
+        if (this.saleStock[0].position == 0) this.compensation = 1;
+        this.save();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
+  s.present();
+}
   setMax(position: number) {
 
     const x = this.saleStock.find(v => v.position == position);
