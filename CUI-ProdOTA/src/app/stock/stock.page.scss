@@ -1,68 +1,44 @@
-div.scrollmenu {
-  display: -webkit-box;
-  overflow-x: auto;
-  white-space: nowrap;
+.stk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+  padding: 10px;
 }
 
-.custom-scrollbar-container {
-  position: absolute;
-  right: 15px;
-  top: 15px;
-  bottom: 15px;
-  width: 60px;
+.stk-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 132px 210px;
   display: flex;
   flex-direction: column;
-  z-index: 9999;
-  background: rgba(240, 240, 240, 0.8);
-  border-radius: 30px;
-  padding: 10px 5px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ccc;
-  pointer-events: auto;
+  align-items: stretch;
+  gap: 4px;
+  margin: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  text-align: left;
+  cursor: pointer;
 }
 
-.scroll-btn {
-  --padding-start: 0;
-  --padding-end: 0;
-  height: 50px;
-  width: 50px;
-  margin: 0 auto;
-  --border-radius: 50%;
-  --box-shadow: none;
-  font-size: 24px;
-
-  &.up {
-    margin-bottom: 10px;
-  }
-
-  &.down {
-    margin-top: 10px;
-  }
+.stk-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+  background: #f4f4f4;
+  border-radius: 8px;
 }
 
-.scrollbar-track {
-  flex: 1;
-  position: relative;
-  width: 12px;
-  background: #e0e0e0;
-  margin: 0 auto;
-  border-radius: 6px;
+.stk-card b {
+  font-size: 13px;
+  line-height: 1.2;
+  max-height: 2.4em;
   overflow: hidden;
 }
 
-.scrollbar-thumb {
-  position: absolute;
-  width: 100%;
-  background: #888;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
-    background: #666;
-  }
-
-  &:active {
-    background: #444;
-  }
+.stk-card span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ee3124;
 }

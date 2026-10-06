@@ -7,13 +7,14 @@ import { IonicModule } from '@ionic/angular';
 import { StocksalePageRoutingModule } from './stocksale-routing.module';
 
 import { StocksalePage } from './stocksale.page';
-
+import { HmCacheImgDirective } from '../hm-cache-img.directive';
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    StocksalePageRoutingModule
+    StocksalePageRoutingModule,
+    HmCacheImgDirective
   ],
   declarations: [StocksalePage]
 })

@@ -393,14 +393,11 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
 
     console.log('saleStock', this.saleStock.length);
 
-    this.saleStock.map(vs => vs.stock).forEach(v => {
-      // console.log('stock',v);
 
-      if (!this.stock.find(y => y.id == v.id))
-        this.stock.push(v);
-    });
 
-    if (this.saleStock[0].position == 0) this.compensation = 1;
+    this.saleStock.sort((a, b) => a.position - b.position);
+    if (this.saleStock[0]?.position === 0) this.compensation = 1;
+    this.view = this.saleStock;
   }
   reset() {
     const c = confirm('Clear all data');
@@ -429,16 +426,6 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
     this.apiService.closeModal(false);
   }
 
-  save() {
-    // TODO:
-    // remove all  base64images , using image from server 
-    // this.saleStock.forEach(v=>v.stock.image='');
-    this.storage.set('saleStock', this.saleStock, 'stock').then(r => {
-      // console.log('SAVE saleStock', r);
-    }).catch(e => {
-      console.log('Error', e);
-    })
-  }
   selectItem(pos = '') {
     setTimeout(() => {
       this.isDisabled = pos;
@@ -446,17 +433,7 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
 
   }
 
-  doFilter() {
-    if (this.search) {
-      this.saleStock = ApiService.vendingOnSale.filter(v => (v.position + '').includes(this.search.toLowerCase()) || (v.stock.name.toLowerCase()).includes(this.search.toLowerCase()));
-      this.saleStock.sort((a, b) => a.position > b.position ? 1 : -1);
-    }
-    else {
-      this.saleStock = ApiService.vendingOnSale;
-      this.saleStock.sort((a, b) => a.position > b.position ? 1 : -1);
-    }
-    setTimeout(() => this.updateScrollbar(), 300);
-  }
+
   saveJsonText() {
     try {
       alert('ARE YOU SURE?')
@@ -472,5 +449,41 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
 
     }
 
+  }
+
+  view: IVendingMachineSale[] = [];
+  trackPos = (_: number, s: IVendingMachineSale) => s.position;
+  private filterTimer: any;
+  private saveTimer: any;
+
+  onSearch(): void {
+    clearTimeout(this.filterTimer);
+    this.filterTimer = setTimeout(() => this.doFilter(), 160);
+  }
+
+  doFilter(): void {
+    const q = this.search.trim().toLowerCase();
+    this.view = !q
+      ? this.saleStock
+      : this.saleStock.filter((v) =>
+        String(v.position + this.compensation).includes(q) ||
+        (v.stock?.name || '').toLowerCase().includes(q));
+  }
+
+  save(): void {
+    clearTimeout(this.saveTimer);
+    this.saveTimer = setTimeout(() => this.persist(), 400);
+  }
+
+  private persist(): void {
+    const lean = this.saleStock.map((row) => {
+      const e = JSON.parse(JSON.stringify(row));
+      const img = e?.stock?.image;
+      if (typeof img === 'string' && img.startsWith('data:')) {
+        e.stock.image = e.stock.imageurl || e.stock.imageURL || '';
+      }
+      return e;
+    });
+    this.storage.set('saleStock', lean, 'stock').catch(() => { });
   }
 }

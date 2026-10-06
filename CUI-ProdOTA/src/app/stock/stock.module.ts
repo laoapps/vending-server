@@ -8,12 +8,14 @@ import { StockPageRoutingModule } from './stock-routing.module';
 
 import { StockPage } from './stock.page';
 // import {FilterByPipe} from 'ngx-pipes';
+import { HmCacheImgDirective } from '../hm-cache-img.directive';
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
     StockPageRoutingModule,
+    HmCacheImgDirective
   ],
   declarations: [StockPage],
   providers:[

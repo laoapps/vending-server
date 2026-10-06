@@ -28,10 +28,10 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
   startThumbTop = 0;
   scrollInterval: any;
 
-  constructor(public apiService: ApiService) {
-    this.stock = apiService.stock;
-    console.log('-----> STOCK :', this.stock);
-  }
+constructor(public apiService: ApiService) {
+  this.all = apiService.stock || [];
+  this.stock = this.all;
+}
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -136,18 +136,27 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
       this.apiService.updateStockItems(this.apiService.stock);
     }
   }
-  doFilter() {
-    if (this.search)
-      this.stock = this.apiService.stock.filter(v => v.name.toLowerCase().includes(this.search.toLowerCase()));
-    else this.stock = this.apiService.stock;
 
-    setTimeout(() => this.updateScrollbar(), 300);
-  }
   ngOnInit() {
   }
 
   ngOnDestroy() {
     this.stopScroll();
   }
+  trackId = (_: number, s: IStock) => s.id;
+private filterTimer: any;
+private all: IStock[] = [];
+
+
+
+onSearch(): void {
+  clearTimeout(this.filterTimer);
+  this.filterTimer = setTimeout(() => this.doFilter(), 160);
+}
+
+doFilter(): void {
+  const q = this.search.trim().toLowerCase();
+  this.stock = !q ? this.all : this.all.filter((v) => (v.name || '').toLowerCase().includes(q));
+}
 
 }
