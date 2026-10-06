@@ -292,15 +292,8 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
 
  async changeStock(position: number) {
   try {
-    const run = await this.loadStockListProcess.Init({
-      ownerUuid: this.ownerUuid,
-      filemanagerURL: this.filemanagerURL,
-    });
-    if (run.message != IENMessage.success) return alert(run.message || 'no stock');
-    this.apiService.newProductItems(run.data[0].lists);
-    this.apiService.imageList = run.data[0].imageObject;
-    this.stock = this.apiService.stock || [];
-    if (!this.stock.length) return alert('no stock');
+    this.stock = await this.apiService.reloadPickerProducts();
+    if (!this.stock?.length) return alert('no stock');
   } catch (e) {
     console.log(e);
     return alert('no stock');

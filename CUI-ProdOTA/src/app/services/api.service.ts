@@ -89,7 +89,15 @@ export class ApiService {
     }
   }
 
-
+async reloadPickerProducts(isActive='yes'): Promise<IStock[]> {
+  const rx = await this.loadVendingSale(isActive);
+  const response = rx?.data;
+  if (response?.status != 1) throw new Error(response?.message || 'load fail');
+  const lists = (response.data || []) as Array<IVendingMachineSale>;
+  if (!lists.length) throw new Error('empty');
+  this.newProductItems(lists);
+  return this.stock;
+}
   //// SCREEN CAPTURE
   async captureAndSaveScreen() {
     try {

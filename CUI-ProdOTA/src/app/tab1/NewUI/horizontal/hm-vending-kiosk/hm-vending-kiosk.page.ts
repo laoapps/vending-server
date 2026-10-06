@@ -620,7 +620,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
 
   /** Manual only */
   async replaceSaleFromServer(): Promise<void> {
-    const rx: any = await this.apiService.loadVendingSale('yes');
+    const rx: any = await this.apiService.reloadPickerProducts('yes');
     const rows = this.saleRows(rx);
     if (!rows.length) return;
     await this.storage.set('saleStock', rows, 'stock');
