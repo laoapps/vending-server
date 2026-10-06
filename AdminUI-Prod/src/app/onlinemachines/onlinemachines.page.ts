@@ -3,7 +3,6 @@ import axios from 'axios';
 import { environment } from '../../environments/environment';
 import { ApiService } from '../services/api.service';
 import { LogTempPage } from '../log-temp/log-temp.page';
-import { MyaccountPage } from '../myaccount/myaccount.page';
 import { MachinePage } from '../machine/machine.page';
 import { ProductsPage } from '../products/products.page';
 import { SalePage } from '../sale/sale.page';
@@ -91,7 +90,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
   toolsMachine: MachineData | null = null;
 
   readonly machineTools: Array<{ id: string; label: string; icon: string; tone: string }> = [
-    { id: 'account', label: 'My Account', icon: 'person-outline', tone: 'account' },
     { id: 'machine', label: 'My Machine', icon: 'laptop-outline', tone: 'machine' },
     { id: 'products', label: 'My Products', icon: 'storefront-outline', tone: 'products' },
     { id: 'images', label: 'Images', icon: 'images-outline', tone: 'images' },
@@ -610,6 +608,15 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     });
   }
 
+  openMyAccount(machine: MachineData) {
+    if (!machine) return;
+    this.bindMachineShop(machine);
+    this.apiService.ownerUuid = localStorage.getItem('lva_ownerUuid');
+    this.apiService.passkeys = localStorage.getItem('lva_passkeys');
+    this.apiService.name = localStorage.getItem('lva_name');
+    this.apiService.router.navigate(['/tabs/tab1']);
+  }
+
   openMachineTools(machine: MachineData) {
     if (!machine) return;
     this.toolsMachine = machine;
@@ -624,7 +631,6 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     this.toolsMachine = null;
     if (!machine) return;
     const pages: Record<string, any> = {
-      account: MyaccountPage,
       machine: MachinePage,
       products: ProductsPage,
       images: ImagesproductPage,
@@ -643,7 +649,10 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     this.apiService.ownerUuid = localStorage.getItem('lva_ownerUuid');
     this.apiService.passkeys = localStorage.getItem('lva_passkeys');
     this.apiService.name = localStorage.getItem('lva_name');
-    this.apiService.showModal(component, {}).then((modal) => {
+    const props = component === SalePage
+      ? { machineId: machine?.machineId, otp: machine?.otp }
+      : {};
+    this.apiService.showModal(component, props).then((modal) => {
       modal?.present();
     });
   }
