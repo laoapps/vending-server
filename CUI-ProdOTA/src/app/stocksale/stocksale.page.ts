@@ -291,36 +291,47 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async changeStock(position: number) {
-    const ok = await this.ensureProductCatalog();
-    if (!ok) return alert('no stock');
-
-    this.stock = this.apiService.stock || [];
-    console.log('stock ', this.stock);
+    try {
+      const api: any = this.apiService;
+      let rx: any;
+      if (typeof api.listProduct === 'function') {
+        const call = api.listProduct('yes');
+        rx = call?.toPromise ? await call.toPromise() : await call;
+      } else {
+        const res = await api.post('listProduct?isActive=yes', {
+          token: localStorage.getItem('token') || localStorage.getItem('lva_token'),
+          machineId: api.machineId?.machineId || api.machineId,
+          otp: localStorage.getItem('otp'),
+        });
+        rx = res?.data ?? res;
+      }
+      const rows = (Array.isArray(rx?.data) ? rx.data : []).filter(
+        (p: any) => p?.isActive === true || p?.isActive === 1,
+      );
+      if (!rows.length) return alert('no stock');
+      this.apiService.stock = rows;
+      this.stock = rows;
+    } catch (e) {
+      console.log(e);
+      return alert('no stock');
+    }
 
     const s = await this.apiService.showModal(StockPage);
     s.onDidDismiss().then(r => {
       try {
         if (r.data) {
-          const s = JSON.parse(JSON.stringify(r.data.data)) as IStock;
-          // console.log('r.data',r.data);
-          console.log('s', s);
-          console.log(`sale stock`, this.saleStock);
+          const picked = JSON.parse(JSON.stringify(r.data.data)) as IStock;
           const x = this.saleStock.find(v => v.position == position);
           const qtt = x.stock.qtty;
-          if (x) Object.keys(x.stock).forEach(k => x.stock[k] = s[k]);
+          if (x) Object.keys(x.stock).forEach(k => x.stock[k] = picked[k]);
           x.stock.qtty = qtt;
-
-          console.log('x', x);
-
           if (this.saleStock[0].position == 0) this.compensation = 1;
           this.save();
         }
       } catch (error) {
         console.log(error);
-
       }
-
-    })
+    });
     s.present();
   }
   setMax(position: number) {
