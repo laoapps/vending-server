@@ -147,6 +147,7 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     this.saleList = ApiService.vendingOnSale || [];
     this.localLoad();
     this.loadStock();              // fire, do not await
+    this.loadProductList();
     this.loadBalance();
     this.loadPhotos();
     this.showcase.sync().then(() => this.ref.detectChanges());
@@ -193,7 +194,6 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
         this.apiService.wsAlive.time = new Date();
         this.apiService.wsAlive.isAlive = true;
       }
-      this.loadStock();
 
       this.ref.detectChanges();
     });
@@ -1212,32 +1212,119 @@ export class HmVendingKioskPage implements OnInit, OnDestroy {
     await this.openManageStock();
   }
 
-  /** StocksalePage → StockPage reads apiService.stock (Tab1 fills this on boot). */
+
+  /**
+   * PRODUCT LIST and PHOTO CACHE are different.
+   *
+   * 1) Kiosk boot → loadProductList()
+   *    list only: id, name, price, image HASH.
+   *    no downloadphoto, no imageList, no saleStock.
+   *
+   * 2) Stock page open → cacheCatalogPhotos()
+   *    only then read / download pictures for that list.
+   *
+   * Sale shelf (saleStock + loadPhotos) stays its own path.
+   * Do not call loadVendingSale or copy saleList into apiService.stock.
+   */
+
+  // ——— hm-vending-kiosk.page.ts ———
+  // ngOnInit, next to loadStock(). Do not await. Do not call loadPhotos here.
+  //   this.loadProductList();
+
+async loadProductList(): Promise<void> {
+  let remote: any[] = [];
+  try {
+    remote = this.productRows(await this.fetchProductList());
+  } catch (e) {
+    console.warn('listProduct', e);
+  }
+
+  if (!remote.length) {
+    const local = await this.readProductItems();
+    if (local.length) this.applyProducts(local);
+    return;
+  }
+
+  const map = new Map<number, any>();
+  for (const p of remote) {
+    if (p?.id == null) continue;
+    map.set(Number(p.id), this.hashOnly(p));
+  }
+  const fresh = [...map.values()].filter(
+  (p) => p.isActive === true || p.isActive === 1,
+);
+
+  await this.storage.set('productItems', fresh, 'item');
+  this.applyProducts(fresh);
+}
+
+
+  /** Stock page is not open yet. Catalog must already be in apiService.stock. */
   private async ensureProductCatalog(): Promise<void> {
     if (this.apiService.stock?.length) return;
-    try {
-      const cached = await this.storage.get('productItems', 'item');
-      const items = cached?.v;
-      if (Array.isArray(items) && items.length) {
-        this.apiService.stock.length = 0;
-        this.apiService.stock.push(...JSON.parse(JSON.stringify(items)));
-        return;
-      }
-    } catch { }
-    try {
-      const rx = await this.apiService.loadVendingSale();
-      const r: any = rx?.data;
-      if (r?.status == 1 && Array.isArray(r.data) && r.data.length) {
-        this.apiService.newProductItems(r.data);
-        return;
-      }
-    } catch (e) {
-      console.log('kiosk ensureProductCatalog', e);
+    const local = await this.readProductItems();
+    if (local.length) {
+      this.applyProducts(local);
+      return;
     }
-    if (this.saleList?.length) {
-      this.apiService.newProductItems(this.saleList);
+    await this.loadProductList();
+  }
+
+  private async readProductItems(): Promise<any[]> {
+    try {
+      const s = await this.storage.get('productItems', 'item');
+      const raw = s?.v ?? s;
+      return Array.isArray(raw) ? JSON.parse(JSON.stringify(raw)) : [];
+    } catch {
+      return [];
     }
   }
+
+  private applyProducts(list: any[]): void {
+    if (!Array.isArray(this.apiService.stock)) (this.apiService as any).stock = [];
+    this.apiService.stock.length = 0;
+    this.apiService.stock.push(...list);
+  }
+
+
+
+
+  private hashOnly(p: any): any {
+    const row = { ...p };
+    row.image = this.imageHash(row.image);
+    delete row.imageurl;
+    delete row.file;
+    return row;
+  }
+
+  private imageHash(image: any): string {
+    const s = String(image || '').trim();
+    if (!s || s.startsWith('data:') || s.startsWith('blob:')) return '';
+    return s;
+  }
+
+  private productRows(rx: any): any[] {
+    const body = rx?.data?.status != null || Array.isArray(rx?.data?.data) ? rx.data : rx;
+    const rows = Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];
+    return rows.filter((p) => p && p.id != null);
+  }
+
+  private async fetchProductList(): Promise<any> {
+    const api: any = this.apiService;
+    if (typeof api.listProduct === 'function') {
+      const rx = api.listProduct('yes');
+      if (rx && typeof rx.subscribe === 'function') {
+        return await new Promise((resolve, reject) => rx.subscribe(resolve, reject));
+      }
+      return await rx;
+    }
+    return await api.post('listProduct?isActive=yes', {
+      token: localStorage.getItem('lva_token') || localStorage.getItem('token'),
+      shopPhonenumber: localStorage.getItem('phoneNumberLocal'),
+      secret: localStorage.getItem('secretLocal') || localStorage.getItem('secret'),
+    });
+  }
+  
 
   async openManageStock(): Promise<void> {
     try {

@@ -14,7 +14,7 @@
 
 <ion-content>
   <div class="stk-grid">
-    <button type="button" class="stk-card" *ngFor="let s of stock; trackBy: trackId" (click)="select(s.id)">
+    <button type="button" class="stk-card" *ngFor="let s of stock; trackBy: trackId" (click)="select(s?.id||-1)">
       <img loading="lazy" decoding="async" [hmCacheImg]="s?.image" hmCacheEmpty="assets/empty-box.png" [alt]="s.name" />
       <b>{{ s.name }}</b>
       <span>{{ s.price | number }}</span>

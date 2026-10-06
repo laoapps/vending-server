@@ -3,6 +3,7 @@ import { environment } from 'src/environments/environment';
 import { ApiService } from '../services/api.service';
 import { IStock, IVendingMachineSale } from '../services/syste.model';
 import { IonContent } from '@ionic/angular';
+import { CachingService } from '../services/caching.service';
 
 @Component({
   selector: 'app-stock',
@@ -10,7 +11,7 @@ import { IonContent } from '@ionic/angular';
   styleUrls: ['./stock.page.scss'],
 })
 export class StockPage implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild(IonContent, { static: false }) content: IonContent;
+  @ViewChild(IonContent, { static: false }) content: IonContent=undefined;
 
   stock: Array<IStock> = [];
   selectedItem: IStock;
@@ -28,10 +29,10 @@ export class StockPage implements OnInit, OnDestroy, AfterViewInit {
   startThumbTop = 0;
   scrollInterval: any;
 
-constructor(public apiService: ApiService) {
-  this.all = apiService.stock || [];
-  this.stock = this.all;
-}
+  constructor(public apiService: ApiService, private photos: CachingService) {
+    this.all = apiService.stock || [];
+    this.stock = this.all;
+  }
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -138,25 +139,60 @@ constructor(public apiService: ApiService) {
   }
 
   ngOnInit() {
+    this.all = this.apiService.stock || [];
+    this.stock = this.all;
+    this.cacheCatalogPhotos();
+  }
+
+  async cacheCatalogPhotos(): Promise<void> {
+    if (!this.apiService.imageList) this.apiService.imageList = {};
+    const online = navigator.onLine !== false;
+
+    for (const p of this.all || []) {
+      const id = String(p?.image || '').trim();
+      if (!id || id.startsWith('data:') || id.startsWith('blob:')) continue;
+      if (String(this.apiService.imageList[id] || '').startsWith('data:image')) continue;
+
+      try {
+        const stored = await this.photos.getPhoto(id);
+        const parsed = typeof stored === 'string' ? JSON.parse(stored) : stored;
+        const v = parsed?.v || parsed;
+        if (typeof v === 'string' && v.startsWith('data:image')) {
+          this.apiService.imageList[id] = v;
+          continue;
+        }
+      } catch { }
+
+      if (!online) continue;
+      try {
+        const raw = await this.photos.saveCachingPhoto(id, new Date(p?.updatedAt || Date.now()), id);
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        const v = parsed?.v || parsed;
+        if (typeof v === 'string' && v.startsWith('data:image')) {
+          this.apiService.imageList[id] = v;
+        }
+      } catch { }
+    }
+    this.apiService.imageList = { ...this.apiService.imageList };
   }
 
   ngOnDestroy() {
     this.stopScroll();
   }
   trackId = (_: number, s: IStock) => s.id;
-private filterTimer: any;
-private all: IStock[] = [];
+  private filterTimer: any;
+  private all: IStock[] = [];
 
 
 
-onSearch(): void {
-  clearTimeout(this.filterTimer);
-  this.filterTimer = setTimeout(() => this.doFilter(), 160);
-}
+  onSearch(): void {
+    clearTimeout(this.filterTimer);
+    this.filterTimer = setTimeout(() => this.doFilter(), 160);
+  }
 
-doFilter(): void {
-  const q = this.search.trim().toLowerCase();
-  this.stock = !q ? this.all : this.all.filter((v) => (v.name || '').toLowerCase().includes(q));
-}
+  doFilter(): void {
+    const q = this.search.trim().toLowerCase();
+    this.stock = !q ? this.all : this.all.filter((v) => (v.name || '').toLowerCase().includes(q));
+  }
 
 }
