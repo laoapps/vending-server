@@ -10,8 +10,8 @@
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr auto;
-  background: #14181d;
-  color: #fff;
+  background: #fff;
+  color: #14181d;
   overflow: hidden;
   cursor: pointer;
 }
@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at 50% 40%, #2a3038 0%, #14181d 70%);
+    radial-gradient(circle at 50% 40%, #f5f6f8 0%, #fff 70%);
 }
 .attract:not(.attract--detail) .attract__photo {
   width: auto;
@@ -36,7 +36,7 @@
   grid-row: 2;
   padding: 10px 28px 22px;
   text-align: center;
-  background: linear-gradient(180deg, transparent, #14181d 30%);
+  background: linear-gradient(180deg, transparent, #fff 30%);
 }
 .attract:not(.attract--detail) .attract__story {
   display: none;
@@ -46,7 +46,7 @@
   grid-template-columns: minmax(280px, 48%) 1fr;
   grid-template-rows: 1fr;
   gap: 0;
-  background: #0f1216;
+  background: #fff;
 }
 
 .attract--detail.attract--video {
@@ -59,7 +59,7 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  background: #111;
+  background: #fff;
   min-height: 0;
   overflow: hidden;
   padding: 16px 16px 12px;
@@ -224,10 +224,10 @@
 
 .attract:not(.attract--detail) .attract__head h2 {
   font-size: clamp(32px, 3.4vw, 48px);
-  color: #fff;
+  color: #14181d;
 }
 .attract:not(.attract--detail) .attract__price {
-  color: #fff;
+  color: #ee3124;
 }
 .attract__close {
   position: absolute;
@@ -238,7 +238,7 @@
   height: 40px;
   border: 0;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.45);
   color: #fff;
   font-size: 26px;
   line-height: 40px;
