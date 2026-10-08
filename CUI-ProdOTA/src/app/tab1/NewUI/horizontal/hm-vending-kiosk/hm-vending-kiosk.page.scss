@@ -214,7 +214,7 @@
 
 .product-card__media {
   position: relative;
-    height: 220px;
+    // height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,7 +223,7 @@
 
 .product-card__img {
   // max-height: 180px;
-  // max-width: 50%;
+  max-width: 90%;
   object-fit: contain;
 }
 
