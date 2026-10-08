@@ -23,7 +23,11 @@
   align-items: center;
   justify-content: center;
   background:
+<<<<<<< HEAD
     radial-gradient(circle at 50% 40%, #f5f6f8 0%, #fff 70%);
+=======
+    radial-gradient(circle at 50% 40%, #ccd2da 0%, #56606c 70%);
+>>>>>>> c09eee7bd7ab3ace336156f4aaab8a8866d26cad
 }
 .attract:not(.attract--detail) .attract__photo {
   width: auto;
