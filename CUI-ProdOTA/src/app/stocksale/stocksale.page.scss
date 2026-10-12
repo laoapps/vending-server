@@ -78,3 +78,22 @@
   font-size: 12px;
   font-weight: 800;
 }
+
+
+
+.sale-card__qty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  button {
+    width: 44px;
+    height: 44px;
+    font-size: 28px;
+    border: 0;
+    border-radius: 8px;
+    background: #222;
+    color: #fff;
+  }
+  span { font-size: 18px; font-weight: 700; }
+}
