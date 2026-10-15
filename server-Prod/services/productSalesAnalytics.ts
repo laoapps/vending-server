@@ -18,13 +18,28 @@ import { redisClient } from './service';
  * 1. Accumulate: bills (vendingmachinebill_<ownerUuid>) are rolled up into `productsalesdaily`
  *    (owner / machine / day / channel / product). A rebuild deletes and re-inserts whole days,
  *    so it is idempotent and can be re-run at any time.
+ *    History is built ONCE: a day is "closed" CLOSE_AFTER_HOURS after it ends and is never re-read
+ *    from the bills again (only the manual rebuild touches it). Each tick only rebuilds today, plus
+ *    whatever closed days an owner is still missing; progress is saved per owner in Redis, so a
+ *    restart resumes instead of starting the backfill again.
  * 2. Analyze: rank products and channels per machine, per owner, or globally, and classify
  *    each product (ABC on revenue) into an action: INCREASE / KEEP / REVIEW / DISPOSE / RELOAD.
  */
 
 const DATE_FMT = 'YYYY-MM-DD';
 const ROLLUP_LOCK_KEY = 'productsales:rollup:lock';
-const ROLLUP_BACKFILL_KEY = 'productsales:rollup:backfilled';
+/** hash ownerUuid -> last closed day (YYYY-MM-DD) that is already in productsalesdaily */
+const ROLLUP_CLOSED_KEY = 'productsales:rollup:closedThrough';
+/** late payments / confirmations may still land shortly after midnight */
+const CLOSE_AFTER_HOURS = 2;
+/** cap on closed days built per owner per tick, so a large backfill is spread over several ticks */
+const MAX_HISTORY_DAYS_PER_TICK = 31;
+/** pause between owners, keeps the job from hogging the DB pool */
+const OWNER_PAUSE_MS = 150;
+/** analyze results are cached until the next rollup (or this TTL, whichever comes first) */
+const RESULT_CACHE_TTL_MS = 5 * 60 * 1000;
+const RESULT_CACHE_MAX = 100;
+const SLOT_CACHE_TTL_MS = 2 * 60 * 1000;
 const ROLLUP_INTERVAL_MS = 15 * 60 * 1000;
 const ROLLUP_START_DELAY_MS = 60 * 1000;
 const BACKFILL_DAYS = 90;
@@ -40,6 +55,8 @@ const LOW_COVER_DAYS = 3;
 const SOLD_STATUSES = [EPaymentStatus.paid, EPaymentStatus.delivered];
 
 export type ProductAction = 'INCREASE' | 'KEEP' | 'REVIEW' | 'DISPOSE' | 'RELOAD';
+/** machine = one machine, selection = a picked set / owner filter, owner = all of an owner's, global = everything */
+export type AnalyticsScope = 'machine' | 'selection' | 'owner' | 'global';
 
 export interface ProductRankRow {
     rank: number;
@@ -70,9 +87,32 @@ export interface ProductRankRow {
     reason: string;
 }
 
+/** a machine the caller may see, with the labels people recognise it by */
+export interface MachineRef {
+    ownerUuid: string;
+    machineId: string;
+    location?: string;
+    shopPhone?: string;
+    ownerPhone?: string;
+}
+
+/** Reads location / phones from machineclientid.data[0] (same fields the dashboard edits). */
+export function toMachineRef(m: any): MachineRef {
+    const d = Array.isArray(m?.data) ? m.data[0] : m?.data;
+    const str = (v: any) => (v != null && String(v).trim() !== '' ? String(v).trim() : '');
+    return {
+        ownerUuid: m?.ownerUuid || '',
+        machineId: m?.machineId || '',
+        location: str(d?.location),
+        shopPhone: str(d?.shopPhone),
+        ownerPhone: str(d?.ownerPhone),
+    };
+}
+
 export interface ChannelRankRow {
     rank: number;
     machineId: string;
+    location: string;
     position: number;
     qty: number;
     amount: number;
@@ -87,7 +127,10 @@ export interface ChannelRankRow {
 export interface MachineRankRow {
     rank: number;
     ownerUuid: string;
+    ownerPhone: string;
     machineId: string;
+    location: string;
+    shopPhone: string;
     qty: number;
     amount: number;
     qtyPerDay: number;
@@ -99,7 +142,7 @@ export interface MachineRankRow {
 }
 
 export interface ProductSalesAnalyticsResult {
-    scope: 'machine' | 'owner' | 'global';
+    scope: AnalyticsScope;
     fromDate: string;
     toDate: string;
     days: number;
@@ -307,7 +350,7 @@ function moment_min(a: momenttz.Moment, b: momenttz.Moment): momenttz.Moment {
 export async function listActiveOwners(): Promise<string[]> {
     const ent = MachineClientIDFactory(EEntity.machineclientid, dbConnection);
     const rows = await ent.findAll({
-        where: { isActive: true },
+        where: { isActive: { [Op.not]: false } },
         attributes: ['ownerUuid'],
         group: ['ownerUuid'],
         raw: true,
@@ -325,9 +368,19 @@ export async function rebuildAllOwners(fromDay: string, toDay: string, timeZone:
         } catch (err: any) {
             console.error('[productSales] rebuild failed for owner', ownerUuid, err?.message || err);
         }
+        await sleep(OWNER_PAUSE_MS);
     }
-    await redisClient.set('productsales:rollup:lastAt', new Date().toISOString());
+    await markRollupDone();
     return { owners: owners.length, rows };
+}
+
+function sleep(ms: number) {
+    return new Promise((r) => setTimeout(r, ms));
+}
+
+async function markRollupDone() {
+    resultCache.clear();
+    await redisClient.set('productsales:rollup:lastAt', new Date().toISOString());
 }
 
 /** Runs `job` only if no other process/instance holds the rollup lock. */
@@ -341,24 +394,61 @@ export async function runWithRollupLock<T>(job: () => Promise<T>): Promise<T | n
     }
 }
 
+/** last day whose numbers can no longer change (yesterday once CLOSE_AFTER_HOURS have passed) */
+function lastClosedDay(timeZone: string): string {
+    return momenttz.tz(timeZone).subtract(CLOSE_AFTER_HOURS, 'hours').subtract(1, 'day').format(DATE_FMT);
+}
+
+/**
+ * One tick:
+ *  - closed history: for each owner, build the closed days it does not have yet (once, then never again)
+ *  - open days (today, and yesterday until it closes): rebuilt every tick
+ */
 async function scheduledRollup(timeZone: string) {
     const done = await runWithRollupLock(async () => {
-        const today = momenttz.tz(timeZone);
-        const backfilled = await redisClient.get(ROLLUP_BACKFILL_KEY);
-        const fromDay = backfilled
-            ? today.clone().subtract(1, 'day').format(DATE_FMT)
-            : today.clone().subtract(BACKFILL_DAYS - 1, 'days').format(DATE_FMT);
-        const r = await rebuildAllOwners(fromDay, today.format(DATE_FMT), timeZone);
-        if (!backfilled) await redisClient.set(ROLLUP_BACKFILL_KEY, new Date().toISOString());
-        console.log(`[productSales] rollup ${fromDay}..${today.format(DATE_FMT)} owners=${r.owners} rows=${r.rows}`);
-        return r;
+        const started = Date.now();
+        const today = momenttz.tz(timeZone).format(DATE_FMT);
+        const closedDay = lastClosedDay(timeZone);
+        const firstOpenDay = momenttz.tz(closedDay, DATE_FMT, timeZone).add(1, 'day').format(DATE_FMT);
+        const oldestDay = momenttz.tz(today, DATE_FMT, timeZone).subtract(BACKFILL_DAYS - 1, 'days').format(DATE_FMT);
+
+        const owners = await listActiveOwners();
+        const closed = (await redisClient.hgetall(ROLLUP_CLOSED_KEY)) || {};
+        let historyDays = 0;
+        let rows = 0;
+
+        for (const ownerUuid of owners) {
+            try {
+                // 1) history the owner is still missing (resumes where the last run stopped)
+                const have = closed[ownerUuid];
+                let from = have
+                    ? momenttz.tz(have, DATE_FMT, timeZone).add(1, 'day').format(DATE_FMT)
+                    : oldestDay;
+                if (from < oldestDay) from = oldestDay;
+                if (from <= closedDay) {
+                    const capped = momenttz.tz(from, DATE_FMT, timeZone).add(MAX_HISTORY_DAYS_PER_TICK - 1, 'days').format(DATE_FMT);
+                    const to = capped < closedDay ? capped : closedDay;
+                    rows += await rebuildOwnerRange(ownerUuid, from, to, timeZone);
+                    await redisClient.hset(ROLLUP_CLOSED_KEY, ownerUuid, to);
+                    historyDays += momenttz.tz(to, DATE_FMT, timeZone).diff(momenttz.tz(from, DATE_FMT, timeZone), 'days') + 1;
+                }
+                // 2) open days: today (and yesterday during the first CLOSE_AFTER_HOURS after midnight)
+                rows += await rebuildOwnerRange(ownerUuid, firstOpenDay, today, timeZone);
+            } catch (err: any) {
+                console.error('[productSales] rollup failed for owner', ownerUuid, err?.message || err);
+            }
+            await sleep(OWNER_PAUSE_MS);
+        }
+        await markRollupDone();
+        console.log(`[productSales] rollup owners=${owners.length} history-days=${historyDays} open=${firstOpenDay}..${today} rows=${rows} in ${Date.now() - started}ms`);
+        return true;
     });
     if (done === null) console.log('[productSales] rollup skipped (another run holds the lock)');
 }
 
 let schedulerStarted = false;
 
-/** Rebuilds yesterday + today every 15 minutes; backfills BACKFILL_DAYS days on the first run. */
+/** Every 15 minutes: today is rebuilt; closed days are built once per owner and then left alone. */
 export function startProductSalesRollupScheduler(timeZone: string): void {
     if (schedulerStarted) return;
     schedulerStarted = true;
@@ -373,52 +463,96 @@ export function startProductSalesRollupScheduler(timeZone: string): void {
 // 2. analyze
 // ---------------------------------------------------------------------------------------------
 
+const slotCache = new Map<string, { at: number; rows: any[] }>();
+
+/** owners that have a vendingmachinesale_<owner> table, in ONE query instead of one per owner */
+async function ownersWithSaleTable(): Promise<Set<string>> {
+    const prefix = EEntity.vendingmachinesale + '_';
+    const [rows] = await dbConnection.query(
+        `SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename LIKE :p`,
+        { replacements: { p: prefix + '%' } }
+    );
+    return new Set((rows as any[]).map((r) => String(r.tablename).substring(prefix.length)));
+}
+
+/** current slot setup of an owner's machines, cached briefly (stock moves, setup rarely does) */
+async function ownerSlotRows(ownerUuid: string): Promise<any[]> {
+    const hit = slotCache.get(ownerUuid);
+    if (hit && Date.now() - hit.at < SLOT_CACHE_TTL_MS) return hit.rows;
+    const ent = VendingMachineSaleFactory(EEntity.vendingmachinesale + '_' + ownerUuid, dbConnection);
+    const rows = await ent.findAll({
+        attributes: ['machineId', 'position', 'max', 'stock', 'isActive'],
+        raw: true,
+    });
+    slotCache.set(ownerUuid, { at: Date.now(), rows });
+    return rows;
+}
+
 async function loadSlots(machines: Array<{ ownerUuid: string; machineId: string }>): Promise<SlotRef[]> {
-    const byOwner = new Map<string, string[]>();
+    const byOwner = new Map<string, Set<string>>();
     for (const m of machines) {
-        const arr = byOwner.get(m.ownerUuid) || [];
-        arr.push(m.machineId);
-        byOwner.set(m.ownerUuid, arr);
+        const set = byOwner.get(m.ownerUuid) || new Set<string>();
+        set.add(m.machineId);
+        byOwner.set(m.ownerUuid, set);
     }
+    const withTable = await ownersWithSaleTable();
     const slots: SlotRef[] = [];
-    await Promise.all(Array.from(byOwner.entries()).map(async ([ownerUuid, machineIds]) => {
-        const table = EEntity.vendingmachinesale + '_' + ownerUuid;
-        if (!(await tableExists(table))) return;
-        try {
-            const ent = VendingMachineSaleFactory(table, dbConnection);
-            const rows = await ent.findAll({
-                where: { machineId: { [Op.in]: machineIds } },
-                attributes: ['machineId', 'position', 'max', 'stock', 'isActive'],
-                raw: true,
-            });
-            for (const r of rows as any[]) {
-                if (r.isActive === false || !r.stock?.name) continue;
-                slots.push({
-                    ownerUuid,
-                    machineId: r.machineId,
-                    position: Number(r.position) || 0,
-                    productKey: normalizeProductKey(r.stock.name),
-                    productName: r.stock.name,
-                    productImage: r.stock.image || '',
-                    price: Number(r.stock.price) || 0,
-                    max: Number(r.max) || 0,
-                    stock: Number(r.stock.qtty) || 0,
-                });
+    const owners = Array.from(byOwner.entries()).filter(([o]) => withTable.has(o));
+
+    // a few owners at a time so a global load cannot take the whole DB pool
+    for (let i = 0; i < owners.length; i += 5) {
+        await Promise.all(owners.slice(i, i + 5).map(async ([ownerUuid, machineIds]) => {
+            try {
+                for (const r of await ownerSlotRows(ownerUuid)) {
+                    if (!machineIds.has(r.machineId) || r.isActive === false || !r.stock?.name) continue;
+                    slots.push({
+                        ownerUuid,
+                        machineId: r.machineId,
+                        position: Number(r.position) || 0,
+                        productKey: normalizeProductKey(r.stock.name),
+                        productName: r.stock.name,
+                        productImage: r.stock.image || '',
+                        price: Number(r.stock.price) || 0,
+                        max: Number(r.max) || 0,
+                        stock: Number(r.stock.qtty) || 0,
+                    });
+                }
+            } catch (err: any) {
+                console.error('[productSales] load slots failed for owner', ownerUuid, err?.message || err);
             }
-        } catch (err: any) {
-            console.error('[productSales] load slots failed for owner', ownerUuid, err?.message || err);
-        }
-    }));
+        }));
+    }
     return slots;
 }
+
+const resultCache = new Map<string, { at: number; value: ProductSalesAnalyticsResult }>();
 
 /**
  * Ranks products, channels and machines for a set of machines over [fromDay, toDay].
  * `machines` must already be filtered to what the caller may see.
  */
 export async function analyzeProductSales(params: {
-    scope: 'machine' | 'owner' | 'global';
-    machines: Array<{ ownerUuid: string; machineId: string }>;
+    scope: AnalyticsScope;
+    machines: MachineRef[];
+    fromDay: string;
+    toDay: string;
+    days: number;
+}): Promise<ProductSalesAnalyticsResult> {
+    // the data only changes when the rollup runs, so the same question gets the same answer until then
+    const key = JSON.stringify([params.scope, params.fromDay, params.toDay,
+        params.machines.map((m) => m.ownerUuid + ':' + m.machineId).sort()]);
+    const hit = resultCache.get(key);
+    if (hit && Date.now() - hit.at < RESULT_CACHE_TTL_MS) return hit.value;
+
+    const value = await computeProductSales(params);
+    if (resultCache.size >= RESULT_CACHE_MAX) resultCache.delete(resultCache.keys().next().value);
+    resultCache.set(key, { at: Date.now(), value });
+    return value;
+}
+
+async function computeProductSales(params: {
+    scope: AnalyticsScope;
+    machines: MachineRef[];
     fromDay: string;
     toDay: string;
     days: number;
@@ -427,16 +561,19 @@ export async function analyzeProductSales(params: {
     const daily = await getProductSalesDailyEntity();
 
     const machineIds = Array.from(new Set(machines.map((m) => m.machineId)));
-    const machineOwner = new Map(machines.map((m) => [m.machineId, m.ownerUuid]));
+    const machineRef = new Map(machines.map((m) => [m.machineId, m]));
 
     const [agg, slots, lastRollupAt] = await Promise.all([
         machineIds.length
             ? daily.findAll({
-                where: {
-                    ownerUuid: { [Op.in]: Array.from(new Set(machines.map((m) => m.ownerUuid))) },
-                    machineId: { [Op.in]: machineIds },
-                    saleDate: { [Op.between]: [fromDay, toDay] },
-                },
+                // "all machines" needs no IN-list of every machine: the date index is enough
+                where: scope === 'global'
+                    ? { saleDate: { [Op.between]: [fromDay, toDay] } }
+                    : {
+                        ownerUuid: { [Op.in]: Array.from(new Set(machines.map((m) => m.ownerUuid))) },
+                        machineId: { [Op.in]: machineIds },
+                        saleDate: { [Op.between]: [fromDay, toDay] },
+                    },
                 attributes: [
                     'machineId',
                     'position',
@@ -468,7 +605,7 @@ export async function analyzeProductSales(params: {
         amount: Number(r.amount) || 0,
         billCount: Number(r.billCount) || 0,
         daysSold: Number(r.daysSold) || 0,
-    }));
+    })).filter((r) => machineRef.has(r.machineId));
 
     const totalQty = rows.reduce((a, r) => a + r.qty, 0);
     const totalAmount = rows.reduce((a, r) => a + r.amount, 0);
@@ -638,6 +775,7 @@ export async function analyzeProductSales(params: {
                 return {
                     rank: i + 1,
                     machineId: c.machineId,
+                    location: machineRef.get(c.machineId)?.location || '',
                     position: c.position,
                     qty: c.qty,
                     amount: round(c.amount),
@@ -672,10 +810,14 @@ export async function analyzeProductSales(params: {
         .sort((a, b) => b.amount - a.amount || b.qty - a.qty)
         .map((m, i) => {
             const top = Array.from(m.products.values()).sort((a, b) => b.qty - a.qty)[0];
+            const ref = machineRef.get(m.machineId);
             return {
                 rank: i + 1,
-                ownerUuid: machineOwner.get(m.machineId) || '',
+                ownerUuid: ref?.ownerUuid || '',
+                ownerPhone: ref?.ownerPhone || '',
                 machineId: m.machineId,
+                location: ref?.location || '',
+                shopPhone: ref?.shopPhone || '',
                 qty: m.qty,
                 amount: round(m.amount),
                 qtyPerDay: round(m.qty / days),

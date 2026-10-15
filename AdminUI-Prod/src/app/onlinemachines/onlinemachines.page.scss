@@ -70,6 +70,103 @@
   padding: 24px 8px;
 }
 
+// ---- entry points to the product sales ranking page ----
+.ranking-entry {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 0;
+  border-left: 4px solid #a41d4f;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  }
+
+  .ranking-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(164, 29, 79, 0.1);
+    color: #a41d4f;
+    font-size: 1.4rem;
+  }
+
+  .ranking-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+
+    strong {
+      font-size: 1rem;
+      color: #1a1a1a;
+    }
+
+    span {
+      font-size: 0.8rem;
+      color: #607d8b;
+    }
+  }
+
+  .ranking-go {
+    flex: none;
+    color: #90a4ae;
+    font-size: 1.2rem;
+  }
+}
+
+.owner-line {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+
+  .owner-row {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.owner-ranking {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: none;
+  min-width: 84px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #a41d4f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 1.3rem;
+  }
+
+  &:hover {
+    background: rgba(164, 29, 79, 0.08);
+  }
+}
+
 .owner-row {
   width: 100%;
   display: flex;

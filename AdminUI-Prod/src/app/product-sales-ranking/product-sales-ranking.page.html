@@ -1,251 +1,465 @@
-<ion-header>
-  <ion-toolbar color="primary">
+<ion-header class="psr-header" [attr.lang]="lang">
+  <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs"></ion-back-button>
+      <ion-back-button [defaultHref]="scope === 'global' ? '/onlinemachines' : '/tabs'"></ion-back-button>
     </ion-buttons>
-    <ion-title>Product Sales Ranking</ion-title>
+    <ion-title>
+      {{ t('title') }}
+      <span class="sub">{{ selectionTitle }}</span>
+    </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="exportCsv()" [disabled]="!products.length">
-        <ion-icon name="download-outline" slot="start"></ion-icon>
-        CSV
+      <div class="lang" role="group" aria-label="Language / ພາສາ">
+        <button [class.on]="lang === 'en'" (click)="setLang('en')" lang="en">EN</button>
+        <button [class.on]="lang === 'lo'" (click)="setLang('lo')" lang="lo">ລາວ</button>
+      </div>
+      <ion-button (click)="printReport()" [disabled]="!result" [title]="t('printTitle')">
+        <ion-icon name="print-outline" slot="start"></ion-icon>
+        <span class="hide-sm">{{ t('print') }}</span>
       </ion-button>
-      <ion-button *ngIf="isSuperAdmin" (click)="rebuild()">
+      <ion-button (click)="exportCsv()" [disabled]="!products.length" [title]="t('exportTitle')">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        <span class="hide-sm">{{ t('export') }}</span>
+      </ion-button>
+      <ion-button *ngIf="isSuperAdmin" (click)="rebuild()" [title]="t('rebuildTitle')">
         <ion-icon name="construct-outline" slot="start"></ion-icon>
-        Rebuild data
+        <span class="hide-sm">{{ t('rebuild') }}</span>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
+<ion-content [attr.lang]="lang">
+  <div class="psr">
 
-  <!-- Filters -->
-  <div class="filters">
-    <ion-segment *ngIf="isSuperAdmin" [(ngModel)]="scope" (ionChange)="changeScope()" class="scope">
-      <ion-segment-button value="owner"><ion-label>My / shop machines</ion-label></ion-segment-button>
-      <ion-segment-button value="global"><ion-label>Global (all machines)</ion-label></ion-segment-button>
-    </ion-segment>
-
-    <div class="filter-row">
-      <label>
-        From
-        <input type="date" [(ngModel)]="fromDate" [max]="toDate">
-      </label>
-      <label>
-        To
-        <input type="date" [(ngModel)]="toDate" [min]="fromDate">
-      </label>
-      <label>
-        Machine
-        <select [ngModel]="machineId" (ngModelChange)="selectMachine($event)">
-          <option value="all">All machines</option>
-          <option *ngIf="isSingleMachine && !machineOptions.includes(machineId)" [value]="machineId">{{ machineId }}</option>
-          <option *ngFor="let m of machineOptions" [value]="m">{{ m }}</option>
-        </select>
-      </label>
-      <ion-button size="small" (click)="load()" [disabled]="loading">
-        <ion-icon name="refresh-outline" slot="start"></ion-icon>
-        Load
-      </ion-button>
-      <div class="quick">
-        <ion-button size="small" fill="outline" (click)="setRange(7)">7 days</ion-button>
-        <ion-button size="small" fill="outline" (click)="setRange(30)">30 days</ion-button>
-        <ion-button size="small" fill="outline" (click)="setRange(90)">90 days</ion-button>
+    <!-- ===== Filters ===== -->
+    <section class="card filters">
+      <div class="scope" *ngIf="isSuperAdmin">
+        <button [class.on]="scope === 'owner'" (click)="scope = 'owner'; changeScope()">
+          <ion-icon name="storefront-outline"></ion-icon> {{ t('scopeOwner') }}
+        </button>
+        <button [class.on]="scope === 'global'" (click)="scope = 'global'; changeScope()">
+          <ion-icon name="globe-outline"></ion-icon> {{ t('scopeGlobal') }}
+        </button>
       </div>
+
+      <div class="filter-grid">
+        <div class="field">
+          <span class="field-label">{{ t('period') }}</span>
+          <div class="pills">
+            <button [class.on]="period === 'today'" (click)="setPeriod('today')">{{ t('today') }}</button>
+            <button [class.on]="period === '7'" (click)="setPeriod('7')">{{ t('nDays', { n: 7 }) }}</button>
+            <button [class.on]="period === '30'" (click)="setPeriod('30')">{{ t('nDays', { n: 30 }) }}</button>
+            <button [class.on]="period === '90'" (click)="setPeriod('90')">{{ t('nDays', { n: 90 }) }}</button>
+            <button [class.on]="period === 'custom'" (click)="setPeriod('custom')">
+              <ion-icon name="calendar-outline"></ion-icon> {{ t('custom') }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Shop: all machines that share one shopPhone -->
+        <div class="field dd">
+          <span class="field-label">{{ t('shop') }}</span>
+          <button class="picker-btn" [class.open]="dropdown === 'shop'" (click)="toggleDropdown('shop')" [disabled]="!shops.length">
+            <ion-icon name="storefront-outline"></ion-icon>
+            <span class="picker-text">{{ shopButtonLabel }}</span>
+            <ion-icon [name]="dropdown === 'shop' ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+          </button>
+
+          <div class="dd-panel" *ngIf="dropdown === 'shop'">
+            <div class="search">
+              <ion-icon name="search-outline"></ion-icon>
+              <input [ngModel]="shopSearch" (ngModelChange)="setShopSearch($event)" [placeholder]="t('searchShop')">
+              <button *ngIf="shopSearch" class="chip-x" (click)="setShopSearch('')"><ion-icon name="close-outline"></ion-icon></button>
+            </div>
+            <div class="dd-list">
+              <button class="dd-item" [class.on]="shop === null" (click)="selectShop(null)">
+                <span class="dd-text"><b>{{ t('allShops', { n: shops.length }) }}</b></span>
+                <span class="count">{{ catalog.length }}</span>
+              </button>
+              <button class="dd-item" *ngFor="let sh of filteredShops" [class.on]="shop === sh.shopPhone" (click)="selectShop(sh.shopPhone)">
+                <span class="dd-text">
+                  <b><ion-icon name="call-outline"></ion-icon> {{ shopLabel(sh.shopPhone) }}</b>
+                  <span class="muted small" *ngIf="sh.locations.length">
+                    {{ sh.locations.slice(0, 3).join(' · ') }}<ng-container *ngIf="sh.locations.length > 3"> +{{ sh.locations.length - 3 }}</ng-container>
+                  </span>
+                </span>
+                <span class="count">{{ sh.count }}</span>
+              </button>
+              <div class="empty-list" *ngIf="!filteredShops.length">{{ t('noShopMatch', { x: shopSearch }) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Machines: tick one or several, search by location or machine ID -->
+        <div class="field dd">
+          <span class="field-label">{{ t('machinesLabel') }}</span>
+          <button class="picker-btn" [class.open]="dropdown === 'machine'" (click)="toggleDropdown('machine')" [disabled]="!catalog.length">
+            <ion-icon name="hardware-chip-outline"></ion-icon>
+            <span class="picker-text">{{ machineButtonLabel }}</span>
+            <ion-icon [name]="dropdown === 'machine' ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+          </button>
+
+          <div class="dd-panel wide" *ngIf="dropdown === 'machine'">
+            <div class="search">
+              <ion-icon name="search-outline"></ion-icon>
+              <input [ngModel]="pickerSearch" (ngModelChange)="setPickerSearch($event)" [placeholder]="t('searchMachine')">
+              <button *ngIf="pickerSearch" class="chip-x" (click)="setPickerSearch('')"><ion-icon name="close-outline"></ion-icon></button>
+            </div>
+            <div class="dd-links">
+              <span class="muted small">{{ pickerDraft.size ? t('nSelected', { n: pickerDraft.size }) : t('noneSelected') }}</span>
+              <span>
+                <a (click)="selectAllShown()">{{ t('selectAllShown') }}</a>
+                <a (click)="pickerDraft.clear()">{{ t('clear') }}</a>
+              </span>
+            </div>
+            <div class="dd-list">
+              <div class="pm-group" *ngFor="let g of pickerGroups">
+                <label class="pm-owner" *ngIf="shop === null && pickerGroups.length > 1">
+                  <input type="checkbox" [checked]="groupState(g.machines) === 'all'"
+                    [indeterminate]="groupState(g.machines) === 'some'" (change)="toggleGroup(g.machines)">
+                  <ion-icon name="storefront-outline"></ion-icon>
+                  <span>{{ t('shopTitle', { phone: shopLabel(g.shopPhone) }) }}</span>
+                  <span class="count">{{ g.machines.length }}</span>
+                </label>
+                <label class="pm-item" *ngFor="let m of g.machines" [class.on]="pickerDraft.has(m.machineId)">
+                  <input type="checkbox" [checked]="pickerDraft.has(m.machineId)" (change)="toggleDraft(m.machineId)">
+                  <span class="pm-text">
+                    <b>{{ m.location || m.machineId }}</b>
+                    <span class="muted small">{{ t('machineId', { x: m.machineId }) }}</span>
+                  </span>
+                </label>
+              </div>
+              <div class="empty-list" *ngIf="!pickerGroups.length">
+                <ion-icon name="file-tray-outline"></ion-icon> {{ t('noMachineMatch', { x: pickerSearch }) }}
+              </div>
+            </div>
+            <div class="dd-foot">
+              <button class="ghost" (click)="dropdown = null">{{ t('cancel') }}</button>
+              <button class="primary" (click)="applyPicker()">
+                <ion-icon name="checkmark-outline"></ion-icon>
+                {{ pickerDraft.size ? t('showN', { n: pickerDraft.size }) : t('showAll') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dd-backdrop" *ngIf="dropdown" (click)="dropdown = null"></div>
+
+      <div class="notice" *ngIf="catalogMissing">
+        <ion-icon name="warning-outline"></ion-icon> {{ t('catalogMissing') }}
+      </div>
+
+      <div class="picked" *ngIf="selectedIds.length">
+        <span class="chip" *ngFor="let id of selectedIds">
+          <ion-icon name="location-outline"></ion-icon>
+          {{ machineName(id) }}
+          <small *ngIf="machine(id).location">{{ id }}</small>
+          <button class="chip-x" (click)="removeMachine(id)" [title]="t('remove', { name: machineName(id) })"><ion-icon name="close-outline"></ion-icon></button>
+        </span>
+        <a (click)="clearMachines()">{{ t('clear') }}</a>
+      </div>
+
+      <div class="custom-range" *ngIf="period === 'custom'">
+        <label>{{ t('from') }} <input type="date" [(ngModel)]="fromDate" [max]="toDate"></label>
+        <label>{{ t('to') }} <input type="date" [(ngModel)]="toDate" [min]="fromDate"></label>
+        <button class="primary" (click)="load()" [disabled]="loading">
+          <ion-icon name="search-outline"></ion-icon> {{ t('show') }}
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== Context line ===== -->
+    <div class="context" *ngIf="result && !loading">
+      <div class="crumbs">
+        <a *ngIf="selectedIds.length || shop !== null" (click)="clearShop()">{{ scopeLabel }}</a>
+        <b *ngIf="!selectedIds.length && shop === null">{{ scopeLabel }}</b>
+        <ng-container *ngIf="shop !== null">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+          <a *ngIf="selectedIds.length" (click)="clearMachines()">{{ t('shopTitle', { phone: shopLabel(shop) }) }}</a>
+          <b *ngIf="!selectedIds.length">{{ t('shopTitle', { phone: shopLabel(shop) }) }}</b>
+        </ng-container>
+        <ng-container *ngIf="selectedIds.length">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+          <b>{{ isSingleMachine ? machineName(selectedIds[0]) : t('nMachines', { n: selectedIds.length }) }}</b>
+        </ng-container>
+      </div>
+      <span class="muted">
+        {{ result.fromDate | date:'dd/MM/yyyy' }} – {{ result.toDate | date:'dd/MM/yyyy' }} · {{ t('nDaysShort', { n: result.days }) }}
+        · {{ t('nMachines', { n: result.machineCount }) }}
+        <ng-container *ngIf="result.lastRollupAt"> · {{ t('updatedAt', { time: (result.lastRollupAt | date:'HH:mm') }) }}</ng-container>
+      </span>
     </div>
-  </div>
 
-  <div class="state" *ngIf="loading">
-    <ion-spinner name="crescent"></ion-spinner> Loading…
-  </div>
-  <div class="state error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
-
-  <ng-container *ngIf="!loading && result">
-
-    <p class="caption">
-      {{ result.scope === 'global' ? 'All machines' : (result.scope === 'machine' ? 'Machine ' + machineId : 'All my machines') }}
-      · {{ result.fromDate }} → {{ result.toDate }} ({{ result.days }} days, {{ result.machineCount }} machine(s))
-      <span *ngIf="result.lastRollupAt"> · data updated {{ result.lastRollupAt | date:'yyyy-MM-dd HH:mm' }}</span>
-    </p>
-
-    <!-- KPIs -->
-    <div class="kpis">
-      <div class="kpi">
-        <span class="label">Revenue</span>
-        <span class="value">{{ result.totals.amount | number:'1.0-0' }}</span>
-        <span class="sub">{{ result.totals.amountPerDay | number:'1.0-0' }} / day</span>
+    <!-- ===== Loading ===== -->
+    <ng-container *ngIf="loading">
+      <div class="kpis">
+        <div class="card kpi" *ngFor="let i of [1,2,3,4]">
+          <ion-skeleton-text animated style="width: 50%"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 80%; height: 26px"></ion-skeleton-text>
+        </div>
       </div>
-      <div class="kpi">
-        <span class="label">Items sold</span>
-        <span class="value">{{ result.totals.qty | number }}</span>
-        <span class="sub">{{ result.totals.qtyPerDay | number:'1.0-1' }} / day</span>
+      <div class="card" *ngFor="let i of [1,2,3,4,5]">
+        <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 90%"></ion-skeleton-text>
       </div>
-      <div class="kpi">
-        <span class="label">Bills</span>
-        <span class="value">{{ result.totals.billCount | number }}</span>
+    </ng-container>
+
+    <!-- ===== Error ===== -->
+    <section class="card state" *ngIf="!loading && errorMessage">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <div>
+        <b>{{ t('loadFailed') }}</b>
+        <p>{{ errorMessage }}</p>
       </div>
-      <div class="kpi">
-        <span class="label">Products sold / loaded</span>
-        <span class="value">{{ result.totals.productsSold }} / {{ result.totals.productsLoaded }}</span>
-        <span class="sub">{{ result.totals.channelsLoaded }} channels loaded</span>
+      <button class="primary" (click)="load()">{{ t('tryAgain') }}</button>
+    </section>
+
+    <ng-container *ngIf="!loading && result">
+
+      <!-- ===== KPIs ===== -->
+      <div class="kpis">
+        <div class="card kpi">
+          <span class="kpi-label"><ion-icon name="cash-outline"></ion-icon> {{ t('amount') }}</span>
+          <span class="kpi-value">{{ result.totals.amount | number:'1.0-0' }}</span>
+          <span class="kpi-sub">{{ t('perDay', { v: (result.totals.amountPerDay | number:'1.0-0') }) }}</span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label"><ion-icon name="cube-outline"></ion-icon> {{ t('qty') }}</span>
+          <span class="kpi-value">{{ result.totals.qty | number }}</span>
+          <span class="kpi-sub">{{ t('perDay', { v: (result.totals.qtyPerDay | number:'1.0-1') }) }}</span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label"><ion-icon name="receipt-outline"></ion-icon> {{ t('bills') }}</span>
+          <span class="kpi-value">{{ result.totals.billCount | number }}</span>
+          <span class="kpi-sub" *ngIf="result.totals.billCount">
+            {{ t('perBill', { v: (result.totals.amount / result.totals.billCount | number:'1.0-0') }) }}
+          </span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label"><ion-icon name="pricetags-outline"></ion-icon> {{ t('products') }}</span>
+          <span class="kpi-value">{{ result.totals.productsSold }}<small> {{ t('sold') }}</small></span>
+          <span class="kpi-sub">{{ t('loadedInSlots', { n: result.totals.productsLoaded, s: result.totals.channelsLoaded }) }}</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Action summary doubles as filter -->
-    <div class="action-chips">
-      <ion-chip [outline]="actionFilter !== 'ALL'" (click)="actionFilter = 'ALL'">
-        <ion-label>All {{ result.products.length }}</ion-label>
-      </ion-chip>
-      <ion-chip *ngFor="let a of actions" [color]="actionColors[a]" [outline]="actionFilter !== a"
-        (click)="actionFilter = a; view = 'products'">
-        <ion-label>{{ actionLabels[a] }} {{ result.actionCounts[a] }}</ion-label>
-      </ion-chip>
-    </div>
+      <!-- ===== What to do ===== -->
+      <h2 class="section-title">{{ t('whatToDo') }}</h2>
+      <div class="todo">
+        <button class="card todo-card {{ 't-' + actionInfo[a].color }}" *ngFor="let a of todoActions"
+          (click)="showAction(a)" [class.empty]="!result.actionCounts[a]">
+          <div class="todo-head">
+            <span class="todo-icon"><ion-icon [name]="actionInfo[a].icon"></ion-icon></span>
+            <span class="todo-count">{{ result.actionCounts[a] }}</span>
+          </div>
+          <b>{{ actionInfo[a].title }}</b>
+          <span class="muted small">{{ actionInfo[a].hint }}</span>
+          <span class="todo-names" *ngIf="result.actionCounts[a]">
+            <ng-container *ngFor="let p of productsFor(a).slice(0, 3); let last = last">{{ p.productName }}{{ last ? '' : ' · ' }}</ng-container>
+            <ng-container *ngIf="result.actionCounts[a] > 3"> +{{ result.actionCounts[a] - 3 }}</ng-container>
+          </span>
+          <span class="todo-names muted" *ngIf="!result.actionCounts[a]">{{ t('nothingToDo') }}</span>
+        </button>
+      </div>
 
-    <ion-segment [(ngModel)]="view" class="views">
-      <ion-segment-button value="products"><ion-label>Products</ion-label></ion-segment-button>
-      <ion-segment-button value="channels" *ngIf="result.channels?.length"><ion-label>Channels</ion-label></ion-segment-button>
-      <ion-segment-button value="machines" *ngIf="!isSingleMachine"><ion-label>Machines</ion-label></ion-segment-button>
-    </ion-segment>
+      <!-- ===== Lists ===== -->
+      <section class="card list" id="psr-list">
+        <div class="tabs">
+          <button [class.on]="view === 'products'" (click)="view = 'products'">
+            {{ t('products') }} <span class="count">{{ result.products.length }}</span>
+          </button>
+          <button *ngIf="result.channels?.length" [class.on]="view === 'channels'" (click)="view = 'channels'">
+            {{ t('slots') }} <span class="count">{{ result.channels.length }}</span>
+          </button>
+          <button *ngIf="!isSingleMachine" [class.on]="view === 'machines'" (click)="view = 'machines'">
+            {{ t('machines') }} <span class="count">{{ result.machines.length }}</span>
+          </button>
+        </div>
 
-    <!-- Products -->
-    <ng-container *ngIf="view === 'products'">
-      <ion-searchbar [(ngModel)]="search" placeholder="Search product" debounce="200"></ion-searchbar>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Product</th>
-              <th class="num">Qty</th>
-              <th class="num">Amount</th>
-              <th class="num">Share</th>
-              <th class="num">Qty/day</th>
-              <th>ABC</th>
-              <th class="num" *ngIf="!isSingleMachine">Machines<br><small>sold / loaded</small></th>
-              <th class="num">Channels<br><small>{{ isSingleMachine ? 'now → suggest' : 'per machine now → suggest' }}</small></th>
-              <th class="num">Stock<br><small>days left</small></th>
-              <th>Advice</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of products" [class.dim]="p.qty === 0">
-              <td class="rank">{{ p.rank }}</td>
-              <td class="name">
+        <!-- Products -->
+        <ng-container *ngIf="view === 'products'">
+          <div class="list-tools">
+            <div class="search">
+              <ion-icon name="search-outline"></ion-icon>
+              <input [ngModel]="search" (ngModelChange)="setSearch($event)" [placeholder]="t('searchProduct')">
+              <button *ngIf="search" class="chip-x" (click)="setSearch('')"><ion-icon name="close-outline"></ion-icon></button>
+            </div>
+            <ng-container *ngTemplateOutlet="sortPills"></ng-container>
+          </div>
+          <div class="filter-chips">
+            <button [class.on]="actionFilter === 'ALL'" (click)="setActionFilter('ALL')">{{ t('all') }}</button>
+            <button *ngFor="let a of filterActions" class="{{ 't-' + actionInfo[a].color }}" [class.on]="actionFilter === a"
+              (click)="setActionFilter(a)">
+              <ion-icon [name]="actionInfo[a].icon"></ion-icon>
+              {{ actionInfo[a].label }} <span class="count">{{ result.actionCounts[a] }}</span>
+            </button>
+          </div>
+
+          <div class="prow" *ngFor="let p of visibleProducts; trackBy: trackByKey" [class.zero]="p.qty === 0">
+            <div class="rank {{ medal(rankOf(p)) }}">{{ rankOf(p) }}</div>
+
+            <div class="p-main">
+              <div class="p-name">
                 {{ p.productName }}
-                <small *ngIf="p.price">{{ p.price | number:'1.0-0' }}</small>
-                <div class="bar"><span [style.width]="barWidth(p.qty, maxProductQty)"></span></div>
-              </td>
-              <td class="num">{{ p.qty | number }}</td>
-              <td class="num">{{ p.amount | number:'1.0-0' }}</td>
-              <td class="num">{{ p.amountShare | number:'1.0-1' }}%</td>
-              <td class="num">{{ p.qtyPerDay | number:'1.0-2' }}</td>
-              <td><span class="abc abc-{{ p.abc }}">{{ p.abc }}</span></td>
-              <td class="num" *ngIf="!isSingleMachine">{{ p.machinesSold }} / {{ p.machinesLoaded }}</td>
-              <td class="num">
-                <ng-container *ngIf="isSingleMachine">{{ p.currentChannels }}</ng-container>
-                <ng-container *ngIf="!isSingleMachine">{{ p.currentChannelsPerMachine }}</ng-container>
-                <ng-container *ngIf="p.suggestedChannelsPerMachine"> → <b>{{ p.suggestedChannelsPerMachine }}</b></ng-container>
-                <div *ngIf="isSingleMachine && p.loadedPositions.length"><small>slot {{ p.loadedPositions.join(', ') }}</small></div>
-              </td>
-              <td class="num">
-                {{ p.currentStock }}<span *ngIf="p.currentCapacity">/{{ p.currentCapacity }}</span>
-                <div *ngIf="p.daysToEmpty !== null"><small [class.warn]="p.daysToEmpty < 3">{{ p.daysToEmpty }} d</small></div>
-              </td>
-              <td class="advice">
-                <ion-badge [color]="actionColors[p.action]">{{ actionLabels[p.action] }}</ion-badge>
-                <div><small>{{ p.reason }}</small></div>
-              </td>
-            </tr>
-            <tr *ngIf="!products.length">
-              <td colspan="11" class="empty">No products in this period</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </ng-container>
+                <span class="abc abc-{{ p.abc }}" *ngIf="p.abc !== '-'" [title]="t('abcTitle')">{{ p.abc }}</span>
+              </div>
+              <div class="meter" [title]="t('meterTitle', { q: p.qty, s: p.qtyShare })">
+                <span [style.width]="pct(p.qty, maxProductQty)"></span>
+              </div>
+              <div class="p-facts muted">
+                <span *ngIf="p.price">{{ t('each', { v: (p.price | number:'1.0-0') }) }}</span>
+                <span [class.on-sort]="sortBy === 'rate'">
+                  {{ t(isSingleMachine ? 'perDayShort' : 'perDayPerMachine', { v: (rate(p) | number:'1.0-2') }) }}
+                </span>
+                <span *ngIf="!isSingleMachine">{{ t('machinesSelling', { n: p.machinesSold }) }}</span>
+                <span *ngIf="isSingleMachine && p.loadedPositions.length">{{ t('slotX', { x: p.loadedPositions.join(', ') }) }}</span>
+              </div>
+            </div>
 
-    <!-- Channels -->
-    <ng-container *ngIf="view === 'channels'">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th *ngIf="!isSingleMachine">Machine</th>
-              <th class="num">Channel</th>
-              <th class="num">Qty</th>
-              <th class="num">Amount</th>
-              <th class="num">Qty/day</th>
-              <th>Loaded now</th>
-              <th class="num">Stock/Max</th>
-              <th>Sold in period</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let c of result.channels" [class.dim]="c.qty === 0">
-              <td class="rank">{{ c.rank }}</td>
-              <td *ngIf="!isSingleMachine"><a (click)="selectMachine(c.machineId)">{{ c.machineId }}</a></td>
-              <td class="num">{{ c.position }}</td>
-              <td class="num">
-                {{ c.qty | number }}
-                <div class="bar"><span [style.width]="barWidth(c.qty, maxChannelQty)"></span></div>
-              </td>
-              <td class="num">{{ c.amount | number:'1.0-0' }}</td>
-              <td class="num">{{ c.qtyPerDay | number:'1.0-2' }}</td>
-              <td>{{ c.loadedProductName || '—' }}</td>
-              <td class="num">{{ c.stock }}/{{ c.max }}</td>
-              <td>
-                <small *ngFor="let p of c.products; let last = last">{{ p.productName }} ({{ p.qty }}){{ last ? '' : ', ' }}</small>
-                <small *ngIf="!c.products.length" class="warn">no sale</small>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </ng-container>
+            <div class="p-num" [class.on-sort]="sortBy === 'qty'">
+              <b>{{ p.qty | number }}</b>
+              <span class="muted">{{ t('qty') }}</span>
+            </div>
+            <div class="p-num" [class.on-sort]="sortBy === 'amount'">
+              <b>{{ p.amount | number:'1.0-0' }}</b>
+              <span class="muted">{{ t('pctOfAmount', { v: (p.amountShare | number:'1.0-1') }) }}</span>
+            </div>
 
-    <!-- Machines -->
-    <ng-container *ngIf="view === 'machines'">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Machine</th>
-              <th class="num">Amount</th>
-              <th class="num">Share</th>
-              <th class="num">Qty</th>
-              <th class="num">Qty/day</th>
-              <th class="num">Products sold</th>
-              <th class="num">Channels<br><small>selling / loaded</small></th>
-              <th>Best product</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let m of result.machines" [class.dim]="m.qty === 0">
-              <td class="rank">{{ m.rank }}</td>
-              <td><a (click)="selectMachine(m.machineId)">{{ m.machineId }}</a></td>
-              <td class="num">
-                {{ m.amount | number:'1.0-0' }}
-                <div class="bar"><span [style.width]="barWidth(m.amount, maxMachineAmount)"></span></div>
-              </td>
-              <td class="num">{{ m.amountShare | number:'1.0-1' }}%</td>
-              <td class="num">{{ m.qty | number }}</td>
-              <td class="num">{{ m.qtyPerDay | number:'1.0-2' }}</td>
-              <td class="num">{{ m.productsSold }}</td>
-              <td class="num">{{ m.channelsSold }} / {{ m.channelsLoaded }}</td>
-              <td>{{ m.topProductName || '—' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </ng-container>
+            <div class="p-slots">
+              <span class="muted">{{ t(isSingleMachine ? 'slotsLabel' : 'slotsPerMachine') }}</span>
+              <b>
+                {{ isSingleMachine ? p.currentChannels : p.currentChannelsPerMachine }}
+                <ng-container *ngIf="p.suggestedChannelsPerMachine && p.suggestedChannelsPerMachine !== (isSingleMachine ? p.currentChannels : p.currentChannelsPerMachine)">
+                  <ion-icon name="arrow-forward-outline"></ion-icon>{{ p.suggestedChannelsPerMachine }}
+                </ng-container>
+              </b>
+              <span class="muted" *ngIf="p.daysToEmpty !== null" [class.warn]="p.daysToEmpty < 3">
+                {{ t('stockDaysLeft', { s: p.currentStock, d: p.daysToEmpty }) }}
+              </span>
+              <span class="muted" *ngIf="p.daysToEmpty === null && p.currentChannels">{{ t('stockX', { s: p.currentStock }) }}</span>
+            </div>
 
-    <p class="legend">
-      <b>ABC</b>: A = products making the first 80% of revenue, B = next 15%, C = last 5%.
-      <b>Suggested channels</b> = the product's share of items sold × channels per machine.
-      <b>Days left</b> = stock loaded now ÷ qty sold per day.
-    </p>
-  </ng-container>
+            <div class="p-advice">
+              <span class="tag {{ 't-' + actionInfo[p.action].color }}">
+                <ion-icon [name]="actionInfo[p.action].icon"></ion-icon>
+                {{ actionInfo[p.action].label }}
+              </span>
+              <span class="muted small">{{ p._reason }}</span>
+            </div>
+          </div>
+
+          <button class="more" *ngIf="products.length > productLimit" (click)="productLimit = productLimit + pageSize">
+            {{ t('showMore', { n: products.length - productLimit }) }}
+          </button>
+
+          <div class="empty-list" *ngIf="!products.length">
+            <ion-icon name="file-tray-outline"></ion-icon>
+            {{ t('noProducts') }}
+            <a *ngIf="actionFilter !== 'ALL' || search" (click)="search = ''; setActionFilter('ALL')">{{ t('clearFilters') }}</a>
+          </div>
+        </ng-container>
+
+        <!-- Slots -->
+        <ng-container *ngIf="view === 'channels'">
+          <div class="list-tools">
+            <span class="muted small">{{ t('slotsNote') }}</span>
+            <div class="pills small">
+              <span class="muted">{{ t('order') }}</span>
+              <button [class.on]="channelSort === 'slot'" (click)="setChannelSort('slot')">{{ t('slotNo') }}</button>
+              <button [class.on]="channelSort === 'qty'" (click)="setChannelSort('qty')">{{ t('bestFirst') }}</button>
+            </div>
+          </div>
+
+          <div class="slot-group" *ngFor="let g of visibleChannelGroups; trackBy: trackByMachine">
+            <div class="slot-group-head" *ngIf="!isSingleMachine">
+              <a (click)="selectMachine(g.machineId)">
+                <ion-icon name="location-outline"></ion-icon> {{ machineName(g.machineId) }}
+                <small class="muted" *ngIf="machine(g.machineId).location">{{ g.machineId }}</small>
+                <ion-icon name="chevron-forward-outline"></ion-icon>
+              </a>
+            </div>
+            <div class="slots">
+              <div class="slot" *ngFor="let c of g.channels; trackBy: trackByChannel" [class.zero]="c.qty === 0"
+                [title]="t('slotTitle', { p: c.position, q: c.qty, a: (c.amount | number:'1.0-0') })">
+                <div class="slot-head">
+                  <span class="slot-no">{{ c.position }}</span>
+                  <span class="slot-rank" *ngIf="c.qty > 0">#{{ c.rank }}</span>
+                  <span class="slot-rank warn" *ngIf="c.qty === 0">{{ t('noSale') }}</span>
+                </div>
+                <div class="slot-name">{{ c.loadedProductName || c.topProductName || t('empty') }}</div>
+                <div class="slot-qty"><b>{{ c.qty | number }}</b> <span class="muted">{{ t('itemsPerDay', { v: (c.qtyPerDay | number:'1.0-1') }) }}</span></div>
+                <div class="meter"><span [style.width]="pct(c.qty, maxChannelQty)"></span></div>
+                <div class="stock" *ngIf="c.max">
+                  <div class="meter thin"><span [style.width]="stockPct(c)"></span></div>
+                  <span class="muted small">{{ t('stockOf', { s: c.stock, m: c.max }) }}</span>
+                </div>
+                <div class="muted small" *ngIf="c.products.length > 1">
+                  {{ t('alsoSold', { x: otherNames(c) }) }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="more" *ngIf="channelGroups.length > channelGroupLimit" (click)="channelGroupLimit = channelGroupLimit + 20">
+            {{ t('showMore', { n: channelGroups.length - channelGroupLimit }) }}
+          </button>
+        </ng-container>
+
+        <!-- Machines -->
+        <ng-container *ngIf="view === 'machines'">
+          <div class="list-tools machines-tools">
+            <span class="muted small">{{ t('machinesNote') }}</span>
+            <ng-container *ngTemplateOutlet="sortPills"></ng-container>
+          </div>
+          <div class="mrow" *ngFor="let m of visibleMachines; trackBy: trackByMachine" (click)="selectMachine(m.machineId)" [class.zero]="m.qty === 0">
+            <div class="rank {{ medal(rankOfMachine(m)) }}">{{ rankOfMachine(m) }}</div>
+            <div class="p-main">
+              <div class="p-name"><ion-icon name="location-outline"></ion-icon> {{ m.location || m.machineId }}</div>
+              <div class="p-facts muted ids">
+                <span *ngIf="m.location">{{ t('machineId', { x: m.machineId }) }}</span>
+                <span *ngIf="scope === 'global' && m.ownerPhone"><ion-icon name="person-outline"></ion-icon> {{ m.ownerPhone }}</span>
+                <span *ngIf="m.shopPhone"><ion-icon name="call-outline"></ion-icon> {{ m.shopPhone }}</span>
+              </div>
+              <div class="meter" [title]="t('pctOfRevenueTitle', { v: m.amountShare })"><span [style.width]="pct(m.amount, maxMachineAmount)"></span></div>
+              <div class="p-facts muted">
+                <span>{{ t('best', { x: m.topProductName || '—' }) }}</span>
+                <span>{{ t('nProducts', { n: m.productsSold }) }}</span>
+                <span>{{ t('slotsSelling', { a: m.channelsSold, b: m.channelsLoaded }) }}</span>
+              </div>
+            </div>
+            <div class="p-num" [class.on-sort]="sortBy === 'amount'">
+              <b>{{ m.amount | number:'1.0-0' }}</b>
+              <span class="muted">{{ t('pctOfAmount', { v: (m.amountShare | number:'1.0-1') }) }}</span>
+            </div>
+            <div class="p-num" [class.on-sort]="sortBy !== 'amount'">
+              <b>{{ m.qty | number }}</b>
+              <span class="muted">{{ t('qtyPerDay', { v: (rate(m) | number:'1.0-1') }) }}</span>
+            </div>
+            <ion-icon class="go" name="chevron-forward-outline"></ion-icon>
+          </div>
+          <button class="more" *ngIf="machines.length > machineLimit" (click)="machineLimit = machineLimit + pageSize">
+            {{ t('showMore', { n: machines.length - machineLimit }) }}
+          </button>
+        </ng-container>
+      </section>
+
+      <ng-template #sortPills>
+        <div class="pills small sort">
+          <span class="muted">{{ t('sortBy') }}</span>
+          <button *ngFor="let o of sortOptions" [class.on]="sortBy === o.key" (click)="setSort(o.key)"
+            [title]="sortBy === o.key ? t('sortAgain') : t('sortByX', { x: t(o.labelKey) })">
+            {{ t(o.labelKey) }}
+            <ion-icon *ngIf="sortBy === o.key" [name]="sortDesc ? 'arrow-down-outline' : 'arrow-up-outline'"></ion-icon>
+          </button>
+        </div>
+      </ng-template>
+
+      <details class="help">
+        <summary><ion-icon name="help-circle-outline"></ion-icon> {{ t('helpTitle') }}</summary>
+        <ul>
+          <li *ngFor="let k of ['help1', 'help2', 'help3', 'help4', 'help5', 'help6', 'help7']" [innerHTML]="t(k)"></li>
+        </ul>
+      </details>
+    </ng-container>
+  </div>
+
 </ion-content>

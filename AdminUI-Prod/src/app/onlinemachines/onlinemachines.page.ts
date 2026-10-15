@@ -705,8 +705,12 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     this.apiService.router.navigate(['/machine-map']);
   }
 
-  openProductSalesRanking() {
-    this.apiService.router.navigate(['/product-sales-ranking'], { queryParams: { scope: 'global' } });
+  /** Sales ranking for all machines, or only for the given ones (an owner group or one machine) */
+  openProductSalesRanking(machines?: MachineData[]) {
+    const queryParams: any = { scope: 'global' };
+    const ids = (machines || []).map(m => m.machineId).filter(Boolean);
+    if (ids.length) queryParams.machineIds = ids.join(',');
+    this.apiService.router.navigate(['/product-sales-ranking'], { queryParams });
   }
 
   async openCompareExecl() {

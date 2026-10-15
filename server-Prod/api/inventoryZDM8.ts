@@ -71,10 +71,10 @@ import { loadMonthSalesSummary } from "../services/monthSalesSummary";
 import {
     analyzeProductSales,
     rebuildAllOwners,
-    rebuildOwnerRange,
     resolveDateRange,
     runWithRollupLock,
     startProductSalesRollupScheduler,
+    toMachineRef,
 } from "../services/productSalesAnalytics";
 import {
     EClientCommand,
@@ -5061,7 +5061,21 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
             // PRODUCT SALES ANALYTICS (ranking of products / channels / machines + keep-or-dispose advice)
-            // Owner (or superadmin acting as a shop via shopPhonenumber): own machines, optionally one machineId
+            // body: { fromDate, toDate, machineIds?: string[] (or machineId), shopPhones?: string[] ('' = machines without one),
+            //         ownerUuids?: string[] (global only) }
+            // The response also carries `catalog`: every machine the caller may pick, with location / owner phone.
+            const pickIds = (body: any): string[] => {
+                const raw = Array.isArray(body?.machineIds) ? body.machineIds : [body?.machineId];
+                return Array.from(new Set(raw
+                    .filter((x: any) => typeof x === 'string' && x.trim() && x !== 'all')
+                    .map((x: string) => x.trim()))) as string[];
+            };
+            const pickShops = (body: any): string[] | null =>
+                Array.isArray(body?.shopPhones)
+                    ? body.shopPhones.filter((x: any) => typeof x === 'string').map((x: string) => x.trim())
+                    : null;
+
+            // Owner (or superadmin acting as a shop via shopPhonenumber): own machines
             router.post(
                 this.path + "/loadProductSalesAnalytics",
                 this.checkSuperAdmin,
@@ -5069,57 +5083,65 @@ export class InventoryZDM8 implements IBaseClass {
                 async (req, res) => {
                     try {
                         const ownerUuid = res.locals["ownerUuid"];
-                        const machineId = typeof req.body?.machineId === 'string' && req.body.machineId !== 'all'
-                            ? req.body.machineId.trim()
-                            : '';
+                        const wanted = pickIds(req.body);
                         const { fromDay, toDay, days } = resolveDateRange(SERVER_TIME_ZONE, req.body?.fromDate, req.body?.toDate);
 
-                        const where: any = { ownerUuid, isActive: true };
-                        if (machineId) where.machineId = machineId;
-                        const machines = await this.machineClientlist.findAll({ where, attributes: ['machineId', 'ownerUuid'] });
-                        if (machineId && !machines.length) throw new Error('machine not found for this owner');
+                        const shops = pickShops(req.body);
+                        const catalog = (await this.machineClientlist.findAll({
+                            // all machines (active or not), same list as /listMachine
+                            where: { ownerUuid },
+                            attributes: ['machineId', 'ownerUuid', 'data'],
+                        })).map(toMachineRef).filter((m) => m.machineId);
+                        const machines = catalog.filter((m) =>
+                            (!shops || shops.includes(m.shopPhone || '')) &&
+                            (!wanted.length || wanted.includes(m.machineId)));
+                        if ((wanted.length || shops) && !machines.length) throw new Error('no machine matches the filter');
 
-                        // keep today's numbers fresh for the owner without waiting for the scheduler
-                        if (toDay === momenttz.tz(SERVER_TIME_ZONE).format('YYYY-MM-DD')) {
-                            await rebuildOwnerRange(ownerUuid, toDay, toDay, SERVER_TIME_ZONE);
-                        }
-
+                        // no bill scan here: reads only the accumulated table (today is refreshed by the 15-min rollup)
                         const result = await analyzeProductSales({
-                            scope: machineId ? 'machine' : 'owner',
-                            machines: machines.map((m: any) => ({ machineId: m.machineId, ownerUuid: m.ownerUuid })),
+                            scope: machines.length === 1 && wanted.length ? 'machine' : (wanted.length || shops) ? 'selection' : 'owner',
+                            machines,
                             fromDay, toDay, days,
                         });
-                        res.send(PrintSucceeded("loadProductSalesAnalytics", result, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("loadProductSalesAnalytics", { ...result, catalog }, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         res.send(PrintError("loadProductSalesAnalytics", error?.message || error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );
 
-            // Superadmin: all machines of all owners, optionally one machineId
+            // Superadmin: all machines of all owners, optionally filtered by owners and/or machines
             router.post(
                 this.path + "/loadGlobalProductSalesAnalytics",
                 this.checkSuperAdmin,
                 this.validateSuperAdmin,
                 async (req, res) => {
                     try {
-                        const machineId = typeof req.body?.machineId === 'string' && req.body.machineId !== 'all'
-                            ? req.body.machineId.trim()
-                            : '';
+                        const wanted = pickIds(req.body);
+                        const owners: string[] = Array.isArray(req.body?.ownerUuids)
+                            ? req.body.ownerUuids.filter((x: any) => typeof x === 'string' && x)
+                            : [];
+                        const shops = pickShops(req.body);
                         const { fromDay, toDay, days } = resolveDateRange(SERVER_TIME_ZONE, req.body?.fromDate, req.body?.toDate);
 
-                        const where: any = { isActive: true };
-                        if (machineId) where.machineId = machineId;
-                        const machines = (await this.machineClientlist.findAll({ where, attributes: ['machineId', 'ownerUuid'] }))
-                            .filter((m: any) => m.machineId && m.ownerUuid);
-                        if (machineId && !machines.length) throw new Error('machine not found');
+                        const catalog = (await this.machineClientlist.findAll({
+                            // all machines (active or not), same list as /getAllMachines on the dashboard
+                            where: {},
+                            attributes: ['machineId', 'ownerUuid', 'data'],
+                        })).map(toMachineRef).filter((m) => m.machineId && m.ownerUuid);
+                        const machines = catalog.filter((m) =>
+                            (!owners.length || owners.includes(m.ownerUuid)) &&
+                            (!shops || shops.includes(m.shopPhone || '')) &&
+                            (!wanted.length || wanted.includes(m.machineId)));
+                        if ((wanted.length || owners.length || shops) && !machines.length) throw new Error('no machine matches the filter');
 
                         const result = await analyzeProductSales({
-                            scope: machineId ? 'machine' : 'global',
-                            machines: machines.map((m: any) => ({ machineId: m.machineId, ownerUuid: m.ownerUuid })),
+                            scope: machines.length === 1 && wanted.length ? 'machine'
+                                : (wanted.length || owners.length || shops) ? 'selection' : 'global',
+                            machines,
                             fromDay, toDay, days,
                         });
-                        res.send(PrintSucceeded("loadGlobalProductSalesAnalytics", result, EMessage.succeeded, returnLog(req, res)));
+                        res.send(PrintSucceeded("loadGlobalProductSalesAnalytics", { ...result, catalog }, EMessage.succeeded, returnLog(req, res)));
                     } catch (error) {
                         res.send(PrintError("loadGlobalProductSalesAnalytics", error?.message || error, EMessage.error, returnLog(req, res, true)));
                     }

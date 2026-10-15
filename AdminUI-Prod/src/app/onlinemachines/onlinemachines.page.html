@@ -8,7 +8,7 @@
       </ion-button>
       <ion-button (click)="openProductSalesRanking()">
         <ion-icon name="podium-outline"></ion-icon>
-        Product Ranking
+        ອັນດັບການຂາຍ
       </ion-button>
       <ion-button (click)="openCompareExecl()">Compare Excel</ion-button>
       <ion-button (click)="openConfigMachine()">ສ້າງ Config</ion-button>
@@ -58,6 +58,18 @@
         </div>
       </ion-col>
     </ion-row>
+    <ion-row>
+      <ion-col size="12">
+        <button type="button" class="ranking-entry" (click)="openProductSalesRanking()">
+          <span class="ranking-icon"><ion-icon name="podium-outline"></ion-icon></span>
+          <span class="ranking-text">
+            <strong>ອັນດັບການຂາຍສິນຄ້າ · Product sales ranking</strong>
+            <span>ສິນຄ້າຂາຍດີ / ຂາຍບໍ່ດີ ຂອງທຸກຕູ້, ຕາມຮ້ານ ຫຼື ຕາມຕູ້ — ຄວນເພີ່ມ ຫຼື ເອົາອອກ</span>
+          </span>
+          <ion-icon class="ranking-go" name="chevron-forward-outline"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
   </ion-grid>
 
   <div class="view-toggle">
@@ -81,6 +93,7 @@
 
     <ion-row *ngFor="let group of ownerGroups; trackBy: trackByOwner">
       <ion-col size="12">
+        <div class="owner-line">
         <button type="button" class="owner-row" (click)="toggleOwner(group.owner)" [attr.aria-expanded]="group.expanded">
           <div class="owner-row-main">
             <ion-icon name="call-outline"></ion-icon>
@@ -103,6 +116,12 @@
           </div>
           <ion-icon class="owner-chevron" [name]="group.expanded ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
         </button>
+        <button type="button" class="owner-ranking" (click)="openProductSalesRanking(group.machines)"
+          title="ອັນດັບການຂາຍຂອງຕູ້ໃນກຸ່ມນີ້">
+          <ion-icon name="podium-outline"></ion-icon>
+          <span>ອັນດັບການຂາຍ</span>
+        </button>
+        </div>
 
         <ion-row class="machine-row" *ngIf="group.expanded">
           <ion-col size="12" size-sm="6" size-md="4" size-lg="3"
@@ -340,6 +359,12 @@
             <ion-button expand="block" color="tertiary" (click)="showReportStock(machine)">
               <ion-icon slot="start" name="bill"></ion-icon>
               ລາຍງານ stock
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button expand="block" color="success" (click)="openProductSalesRanking([machine])">
+              <ion-icon slot="start" name="podium-outline"></ion-icon>
+              ອັນດັບການຂາຍ
             </ion-button>
           </ion-col>
         </ion-row>

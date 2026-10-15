@@ -670,8 +670,8 @@ export class ApiService {
         return this.http.post(this.url + '/loadAllVendingMachinesMonthSalesSummary', payload, { headers: this.headerBase() });
     }
 
-    /** Product / channel / machine sales ranking for the owner's machines (machineId optional) */
-    loadProductSalesAnalytics(data: { fromDate?: string; toDate?: string; machineId?: string }) {
+    /** Product / channel / machine sales ranking for the owner's machines (machineIds optional, empty = all) */
+    loadProductSalesAnalytics(data: { fromDate?: string; toDate?: string; machineIds?: string[] }) {
         const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
         const shopPhonenumber = this.shopPhonenumber();
         const secret = localStorage.getItem('secretLocal');
@@ -679,12 +679,19 @@ export class ApiService {
         return this.http.post<IResModel>(this.url + '/loadProductSalesAnalytics', payload, { headers: this.headerBase() });
     }
 
-    /** Superadmin: product / machine sales ranking across all machines (machineId optional) */
-    loadGlobalProductSalesAnalytics(data: { fromDate?: string; toDate?: string; machineId?: string }) {
+    /** Superadmin: product / machine sales ranking across all machines, optionally filtered by owners / machines */
+    loadGlobalProductSalesAnalytics(data: { fromDate?: string; toDate?: string; machineIds?: string[]; ownerUuids?: string[] }) {
         const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
         const secret = localStorage.getItem('secretLocal');
         const payload = { ...data, token, secret };
         return this.http.post<IResModel>(this.url + '/loadGlobalProductSalesAnalytics', payload, { headers: this.headerBase() });
+    }
+
+    /** Superadmin: every machine (same request as the Vending Machine Dashboard) */
+    getAllMachinesForAdmin() {
+        const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
+        const secret = localStorage.getItem('secretLocal');
+        return this.http.post<IResModel>(this.url + '/getAllMachines', { token, secret, shopPhonenumber: '' }, { headers: this.headerBase() });
     }
 
     /** Superadmin: rebuild the accumulated product sales data for a date range */
