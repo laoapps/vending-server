@@ -480,4 +480,11 @@ export class StocksalePage implements OnInit, OnDestroy, AfterViewInit {
     });
     this.storage.set('saleStock', lean, 'stock').catch(() => { });
   }
+
+  bump(s: IVendingMachineSale, delta: number): void {
+  const max = Number(s.max) || 0;
+  const next = Math.max(0, Math.min(max, Number(s.stock?.qtty || 0) + delta));
+  s.stock.qtty = next;
+  this.save();
+}
 }

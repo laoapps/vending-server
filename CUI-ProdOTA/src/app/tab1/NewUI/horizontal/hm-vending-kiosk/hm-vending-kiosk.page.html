@@ -74,16 +74,21 @@
         <ion-icon name="alert-circle"></ion-icon>
         <span>ບໍ່ຕົກ</span>
       </button>
+      <a class="kiosk-contact" href="javascript:void(0)">
+  <ion-icon name="logo-whatsapp"></ion-icon>
+  <span>WhatsApp</span>
+  <b>{{ contact }}</b>
+</a>
 
       <button type="button" class="action-bar__money" (click)="topUpEwallet()" title="Admin money / config">
         <small>LAK</small>
         <strong>{{ currentBalance.value | number }}</strong>
       </button>
 
-      <a class="action-bar__btn" href="javascript:void(0)" title="WhatsApp">
+      <!-- <a class="action-bar__btn" href="javascript:void(0)" title="WhatsApp">
         <ion-icon name="logo-whatsapp"></ion-icon>
         <span>{{ contact }}</span>
-      </a>
+      </a> -->
 
       <div class="action-bar__gear-wrap">
         <button type="button" class="action-bar__btn action-bar__btn--gear" [class.is-on]="menuOpen"

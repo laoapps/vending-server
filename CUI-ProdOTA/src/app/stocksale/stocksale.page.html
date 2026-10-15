@@ -26,16 +26,18 @@
 
 <ion-content>
   <div class="sale-grid">
-    <article class="sale-card" *ngFor="let s of view; trackBy: trackPos" [class.on]="isDisabled == s.position + ''"
-      (click)="selectItem(s.position + '')">
-      <span class="sale-card__pos">{{ s.position + compensation }}</span>
-      <img loading="lazy" decoding="async" [hmCacheImg]="s?.stock?.image" hmCacheEmpty="assets/empty-box.png"
-        [alt]="s.stock?.name" (click)="changeStock(s.position); $event.stopPropagation()" />
-      <b>{{ s.stock?.name || 'ວ່າງ' }}</b>
-      <small>{{ (s.stock?.price || 0) | number }} · {{ s.stock?.qtty }}/{{ s.max }}</small>
-      <button type="button" class="sale-card__max" (click)="setMax(s.position); $event.stopPropagation()">SET MAX</button>
-      <ion-range *ngIf="isDisabled == s.position + ''" [min]="0" [max]="s.max" [snaps]="true" [pin]="true"
-        [(ngModel)]="s.stock.qtty" (ionChange)="save()" (click)="$event.stopPropagation()"></ion-range>
-    </article>
+   <article class="sale-card" *ngFor="let s of view; trackBy: trackPos">
+  <span class="sale-card__pos">{{ s.position + compensation }}</span>
+  <img loading="lazy" decoding="async" [hmCacheImg]="s?.stock?.image" hmCacheEmpty="assets/empty-box.png"
+    [alt]="s.stock?.name" (click)="changeStock(s.position)" />
+  <b>{{ s.stock?.name || 'ວ່າງ' }}</b>
+  <small>{{ (s.stock?.price || 0) | number }}</small>
+  <div class="sale-card__qty" (click)="$event.stopPropagation()">
+    <button type="button" (click)="bump(s, -1)">−</button>
+    <span>{{ s.stock?.qtty }}/{{ s.max }}</span>
+    <button type="button" (click)="bump(s, 1)">+</button>
+  </div>
+  <button type="button" class="sale-card__max" (click)="setMax(s.position)">SET MAX</button>
+</article>
   </div>
 </ion-content>
