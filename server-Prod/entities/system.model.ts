@@ -2445,7 +2445,8 @@ export enum EEntity {
     ProductCredit = "ProductCredit",
     Callbacklog = "Callbacklog",
     MachineBlockChain = "MachineBlockChain",
-    productshowcase = "productshowcase"
+    productshowcase = "productshowcase",
+    productsalesdaily = "productsalesdaily"
 }
 
 export interface ISaveMachineSaleReport {

@@ -670,6 +670,31 @@ export class ApiService {
         return this.http.post(this.url + '/loadAllVendingMachinesMonthSalesSummary', payload, { headers: this.headerBase() });
     }
 
+    /** Product / channel / machine sales ranking for the owner's machines (machineId optional) */
+    loadProductSalesAnalytics(data: { fromDate?: string; toDate?: string; machineId?: string }) {
+        const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
+        const shopPhonenumber = this.shopPhonenumber();
+        const secret = localStorage.getItem('secretLocal');
+        const payload = { ...data, token, shopPhonenumber, secret };
+        return this.http.post<IResModel>(this.url + '/loadProductSalesAnalytics', payload, { headers: this.headerBase() });
+    }
+
+    /** Superadmin: product / machine sales ranking across all machines (machineId optional) */
+    loadGlobalProductSalesAnalytics(data: { fromDate?: string; toDate?: string; machineId?: string }) {
+        const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = { ...data, token, secret };
+        return this.http.post<IResModel>(this.url + '/loadGlobalProductSalesAnalytics', payload, { headers: this.headerBase() });
+    }
+
+    /** Superadmin: rebuild the accumulated product sales data for a date range */
+    rebuildProductSalesRollup(data: { fromDate?: string; toDate?: string }) {
+        const token = localStorage.getItem('token') || localStorage.getItem('lva_token');
+        const secret = localStorage.getItem('secretLocal');
+        const payload = { ...data, token, secret };
+        return this.http.post<IResModel>(this.url + '/rebuildProductSalesRollup', payload, { headers: this.headerBase() });
+    }
+
     checkAndConfirmBillToDeliver(data: any) {
         const shopPhonenumber = this.shopPhonenumber();
         const secret = localStorage.getItem('secretLocal');

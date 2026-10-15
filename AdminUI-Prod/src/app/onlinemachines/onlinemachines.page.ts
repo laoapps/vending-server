@@ -705,6 +705,10 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
     this.apiService.router.navigate(['/machine-map']);
   }
 
+  openProductSalesRanking() {
+    this.apiService.router.navigate(['/product-sales-ranking'], { queryParams: { scope: 'global' } });
+  }
+
   async openCompareExecl() {
     const modal = await this.modalCtrl.create({
       component: CompareExcelPage,

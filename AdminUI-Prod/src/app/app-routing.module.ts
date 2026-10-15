@@ -265,6 +265,10 @@ const routes: Routes = [
     loadChildren: () => import('./print-receipt/print-receipt.module').then(m => m.PrintReceiptPageModule)
   },
   {
+    path: 'product-sales-ranking',
+    loadChildren: () => import('./product-sales-ranking/product-sales-ranking.module').then(m => m.ProductSalesRankingPageModule)
+  },
+  {
     path: 'public-sales-report',
     loadChildren: () => import('./sales-report/sales-report.module').then(m => m.SalesReportPageModule)
   },

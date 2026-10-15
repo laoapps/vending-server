@@ -69,6 +69,14 @@ import {
 } from "../services/todaySalesRedis";
 import { loadMonthSalesSummary } from "../services/monthSalesSummary";
 import {
+    analyzeProductSales,
+    rebuildAllOwners,
+    rebuildOwnerRange,
+    resolveDateRange,
+    runWithRollupLock,
+    startProductSalesRollupScheduler,
+} from "../services/productSalesAnalytics";
+import {
     EClientCommand,
     EMACHINE_COMMAND,
     EMessage,
@@ -406,6 +414,7 @@ export class InventoryZDM8 implements IBaseClass {
             );
 
             startTodaySalesSubscriber(this.wss);
+            startProductSalesRollupScheduler(SERVER_TIME_ZONE);
 
             router.get(this.path + "/", async (req, res) => {
                 console.log("TEST IS WORKING");
@@ -5047,6 +5056,90 @@ export class InventoryZDM8 implements IBaseClass {
                                 returnLog(req, res, true)
                             )
                         );
+                    }
+                }
+            );
+
+            // PRODUCT SALES ANALYTICS (ranking of products / channels / machines + keep-or-dispose advice)
+            // Owner (or superadmin acting as a shop via shopPhonenumber): own machines, optionally one machineId
+            router.post(
+                this.path + "/loadProductSalesAnalytics",
+                this.checkSuperAdmin,
+                this.checkAdmin,
+                async (req, res) => {
+                    try {
+                        const ownerUuid = res.locals["ownerUuid"];
+                        const machineId = typeof req.body?.machineId === 'string' && req.body.machineId !== 'all'
+                            ? req.body.machineId.trim()
+                            : '';
+                        const { fromDay, toDay, days } = resolveDateRange(SERVER_TIME_ZONE, req.body?.fromDate, req.body?.toDate);
+
+                        const where: any = { ownerUuid, isActive: true };
+                        if (machineId) where.machineId = machineId;
+                        const machines = await this.machineClientlist.findAll({ where, attributes: ['machineId', 'ownerUuid'] });
+                        if (machineId && !machines.length) throw new Error('machine not found for this owner');
+
+                        // keep today's numbers fresh for the owner without waiting for the scheduler
+                        if (toDay === momenttz.tz(SERVER_TIME_ZONE).format('YYYY-MM-DD')) {
+                            await rebuildOwnerRange(ownerUuid, toDay, toDay, SERVER_TIME_ZONE);
+                        }
+
+                        const result = await analyzeProductSales({
+                            scope: machineId ? 'machine' : 'owner',
+                            machines: machines.map((m: any) => ({ machineId: m.machineId, ownerUuid: m.ownerUuid })),
+                            fromDay, toDay, days,
+                        });
+                        res.send(PrintSucceeded("loadProductSalesAnalytics", result, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        res.send(PrintError("loadProductSalesAnalytics", error?.message || error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+            // Superadmin: all machines of all owners, optionally one machineId
+            router.post(
+                this.path + "/loadGlobalProductSalesAnalytics",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const machineId = typeof req.body?.machineId === 'string' && req.body.machineId !== 'all'
+                            ? req.body.machineId.trim()
+                            : '';
+                        const { fromDay, toDay, days } = resolveDateRange(SERVER_TIME_ZONE, req.body?.fromDate, req.body?.toDate);
+
+                        const where: any = { isActive: true };
+                        if (machineId) where.machineId = machineId;
+                        const machines = (await this.machineClientlist.findAll({ where, attributes: ['machineId', 'ownerUuid'] }))
+                            .filter((m: any) => m.machineId && m.ownerUuid);
+                        if (machineId && !machines.length) throw new Error('machine not found');
+
+                        const result = await analyzeProductSales({
+                            scope: machineId ? 'machine' : 'global',
+                            machines: machines.map((m: any) => ({ machineId: m.machineId, ownerUuid: m.ownerUuid })),
+                            fromDay, toDay, days,
+                        });
+                        res.send(PrintSucceeded("loadGlobalProductSalesAnalytics", result, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        res.send(PrintError("loadGlobalProductSalesAnalytics", error?.message || error, EMessage.error, returnLog(req, res, true)));
+                    }
+                }
+            );
+
+            // Superadmin: rebuild the accumulated data for a date range (runs in background)
+            router.post(
+                this.path + "/rebuildProductSalesRollup",
+                this.checkSuperAdmin,
+                this.validateSuperAdmin,
+                async (req, res) => {
+                    try {
+                        const { fromDay, toDay } = resolveDateRange(SERVER_TIME_ZONE, req.body?.fromDate, req.body?.toDate);
+                        runWithRollupLock(() => rebuildAllOwners(fromDay, toDay, SERVER_TIME_ZONE))
+                            .then((r) => console.log(`[productSales] manual rebuild ${fromDay}..${toDay}`, r ?? 'skipped (locked)'))
+                            .catch((err) => console.error('[productSales] manual rebuild failed:', err?.message || err));
+                        res.send(PrintSucceeded("rebuildProductSalesRollup", { fromDate: fromDay, toDate: toDay, started: true }, EMessage.succeeded, returnLog(req, res)));
+                    } catch (error) {
+                        res.send(PrintError("rebuildProductSalesRollup", error?.message || error, EMessage.error, returnLog(req, res, true)));
                     }
                 }
             );

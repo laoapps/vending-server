@@ -620,6 +620,10 @@ export class MachinePage implements OnInit {
       r.present();
     });
   }
+  productSalesRanking() {
+    this.apiService.closeModal();
+    this.apiService.router.navigate(['/product-sales-ranking'], { queryParams: { scope: 'owner' } });
+  }
   resetCashing(machineId: string): Promise<any> {
     return new Promise<any>(async (resolve, reject) => {
       try {
