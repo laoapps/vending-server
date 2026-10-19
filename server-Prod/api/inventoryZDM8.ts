@@ -3420,6 +3420,8 @@ export class InventoryZDM8 implements IBaseClass {
                             );
 
                             await sEnt.sync();
+                            // keep the edited sale at its old position
+                            const oldSale = await sEnt.findByPk(id, { transaction });
                             await sEnt
                                 .destroy({ where: { id }, transaction });
 
@@ -3459,9 +3461,11 @@ export class InventoryZDM8 implements IBaseClass {
                                 await sEntCredit.create(oCredit, { transaction });
                             }
 
+                            // inside the transaction so the destroyed sale no longer counts as used
                             const listSale = await sEnt.findAll({
                                 where: { machineId },
                                 attributes: ['position'],
+                                transaction,
                             });
 
                             // console.log('-----> NEW :', JSON.parse(JSON.stringify(newData)));
@@ -3469,8 +3473,11 @@ export class InventoryZDM8 implements IBaseClass {
                             const usedPositions = new Set(listSale.map(i => i.position));
 
                             let availablePosition: number | null = null;
+                            if (oldSale && oldSale.machineId == machineId && Number(oldSale.position) > 0 && !usedPositions.has(oldSale.position)) {
+                                availablePosition = oldSale.position;
+                            }
 
-                            for (let i = 1; i <= 200; i++) {
+                            for (let i = 1; i <= 200 && availablePosition == null; i++) {
                                 if (!usedPositions.has(i)) {
                                     availablePosition = i;
                                     break;

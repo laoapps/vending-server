@@ -8,9 +8,9 @@
 
 <ion-content>
   <ion-list>
-    <ion-item>
-      <ion-label>MachineId:{{machineId}}</ion-label>
-    </ion-item>
+    <app-machine-picker [machineId]="machineId"
+      [hint]="'Also apply to position ' + s.position + ' in other machines (optional)'"
+      (selectedChange)="extraMachineIds = $event"></app-machine-picker>
     <ion-item>
       <ion-label>max:{{s.max}}</ion-label>
     </ion-item>
@@ -42,7 +42,7 @@
 
     </ion-item>
     <ion-item>
-      <ion-button expand="block" color="primary" (click)="saveChange()">Save</ion-button>
+      <ion-button expand="block" color="primary" (click)="saveChange()">Save ({{extraMachineIds.length + 1}})</ion-button>
     </ion-item>
     <ion-item>
       <ion-button (click)="close()">Close</ion-button>

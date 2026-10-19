@@ -1,0 +1,30 @@
+<ion-list-header>
+  <ion-label>Machines ({{selectedMachineIds.size + 1}})</ion-label>
+</ion-list-header>
+<ion-item>
+  <ion-checkbox slot="start" [checked]="true" disabled></ion-checkbox>
+  <ion-label>{{machineId}} <ion-note>(current)</ion-note></ion-label>
+</ion-item>
+
+<ion-item *ngIf="machinesLoading" lines="none">
+  <ion-spinner name="dots" slot="start"></ion-spinner>
+  <ion-label>Loading machines...</ion-label>
+</ion-item>
+
+<ng-container *ngIf="!machinesLoading && machines.length">
+  <ion-searchbar *ngIf="machines.length > 5" [(ngModel)]="machineSearch" (ionInput)="filterMachines()"
+    placeholder="Search machine" debounce="200"></ion-searchbar>
+  <ion-item lines="none">
+    <ion-note>{{hint}}</ion-note>
+    <ion-button slot="end" size="small" fill="clear" (click)="selectAllMachines()">Select all</ion-button>
+    <ion-button slot="end" size="small" fill="clear" (click)="clearMachines()"
+      [disabled]="!selectedMachineIds.size">Clear</ion-button>
+  </ion-item>
+  <div class="machine-list">
+    <ion-item *ngFor="let m of filteredMachines; trackBy: trackByMachineId">
+      <ion-checkbox slot="start" [checked]="selectedMachineIds.has(m.machineId)"
+        (ionChange)="toggleMachine(m.machineId, $any($event).detail.checked)"></ion-checkbox>
+      <ion-label>{{m.machineId}} <ion-note *ngIf="!m.isActive">(inactive)</ion-note></ion-label>
+    </ion-item>
+  </div>
+</ng-container>

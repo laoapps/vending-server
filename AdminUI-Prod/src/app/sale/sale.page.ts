@@ -11,6 +11,8 @@ import { IENMessage } from '../models/base.model';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import { CloneSaleProcess } from './processes/cloneSale.process';
 import { CuiSalePage } from './cui-sale/cui-sale.page';
+import { from, lastValueFrom, Observable, of } from 'rxjs';
+import { catchError, map, mergeMap, switchMap, toArray } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sale',
@@ -88,10 +90,12 @@ export class SalePage implements OnInit {
     this.apiService.showModal(SaleAddPage, { machineId: this.machineId, sales: this._l }).then(ro => {
       ro?.present();
       ro?.onDidDismiss().then(r => {
-        if (r.data.s) {
+        if (r.data?.s) {
 
           const base64 = r.data.s.stock.image;
           r.data.s.stock.image = r.data.s.stock.imageurl;
+          const extraMachineIds: string[] = r.data.extraMachineIds || [];
+          if (extraMachineIds.length) this.addSaleToOtherMachines({ ...r.data.s }, extraMachineIds);
           console.log(`-->addSale `, r.data.s);
           this.apiService.addSale(r.data.s)?.subscribe(rx => {
             console.log(`rx`, rx);
@@ -108,6 +112,59 @@ export class SalePage implements OnInit {
         }
       })
     })
+  }
+  // add the same sale to other machines of the same owner; machines whose position is taken are skipped
+  private addSaleToOtherMachines(s: IVendingMachineSale, machineIds: string[]) {
+    return this.runOnOtherMachines(machineIds, 'Adding to other machines...', 'Added',
+      `Skipped (position ${s.position} already used)`,
+      (machineId, sales) => {
+        if (sales.find(v => v.position == s.position && s.position > 0)) return of('skipped' as const);
+        return this.apiService.addSale({ ...s, machineId }).pipe(map(rx => rx.status ? 'done' as const : 'failed' as const));
+      });
+  }
+  // apply the same product edit to the sale at the same position in other machines; machines with nothing there are skipped
+  private editSaleOnOtherMachines(position: number, param: any, machineIds: string[]) {
+    return this.runOnOtherMachines(machineIds, 'Updating other machines...', 'Updated',
+      `Skipped (no item or more than one item at position ${position})`,
+      (machineId, sales) => {
+        const found = sales.filter(v => v.position == position);
+        if (found.length != 1) return of('skipped' as const);
+        return this.apiService.editProductDetail({ ...param, machineId, id: found[0].id, max: found[0].max })
+          .pipe(map(rx => rx.status ? 'done' as const : 'failed' as const));
+      });
+  }
+  // loads each machine's sales, runs task on it (3 machines at a time) and shows a summary
+  private async runOnOtherMachines(
+    machineIds: string[], loadingMessage: string, doneLabel: string, skippedLabel: string,
+    task: (machineId: string, sales: Array<IVendingMachineSale>) => Observable<'done' | 'skipped' | 'failed'>
+  ) {
+    const loading = await this.apiService.load.create({ message: loadingMessage });
+    await loading.present();
+    let results: Array<{ machineId: string, result: 'done' | 'skipped' | 'failed' }> = [];
+    try {
+      results = await lastValueFrom(from(machineIds).pipe(
+        mergeMap(machineId => this.apiService.listSaleByMachine(machineId).pipe(
+          switchMap(r => r.status ? task(machineId, (r.data || []) as Array<IVendingMachineSale>) : of('failed' as const)),
+          catchError(e => {
+            console.log(e);
+            return of('failed' as const);
+          }),
+          map(result => ({ machineId, result }))
+        ), 3),
+        toArray()
+      ));
+    } catch (error) {
+      console.log(error);
+    } finally {
+      loading.dismiss();
+    }
+    const list = (k: string) => results.filter(v => v.result == k).map(v => v.machineId);
+    const done = list('done'), skipped = list('skipped'), failed = list('failed');
+    let message = `${doneLabel}: ${done.length}/${machineIds.length}`;
+    if (skipped.length) message += `<br>${skippedLabel}: ${skipped.join(', ')}`;
+    if (failed.length) message += `<br>Failed: ${failed.join(', ')}`;
+    const alert = await this.apiService.alert.create({ header: 'Other machines', message, buttons: ['OK'] });
+    await alert.present();
   }
   edit(id: number | undefined) {
     const s = this._l.find(v => v.id == id);
@@ -273,6 +330,9 @@ export class SalePage implements OnInit {
           if (sData?.stock?.hotWaterCredit) {
             newParam['hotWaterCredit'] = sData?.stock?.hotWaterCredit;
           }
+
+          const extraMachineIds: string[] = r.data.extraMachineIds || [];
+          if (extraMachineIds.length) this.editSaleOnOtherMachines(sData.position, { ...newParam }, extraMachineIds);
 
           this.apiService.editProductDetail(newParam)?.subscribe(rx => {
             if (rx.status) {

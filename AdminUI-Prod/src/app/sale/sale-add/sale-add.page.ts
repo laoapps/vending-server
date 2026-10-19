@@ -18,6 +18,10 @@ export class SaleAddPage implements OnInit {
   loaded: boolean = false;
   imageSrc: string = '';
 
+  // other machines of the same owner, chosen in app-machine-picker
+  extraMachineIds = new Array<string>();
+  openPosition = true;
+
 
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
@@ -34,8 +38,10 @@ export class SaleAddPage implements OnInit {
   }
   save() {
     if (this.sales.find(v => v.position == this.s.position && this.s.position > 0)) return alert('Position was duplicated');
+    // applies to the current machine and every selected machine
+    this.s.isActive = this.openPosition;
 
-    this.apiService.closeModal({ s: this.s })
+    this.apiService.closeModal({ s: this.s, extraMachineIds: this.extraMachineIds })
   }
 
 

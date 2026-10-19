@@ -14,6 +14,8 @@ export class SaleDetailsPage implements OnInit {
   @Input() s = {} as IVendingMachineSale;
   loaded: boolean = false;
   imageSrc: string = '';
+  // other machines of the same owner, chosen in app-machine-picker
+  extraMachineIds = new Array<string>();
   constructor(public apiService: ApiService) {
     this.showImage = this.apiService.showImage;
   }
@@ -65,7 +67,7 @@ export class SaleDetailsPage implements OnInit {
   saveChange() {
     // console.log('S is :', this.s);
 
-    this.apiService.closeModal({ s: this.s })
+    this.apiService.closeModal({ s: this.s, extraMachineIds: this.extraMachineIds })
   }
 
 
