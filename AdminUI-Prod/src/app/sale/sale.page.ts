@@ -113,14 +113,31 @@ export class SalePage implements OnInit {
       })
     })
   }
-  // add the same sale to other machines of the same owner; machines whose position is taken are skipped
+  // add the same sale to other machines of the same owner; if the position is taken there, use that machine's lowest free position
   private addSaleToOtherMachines(s: IVendingMachineSale, machineIds: string[]) {
+    const moved: string[] = [];
     return this.runOnOtherMachines(machineIds, 'Adding to other machines...', 'Added',
-      `Skipped (position ${s.position} already used)`,
+      'Skipped (no free position)',
       (machineId, sales) => {
-        if (sales.find(v => v.position == s.position && s.position > 0)) return of('skipped' as const);
-        return this.apiService.addSale({ ...s, machineId }).pipe(map(rx => rx.status ? 'done' as const : 'failed' as const));
-      });
+        let position = s.position;
+        if (sales.find(v => v.position == position && position > 0)) {
+          const used = new Set(sales.map(v => Number(v.position)));
+          position = 0;
+          for (let i = 1; i < 200; i++) {
+            if (!used.has(i)) {
+              position = i;
+              break;
+            }
+          }
+          if (!position) return of('skipped' as const);
+        }
+        return this.apiService.addSale({ ...s, machineId, position }).pipe(map(rx => {
+          if (!rx.status) return 'failed' as const;
+          if (position != s.position) moved.push(`${machineId} → ${position}`);
+          return 'done' as const;
+        }));
+      },
+      () => moved.length ? `<br>Position ${s.position} was used, added at: ${moved.join(', ')}` : '');
   }
   // apply the same product edit to the sale at the same position in other machines; machines with nothing there are skipped
   private editSaleOnOtherMachines(position: number, param: any, machineIds: string[]) {
@@ -136,7 +153,8 @@ export class SalePage implements OnInit {
   // loads each machine's sales, runs task on it (3 machines at a time) and shows a summary
   private async runOnOtherMachines(
     machineIds: string[], loadingMessage: string, doneLabel: string, skippedLabel: string,
-    task: (machineId: string, sales: Array<IVendingMachineSale>) => Observable<'done' | 'skipped' | 'failed'>
+    task: (machineId: string, sales: Array<IVendingMachineSale>) => Observable<'done' | 'skipped' | 'failed'>,
+    extraMessage?: () => string
   ) {
     const loading = await this.apiService.load.create({ message: loadingMessage });
     await loading.present();
@@ -161,6 +179,7 @@ export class SalePage implements OnInit {
     const list = (k: string) => results.filter(v => v.result == k).map(v => v.machineId);
     const done = list('done'), skipped = list('skipped'), failed = list('failed');
     let message = `${doneLabel}: ${done.length}/${machineIds.length}`;
+    if (extraMessage) message += extraMessage();
     if (skipped.length) message += `<br>${skippedLabel}: ${skipped.join(', ')}`;
     if (failed.length) message += `<br>Failed: ${failed.join(', ')}`;
     const alert = await this.apiService.alert.create({ header: 'Other machines', message, buttons: ['OK'] });
