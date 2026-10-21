@@ -7,7 +7,7 @@
 
 <ion-content>
   <ion-list>
-    <app-machine-picker [machineId]="machineId" hint="Also refresh other machines (optional)"
+    <app-machine-picker [machineId]="machineId" [sourceMachines]="sourceMachines" hint="Also refresh other machines (optional)"
       (selectedChange)="extraMachineIds = $event"></app-machine-picker>
     <ion-item>
       <ion-button (click)="refreshAll()" [disabled]="running">Refresh ({{extraMachineIds.length + 1}})</ion-button>

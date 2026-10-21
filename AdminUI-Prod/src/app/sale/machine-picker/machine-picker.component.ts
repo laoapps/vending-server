@@ -16,6 +16,8 @@ import { IMachineClientID } from 'src/app/services/syste.model';
 export class MachinePickerComponent implements OnInit {
   @Input() machineId = '';
   @Input() hint = 'Also apply to other machines (optional)';
+  // optional: machines already loaded by the caller (e.g. the all-owners dashboard); only those of the current machine's owner are listed
+  @Input() sourceMachines: Array<{ machineId: string, ownerUuid: string, isActive?: boolean }> | null = null;
   @Output() selectedChange = new EventEmitter<string[]>();
 
   machines = new Array<IMachineClientID>();
@@ -35,6 +37,15 @@ export class MachinePickerComponent implements OnInit {
   }
 
   loadMachines() {
+    if (this.sourceMachines) {
+      this.ownerUuid = this.sourceMachines.find(m => m.machineId == this.machineId)?.ownerUuid || '';
+      this.machines = (this.ownerUuid
+        ? this.sourceMachines.filter(m => m.machineId && m.machineId != this.machineId && m.ownerUuid == this.ownerUuid)
+        : []) as Array<IMachineClientID>;
+      this.filterMachines();
+      this.restoreSelection();
+      return;
+    }
     this.machinesLoading = true;
     this.apiService.listMachine().subscribe(r => {
       this.machinesLoading = false;

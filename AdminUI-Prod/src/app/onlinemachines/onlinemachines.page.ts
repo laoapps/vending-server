@@ -25,6 +25,7 @@ import { TicketListPage } from '../ticket-list/ticket-list.page';
 import { SettingConfigPage } from '../setting-config/setting-config.page';
 import { CompareExcelPage } from '../compare-excel/compare-excel.page';
 import { CuiSalePage } from '../sale/cui-sale/cui-sale.page';
+import { MachineRefreshManyComponent } from '../machine/machine-refresh-many/machine-refresh-many.component';
 
 interface MachineData {
   machineId: string;
@@ -480,6 +481,46 @@ export class OnlinemachinesPage implements OnInit, OnDestroy {
       console.error('Error clearLogTemp:', error);
       alert(`Error clearLogTemp: ${error.message}`);
     }
+  }
+
+  // tap Refresh = this machine only; hold it = pick several machines of the same owner to refresh
+  private refreshPressTimer: any;
+  private refreshLongPressed = false;
+  onRefreshPressStart(machine: MachineData) {
+    this.refreshLongPressed = false;
+    clearTimeout(this.refreshPressTimer);
+    this.refreshPressTimer = setTimeout(() => {
+      this.refreshLongPressed = true;
+      this.openRefreshMany(machine);
+    }, 600);
+  }
+  onRefreshPressEnd() {
+    clearTimeout(this.refreshPressTimer);
+  }
+  onRefreshClick(machine: MachineData) {
+    if (this.refreshLongPressed) {
+      this.refreshLongPressed = false;
+      return;
+    }
+    this.refreshMachine(machine);
+  }
+  private openRefreshMany(machine: MachineData) {
+    // all selectable machines share this machine's owner, so they share its shop phone too
+    const shopPhonenumber = this.bindMachineShop(machine);
+    const refresher = async (machineId: string) => {
+      const response = await axios.post(`${environment.url}/refreshMachineAdmin`, {
+        secret: localStorage.getItem('secretLocal'),
+        shopPhonenumber,
+        token: localStorage.getItem('token'),
+        data: { machineId },
+      });
+      return response?.data?.status === 1;
+    };
+    this.apiService.showModal(MachineRefreshManyComponent, {
+      machineId: machine.machineId,
+      sourceMachines: [...this.onlineMachines, ...this.brokenMachines],
+      refresher,
+    }).then(ro => ro?.present());
   }
 
   async refreshMachine(machine: MachineData) {

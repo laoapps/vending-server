@@ -15,6 +15,9 @@ import { ApiService } from 'src/app/services/api.service';
 })
 export class MachineRefreshManyComponent {
   @Input() machineId = '';
+  // optional, for the all-owners dashboard: its loaded machines and its own refresh call (resolves true on success)
+  @Input() sourceMachines: Array<{ machineId: string, ownerUuid: string, isActive?: boolean }> | null = null;
+  @Input() refresher: ((machineId: string) => Promise<boolean>) | null = null;
   extraMachineIds = new Array<string>();
   running = false;
 
@@ -33,8 +36,11 @@ export class MachineRefreshManyComponent {
     let results: Array<{ machineId: string, ok: boolean }> = [];
     try {
       results = await lastValueFrom(from(machineIds).pipe(
-        mergeMap(machineId => this.apiService.refreshMachine({ machineId }).pipe(
-          map(rx => ({ machineId, ok: !!rx.status })),
+        mergeMap(machineId => (this.refresher
+          ? from(this.refresher(machineId))
+          : this.apiService.refreshMachine({ machineId }).pipe(map(rx => !!rx.status))
+        ).pipe(
+          map(ok => ({ machineId, ok })),
           catchError(e => {
             console.log(e);
             return of({ machineId, ok: false });

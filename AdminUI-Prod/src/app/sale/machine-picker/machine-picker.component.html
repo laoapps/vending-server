@@ -41,6 +41,6 @@
   <ion-item *ngFor="let m of filteredMachines; trackBy: trackByMachineId">
     <ion-checkbox slot="start" [checked]="selectedMachineIds.has(m.machineId)"
       (ionChange)="toggleMachine(m.machineId, $any($event).detail.checked)"></ion-checkbox>
-    <ion-label>{{m.machineId}} <ion-note *ngIf="!m.isActive">(inactive)</ion-note></ion-label>
+    <ion-label>{{m.machineId}} <ion-note *ngIf="m.isActive === false">(inactive)</ion-note></ion-label>
   </ion-item>
 </ng-container>

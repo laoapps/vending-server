@@ -294,7 +294,10 @@
             </ion-button>
           </ion-col>
           <ion-col size="4">
-            <ion-button expand="block" color="warning" (click)="refreshMachine(machine)">
+            <ion-button expand="block" color="warning" (click)="onRefreshClick(machine)"
+              (pointerdown)="onRefreshPressStart(machine)" (pointerup)="onRefreshPressEnd()"
+              (pointerleave)="onRefreshPressEnd()" (pointercancel)="onRefreshPressEnd()"
+              (contextmenu)="$event.preventDefault()" title="Hold to refresh many machines">
               <ion-icon slot="start" name="sync-circle-outline"></ion-icon>
               Refresh
             </ion-button>
