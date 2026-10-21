@@ -26,14 +26,12 @@
     <ion-button slot="end" size="small" fill="clear" (click)="clearMachines()"
       [disabled]="!selectedMachineIds.size">Unselect all ({{selectedMachineIds.size}})</ion-button>
   </ion-item>
-  <div class="machine-list">
-    <ion-item *ngIf="!filteredMachines.length" lines="none">
-      <ion-note>No machine matches "{{machineSearch}}"</ion-note>
-    </ion-item>
-    <ion-item *ngFor="let m of filteredMachines; trackBy: trackByMachineId">
-      <ion-checkbox slot="start" [checked]="selectedMachineIds.has(m.machineId)"
-        (ionChange)="toggleMachine(m.machineId, $any($event).detail.checked)"></ion-checkbox>
-      <ion-label>{{m.machineId}} <ion-note *ngIf="!m.isActive">(inactive)</ion-note></ion-label>
-    </ion-item>
-  </div>
+  <ion-item *ngIf="!filteredMachines.length" lines="none">
+    <ion-note>No machine matches "{{machineSearch}}"</ion-note>
+  </ion-item>
+  <ion-item *ngFor="let m of filteredMachines; trackBy: trackByMachineId">
+    <ion-checkbox slot="start" [checked]="selectedMachineIds.has(m.machineId)"
+      (ionChange)="toggleMachine(m.machineId, $any($event).detail.checked)"></ion-checkbox>
+    <ion-label>{{m.machineId}} <ion-note *ngIf="!m.isActive">(inactive)</ion-note></ion-label>
+  </ion-item>
 </ng-container>
