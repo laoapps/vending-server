@@ -15,6 +15,7 @@ import { environment } from 'src/environments/environment';
 import { IonicstorageService } from '../services/ionicstorage.service';
 import { LoadMachineListProcess } from './processes/loadMachineList.process';
 import { RefreshMachineProcess } from './processes/refreshMachine.process';
+import { MachineRefreshManyComponent } from './machine-refresh-many/machine-refresh-many.component';
 import { SaleReportPage } from '../sale/sale-report/sale-report.page';
 import { ResetCashingProcess } from './processes/resetCashing.process';
 import { BillnotPaidPage } from '../billnot-paid/billnot-paid.page';
@@ -369,6 +370,27 @@ export class MachinePage implements OnInit {
         ry.present();
       })
     })
+  }
+  // tap Refresh = this machine only; hold it = pick several machines to refresh
+  private refreshPressTimer: any;
+  private refreshLongPressed = false;
+  onRefreshPressStart(m: string) {
+    this.refreshLongPressed = false;
+    clearTimeout(this.refreshPressTimer);
+    this.refreshPressTimer = setTimeout(() => {
+      this.refreshLongPressed = true;
+      this.apiService.showModal(MachineRefreshManyComponent, { machineId: m }).then(ro => ro?.present());
+    }, 600);
+  }
+  onRefreshPressEnd() {
+    clearTimeout(this.refreshPressTimer);
+  }
+  onRefreshClick(m: string) {
+    if (this.refreshLongPressed) {
+      this.refreshLongPressed = false;
+      return;
+    }
+    this.refreshMachine(m);
   }
   refreshMachine(m: string) {
 

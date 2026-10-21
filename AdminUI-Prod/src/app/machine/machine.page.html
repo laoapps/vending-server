@@ -81,7 +81,10 @@
                       <i class="fa-solid fa-chart-line"></i>
                       <span>Sale</span>
                     </button>
-                    <button type="button" (click)="refreshMachine(p.machineId)" class="btn btn-action">
+                    <button type="button" (click)="onRefreshClick(p.machineId)" class="btn btn-action"
+                      (pointerdown)="onRefreshPressStart(p.machineId)" (pointerup)="onRefreshPressEnd()"
+                      (pointerleave)="onRefreshPressEnd()" (pointercancel)="onRefreshPressEnd()"
+                      (contextmenu)="$event.preventDefault()" title="Hold to refresh many machines">
                       <i class="fa-solid fa-rotate"></i>
                       <span>Refresh</span>
                     </button>
