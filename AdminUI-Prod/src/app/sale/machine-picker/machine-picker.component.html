@@ -26,6 +26,15 @@
     <ion-button slot="end" size="small" fill="clear" (click)="clearMachines()"
       [disabled]="!selectedMachineIds.size">Unselect all ({{selectedMachineIds.size}})</ion-button>
   </ion-item>
+  <ion-item lines="none">
+    <ion-button slot="start" size="small" fill="outline" (click)="saveSelection()" [disabled]="!ownerUuid">
+      Save selection</ion-button>
+    <ion-button *ngIf="hasSavedSelection" slot="end" size="small" fill="clear" color="medium"
+      (click)="forgetSelection()">Forget saved</ion-button>
+  </ion-item>
+  <ion-item *ngIf="savedMessage" lines="none">
+    <ion-note color="success">{{savedMessage}}</ion-note>
+  </ion-item>
   <ion-item *ngIf="!filteredMachines.length" lines="none">
     <ion-note>No machine matches "{{machineSearch}}"</ion-note>
   </ion-item>

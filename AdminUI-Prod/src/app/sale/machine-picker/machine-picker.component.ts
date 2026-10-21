@@ -23,6 +23,10 @@ export class MachinePickerComponent implements OnInit {
   selectedMachineIds = new Set<string>();
   machineSearch = '';
   machinesLoading = false;
+  // owner of the listed machines; saved selections are kept per owner in localStorage
+  ownerUuid = '';
+  hasSavedSelection = false;
+  savedMessage = '';
 
   constructor(public apiService: ApiService) { }
 
@@ -38,7 +42,9 @@ export class MachinePickerComponent implements OnInit {
       // listMachine is already scoped to the shop owner on the backend (same list as the machine page)
       const all = (r.data || []) as Array<IMachineClientID>;
       this.machines = all.filter(m => m.machineId && m.machineId != this.machineId);
+      this.ownerUuid = all.find(m => m.machineId == this.machineId)?.ownerUuid || all[0]?.ownerUuid || '';
       this.filterMachines();
+      this.restoreSelection();
     }, error => {
       console.log(error);
       this.machinesLoading = false;
@@ -64,6 +70,49 @@ export class MachinePickerComponent implements OnInit {
   clearMachines() {
     this.selectedMachineIds.clear();
     this.emit();
+  }
+  // the saved group includes the current machine, so it still works when opened from another machine of the group
+  saveSelection() {
+    if (!this.ownerUuid) return;
+    const ids = [this.machineId, ...Array.from(this.selectedMachineIds)];
+    try {
+      localStorage.setItem(this.storageKey(), JSON.stringify(ids));
+      this.hasSavedSelection = true;
+      this.savedMessage = `Saved ${ids.length} machines`;
+    } catch (error) {
+      console.log(error);
+      this.savedMessage = 'Could not save selection';
+    }
+  }
+  forgetSelection() {
+    try {
+      localStorage.removeItem(this.storageKey());
+    } catch (error) {
+      console.log(error);
+    }
+    this.hasSavedSelection = false;
+    this.savedMessage = 'Saved selection removed';
+  }
+  private restoreSelection() {
+    if (!this.ownerUuid) return;
+    let ids: Array<string> = [];
+    try {
+      const raw = JSON.parse(localStorage.getItem(this.storageKey()) || '[]');
+      if (Array.isArray(raw)) ids = raw.filter(v => typeof v == 'string');
+    } catch (error) {
+      console.log(error);
+    }
+    if (!ids.length) return;
+    this.hasSavedSelection = true;
+    const saved = new Set(ids);
+    this.machines.forEach(m => {
+      if (saved.has(m.machineId)) this.selectedMachineIds.add(m.machineId);
+    });
+    this.savedMessage = `Loaded saved selection (${this.selectedMachineIds.size} other machines)`;
+    this.emit();
+  }
+  private storageKey() {
+    return 'saleMachinePicker_' + this.ownerUuid;
   }
   trackByMachineId(_: number, m: IMachineClientID) {
     return m.machineId;
