@@ -35,15 +35,18 @@ export class MachinePickerComponent implements OnInit {
     this.apiService.listMachine().subscribe(r => {
       this.machinesLoading = false;
       if (!r.status) return;
+      // listMachine is already scoped to the shop owner on the backend (same list as the machine page)
       const all = (r.data || []) as Array<IMachineClientID>;
-      const ownerUuid = all.find(m => m.machineId == this.machineId)?.ownerUuid || this.apiService.ownerUuid;
-      if (!ownerUuid) return;
-      this.machines = all.filter(m => m.machineId && m.machineId != this.machineId && m.ownerUuid == ownerUuid);
+      this.machines = all.filter(m => m.machineId && m.machineId != this.machineId);
       this.filterMachines();
     }, error => {
       console.log(error);
       this.machinesLoading = false;
     });
+  }
+  onSearch(value: string | null | undefined) {
+    this.machineSearch = value || '';
+    this.filterMachines();
   }
   filterMachines() {
     const q = (this.machineSearch || '').trim().toLowerCase();

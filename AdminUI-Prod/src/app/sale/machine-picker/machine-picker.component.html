@@ -12,15 +12,24 @@
 </ion-item>
 
 <ng-container *ngIf="!machinesLoading && machines.length">
-  <ion-searchbar *ngIf="machines.length > 5" [(ngModel)]="machineSearch" (ionInput)="filterMachines()"
-    placeholder="Search machine" debounce="200"></ion-searchbar>
   <ion-item lines="none">
-    <ion-note>{{hint}}</ion-note>
-    <ion-button slot="end" size="small" fill="clear" (click)="selectAllMachines()">Select all</ion-button>
+    <ion-label class="ion-text-wrap">
+      <ion-note>{{hint}}</ion-note>
+      <p>{{filteredMachines.length}} / {{machines.length}} other machines</p>
+    </ion-label>
+  </ion-item>
+  <ion-searchbar [value]="machineSearch" (ionInput)="onSearch($any($event).target.value)"
+    (ionClear)="onSearch('')" placeholder="Search machine ID" inputmode="search"></ion-searchbar>
+  <ion-item lines="none">
+    <ion-button slot="start" size="small" fill="clear" (click)="selectAllMachines()"
+      [disabled]="!filteredMachines.length">{{machineSearch ? 'Select ' + filteredMachines.length + ' found' : 'Select all'}}</ion-button>
     <ion-button slot="end" size="small" fill="clear" (click)="clearMachines()"
-      [disabled]="!selectedMachineIds.size">Clear</ion-button>
+      [disabled]="!selectedMachineIds.size">Unselect all ({{selectedMachineIds.size}})</ion-button>
   </ion-item>
   <div class="machine-list">
+    <ion-item *ngIf="!filteredMachines.length" lines="none">
+      <ion-note>No machine matches "{{machineSearch}}"</ion-note>
+    </ion-item>
     <ion-item *ngFor="let m of filteredMachines; trackBy: trackByMachineId">
       <ion-checkbox slot="start" [checked]="selectedMachineIds.has(m.machineId)"
         (ionChange)="toggleMachine(m.machineId, $any($event).detail.checked)"></ion-checkbox>
