@@ -1,0 +1,564 @@
+diff --git a/node_modules/serialconnectioncapacitor/android/build.gradle b/node_modules/serialconnectioncapacitor/android/build.gradle
+index d36b9b8..7933973 100644
+--- a/node_modules/serialconnectioncapacitor/android/build.gradle
++++ b/node_modules/serialconnectioncapacitor/android/build.gradle
+@@ -67,6 +67,7 @@ repositories {
+ 
+ dependencies {
+     implementation 'com.github.mik3y:usb-serial-for-android:3.8.1'
++    implementation 'com.fazecast:jSerialComm:2.11.0'
+     testImplementation 'org.robolectric:robolectric:4.9'
+     testImplementation 'org.mockito:mockito-core:3.11.2'
+     implementation "androidx.annotation:annotation:1.8.0"
+diff --git a/node_modules/serialconnectioncapacitor/android/build/.transforms/b10efe7278a9bba9e3311d08b9c03750/results.bin b/node_modules/serialconnectioncapacitor/android/build/.transforms/b10efe7278a9bba9e3311d08b9c03750/results.bin
+new file mode 100644
+index 0000000..0d259dd
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/.transforms/b10efe7278a9bba9e3311d08b9c03750/results.bin
+@@ -0,0 +1 @@
++o/classes
+diff --git a/node_modules/serialconnectioncapacitor/android/build/.transforms/b10efe7278a9bba9e3311d08b9c03750/transformed/classes/classes_dex/classes.dex b/node_modules/serialconnectioncapacitor/android/build/.transforms/b10efe7278a9bba9e3311d08b9c03750/transformed/classes/classes_dex/classes.dex
+new file mode 100644
+index 0000000..4854ea6
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/.transforms/b10efe7278a9bba9e3311d08b9c03750/transformed/classes/classes_dex/classes.dex differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+new file mode 100644
+index 0000000..644b688
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/AndroidManifest.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.laoapps.plugins.serialconnectioncapacitor"
++    android:allowBackup="true"
++    android:requestLegacyExternalStorage="true" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++    <uses-feature
++        android:name="android.hardware.usb.host"
++        android:required="false" />
++
++    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
++    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.BLUETOOTH" />
++    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
++
++    <!-- Serial Port Permission -->
++    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
++    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
++    <uses-permission android:name="android.permission.USB_PERMISSION" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json b/node_modules/serialconnectioncapacitor/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+new file mode 100644
+index 0000000..8edaa31
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/aapt_friendly_merged_manifests/debug/processDebugManifest/aapt/output-metadata.json
+@@ -0,0 +1,18 @@
++{
++  "version": 3,
++  "artifactType": {
++    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
++    "kind": "Directory"
++  },
++  "applicationId": "com.laoapps.plugins.serialconnectioncapacitor",
++  "variantName": "debug",
++  "elements": [
++    {
++      "type": "SINGLE",
++      "filters": [],
++      "attributes": [],
++      "outputFile": "AndroidManifest.xml"
++    }
++  ],
++  "elementType": "File"
++}
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/aar_main_jar/debug/syncDebugLibJars/classes.jar b/node_modules/serialconnectioncapacitor/android/build/intermediates/aar_main_jar/debug/syncDebugLibJars/classes.jar
+new file mode 100644
+index 0000000..06c78ef
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/aar_main_jar/debug/syncDebugLibJars/classes.jar differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties b/node_modules/serialconnectioncapacitor/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+new file mode 100644
+index 0000000..1211b1e
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/aar_metadata/debug/writeDebugAarMetadata/aar-metadata.properties
+@@ -0,0 +1,6 @@
++aarFormatVersion=1.0
++aarMetadataVersion=1.0
++minCompileSdk=1
++minCompileSdkExtension=0
++minAndroidGradlePluginVersion=1.0.0
++coreLibraryDesugaringEnabled=false
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json b/node_modules/serialconnectioncapacitor/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+new file mode 100644
+index 0000000..9e26dfe
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/annotation_processor_list/debug/javaPreCompileDebug/annotationProcessors.json
+@@ -0,0 +1 @@
++{}
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/annotations_typedef_file/debug/extractDebugAnnotations/typedefs.txt b/node_modules/serialconnectioncapacitor/android/build/intermediates/annotations_typedef_file/debug/extractDebugAnnotations/typedefs.txt
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar b/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar
+new file mode 100644
+index 0000000..189824d
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_library_classes_jar/debug/bundleLibCompileToJarDebug/classes.jar differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar b/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar
+new file mode 100644
+index 0000000..86deb98
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_r_class_jar/debug/generateDebugRFile/R.jar differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt b/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+new file mode 100644
+index 0000000..1da15e7
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/compile_symbol_list/debug/generateDebugRFile/R.txt
+@@ -0,0 +1,2 @@
++int string app_name 0x0
++int xml device_filter 0x0
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/xml_device_filter.xml.flat b/node_modules/serialconnectioncapacitor/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/xml_device_filter.xml.flat
+new file mode 100644
+index 0000000..b3eaee0
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/compiled_local_resources/debug/compileDebugLibraryResources/out/xml_device_filter.xml.flat differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug-mergeJavaRes/merge-state b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug-mergeJavaRes/merge-state
+new file mode 100644
+index 0000000..1c983fc
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug-mergeJavaRes/merge-state differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+new file mode 100644
+index 0000000..3b275e6
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+@@ -0,0 +1,2 @@
++#Thu Oct 15 12:29:17 ICT 2026
++com.laoapps.plugins.serialconnectioncapacitor-main-6\:/xml/device_filter.xml=/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/build/intermediates/packaged_res/debug/packageDebugResources/xml/device_filter.xml
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
+new file mode 100644
+index 0000000..4fc4e46
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/merged.dir/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="app_name">SerialLib</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+new file mode 100644
+index 0000000..f1c72d3
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/res"><file path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/res/values/values.xml" qualifiers=""><string name="app_name">SerialLib</string></file><file name="device_filter" path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/res/xml/device_filter.xml" qualifiers="" type="xml"/></source></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!&lt;dir>navigation"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugAssets/merger.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+new file mode 100644
+index 0000000..e8eddcb
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugAssets/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/assets"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/debug/assets"/></dataSet><dataSet config="generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/build/intermediates/shader_assets/debug/compileDebugShaders/out"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+new file mode 100644
+index 0000000..8fef40e
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/jniLibs"><file name="armeabi-v7a/libserial_port.so" path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/jniLibs/armeabi-v7a/libserial_port.so"/><file name="x86/libserial_port.so" path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/jniLibs/x86/libserial_port.so"/><file name="arm64-v8a/libserial_port.so" path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/jniLibs/arm64-v8a/libserial_port.so"/><file name="x86_64/libserial_port.so" path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/jniLibs/x86_64/libserial_port.so"/></source></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/debug/jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugShaders/merger.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+new file mode 100644
+index 0000000..9ce36d7
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0" encoding="utf-8"?>
++<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/shaders"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/debug/shaders"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/CommandExecution$CommandResult.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/CommandExecution$CommandResult.class
+new file mode 100644
+index 0000000..6132464
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/CommandExecution$CommandResult.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/CommandExecution.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/CommandExecution.class
+new file mode 100644
+index 0000000..63ddcdb
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/CommandExecution.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/RootCheck.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/RootCheck.class
+new file mode 100644
+index 0000000..bd45cff
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/RootCheck.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/SerialPort.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/SerialPort.class
+new file mode 100644
+index 0000000..8bb9d21
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/android/serialport/SerialPort.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSP.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSP.class
+new file mode 100644
+index 0000000..31978a1
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSP.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser$ByteArrayBuilder.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser$ByteArrayBuilder.class
+new file mode 100644
+index 0000000..d9542ca
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser$ByteArrayBuilder.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser$State.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser$State.class
+new file mode 100644
+index 0000000..042a204
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser$State.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser.class
+new file mode 100644
+index 0000000..1d0afab
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPParser.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$CommandInfo.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$CommandInfo.class
+new file mode 100644
+index 0000000..1a5ecbb
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$CommandInfo.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$Keys.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$Keys.class
+new file mode 100644
+index 0000000..f1296c3
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$Keys.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$RejectInfo.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$RejectInfo.class
+new file mode 100644
+index 0000000..6f60a75
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils$RejectInfo.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils.class
+new file mode 100644
+index 0000000..116d2a9
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SSPUtils.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin$1.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin$1.class
+new file mode 100644
+index 0000000..14ee91b
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin$1.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin$2.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin$2.class
+new file mode 100644
+index 0000000..a4b49a1
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin$2.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin.class b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin.class
+new file mode 100644
+index 0000000..746a742
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/laoapps/plugins/serialconnectioncapacitor/SerialConnectionCapacitorPlugin.class differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/arm64-v8a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/arm64-v8a/libserial_port.so
+new file mode 100644
+index 0000000..65d7aa8
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/arm64-v8a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/armeabi-v7a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/armeabi-v7a/libserial_port.so
+new file mode 100644
+index 0000000..5d85d65
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/armeabi-v7a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/x86/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/x86/libserial_port.so
+new file mode 100644
+index 0000000..6bf7943
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/x86/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/x86_64/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/x86_64/libserial_port.so
+new file mode 100644
+index 0000000..a265167
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_and_local_jars_jni/debug/copyDebugJniLibsProjectAndLocalJars/jni/x86_64/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/arm64-v8a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/arm64-v8a/libserial_port.so
+new file mode 100644
+index 0000000..65d7aa8
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/arm64-v8a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi-v7a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi-v7a/libserial_port.so
+new file mode 100644
+index 0000000..5d85d65
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/armeabi-v7a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/x86/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/x86/libserial_port.so
+new file mode 100644
+index 0000000..6bf7943
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/x86/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/x86_64/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/x86_64/libserial_port.so
+new file mode 100644
+index 0000000..a265167
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/library_jni/debug/copyDebugJniLibsProjectOnly/jni/x86_64/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt b/node_modules/serialconnectioncapacitor/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+new file mode 100644
+index 0000000..c8b016c
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/local_only_symbol_list/debug/parseDebugLocalResources/R-def.txt
+@@ -0,0 +1,4 @@
++R_DEF: Internal format may change without notice
++local
++string app_name
++xml device_filter
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt b/node_modules/serialconnectioncapacitor/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+new file mode 100644
+index 0000000..3efe676
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/manifest_merge_blame_file/debug/processDebugManifest/manifest-merger-blame-debug-report.txt
+@@ -0,0 +1,46 @@
++1<?xml version="1.0" encoding="utf-8"?>
++2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++3    package="com.laoapps.plugins.serialconnectioncapacitor"
++4    android:allowBackup="true"
++5    android:requestLegacyExternalStorage="true" >
++6
++7    <uses-sdk android:minSdkVersion="23" />
++8
++9    <uses-feature
++9-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:6:5-87
++10        android:name="android.hardware.usb.host"
++10-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:6:19-59
++11        android:required="false" />
++11-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:6:60-84
++12
++13    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
++13-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:7:3-73
++13-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:7:20-70
++14    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++14-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:9:3-78
++14-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:9:20-75
++15    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
++15-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:10:5-80
++15-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:10:22-78
++16    <uses-permission android:name="android.permission.BLUETOOTH" />
++16-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:11:5-67
++16-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:11:22-65
++17    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
++17-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:12:5-73
++17-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:12:22-71
++18
++19    <!-- Serial Port Permission -->
++20    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
++20-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:15:5-77
++20-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:15:22-75
++21    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
++21-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:16:5-81
++21-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:16:22-79
++22    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
++22-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:17:5-72
++22-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:17:22-70
++23    <uses-permission android:name="android.permission.USB_PERMISSION" />
++23-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:18:5-73
++23-->/Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:18:22-70
++24
++25</manifest>
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_java_res/debug/mergeDebugJavaResource/feature-serialconnectioncapacitor.jar b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_java_res/debug/mergeDebugJavaResource/feature-serialconnectioncapacitor.jar
+new file mode 100644
+index 0000000..15cb0ec
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_java_res/debug/mergeDebugJavaResource/feature-serialconnectioncapacitor.jar differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/arm64-v8a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/arm64-v8a/libserial_port.so
+new file mode 100755
+index 0000000..65d7aa8
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/arm64-v8a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi-v7a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi-v7a/libserial_port.so
+new file mode 100755
+index 0000000..5d85d65
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/armeabi-v7a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/x86/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/x86/libserial_port.so
+new file mode 100755
+index 0000000..6bf7943
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/x86/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/x86_64/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/x86_64/libserial_port.so
+new file mode 100755
+index 0000000..a265167
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_jni_libs/debug/mergeDebugJniLibFolders/out/x86_64/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+new file mode 100644
+index 0000000..644b688
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android"
++    package="com.laoapps.plugins.serialconnectioncapacitor"
++    android:allowBackup="true"
++    android:requestLegacyExternalStorage="true" >
++
++    <uses-sdk android:minSdkVersion="23" />
++
++    <uses-feature
++        android:name="android.hardware.usb.host"
++        android:required="false" />
++
++    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
++    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.BLUETOOTH" />
++    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
++
++    <!-- Serial Port Permission -->
++    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
++    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
++    <uses-permission android:name="android.permission.USB_PERMISSION" />
++
++</manifest>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libserial_port.so
+new file mode 100644
+index 0000000..65d7aa8
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/arm64-v8a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libserial_port.so
+new file mode 100644
+index 0000000..5d85d65
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/armeabi-v7a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86/libserial_port.so
+new file mode 100644
+index 0000000..6bf7943
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86_64/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86_64/libserial_port.so
+new file mode 100644
+index 0000000..a265167
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/merged_native_libs/debug/mergeDebugNativeLibs/out/lib/x86_64/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json b/node_modules/serialconnectioncapacitor/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+new file mode 100644
+index 0000000..0637a08
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/navigation_json/debug/extractDeepLinksDebug/navigation.json
+@@ -0,0 +1 @@
++[]
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt b/node_modules/serialconnectioncapacitor/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+new file mode 100644
+index 0000000..08f4ebe
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/nested_resources_validation_report/debug/generateDebugResources/nestedResourcesValidationReport.txt
+@@ -0,0 +1 @@
++0 Warning/Error
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml
+new file mode 100644
+index 0000000..4fc4e46
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/packaged_res/debug/packageDebugResources/values/values.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="app_name">SerialLib</string>
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/packaged_res/debug/packageDebugResources/xml/device_filter.xml b/node_modules/serialconnectioncapacitor/android/build/intermediates/packaged_res/debug/packageDebugResources/xml/device_filter.xml
+new file mode 100644
+index 0000000..d77d70c
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/packaged_res/debug/packageDebugResources/xml/device_filter.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <!-- Add your USB device vendor ID and product ID here -->
++    <usb-device vendor-id="1027" product-id="24577" />
++    <!-- Add more device filters as needed -->
++    <!-- Add USB device filters for serial devices -->
++       <!-- Add USB device filters for RS232 and RS485 devices -->
++    <!-- Example vendor and product IDs for RS232 and RS485 devices -->
++    <usb-device vendor-id="0x0403" product-id="0x6001" /> <!-- FTDI RS232 -->
++    <usb-device vendor-id="0x067B" product-id="0x2303" /> <!-- Prolific RS232 -->
++    <usb-device vendor-id="0x1A86" product-id="0x7523" /> <!-- CH340 RS232 -->
++    <usb-device vendor-id="0x10C4" product-id="0xEA60" /> <!-- Silicon Labs CP210x RS232 -->
++    <usb-device vendor-id="0x0403" product-id="0x6015" /> <!-- FTDI RS485 -->
++    <usb-device vendor-id="0x067B" product-id="0x23A3" /> <!-- Prolific RS485 -->
++    <!-- Add more device filters as needed -->
++    
++</resources>
+\ No newline at end of file
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar b/node_modules/serialconnectioncapacitor/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar
+new file mode 100644
+index 0000000..a78ad43
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/runtime_library_classes_jar/debug/bundleLibRuntimeToJarDebug/classes.jar differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/arm64-v8a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/arm64-v8a/libserial_port.so
+new file mode 100644
+index 0000000..65d7aa8
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/arm64-v8a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/armeabi-v7a/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/armeabi-v7a/libserial_port.so
+new file mode 100644
+index 0000000..5d85d65
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/armeabi-v7a/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86/libserial_port.so
+new file mode 100644
+index 0000000..6bf7943
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86_64/libserial_port.so b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86_64/libserial_port.so
+new file mode 100644
+index 0000000..a265167
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/intermediates/stripped_native_libs/debug/stripDebugDebugSymbols/out/lib/x86_64/libserial_port.so differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt b/node_modules/serialconnectioncapacitor/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+new file mode 100644
+index 0000000..8d65299
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/intermediates/symbol_list_with_package_name/debug/generateDebugRFile/package-aware-r.txt
+@@ -0,0 +1,3 @@
++com.laoapps.plugins.serialconnectioncapacitor
++string app_name
++xml device_filter
+diff --git a/node_modules/serialconnectioncapacitor/android/build/outputs/aar/serialconnectioncapacitor-debug.aar b/node_modules/serialconnectioncapacitor/android/build/outputs/aar/serialconnectioncapacitor-debug.aar
+new file mode 100644
+index 0000000..14c1c21
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/outputs/aar/serialconnectioncapacitor-debug.aar differ
+diff --git a/node_modules/serialconnectioncapacitor/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/serialconnectioncapacitor/android/build/outputs/logs/manifest-merger-debug-report.txt
+new file mode 100644
+index 0000000..9f97567
+--- /dev/null
++++ b/node_modules/serialconnectioncapacitor/android/build/outputs/logs/manifest-merger-debug-report.txt
+@@ -0,0 +1,62 @@
++-- Merging decision tree log ---
++manifest
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:2:1-21:12
++INJECTED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:2:1-21:12
++	package
++		INJECTED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml
++	android:requestLegacyExternalStorage
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:3:1-44
++	xmlns:android
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:2:11-69
++	android:allowBackup
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:4:1-27
++uses-feature#android.hardware.usb.host
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:6:5-87
++	android:required
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:6:60-84
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:6:19-59
++uses-permission#android.permission.READ_PHONE_STATE
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:7:3-73
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:7:20-70
++uses-permission#android.permission.READ_EXTERNAL_STORAGE
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:9:3-78
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:9:20-75
++uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:10:5-80
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:10:22-78
++uses-permission#android.permission.BLUETOOTH
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:11:5-67
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:11:22-65
++uses-permission#android.permission.BLUETOOTH_ADMIN
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:12:5-73
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:12:22-71
++uses-permission#android.permission.SYSTEM_ALERT_WINDOW
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:15:5-77
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:15:22-75
++uses-permission#android.permission.MANAGE_EXTERNAL_STORAGE
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:16:5-81
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:16:22-79
++uses-permission#android.permission.WRITE_SETTINGS
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:17:5-72
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:17:22-70
++uses-permission#android.permission.USB_PERMISSION
++ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:18:5-73
++	android:name
++		ADDED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml:18:22-70
++uses-sdk
++INJECTED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
++INJECTED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml
++INJECTED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml
++	android:targetSdkVersion
++		INJECTED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml
++	android:minSdkVersion
++		INJECTED from /Users/laoappsdev/Desktop/binry/vending-server/CUI-ProdOTA/node_modules/serialconnectioncapacitor/android/src/main/AndroidManifest.xml
+diff --git a/node_modules/serialconnectioncapacitor/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/serialconnectioncapacitor/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
+new file mode 100644
+index 0000000..1971b13
+Binary files /dev/null and b/node_modules/serialconnectioncapacitor/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin differ
