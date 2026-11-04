@@ -833,68 +833,13 @@ export class BillingPage implements OnInit {
   async onFileSelectedMmoney() {
     try {
       this.apiService.showLoadingLong();
-      const dataMmoneyFromAPI = [];
       this.dataExcel = [];
-      const fromDate1 = new Date(this.fromDate);
-      fromDate1.setDate(fromDate1.getDate() - 1);
-      const date1 = new Date(this.toDate);
-      date1.setMonth(Number(this.month) - 1);
-      date1.setDate(15);
-      const endDate1Data: string = [
-        date1.getFullYear(),
-        String(date1.getMonth() + 1).padStart(2, "0"),
-        String(date1.getDate()).padStart(2, "0"),
-      ].join("-");
-
-      // const fromDate1Data: string = [
-      //   fromDate1.getFullYear(),
-      //   String(fromDate1.getMonth() + 1).padStart(2, "0"),
-      //   String(fromDate1.getDate()).padStart(2, "0"),
-      // ].join("-");
-
-      const date2 = new Date(this.toDate);
-      date2.setMonth(Number(this.month) - 1);
-      date2.setDate(14);
-      const startDate1Data: string = [
-        date2.getFullYear(),
-        String(date2.getMonth() + 1).padStart(2, "0"),
-        String(date2.getDate()).padStart(2, "0"),
-      ].join("-");
-      // console.log('-----> endDate1Data :', startDate1Data);
-
-      const response1 = await this.apiService.getReportMmoneyx(this.adjustDay(this.fromDate, -2), endDate1Data).toPromise();
-      const res1Data = response1.data ?? [];
-      for (let index = 0; index < res1Data.length; index++) {
-        const element = res1Data[index];
-        const dataToEX = {
-          "#": index + 1 + '',
-          "ເລກທູລະກຳ": element['trans_id'] ?? '',
-          "ຈຳນວນເງິນ": new Intl.NumberFormat('en-US').format(element['trans_amount']) ?? '',
-          "ລາຍລະອຽດ": element['trans_ref_col1'] ?? '',
-          "ຊ່ອງທາງ": element['trans_ref_col4'] ?? '',
-          "ວັນທີ": element['create_at'] ?? ''
-        };
-
-        dataMmoneyFromAPI.unshift(dataToEX);
-      }
-
-      const response2 = await this.apiService.getReportMmoneyx(startDate1Data, this.adjustDay(this.toDate, +1)).toPromise();
-      const res1Data2 = response2.data ?? [];
-      for (let index = 0; index < res1Data2.length; index++) {
-        const element = res1Data2[index];
-        const dataToEX = {
-          "#": index + 1 + '',
-          "ເລກທູລະກຳ": element['trans_id'] ?? '',
-          "ຈຳນວນເງິນ": new Intl.NumberFormat('en-US').format(element['trans_amount']) ?? '',
-          "ລາຍລະອຽດ": element['trans_ref_col1'] ?? '',
-          "ຊ່ອງທາງ": element['trans_ref_col4'] ?? '',
-          "ວັນທີ": element['create_at'] ?? ''
-        };
-        dataMmoneyFromAPI.unshift(dataToEX);
-      }
+      const fetchFrom = this.adjustDay(this.fromDate, -2);
+      const fetchTo = this.adjustDay(this.toDate, +1);
+      const dataMmoneyFromAPI = await this.loadMmoneyByChunks(fetchFrom, fetchTo);
 
       const resultExcel = dataMmoneyFromAPI.filter((item) => {
-        const date = item["ວັນທີ"].substring(0, 10); // YYYY-MM-DD
+        const date = String(item["ວັນທີ"] || "").substring(0, 10);
         return date >= this.fromDate && date < this.toDate;
       });
 
@@ -908,19 +853,51 @@ export class BillingPage implements OnInit {
       }
 
       this.dataExcel = Array.from(uniqueMap.values());
-      // console.log('-----> DATA EXCEL :', JSON.stringify(this.dataExcel[0]));
-
-      // console.log('-----> FROM DATE :', this.fromDate);
-      // console.log('-----> TO DATE :', this.toDate);
-
-
-      // console.log('-----> JSON.stringify(this.dataExcel) :', JSON.stringify(this.dataExcel));
 
     } catch (error) {
       console.error('Error onFileSelected:', error);
+      this.dataExcel = [];
     } finally {
       this.apiService.dismissLoading();
     }
+  }
+
+  private async loadMmoneyByChunks(fromDate: string, toDate: string) {
+    const rows = [];
+    let cursor = fromDate;
+    while (cursor <= toDate) {
+      let end = this.adjustDay(cursor, 2);
+      if (end > toDate) end = toDate;
+      const data = await this.fetchMmoneyChunk(cursor, end);
+      for (let index = 0; index < data.length; index++) {
+        const element = data[index];
+        rows.push({
+          "#": rows.length + 1 + '',
+          "ເລກທູລະກຳ": element['trans_id'] ?? '',
+          "ຈຳນວນເງິນ": new Intl.NumberFormat('en-US').format(element['trans_amount']) ?? '',
+          "ລາຍລະອຽດ": element['trans_ref_col1'] ?? '',
+          "ຊ່ອງທາງ": element['trans_ref_col4'] ?? '',
+          "ວັນທີ": element['create_at'] ?? ''
+        });
+      }
+      if (end === toDate) break;
+      cursor = this.adjustDay(end, 1);
+    }
+    return rows;
+  }
+
+  private async fetchMmoneyChunk(start: string, end: string) {
+    let lastError: any;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const response = await this.apiService.getReportMmoneyx(start, end).toPromise();
+        return response?.data ?? [];
+      } catch (error) {
+        lastError = error;
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
+    }
+    throw lastError;
   }
 
   // ✅ เมื่อกดปุ่ม Process
