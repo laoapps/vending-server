@@ -36,6 +36,7 @@ export class BillingPage implements OnInit {
 
   selectedFile: File | null = null;      // ✅ เก็บไฟล์ที่เลือกไว้
   dataExcel: any[] = [];                 // ✅ ข้อมูลจากไฟล์ Excel
+  mmoneyFetch = { ok: false, chunks: 0, failed: [] as string[], inMonth: 0 };
 
   rate: number = 4.5;
 
@@ -834,11 +835,17 @@ export class BillingPage implements OnInit {
     try {
       this.apiService.showLoadingLong();
       this.dataExcel = [];
+      this.mmoneyFetch = { ok: false, chunks: 0, failed: [], inMonth: 0 };
       const fetchFrom = this.adjustDay(this.fromDate, -2);
       const fetchTo = this.adjustDay(this.toDate, +1);
-      const dataMmoneyFromAPI = await this.loadMmoneyByChunks(fetchFrom, fetchTo);
+      const loaded = await this.loadMmoneyByChunks(fetchFrom, fetchTo);
+      if (!loaded.ok) {
+        this.mmoneyFetch = { ok: false, chunks: loaded.chunks, failed: loaded.failed, inMonth: 0 };
+        alert(`ດຶງ M-Money ບໍ່ຄົບ ${loaded.failed.length} ຊ່ວງ ຢ່າໃຊ້ບິນນີ້\n${loaded.failed.join('\n')}`);
+        return false;
+      }
 
-      const resultExcel = dataMmoneyFromAPI.filter((item) => {
+      const resultExcel = loaded.rows.filter((item) => {
         const date = String(item["ວັນທີ"] || "").substring(0, 10);
         return date >= this.fromDate && date < this.toDate;
       });
@@ -853,10 +860,15 @@ export class BillingPage implements OnInit {
       }
 
       this.dataExcel = Array.from(uniqueMap.values());
+      this.mmoneyFetch = { ok: true, chunks: loaded.chunks, failed: [], inMonth: this.dataExcel.length };
+      return true;
 
     } catch (error) {
       console.error('Error onFileSelected:', error);
       this.dataExcel = [];
+      this.mmoneyFetch = { ok: false, chunks: 0, failed: ['ຂໍ້ມູນບໍ່ຄົບ'], inMonth: 0 };
+      alert('ດຶງ M-Money ບໍ່ສຳເລັດ ຢ່າໃຊ້ບິນນີ້');
+      return false;
     } finally {
       this.apiService.dismissLoading();
     }
@@ -864,26 +876,33 @@ export class BillingPage implements OnInit {
 
   private async loadMmoneyByChunks(fromDate: string, toDate: string) {
     const rows = [];
+    const failed: string[] = [];
+    let chunks = 0;
     let cursor = fromDate;
     while (cursor <= toDate) {
       let end = this.adjustDay(cursor, 2);
       if (end > toDate) end = toDate;
-      const data = await this.fetchMmoneyChunk(cursor, end);
-      for (let index = 0; index < data.length; index++) {
-        const element = data[index];
-        rows.push({
-          "#": rows.length + 1 + '',
-          "ເລກທູລະກຳ": element['trans_id'] ?? '',
-          "ຈຳນວນເງິນ": new Intl.NumberFormat('en-US').format(element['trans_amount']) ?? '',
-          "ລາຍລະອຽດ": element['trans_ref_col1'] ?? '',
-          "ຊ່ອງທາງ": element['trans_ref_col4'] ?? '',
-          "ວັນທີ": element['create_at'] ?? ''
-        });
+      chunks += 1;
+      try {
+        const data = await this.fetchMmoneyChunk(cursor, end);
+        for (let index = 0; index < data.length; index++) {
+          const element = data[index];
+          rows.push({
+            "#": rows.length + 1 + '',
+            "ເລກທູລະກຳ": element['trans_id'] ?? '',
+            "ຈຳນວນເງິນ": new Intl.NumberFormat('en-US').format(element['trans_amount']) ?? '',
+            "ລາຍລະອຽດ": element['trans_ref_col1'] ?? '',
+            "ຊ່ອງທາງ": element['trans_ref_col4'] ?? '',
+            "ວັນທີ": element['create_at'] ?? ''
+          });
+        }
+      } catch {
+        failed.push(`${cursor} ຫາ ${end}`);
       }
       if (end === toDate) break;
       cursor = this.adjustDay(end, 1);
     }
-    return rows;
+    return { ok: failed.length === 0, chunks, failed, rows };
   }
 
   private async fetchMmoneyChunk(start: string, end: string) {
@@ -949,7 +968,8 @@ export class BillingPage implements OnInit {
       //   return;
       // }
 
-      await this.onFileSelectedMmoney();
+      const loaded = await this.onFileSelectedMmoney();
+      if (!loaded) return;
       this.apiService.showLoadingLong();
 
       // const fromDateAdjusted = moment(this.fromDate).subtract(1, 'days').format('YYYY-MM-DD');
@@ -1070,6 +1090,13 @@ export class BillingPage implements OnInit {
 
 
       this.exportAllSheets(bankInMy, myNotInBankNotPaid, myNotInBankPaid, myBankNoServer, myBankServer, billNotPaidData, run, myInBank, this.dataExcel);
+      alert(
+        `ດຶງ M-Money ຄົບ ${this.mmoneyFetch.chunks} ຊ່ວງ ບໍ່ມີ timeout\n` +
+        `M-Money ໃນເດືອນ: ${this.dataExcel.length}\n` +
+        `ຈັບຄູ່ກັບບິນເຄື່ອງ: ${bankInMy.length}\n` +
+        `ຕ້ອງທວງເງິນ (LaoQR ຢືນຢັນ ແຕ່ບໍ່ຢູ່ໃນ M-Money): ${myNotInBankPaid.length}\n` +
+        `ຍິງຕົກເອງ: ${myNotInBankNotPaid.length}`
+      );
 
 
       // 4. mytrand ที่ไม่มีใน bankTrand
