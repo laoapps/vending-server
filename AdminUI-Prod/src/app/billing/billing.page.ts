@@ -900,7 +900,7 @@ export class BillingPage implements OnInit {
         failed.push(`${cursor} ຫາ ${end}`);
       }
       if (end === toDate) break;
-      cursor = this.adjustDay(end, 1);
+      cursor = end;
     }
     return { ok: failed.length === 0, chunks, failed, rows };
   }
