@@ -14,6 +14,13 @@
   <ion-button (click)="cloneSale()">Clone Sale</ion-button>
   <ion-button (click)="cloneSaleCUI()">Clone Sale CUI</ion-button>
   <ion-button (click)="cuisale()">CUI Sale</ion-button>
+  <ion-button (click)="showFix = !showFix">คืนรูปสินค้า</ion-button>
+  <div *ngIf="showFix" style="margin:8px 0; padding:8px; border:1px solid #ccc;">
+    <p>ใช้รูปในคลังตามชื่อสินค้า ใส่กลับทุกตู้ที่เลือก โดยไม่เปลี่ยนราคา และไม่สร้างสินค้าใหม่</p>
+    <app-machine-picker [machineId]="machineId" hint="ตู้ที่จะคืนรูปด้วย ถ้าไม่ติ๊กจะคืนแค่ตู้นี้"
+      (selectedChange)="fixMachineIds = $event"></app-machine-picker>
+    <ion-button (click)="restorePictures()">คืนรูปตามชื่อ</ion-button>
+  </div>
   <ion-item-divider>MachineId:{{machineId}}</ion-item-divider>
 
   <!-- <ion-grid *ngIf="readonly == true">
@@ -87,6 +94,7 @@
       <ion-col><ion-label>{{p.stock.name}}</ion-label></ion-col>
       <ion-col><ion-label>{{p.stock.price|number}}</ion-label></ion-col>
       <ion-col><ion-button (click)="editProductDetailNew(p.id)">edit</ion-button></ion-col>
+      <ion-col><ion-button (click)="putPicture(p)">ใส่รูป</ion-button></ion-col>
       <ion-col><ion-button (click)="deletesale(p)">delete</ion-button></ion-col>
     </ion-row>
   </ion-grid>

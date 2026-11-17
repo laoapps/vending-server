@@ -5,6 +5,7 @@ import { SaleAddPage } from './sale-add/sale-add.page';
 import { SaleDetailsPage } from './sale-details/sale-details.page';
 import { ProductDetailsPage } from '../products/product-details/product-details.page';
 import { ProductlistPage } from '../products/productlist/productlist.page';
+import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
 import { LoadSaleListProcess } from './processes/loadSaleList.process';
 import { environment } from 'src/environments/environment';
 import { IENMessage } from '../models/base.model';
@@ -32,6 +33,8 @@ export class SalePage implements OnInit {
   showImage: (p: string) => string;
   _l = new Array<IVendingMachineSale>();
   readonly: boolean;
+  showFix = false;
+  fixMachineIds = new Array<string>();
 
   constructor(
     public apiService: ApiService,
@@ -423,6 +426,92 @@ export class SalePage implements OnInit {
   close() {
     this.apiService.closeModal()
   }
+  private sameName(a: string, b: string): boolean {
+    const n = (v: string) => String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    return !!n(a) && n(a) === n(b);
+  }
+
+  private fileKey(v: string): string {
+    const s = String(v || '');
+    if (!s || s.startsWith('data:')) return '';
+    return decodeURIComponent(s.split('?')[0].split('/').pop() || s);
+  }
+
+  private pictureOf(stock: any): string {
+    return [stock?.imageurl, stock?.imageUrl, stock?.filename, stock?.image]
+      .map((v: string) => this.fileKey(v))
+      .find(Boolean) || '';
+  }
+
+  private writePicture(machineId: string, sale: IVendingMachineSale, file: string) {
+    const stock = { ...(sale.stock || {}), image: file, imageurl: file, imageUrl: file, filename: file };
+    return this.apiService.editProductDetail({
+      machineId,
+      id: sale.id,
+      price: Number(sale.stock?.price),
+      name: sale.stock?.name,
+      max: sale.max,
+      image: file,
+      filename: file,
+      imageurl: file,
+      stock,
+    }).pipe(map(rx => rx.status ? 'done' as const : 'failed' as const));
+  }
+
+  chosenMachines(): string[] {
+    return [this.machineId, ...this.fixMachineIds.filter(id => id && id !== this.machineId)];
+  }
+
+  async restorePictures() {
+    const res: any = await this.apiService.listProductImages().toPromise();
+    const catalog = Array.isArray(res?.data) ? res.data : [];
+    const missing = new Set<string>();
+    await this.runOnOtherMachines(this.chosenMachines(), 'Putting the original pictures back...', 'Picture restored',
+      'Nothing to restore',
+      (machineId, sales) => {
+        const jobs = sales.filter(sale => {
+          const hit = catalog.find((p: any) => this.sameName(p?.name, sale?.stock?.name) && p?.imageURL);
+          if (!hit) {
+            if (sale?.stock?.name) missing.add(sale.stock.name);
+            return false;
+          }
+          return this.pictureOf(sale.stock) !== this.fileKey(hit.imageURL);
+        });
+        if (!jobs.length) return of('skipped' as const);
+        return from(jobs).pipe(
+          mergeMap(sale => {
+            const hit = catalog.find((p: any) => this.sameName(p?.name, sale?.stock?.name));
+            return this.writePicture(machineId, sale, hit.imageURL);
+          }, 1),
+          toArray(),
+          map(rows => rows.includes('failed') ? 'failed' as const : 'done' as const)
+        );
+      },
+      () => missing.size ? `<br>No library picture for: ${Array.from(missing).join(', ')}` : '');
+    this.loadSaleList();
+  }
+
+  async putPicture(sale: IVendingMachineSale) {
+    const modal = await this.apiService.showModal(ImagesproductPage, { pickOnly: true });
+    await modal?.present();
+    const picked = await modal?.onDidDismiss();
+    const file = picked?.data?.imageURL;
+    if (!file) return;
+    const name = sale?.stock?.name || '';
+    await this.runOnOtherMachines(this.chosenMachines(), 'Putting the picture back...', 'Picture restored',
+      `No item named ${name}`,
+      (machineId, sales) => {
+        const jobs = sales.filter(row => this.sameName(row?.stock?.name, name) && this.pictureOf(row.stock) !== this.fileKey(file));
+        if (!jobs.length) return of('skipped' as const);
+        return from(jobs).pipe(
+          mergeMap(row => this.writePicture(machineId, row, file), 1),
+          toArray(),
+          map(rows => rows.includes('failed') ? 'failed' as const : 'done' as const)
+        );
+      });
+    this.loadSaleList();
+  }
+
   showProductList(p: IVendingMachineSale) {
     this.apiService.showModal(ProductlistPage).then(ro => {
       ro?.present();

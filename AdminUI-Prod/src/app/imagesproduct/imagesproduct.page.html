@@ -29,7 +29,8 @@
       <ion-col><ion-label>{{p.updatedAt|date}}</ion-label></ion-col>
       <!-- <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p)"></ion-toggle></ion-col> -->
 
-      <ion-col><ion-button (click)="addProduct(p)">Create Product</ion-button></ion-col>
+      <ion-col *ngIf="!pickOnly"><ion-button (click)="addProduct(p)">Create Product</ion-button></ion-col>
+      <ion-col *ngIf="pickOnly"><ion-button (click)="pick(p)">ใช้รูปนี้</ion-button></ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>

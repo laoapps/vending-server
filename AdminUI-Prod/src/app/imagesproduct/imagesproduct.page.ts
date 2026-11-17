@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { FilemanagerApiService } from '../services/filemanager-api.service';
 import { environment } from 'src/environments/environment';
@@ -17,6 +17,7 @@ export class ImagesproductPage implements OnInit {
   private loadProductImagesProcess: LoadProductImagesProcess;
   filemanagerURL: string = environment.filemanagerurl + 'download/';
   _l = new Array<IProductImage>();
+  @Input() pickOnly = false;
 
 
   constructor(
@@ -197,6 +198,10 @@ export class ImagesproductPage implements OnInit {
 
     })
   }
+  pick(p: IProductImage) {
+    this.apiService.dismissModal({ imageURL: p.imageURL, name: p.name });
+  }
+
   close() {
     this.apiService.closeModal()
   }
