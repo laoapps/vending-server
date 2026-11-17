@@ -9,6 +9,7 @@ import { ImagesproductPage } from '../imagesproduct/imagesproduct.page';
 import { LoadSaleListProcess } from './processes/loadSaleList.process';
 import { environment } from 'src/environments/environment';
 import { IENMessage } from '../models/base.model';
+import { IApp } from '../models/app.model';
 import { AppcachingserviceService } from '../services/appcachingservice.service';
 import { CloneSaleProcess } from './processes/cloneSale.process';
 import { CuiSalePage } from './cui-sale/cui-sale.page';
@@ -492,16 +493,22 @@ export class SalePage implements OnInit {
   }
 
   async putPicture(sale: IVendingMachineSale) {
-    const modal = await this.apiService.showModal(ImagesproductPage, { pickOnly: true });
+    const modal = await this.apiService.showModal(ImagesproductPage, { pickOnly: true, machineId: this.machineId });
     await modal?.present();
     const picked = await modal?.onDidDismiss();
-    const file = picked?.data?.imageURL;
-    if (!file) return;
+    const payload = picked?.data?.imageURL ? picked.data : picked?.data?.data;
+    const file = payload?.imageURL;
+    if (!file) {
+      this.apiService.toast.create({ message: 'ยังไม่ได้เลือกรูป', duration: 2000 }).then(t => t.present());
+      return;
+    }
+    const extra: string[] = Array.isArray(payload?.extraMachineIds) ? payload.extraMachineIds : this.fixMachineIds;
     const name = sale?.stock?.name || '';
-    await this.runOnOtherMachines(this.chosenMachines(), 'Putting the picture back...', 'Picture restored',
+    const machineIds = [this.machineId, ...extra.filter(id => id && id !== this.machineId)];
+    await this.runOnOtherMachines(machineIds, 'Putting the picture back...', 'Picture restored',
       `No item named ${name}`,
       (machineId, sales) => {
-        const jobs = sales.filter(row => this.sameName(row?.stock?.name, name) && this.pictureOf(row.stock) !== this.fileKey(file));
+        const jobs = sales.filter(row => this.sameName(row?.stock?.name, name));
         if (!jobs.length) return of('skipped' as const);
         return from(jobs).pipe(
           mergeMap(row => this.writePicture(machineId, row, file), 1),
@@ -509,6 +516,7 @@ export class SalePage implements OnInit {
           map(rows => rows.includes('failed') ? 'failed' as const : 'done' as const)
         );
       });
+    try { await this.cashingService.remove(IApp.cashing); } catch (e) { console.log(e); }
     this.loadSaleList();
   }
 

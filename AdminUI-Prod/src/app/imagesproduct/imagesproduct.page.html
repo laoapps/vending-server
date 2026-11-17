@@ -7,7 +7,11 @@
 </ion-header>
 
 <ion-content>
-  <ion-button (click)="new()">New</ion-button>
+  <div *ngIf="pickOnly">
+    <app-machine-picker [machineId]="machineId" hint="ใส่รูปนี้ให้ตู้เหล่านี้ด้วย ถ้าไม่ติ๊กจะใส่แค่ตู้ที่เปิดอยู่"
+      (selectedChange)="extraMachineIds = $event"></app-machine-picker>
+  </div>
+  <ion-button *ngIf="!pickOnly" (click)="new()">New</ion-button>
   <ion-grid>
     <ion-row>
       <ion-col><ion-label>image</ion-label></ion-col>
@@ -30,7 +34,7 @@
       <!-- <ion-col> <ion-toggle [(ngModel)]="p.isActive" (ngModelChange)="disable(p)"></ion-toggle></ion-col> -->
 
       <ion-col *ngIf="!pickOnly"><ion-button (click)="addProduct(p)">Create Product</ion-button></ion-col>
-      <ion-col *ngIf="pickOnly"><ion-button (click)="pick(p)">ใช้รูปนี้</ion-button></ion-col>
+      <ion-col *ngIf="pickOnly"><ion-button (click)="pick(p)">ใช้รูปนี้กับตู้ที่เลือก</ion-button></ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>

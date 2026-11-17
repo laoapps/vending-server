@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { ImagesproductPageRoutingModule } from './imagesproduct-routing.module';
 
 import { ImagesproductPage } from './imagesproduct.page';
+import { MachinePickerComponent } from '../sale/machine-picker/machine-picker.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ImagesproductPageRoutingModule
+    ImagesproductPageRoutingModule,
+    MachinePickerComponent
   ],
   declarations: [ImagesproductPage]
 })

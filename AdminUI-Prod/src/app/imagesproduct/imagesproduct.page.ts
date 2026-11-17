@@ -18,6 +18,8 @@ export class ImagesproductPage implements OnInit {
   filemanagerURL: string = environment.filemanagerurl + 'download/';
   _l = new Array<IProductImage>();
   @Input() pickOnly = false;
+  @Input() machineId = '';
+  extraMachineIds = new Array<string>();
 
 
   constructor(
@@ -199,7 +201,7 @@ export class ImagesproductPage implements OnInit {
     })
   }
   pick(p: IProductImage) {
-    this.apiService.dismissModal({ imageURL: p.imageURL, name: p.name });
+    this.apiService.closeModal({ imageURL: p.imageURL, name: p.name, extraMachineIds: this.extraMachineIds });
   }
 
   close() {
