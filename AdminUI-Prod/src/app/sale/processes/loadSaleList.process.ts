@@ -107,8 +107,6 @@ export class LoadSaleListProcess {
                     if (response.status != 1) return resolve(IENMessage.loadListFail);
                     if (response.status == 1 && response.data.length == 0) return resolve(IENMessage.notFoundAnyDataList);
                     this.lists = response.data;
-                    this.lists.find(field => field.stock.imageUrl = '');
-                    console.log(`lists`, this.lists);
                     resolve(IENMessage.success);
                 }, error => resolve(error.message));
 
@@ -160,8 +158,8 @@ export class LoadSaleListProcess {
 
                         if (nodata[i].stock.image != "") {
                             console.log(`receive image new -->`, i);
-
-                            const url = `${environment.filemanagerurl}downloadphoto?url=${nodata[i].stock.image}&w=100&h=248`;
+                            const filename = nodata[i].stock.image;
+                            const url = `${environment.filemanagerurl}downloadphoto?url=${filename}&w=100&h=248`;
                             const run = await axios({
                                 method: 'GET',
                                 url: url,
@@ -171,11 +169,12 @@ export class LoadSaleListProcess {
                             console.log(`response receive image new -->`);
 
                             const obj = {
-                                name: nodata[i].stock.image,
+                                name: filename,
                                 file: file
                             }
 
-                            nodata[i].stock.imageUrl = this.lists[i].stock.image;
+                            nodata[i].stock.imageUrl = filename;
+                            nodata[i].stock.imageurl = nodata[i].stock.imageurl || filename;
                             nodata[i].stock.image = file;
                             this.storage.push(obj);
                         }

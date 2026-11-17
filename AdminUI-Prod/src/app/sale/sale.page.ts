@@ -250,12 +250,15 @@ export class SalePage implements OnInit {
             }
           });
 
+          const stock = sData.stock || ({} as any);
+          const imageName = [stock.imageurl, stock.filename, stock.imageUrl]
+            .find((v: string) => v && !String(v).startsWith('data:')) || '';
           const params = {
-            price: Number(sData.stock.price),
-            image: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
-            name: sData.stock.name,
-            filename: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
-            imageurl: r?.data?.s.stock.imageUrl ?? sData.stock.imageurl,
+            price: Number(stock.price),
+            image: imageName,
+            name: stock.name,
+            filename: imageName,
+            imageurl: imageName,
             qtty: 1000,
             isActive: true,
             id: s.id
@@ -331,19 +334,25 @@ export class SalePage implements OnInit {
           // console.log('-----> DATA L :', JSON.stringify(sData?.stock?.hotWaterCredit));
 
 
-          let newParam = {
+          const stock = sData.stock || ({} as any);
+          const imageName = [stock.imageurl, stock.imageUrl, stock.filename]
+            .find((v: string) => v && !String(v).startsWith('data:')) || '';
+
+          let newParam: any = {
             machineId: sData?.machineId,
-            price: Number(sData.stock.price),
-            image: r?.data?.s?.stock?.imageUrl,
-            name: sData.stock.name,
-            filename: r?.data?.s?.stock?.imageUrl,
-            imageurl: r?.data?.s?.stock?.imageUrl,
+            price: Number(stock.price),
+            name: stock.name,
             max: sData.max,
             id: s.id,
           };
+          if (imageName) {
+            newParam.image = imageName;
+            newParam.filename = imageName;
+            newParam.imageurl = imageName;
+          }
 
-          const stockData = r?.data?.s?.stock;
-          stockData.image = r?.data?.s?.stock?.imageUrl;
+          const stockData = { ...stock };
+          if (imageName) stockData.image = imageName;
           newParam['stock'] = stockData;
 
           if (sData?.stock?.hotWaterCredit) {
