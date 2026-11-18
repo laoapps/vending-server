@@ -1496,29 +1496,6 @@ export class Tab1Page implements OnDestroy {
       }
     }, 1000);
   }
-  private applyCatalogPrices(slots: IVendingMachineSale[], catalog: IVendingMachineSale[]) {
-    const byName = new Map<string, number>();
-    (catalog || []).forEach((row) => {
-      const name = String(row?.stock?.name || '').trim().toLowerCase();
-      const price = Number(row?.stock?.price);
-      if (name && Number.isFinite(price)) byName.set(name, price);
-    });
-    let changed = false;
-    (slots || []).forEach((slot) => {
-      const name = String(slot?.stock?.name || '').trim().toLowerCase();
-      if (!slot?.stock || !byName.has(name)) return;
-      const price = byName.get(name);
-      if (Number(slot.stock.price) !== price) {
-        slot.stock.price = price;
-        changed = true;
-      }
-    });
-    if (changed && slots?.length) {
-      this.storage.set('saleStock', slots, 'stock');
-      this.apiService.saveSale(slots).subscribe(() => { }, () => { });
-    }
-  }
-
   refresh() {
     // window.location.reload();
     this.apiService.reloadPage();
@@ -1550,7 +1527,6 @@ export class Tab1Page implements OnDestroy {
               const saleitems = JSON.parse(
                 JSON.stringify(s?.v ? s.v : [])
               ) as Array<IVendingMachineSale>;
-              this.applyCatalogPrices(saleitems, saleServer);
 
               // console.log(`sale server`, JSON.stringify(saleServer.map(item => { return { uuid: item.stock.uuid } })));
 
@@ -1638,7 +1614,6 @@ export class Tab1Page implements OnDestroy {
         const saleitems = JSON.parse(
           JSON.stringify(s?.v ? s.v : [])
         ) as Array<IVendingMachineSale>;
-        this.applyCatalogPrices(saleitems, run.data[0].lists);
         console.log(`saleitems`, saleitems);
 
         if (this.vendingOnSale?.length) this.vendingOnSale.length = 0;
@@ -1669,7 +1644,6 @@ export class Tab1Page implements OnDestroy {
               console.log('recover', r.data);
 
               ApiService.vendingOnSale.push(...r.data);
-              this.applyCatalogPrices(ApiService.vendingOnSale, run.data[0].lists);
               this.saleList.push(...this.vendingOnSale);
               if (this.saleList[0]?.position == 0) this.compensation = 1;
               this.saleList.sort((a, b) => {
