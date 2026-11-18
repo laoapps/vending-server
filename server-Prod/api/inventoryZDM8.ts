@@ -3496,6 +3496,11 @@ export class InventoryZDM8 implements IBaseClass {
                             await transaction.rollback();
                         }
                         await transaction.commit();
+                        try {
+                            await this.overlayCuiPrices(ownerUuid, machineId);
+                        } catch (e) {
+                            console.log("overlayCuiPrices", e);
+                        }
 
                         return res.send(PrintSucceeded("editProductDetail", newSale, EMessage.succeeded, returnLog(req, res)));
 
@@ -4498,6 +4503,7 @@ export class InventoryZDM8 implements IBaseClass {
                             // console.log(`load from databasee ----->`, list);
                             list = list.data;
                         }
+                        list = await this.overlayCuiPrices(res.locals["ownerUuid"] || "", machineId, Array.isArray(list) ? list : []);
                         res.send(
                             PrintSucceeded(
                                 "readMachineSaleForAdmin",
@@ -11331,6 +11337,47 @@ export class InventoryZDM8 implements IBaseClass {
         } catch (err: any) {
             console.error('[todaySales] notifyTodaySale failed:', err?.message || err);
         }
+    }
+
+    private async overlayCuiPrices(ownerUuid: string, machineId: string, list?: any[] | null) {
+        if (!ownerUuid || !machineId) return list;
+        let rows = list;
+        if (!Array.isArray(rows)) {
+            const raw = await readMachineSale(machineId);
+            if (!raw) return list;
+            try {
+                rows = JSON.parse(raw);
+            } catch (e) {
+                return list;
+            }
+        }
+        if (!Array.isArray(rows) || !rows.length) return rows;
+        const sEnt = VendingMachineSaleFactory(
+            EEntity.vendingmachinesale + "_" + ownerUuid,
+            dbConnection
+        );
+        const sales: any[] = await sEnt.findAll({ where: { machineId, isActive: true } });
+        const byName = new Map<string, { price: number; at: number }>();
+        sales.forEach((row) => {
+            const price = Number(row?.stock?.price);
+            const name = String(row?.stock?.name || "").trim().toLowerCase();
+            if (!name || !Number.isFinite(price)) return;
+            const at = new Date(row?.updatedAt || 0).getTime();
+            const prev = byName.get(name);
+            if (!prev || at >= prev.at) byName.set(name, { price, at });
+        });
+        let changed = false;
+        rows.forEach((item) => {
+            const name = String(item?.stock?.name || "").trim().toLowerCase();
+            const hit = byName.get(name);
+            if (!hit || !item?.stock) return;
+            if (Number(item.stock.price) !== hit.price) {
+                item.stock.price = hit.price;
+                changed = true;
+            }
+        });
+        if (changed) writeMachineSale(machineId, JSON.stringify(rows));
+        return rows;
     }
 
     private async getReportSale(
